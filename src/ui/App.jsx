@@ -3,7 +3,7 @@ import { creerPartie, jouerTour, apercuDecisions, previsionPolitique, conseils a
 import { libelleTrimestre } from '../engine/calendrier.js';
 import { MODES, normaliserMode } from '../model/parametres.js';
 import { PAYS, contexte } from './donnees.js';
-import { sauvegarderLocal, chargerLocal, effacerLocal, exporterJSON, importerJSON } from './sauvegarde.js';
+import { sauvegarderLocal, chargerLocal, effacerLocal, importerJSON, lirePreference, ecrirePreference } from './sauvegarde.js';
 import { pct, nombre, md, definirDevise } from './format.js';
 import Nombre from './composants/Nombre.jsx';
 import Jauge from './composants/Jauge.jsx';
@@ -11,6 +11,7 @@ import Notifications from './composants/Notifications.jsx';
 import Confettis from './composants/Confettis.jsx';
 import Conseiller from './composants/Conseiller.jsx';
 import VisiteGuidee from './composants/VisiteGuidee.jsx';
+import ModaleSauvegarde from './composants/ModaleSauvegarde.jsx';
 import Accueil from './ecrans/Accueil.jsx';
 import TableauDeBord from './ecrans/TableauDeBord.jsx';
 import Budget from './ecrans/Budget.jsx';
@@ -83,7 +84,7 @@ function notificationsDuTour(avant, apres) {
 }
 
 export default function App() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('cdg:theme') ?? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  const [theme, setTheme] = useState(() => lirePreference('cdg:theme') ?? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   const [partie, setPartie] = useState(null);
   const [decisions, setDecisions] = useState(DECISIONS_VIDES);
   const [onglet, setOnglet] = useState('tableau');
@@ -95,6 +96,8 @@ export default function App() {
   const [fete, setFete] = useState(0);
   const [precedent, setPrecedent] = useState(null);
   const [visite, setVisite] = useState(false);
+  const [sauvegarde, setSauvegarde] = useState(null); // 'export' | 'import' | null
+  const [quitter, setQuitter] = useState(false);
   const sauvegardeExistante = useMemo(() => chargerLocal(), []);
   const minuterie = useRef(null);
   const compteur = useRef(0);
@@ -102,7 +105,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem('cdg:theme', theme);
+    ecrirePreference('cdg:theme', theme);
   }, [theme]);
 
   // Monnaie de la partie (€ ou $) pour toutes les mises en forme
@@ -139,7 +142,7 @@ export default function App() {
     setOnglet('tableau');
     setPrecedent(null);
     sauvegarderLocal(p, decisionsInitiales(p));
-    if (p.mode === 'facile' && !localStorage.getItem('cdg:visite')) setVisite(true);
+    if (p.mode === 'facile' && !lirePreference('cdg:visite')) setVisite(true);
     notifier([{ type: 'info', icone: p.statique.drapeau, titre: `Vous prenez vos fonctions : ${p.statique.chefGouvernement.titre}`, texte: `${libelleTrimestre(p.trimestre)} · mode ${MODES[p.mode].nom}. ${p.evenements.enAttente.length ? `${p.evenements.enAttente.length} dossier(s) vous attendent déjà.` : ''}` }]);
   }, [notifier]);
 
@@ -192,6 +195,7 @@ export default function App() {
     if (!f) return;
     try {
       reprendre(await importerJSON(f));
+      setSauvegarde(null);
       setMessage('Partie importée.');
     } catch (err) {
       setMessage(err.message);
@@ -200,7 +204,7 @@ export default function App() {
   }, [reprendre]);
 
   const majDecisions = useCallback((modif) => setDecisions((d) => ({ ...d, ...(typeof modif === 'function' ? modif(d) : modif) })), []);
-  const fermerVisite = useCallback(() => { setVisite(false); localStorage.setItem('cdg:visite', '1'); }, []);
+  const fermerVisite = useCallback(() => { setVisite(false); ecrirePreference('cdg:visite', '1'); }, []);
 
   if (!partie) {
     return (
@@ -210,11 +214,13 @@ export default function App() {
           sauvegarde={sauvegardeExistante}
           onReprendre={() => reprendre(sauvegardeExistante)}
           onImporter={importer}
+          onColler={() => setSauvegarde('import')}
           theme={theme}
           onTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
           message={message}
         />
         <Notifications liste={notifications} onFermer={fermerNotification} />
+        {sauvegarde && <ModaleSauvegarde mode="import" onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage(null); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
       </>
     );
   }
@@ -244,18 +250,18 @@ export default function App() {
           <div>Chômage<strong><Nombre valeur={partie.macro.chomage} format={(v) => pct(v)} favorableSiHausse={false} /></strong></div>
         </div>
         <div className="ligne">
-          <button type="button" className="bouton" onClick={() => exporterJSON(partie, decisions)} title="Télécharger la partie au format JSON">Exporter</button>
-          <label className="bouton" title="Charger une partie exportée">Importer<input type="file" accept="application/json" onChange={importer} hidden /></label>
+          <button type="button" className="bouton" onClick={() => setSauvegarde('export')} title="Télécharger ou copier la partie (JSON)">Sauvegarder</button>
+          <button type="button" className="bouton" onClick={() => setSauvegarde('import')} title="Charger une partie (fichier ou texte)">Charger</button>
           <button type="button" className="bouton" onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))} aria-label="Changer de thème">{theme === 'dark' ? '☀︎' : '☾'}</button>
           <button type="button" className="bouton" onClick={() => setVisite(true)} title="Visite guidée">?</button>
-          <button type="button" className="bouton" onClick={() => { if (window.confirm('Quitter cette partie ? Elle reste sauvegardée sur cet appareil.')) setPartie(null); }}>Menu</button>
+          <button type="button" className="bouton" onClick={() => setQuitter(true)}>Menu</button>
         </div>
       </header>
 
       {message && <div className="alerte bonne" style={{ margin: '0.6rem 1.2rem' }} role="status">{message} <button type="button" className="bouton petit" onClick={() => setMessage(null)}>OK</button></div>}
 
       {partie.termine ? (
-        <FinDePartie partie={partie} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => exporterJSON(partie, decisions)} />
+        <FinDePartie partie={partie} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => setSauvegarde('export')} />
       ) : (
         <div className="mise-en-page">
           <nav className="navigation" aria-label="Sections">
@@ -308,6 +314,20 @@ export default function App() {
       )}
       {bilan && <BilanTour avant={bilan.avant} apres={bilan.apres} onFermer={() => { setBilan(null); notifier(attente.current); attente.current = []; }} onAnnuler={precedent ? annulerTour : null} />}
       {visite && !partie.termine && <VisiteGuidee onFermer={fermerVisite} allerA={setOnglet} />}
+      {sauvegarde && <ModaleSauvegarde mode={sauvegarde} partie={partie} decisions={decisions} onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage('Partie chargée.'); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
+      {quitter && (
+        <div className="voile" role="dialog" aria-modal="true" aria-labelledby="titre-quitter" onKeyDown={(ev) => ev.key === 'Escape' && setQuitter(false)}>
+          <div className="modale pile entree-modale" style={{ maxWidth: 460 }}>
+            <h2 id="titre-quitter">Revenir au menu ?</h2>
+            <p className="petit">La partie reste enregistrée dans ce navigateur quand c'est possible. Pour la garder à coup sûr, sauvegardez-la d'abord (téléchargement ou copie du texte).</p>
+            <div className="ligne">
+              <button type="button" className="bouton principal" onClick={() => { setQuitter(false); setPartie(null); }}>Revenir au menu</button>
+              <button type="button" className="bouton" onClick={() => { setQuitter(false); setSauvegarde('export'); }}>Sauvegarder d'abord</button>
+              <button type="button" className="bouton" onClick={() => setQuitter(false)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Notifications liste={notifications} onFermer={fermerNotification} />
       <Confettis declencheur={fete} />
     </div>

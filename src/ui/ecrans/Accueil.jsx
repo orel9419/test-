@@ -4,7 +4,7 @@ import { MODES } from '../../model/parametres.js';
 import { pct } from '../format.js';
 
 /** Écran d'accueil : choix du pays, du mode et du calendrier. */
-export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, theme, onTheme, message }) {
+export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, onColler, theme, onTheme, message }) {
   const [pays, setPays] = useState('france');
   const [mode, setMode] = useState('intermediaire');
   const [calendrier, setCalendrier] = useState('reel');
@@ -76,6 +76,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
       <div className="ligne">
         <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier })}>Prendre ses fonctions</button>
         <label className="bouton">Importer une partie (JSON)<input type="file" accept="application/json" onChange={onImporter} hidden /></label>
+        {onColler && <button type="button" className="bouton" onClick={onColler}>Coller une sauvegarde</button>}
       </div>
 
       <div className="carte petit muet">

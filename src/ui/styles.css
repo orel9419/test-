@@ -296,3 +296,5 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+.zone-sauvegarde { width: 100%; font-family: ui-monospace, monospace; font-size: 0.75rem; background: var(--surface-2); color: var(--encre); border: 1px solid var(--axe); border-radius: 8px; padding: 0.5rem; resize: vertical; }
