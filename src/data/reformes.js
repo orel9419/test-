@@ -227,6 +227,7 @@ export const REFORMES = [
   // ======================================================================
   {
     id: 'gel_point_indice',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Geler la rémunération des fonctionnaires',
     categorie: 'fonction_publique',
     pays: 'tous',
@@ -287,6 +288,7 @@ export const REFORMES = [
   },
   {
     id: 'non_remplacement',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Ne pas remplacer un fonctionnaire sur trois partant à la retraite',
     categorie: 'fonction_publique',
     pays: 'tous',
@@ -304,6 +306,7 @@ export const REFORMES = [
   },
   {
     id: 'assurance_chomage',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Règles de l\'assurance chômage',
     categorie: 'travail',
     pays: ['france'],
@@ -406,6 +409,7 @@ export const REFORMES = [
   },
   {
     id: 'plan_antifraude',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Plan de lutte contre la fraude fiscale et sociale',
     categorie: 'fiscalite',
     pays: 'tous',
@@ -419,6 +423,7 @@ export const REFORMES = [
   },
   {
     id: 'privatisations',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Céder des participations de l\'État',
     categorie: 'dette',
     pays: 'tous',
@@ -438,6 +443,7 @@ export const REFORMES = [
   // ======================================================================
   {
     id: 'bouclier_energie',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Protéger les ménages contre le choc énergétique',
     categorie: 'energie',
     pays: 'tous',
@@ -473,6 +479,7 @@ export const REFORMES = [
   },
   {
     id: 'taxe_superprofits',
+    vote: false, // mesure réglementaire ou budgétaire : pas de vote d'une loi spécifique
     nom: 'Contribution exceptionnelle sur les profits des énergéticiens',
     categorie: 'energie',
     pays: 'tous',

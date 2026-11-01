@@ -156,6 +156,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
     ouverture: OUVERTURE[pays],
     poidsZoneEuro: p.poidsZoneEuro,
     pretSAFE: p.pretSAFE,
+    stocksInitiaux: p.stocksInitiaux,
   };
 
   const e = {
@@ -194,6 +195,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
     prixEnergieConso: macro.prixEnergieConso,
     depensesRetraites: e.retraites.depenses,
     inflation: macro.inflation,
+    deficitRatio,
   };
   // Le budget des retraites suit le sous-modèle dès le départ
   e.budget.retraites.montant = e.retraites.depenses;
@@ -206,6 +208,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
     nat.ajustementPerimetre = s - (nat.plafondStructurelBund + nat.plafondStructurelLaender);
   }
 
+  e.recherche = { effortPctPIB: p.stocksInitiaux.recherche };
   e.menages = initialiserMenages(e);
   e.social = initialiserSocial(e);
   e.international = initialiserInternational(e, p);

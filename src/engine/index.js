@@ -30,19 +30,33 @@ import { majMacro } from './macro.js';
 import { majFinances, bilanAnnuel } from './finances.js';
 import { majMenages } from './menages.js';
 import { majSocial } from './social.js';
+import { initialiserPolitique, validerReformes, voterBudget, majPolitique, majSatisfactions, calculerPositions } from './politique.js';
+import { genererObjectifs, majObjectifs, cloturerObjectifs } from './objectifs.js';
+import { genererEvenements, resoudreEvenements, depensesTemporairesActives } from './evenements.js';
+import { calculerScore } from './score.js';
 import { MINISTERES } from '../model/ministeres.js';
 import { IMPOTS } from '../model/impots.js';
 import { PARAMETRES, MODES } from '../model/parametres.js';
 import { borner } from '../model/outils.js';
 
-export { reformesDisponibles, actionsDisponibles };
+export { reformesDisponibles, actionsDisponibles, calculerScore };
 
 export function creerPartie(options) {
   const e = creerEtatInitial(options);
+  // Calendrier « mandat complet » : l'élection intermédiaire est repoussée à la fin du mandat
+  e.calendrierChoisi = options.calendrier ?? 'reel';
+  if (e.calendrierChoisi === 'mandat_complet') {
+    e.statique.calendrier = { ...e.statique.calendrier, echeances: e.statique.calendrier.echeances.filter((x) => !['presidentielle', 'legislatives'].includes(x.type)) };
+  }
   e.politiqueSociale = { indicePrestations: 1, gel: null, surplusBaremeGele: 0, rendementPatrimoine: 0, bloquerCotisation2028: false };
   e.politiqueSalariale = { indicePoint: 1, gel: null, indiceSmic: 1 };
   e.macro.chocsPrixEnAttente = [];
   e.precedent = { recettesReformes: 0 };
+  e.depensesTemporaires = [];
+  e.evenements = { enAttente: [], historique: [] };
+  e.graineMonde = (e.graine * 2654435761) >>> 0;
+  initialiserPolitique(e, options.donnees);
+  e.objectifs = genererObjectifs(e);
   e.historique.push({ ...instantane(e), trimestre: 'Départ' });
   return e;
 }
@@ -139,6 +153,9 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const potNomAvant = e.reference.pibNominal * (e.macro.pibPotentiel / 100) * (e.macro.niveauPrix / 100);
   const depPondAvant = depensesPondereesMultiplicateur(e.budget);
 
+  // --- 0. Événements en attente : application des choix du joueur ---------------
+  const effEv = resoudreEvenements(e, decisions.evenements ?? {}, alea);
+
   // --- 1. Décisions du joueur ---------------------------------------------------
   for (const [id, v] of Object.entries(decisions.budget ?? {})) {
     if (e.budget[id] && MINISTERES[id].pilotage === 'curseur') e.budget[id].variationVolume = borner(Number(v) || 0, -25, 30);
@@ -151,9 +168,25 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     const choc = PARAMETRES.repercussionTVA * part * (e.impots.tva.taux - tauxTvaAvant) / (100 + tauxTvaAvant) * 100;
     for (let k = 0; k < 4; k++) e.macro.chocsPrixEnAttente.push(choc / 4);
   }
-  for (const r of decisions.reformes ?? []) {
-    const res = adopterReforme(e, r.id, r.option, alea);
-    e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: res.erreur ?? null });
+  // Réformes : passage devant le Parlement (sauf mesures réglementaires), puis adoption
+  let defaite = null;
+  if ((decisions.reformes ?? []).length) {
+    const validation = options.forcerReformes
+      ? { acceptees: decisions.reformes, rejet: null }
+      : validerReformes(e, decisions.reformes, decisions.procedureReformes ?? 'vote');
+    e.resultatsTour.vote = validation.vote ? { pour: validation.vote.pour, contre: validation.vote.contre, abstention: validation.vote.abstention } : null;
+    if (validation.rejet) {
+      e.resultatsTour.alertes.push({ type: 'rejet', texte: validation.rejet.raison });
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Texte rejeté : ${validation.rejet.raison}` });
+    }
+    if (validation.censure?.adoptee) defaite = { cause: 'censure', texte: 'Le gouvernement a été renversé par une motion de censure après un 49.3.' };
+    for (const r of validation.acceptees) {
+      const res = adopterReforme(e, r.id, r.option, alea);
+      e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: res.erreur ?? null });
+    }
+    for (const r of decisions.reformes.filter((x) => !validation.acceptees.includes(x))) {
+      e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: validation.rejet?.raison ?? 'Rejetée' });
+    }
   }
   for (const a of decisions.diplomatie ?? []) {
     e.resultatsTour.diplomatie.push(executerAction(e, a.id, a.option, alea));
@@ -162,10 +195,14 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   if (decisions.trajectoire) e.finances.trajectoireAnnoncee = { ...e.finances.trajectoireAnnoncee, ...decisions.trajectoire };
 
   // --- 2. Monde -------------------------------------------------------------------
-  majMonde(e, alea, {
+  // Le monde a son propre générateur aléatoire : deux parties aux décisions différentes
+  // traversent exactement le même contexte international (comparaisons à contexte identique).
+  const aleaMonde = creerAleatoire(e.graineMonde);
+  majMonde(e, aleaMonde, {
     frequenceEvenements: options.evenementsActifs === false ? 0.0001 : mode.frequenceEvenements,
     contributionEcartPays: e.statique.poidsZoneEuro * (e.macro.ecartProduction - (etat.historique.at(-2)?.ecart ?? e.macro.ecartProduction)) * 0.5,
   });
+  e.graineMonde = aleaMonde.etat();
   echeancesLegales(e);
 
   // --- 3. Réformes et sous-modèles ----------------------------------------------
@@ -178,6 +215,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
 
   const ajustDepenses = { ...effR.depenses };
   for (const [poste, v] of Object.entries(effI.depenses)) ajustDepenses[poste] = (ajustDepenses[poste] ?? 0) + v;
+  for (const [poste, v] of Object.entries(depensesTemporairesActives(e))) ajustDepenses[poste] = (ajustDepenses[poste] ?? 0) + v;
   ajustDepenses.protectionSociale = (ajustDepenses.protectionSociale ?? 0) + effRet.autresPrestations;
 
   // --- 4. Dépenses ------------------------------------------------------------------
@@ -200,7 +238,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const is = e.impots.impotSocietes;
   const effetIS = is ? IMPOTS.impotSocietes.effetPotentielParPoint * (is.taux - is.tauxRef) : 0;
   const chocPrix = (e.macro.chocsPrixEnAttente.shift() ?? 0) + effR.chocPrix;
-  majMacro(e, { budget: impulsion, chocs: options.chocs ?? 0 }, {
+  majMacro(e, { budget: impulsion, chocs: (options.chocs ?? 0) + effEv.chocPIB }, {
     offreTravail: effR.offreTravail + effT.offreTravail + effRet.offreTravail,
     actifsSupplementaires: (effRet.actifsSupplementaires ?? 0) + (effR.offreTravail / 100) * e.macro.populationActiveBase / 0.75,
     chomageStructurel: effR.chomageStructurel + effT.chomageStructurel + e.macro.effetCotisations,
@@ -214,7 +252,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const recettes = calculerRecettes(e, ajustRecettes);
 
   // --- 8. Finances publiques ----------------------------------------------------
-  majFinances(e, recettes, totalDepensesPrimaires(e), { cessions: effR.cessions, economieInterets: effI.economieInterets });
+  majFinances(e, recettes, totalDepensesPrimaires(e), { cessions: effR.cessions, economieInterets: effI.economieInterets, depensesExceptionnelles: effEv.depensesExceptionnelles });
   const bilan = bilanAnnuel(e);
   if (bilan) {
     const regles = bilan.regles.map((r) => `${r.nom} : ${r.realise.toFixed(1)} % pour un objectif de ${r.cible.toFixed(1)} % (${r.respect ? 'respectée' : 'NON respectée'})`).join(' ; ');
@@ -232,25 +270,52 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     e.resultatsTour.alertes.push({ type: 'mobilisation', groupe: mobilisation.groupe });
   }
 
-  // --- 10. Conditions de défaite économiques -------------------------------------
+  // --- 10. Vie politique : vote du budget (T4), coalition, censure, élections -------
+  if (e.trimestre.t === 4 && !options.sansPolitique) {
+    const vb = voterBudget(e, decisions.procedureBudget ?? 'auto');
+    e.resultatsTour.budget = { adopte: vb.adopte, pour: vb.vote.pour, contre: vb.vote.contre, abstention: vb.vote.abstention, procedure: vb.procedure, censure: vb.censure ? { voix: vb.censure.voix, majorite: vb.censure.majorite, adoptee: vb.censure.adoptee } : null };
+    if (vb.censure?.adoptee) defaite = defaite ?? { cause: 'censure', texte: 'Le gouvernement a été renversé par une motion de censure sur le budget.' };
+  }
+  if (!options.sansPolitique) {
+    const mp = majPolitique(e, alea, decisions);
+    if (mp.defaite) defaite = defaite ?? mp.defaite;
+  }
+  // En mode « sans politique » (aperçu, chiffrage), l'instabilité politique reste figée.
+
+  // --- 11. Conditions de défaite économiques -------------------------------------
   if (e.finances.crise) {
     e.finances.trimestresCrise = (e.finances.trimestresCrise ?? 0) + 1;
     e.resultatsTour.alertes.push({ type: 'marches', texte: `Écart de taux à ${Math.round(e.finances.spread)} pb : les marchés doutent de la soutenabilité de la dette.` });
-    if (e.finances.trimestresCrise >= 2 && mode.defaitesActives) {
-      e.termine = true;
-      e.issue = { type: 'defaite', cause: 'crise_dette', texte: 'Crise de la dette : l\'État ne peut plus emprunter à un taux soutenable et doit demander l\'aide du Mécanisme européen de stabilité.' };
+    if (e.finances.trimestresCrise >= 2) {
+      defaite = defaite ?? { cause: 'crise_dette', texte: 'Crise de la dette : l\'État ne peut plus emprunter à un taux soutenable et doit demander l\'aide du Mécanisme européen de stabilité.' };
     }
   } else e.finances.trimestresCrise = 0;
+  if (defaite) {
+    if (mode.defaitesActives) {
+      e.termine = true;
+      e.issue = { type: 'defaite', ...defaite };
+    } else {
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'alerte', texte: `${defaite.texte} (Mode bac à sable : la partie continue.)` });
+      e.resultatsTour.alertes.push({ type: 'defaite_evitee', texte: defaite.texte });
+    }
+  }
+  majObjectifs(e);
 
-  // --- 11. Historique et passage au trimestre suivant ------------------------------
+  // --- 12. Historique et passage au trimestre suivant ------------------------------
   e.historique.push(instantane(e));
-  e.graine = alea.etat();
   e.tour += 1;
   e.trimestre = trimestreSuivant(e.trimestre);
   if (!e.termine && e.tour > e.nbTours) {
     e.termine = true;
-    e.issue = { type: 'fin_mandat', texte: 'Fin du mandat.' };
+    e.issue = { type: 'fin_mandat', texte: 'Vous avez mené votre mandat à son terme.' };
   }
+  if (e.termine) {
+    cloturerObjectifs(e);
+    e.score = calculerScore(e);
+  } else if (options.evenementsActifs !== false) {
+    genererEvenements(e, alea, mode.frequenceEvenements);
+  }
+  e.graine = alea.etat();
   return e;
 }
 
@@ -259,7 +324,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
  * avec et sans ces décisions, avec le même tirage aléatoire.
  */
 export function apercuDecisions(etat, decisions, horizon = 4) {
-  const options = { evenementsActifs: false };
+  const options = { evenementsActifs: false, sansPolitique: true, forcerReformes: true };
   let avec = etat, sans = etat;
   const res = [];
   for (let k = 0; k < horizon; k++) {
@@ -295,8 +360,8 @@ function ecarts(a, b) {
  * entre une trajectoire avec la réforme et une trajectoire sans.
  */
 export function chiffrerReforme(etat, id, option, horizon = 12) {
-  const options = { evenementsActifs: false };
-  let avec = jouerTour(etat, { reformes: [{ id, option }] }, options);
+  const options = { evenementsActifs: false, sansPolitique: true };
+  let avec = jouerTour(etat, { reformes: [{ id, option }] }, { ...options, forcerReformes: true });
   let sans = jouerTour(etat, {}, options);
   const parAn = [];
   for (let k = 1; k < horizon && !avec.termine && !sans.termine; k++) {

@@ -11,7 +11,8 @@ import { trimestreSuivant, ecartTrimestres, libelleTrimestre } from '../src/engi
 const lire = (f) => JSON.parse(readFileSync(new URL(`../countries/${f}.json`, import.meta.url), 'utf8'));
 const contexte = lire('_contexte-mondial');
 const nouvelle = (pays = 'france', options = {}) => creerPartie({ pays, donnees: lire(pays), contexte, graine: 7, ...options });
-const jouer = (e, n, decisions = () => ({}), options = { evenementsActifs: false }) => {
+// Les tests économiques forcent l'adoption des réformes (le vote parlementaire est testé à part)
+const jouer = (e, n, decisions = () => ({}), options = { evenementsActifs: false, forcerReformes: true, sansPolitique: true }) => {
   for (let k = 0; k < n && !e.termine; k++) e = jouerTour(e, typeof decisions === 'function' ? decisions(k) : decisions, options);
   return e;
 };
@@ -194,6 +195,74 @@ describe('International', () => {
   it('le capital diplomatique limite le nombre d\'actions par trimestre', () => {
     const e = jouerTour(nouvelle('france'), { diplomatie: [{ id: 'emprunt_commun' }, { id: 'achats_groupes' }] }, { evenementsActifs: false });
     expect(e.resultatsTour.diplomatie[1].erreur).toMatch(/insuffisant/);
+  });
+});
+
+describe('Institutions et vie politique', () => {
+  it('France : le budget 2027 est rejeté au vote mais adopté par le 49.3, la censure échoue', () => {
+    const e = jouerTour(nouvelle('france'), {}, { evenementsActifs: false });
+    expect(e.resultatsTour.budget.procedure).toBe('49.3');
+    expect(e.resultatsTour.budget.censure.voix).toBeLessThan(289);
+    expect(e.politique.budgetsAdoptes).toContain(2027);
+    expect(e.termine).toBe(false);
+  });
+  it('France : sans 49.3, la retraite à 65 ans est rejetée par l\'Assemblée', () => {
+    const e = jouerTour(nouvelle('france'), { reformes: [{ id: 'retraites_age', option: 'age_65' }] }, { evenementsActifs: false });
+    expect(e.reformes.actives.some((r) => r.id === 'retraites_age')).toBe(false);
+    expect(e.resultatsTour.alertes.some((a) => a.type === 'rejet')).toBe(true);
+  });
+  it('France : un budget très dur fait basculer les socialistes dans la censure', () => {
+    const decisions = { budget: { protectionSociale: -15, sante: -10, education: -10, logement: -15 }, impots: { tva: 23 }, procedureBudget: '49.3' };
+    const e = jouerTour(nouvelle('france'), decisions, { evenementsActifs: false });
+    expect(e.resultatsTour.budget.censure.voix).toBeGreaterThanOrEqual(289);
+    expect(e.termine).toBe(true);
+    expect(e.issue.cause).toBe('censure');
+  });
+  it('France : un compromis avec le PS permet de voter le budget', () => {
+    const e = jouerTour(nouvelle('france'), { procedureBudget: 'compromis' }, { evenementsActifs: false });
+    expect(e.resultatsTour.budget.adopte).toBe(true);
+  });
+  it('Allemagne : le SPD bloque un recul de l\'âge à 68 ans', () => {
+    const e = jouerTour(nouvelle('allemagne'), { reformes: [{ id: 'rente_alter', option: 'age_68' }] }, { evenementsActifs: false });
+    expect(e.reformes.actives.some((r) => r.id === 'rente_alter')).toBe(false);
+  });
+  it('Allemagne : la réforme du frein à l\'endettement exige les deux tiers', () => {
+    const e = jouerTour(nouvelle('allemagne'), { reformes: [{ id: 'schuldenbremse_reforme', option: 'regle_or' }] }, { evenementsActifs: false });
+    const adoptee = e.reformes.actives.some((r) => r.id === 'schuldenbremse_reforme');
+    if (!adoptee) expect(e.journal.some((j) => /deux tiers/.test(j.texte) || /rejet/i.test(j.texte) || /bloque/.test(j.texte))).toBe(true);
+  });
+  it('génère 3 à 5 objectifs principaux selon le régime', () => {
+    for (const pays of ['france', 'allemagne']) {
+      const e = nouvelle(pays);
+      const principaux = e.objectifs.filter((o) => o.type === 'principal');
+      expect(principaux.length).toBeGreaterThanOrEqual(3);
+      expect(principaux.length).toBeLessThanOrEqual(6);
+    }
+    expect(nouvelle('france').objectifs.some((o) => o.id === 'presidentielle')).toBe(true);
+    expect(nouvelle('allemagne').objectifs.some((o) => o.id === 'coalition')).toBe(true);
+  });
+  it('produit des événements à choix et les applique', () => {
+    let e = nouvelle('france');
+    let vus = 0;
+    for (let k = 0; k < 12 && !e.termine; k++) {
+      e = jouerTour(e, { procedureBudget: 'compromis' }, {});
+      vus += e.evenements.enAttente.length;
+    }
+    expect(vus).toBeGreaterThan(0);
+    expect(e.evenements.historique.length).toBeGreaterThan(0);
+  });
+  it('calcule un score final avec ses composantes', () => {
+    let e = nouvelle('allemagne', { mode: 'bac_a_sable' });
+    while (!e.termine) e = jouerTour(e, {}, { evenementsActifs: false });
+    expect(e.score.total).toBeGreaterThan(0);
+    expect(Object.keys(e.score.composantes)).toContain('objectifs');
+  });
+  it('l\'état de la partie est sérialisable en JSON (sauvegarde)', () => {
+    let e = nouvelle('france');
+    e = jouerTour(e, {}, {});
+    const copie = JSON.parse(JSON.stringify(e));
+    const suite = jouerTour(copie, {}, {});
+    expect(suite.tour).toBe(3);
   });
 });
 

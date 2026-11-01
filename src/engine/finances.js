@@ -43,7 +43,9 @@ export function majFinances(e, recettes, depensesPrimaires, options = {}) {
   f.recettes = recettes;
   f.depensesPrimaires = depensesPrimaires;
   f.interets = f.tauxMoyen / 100 * f.dette - (options.economieInterets ?? 0);
-  f.depenses = depensesPrimaires + f.interets;
+  // Dépenses exceptionnelles (événements) : payées une fois, comptées en rythme annuel sur le trimestre
+  f.depensesExceptionnelles = options.depensesExceptionnelles ?? 0;
+  f.depenses = depensesPrimaires + f.interets + 4 * f.depensesExceptionnelles;
   f.deficit = f.depenses - f.recettes;           // Md€/an (positif = déficit)
   f.soldePrimaire = f.recettes - depensesPrimaires;
 
