@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "id": "etatsUnis",
+    "nom": "États-Unis",
+    "drapeau": "🇺🇸",
+    "devise": "USD",
+    "zone_monetaire": "Dollar (Réserve fédérale)",
+    "regime": "presidentiel",
+    "date_collecte": "2026-11-01",
+    "derniere_mise_a_jour": "2026-11-01",
+    "perimetre": "Budget FÉDÉRAL (les États fédérés, qui financent l'essentiel de l'éducation et de la police, ne sont pas inclus). Montants en milliards de dollars (Md$), exercice budgétaire d'octobre à septembre.",
+    "methode": "Collecte manuelle par recherche web le 01/11/2026. Les API officielles (BEA, BLS, Trésor) n'étaient pas joignables depuis l'environnement de collecte.",
+    "legende_statut": "Voir countries/france.json (même légende)"
+  },
+
+  "macro": {
+    "pib_nominal": {
+      "valeur": 31800, "unite": "Md$", "periode": "exercice 2026",
+      "source": "Calcul : dépenses fédérales de 7 400 Md$ = 23,3 % du PIB (projection CBO de février 2026)",
+      "url": "https://www.cbo.gov/publication/62105",
+      "date": "2026-02", "statut": "derive"
+    },
+    "croissance_trimestrielle_annualisee": {
+      "valeur": { "2026T2": 2.2, "2026T3": 2.5 }, "unite": "% en rythme annualisé", "periode": "2026",
+      "source": "BEA (T2, troisième estimation) ; T3 : estimation avancée relayée par un blog, non confirmée sur bea.gov",
+      "url": "https://bea.gov/news/2026/gdp-third-estimate-industries-corporate-profits-state-gdp-and-state-personal-income-2nd",
+      "date": "2026-10-29", "statut": "a_verifier"
+    },
+    "prevision_croissance_2026": {
+      "valeur": 2.2, "unite": "%", "source": "Fed, projections de juin 2026 (médiane)",
+      "url": "https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260617.htm", "date": "2026-06-17", "statut": "prevision_officielle"
+    },
+    "inflation_ipc": {
+      "valeur": 3.7, "unite": "% a/a", "periode": "2026-09",
+      "source": "BLS, IPC de septembre 2026 (relayé par la presse financière)",
+      "url": "https://buttondown.com/pomegra/archive/daily-briefing-2026-10-14/",
+      "date": "2026-10-14", "statut": "secondaire",
+      "note": "Inflation sous-jacente : 2,6 %. À vérifier sur bls.gov."
+    },
+    "inflation_sous_jacente": {
+      "valeur": 2.6, "unite": "% a/a", "periode": "2026-09",
+      "source": "BLS (via presse)", "url": "https://political.org/2026/10/14/u-s-treasury-yields-inch-lower-as-investors-await-key-september-inflation-report/",
+      "date": "2026-10-14", "statut": "secondaire"
+    },
+    "chomage": {
+      "valeur": 4.2, "unite": "% population active", "periode": "2026-09",
+      "source": "BLS, Employment Situation de septembre 2026",
+      "url": "https://www.bls.gov/news.release/archives/empsit_10022026.htm",
+      "date": "2026-10-02", "statut": "officiel",
+      "note": "7,1 millions de chômeurs ; entre 4,1 % et 4,3 % depuis mars."
+    },
+    "taux_directeur": {
+      "valeur": 3.875, "unite": "% (milieu de la fourchette 3,75 %-4,00 %)", "periode": "2026-10-28",
+      "source": "Réserve fédérale, décision du FOMC du 28/10/2026",
+      "url": "https://federalreserve.gov/newsevents/pressreleases/monetary20261028a1.htm",
+      "date": "2026-10-28", "statut": "officiel",
+      "note": "Taux relevé de 0,25 point le 16/09/2026, maintenu le 28/10 (vote à 10 contre 2 : Cook et Hammack voulaient une hausse). Les marchés anticipent une hausse en décembre."
+    },
+    "taux_10_ans": {
+      "valeur": 5.25, "unite": "%", "periode": "2026-10 (mi-octobre)",
+      "source": "Presse financière (5,2 à 5,3 % autour du 14/10/2026)",
+      "url": "https://political.org/2026/10/14/u-s-treasury-yields-inch-lower-as-investors-await-key-september-inflation-report/",
+      "date": "2026-10-14", "statut": "marche"
+    },
+    "population_active": { "valeur": 170, "unite": "millions", "statut": "estimation", "note": "Ordre de grandeur (7,1 millions de chômeurs pour 4,2 %, soit environ 169 millions d'actifs)." }
+  },
+
+  "finances_publiques": {
+    "deficit_md": {
+      "valeur": 2000, "unite": "Md$", "periode": "exercice 2026",
+      "source": "CBO, Monthly Budget Review de septembre 2026",
+      "url": "https://www.cbo.gov/publication/61985",
+      "date": "2026-10-08", "statut": "officiel",
+      "note": "218 Md$ de plus qu'en 2025. Recettes de 5 400 Md$ (+3 %), dépenses de 7 400 Md$ (+6 %)."
+    },
+    "recettes_md": { "valeur": 5403, "unite": "Md$", "periode": "exercice 2026", "source": "CBO (préliminaire)", "url": "https://www.cbo.gov/system/files/2026-10/61985-MBR.pdf", "date": "2026-10-08", "statut": "officiel" },
+    "depenses_md": { "valeur": 7400, "unite": "Md$", "periode": "exercice 2026", "source": "CBO", "url": "https://www.cbo.gov/publication/61985", "date": "2026-10-08", "statut": "officiel" },
+    "dette_detenue_public": {
+      "valeur": 32400, "unite": "Md$", "periode": "fin de l'exercice 2026",
+      "source": "CBO", "url": "https://www.cbo.gov/publication/61985", "date": "2026-10-08", "statut": "officiel",
+      "note": "Environ 101 % du PIB (projection CBO : 120 % en 2036)."
+    },
+    "plafond_dette": {
+      "valeur": 41100, "unite": "Md$ (dette brute, y compris détenue par les fonds fédéraux)",
+      "source": "Loi de réconciliation du 04/07/2025 (+5 000 Md$), via analyses de presse",
+      "url": "https://www.wenxuecity.com/news/2026/09/14/126774801.html",
+      "date": "2026-09", "statut": "secondaire",
+      "note": "Selon des analystes, le plafond pourrait être atteint en 2027 ; une Chambre démocrate compliquerait la négociation. Dette détenue par les fonds fédéraux (environ 7 400 Md$) : estimation."
+    },
+    "interets_nets": {
+      "valeur": 1052, "unite": "Md$", "periode": "exercice 2026",
+      "source": "Monthly Treasury Statement (via usaspending.us) ; CBO : +12 % sur l'exercice",
+      "url": "https://www.usaspending.us/blog/fy2026-federal-spending-final-numbers",
+      "date": "2026-10", "statut": "secondaire"
+    },
+    "depenses_par_poste": {
+      "periode": "exercice 2026", "unite": "Md$",
+      "source": "Monthly Treasury Statement (via usaspending.us, agrégateur)",
+      "url": "https://www.usaspending.us/blog/fy2026-federal-spending-final-numbers",
+      "date": "2026-10", "statut": "secondaire",
+      "valeurs": { "social_security": 1670, "medicare": 1073, "sante_dont_medicaid": 1026, "defense": 965.2, "interets_nets": 1052 },
+      "note": "Reste des dépenses (environ 1 610 Md$) non ventilé dans les sources trouvées : réparti par le jeu selon des ordres de grandeur (estimation)."
+    },
+    "recettes_par_prelevement": {
+      "periode": "exercice 2026", "unite": "Md$",
+      "source": "CBO, Monthly Budget Review de septembre 2026",
+      "url": "https://www.cbo.gov/system/files/2026-10/61985-MBR.pdf",
+      "date": "2026-10-08", "statut": "officiel",
+      "valeurs": { "impot_revenu": 2844, "cotisations_sociales": 1815, "impot_societes": 382, "droits_douane": 172, "autres": 190 },
+      "note": "Droits de douane en baisse de 11 % : la Cour suprême a annulé en février 2026 une large part des droits fondés sur l'IEEPA (environ 145 Md$ de remboursements)."
+    },
+    "financement_administration": {
+      "valeur": "Loi de finances provisoire (continuing resolution, H.R. 6500) signée le 02/09/2026 : administrations financées jusqu'au 11 décembre 2026. La Chambre a voté 3 des 12 lois de crédits de l'exercice 2027, le Sénat aucune.",
+      "url": "https://www.congress.gov/crs-product/R49353",
+      "date": "2026-09", "statut": "officiel",
+      "note": "Un shutdown a touché une partie des administrations pendant 161 jours au cours de l'exercice 2026 (secondaire)."
+    },
+    "social_security": {
+      "epuisement_fonds": { "valeur": 2032, "source": "Rapport des administrateurs (Trustees) 2026, via presse", "url": "https://www.dailycourier.com/ap/2027-social-security-raise-pegged-between-3-2-and-3-6/article_c4b8dd77-e54b-477a-8a29-685f6fe92295.html", "statut": "secondaire", "note": "À l'épuisement, baisse automatique des pensions de 17 à 22 % selon les sources. Déficit sur 75 ans : 29 300 Md$." },
+      "pension_moyenne": { "valeur": 2086, "unite": "$/mois", "source": "AARP (via Center Square)", "url": "https://www.dailycourier.com/ap/2027-social-security-raise-pegged-between-3-2-and-3-6/article_c4b8dd77-e54b-477a-8a29-685f6fe92295.html", "statut": "secondaire", "note": "Retraité moyen. Revalorisation 2027 attendue entre 3,2 et 3,8 %." },
+      "beneficiaires_retraite": { "valeur": 62, "unite": "millions", "statut": "secondaire", "note": "Bénéficiaires du fonds retraite, cités dans la presse." },
+      "age_plein_taux": { "valeur": 67, "statut": "officiel", "note": "Âge du taux plein pour les générations nées à partir de 1960." }
+    }
+  },
+
+  "travail": {
+    "salaire_minimum_federal": { "valeur": 7.25, "unite": "$/h", "statut": "officiel", "note": "Inchangé depuis 2009 ; de nombreux États appliquent un minimum plus élevé. Non re-vérifié pendant la collecte." }
+  },
+
+  "politique": {
+    "chef_etat": { "valeur": "Donald Trump (républicain), président depuis le 20/01/2025, ne peut pas se représenter en 2028", "statut": "officiel" },
+    "chambre": {
+      "sieges": 435, "majorite": 218,
+      "source": "House Press Gallery (situation au 18/03/2026)",
+      "url": "https://pressgallery.house.gov/member-data/party-breakdown",
+      "date": "2026-03-18", "statut": "officiel",
+      "note": "Départs ultérieurs non intégrés : une démission et un décès côté démocrate en avril 2026.",
+      "groupes": [
+        { "id": "REP", "nom": "Républicains", "sieges": 217 },
+        { "id": "DEM", "nom": "Démocrates", "sieges": 214 },
+        { "id": "IND", "nom": "Indépendant", "sieges": 1 },
+        { "id": "VAC", "nom": "Sièges vacants", "sieges": 3 }
+      ]
+    },
+    "senat": {
+      "sieges": 100, "majorite": 51, "obstruction": 60,
+      "source": "Ballotpedia (119e Congrès)", "url": "https://ballotpedia.org/119th_United_States_Congress", "statut": "secondaire",
+      "groupes": [ { "id": "REP", "nom": "Républicains", "sieges": 53 }, { "id": "DEM", "nom": "Démocrates et indépendants", "sieges": 47 } ],
+      "note": "La plupart des lois exigent 60 voix pour surmonter l'obstruction (filibuster) ; les lois de « réconciliation » budgétaire passent à la majorité simple."
+    },
+    "elections_mi_mandat": {
+      "date": "2026-11-03",
+      "source": "Decision Desk HQ, On Point Politics, Kalshi, PollCheck (31/10-01/11/2026)",
+      "url": "https://votes.decisiondeskhq.com/forecast/2026",
+      "statut": "secondaire",
+      "valeur": { "chambre_proba_democrate": "83 à 98 %", "chambre_sieges_democrates_projetes": "241 à 253", "senat_proba_democrate": "63 à 88 %", "senat_sieges_democrates_projetes": 52, "vote_generique_democrate_bipartite": 54.6 },
+      "note": "Sondages génériques de fin octobre : D+4 à D+12."
+    },
+    "popularite_president": {
+      "valeur": "approbation nette de −21 à −27 points",
+      "source": "PollCheck (30/10/2026), Kalshi (mi-octobre)",
+      "url": "https://www.pollcheck.co.uk/us-midterms-2026",
+      "statut": "secondaire",
+      "note": "Environ 36-38 % d'opinions favorables (estimation dérivée)."
+    },
+    "echeances": [
+      { "date": "2026-11-03", "type": "mi_mandat" },
+      { "date": "2026-12-11", "type": "financement", "note": "Fin de la loi de finances provisoire : risque de shutdown." },
+      { "date": "2027", "type": "plafond_dette", "note": "Estimation d'analystes." },
+      { "date": "2028-11-07", "type": "presidentielle" }
+    ],
+    "dossiers_chauds": [
+      "Élections de mi-mandat du 3 novembre : les démocrates sont favoris pour la Chambre et le Sénat",
+      "Fin du financement provisoire le 11 décembre : risque de shutdown",
+      "Déficit de 2 000 Md$ (environ 6,3 % du PIB), intérêts au-delà de 1 000 Md$",
+      "Droits de douane : la Cour suprême a annulé en février 2026 une large part des droits fondés sur l'IEEPA",
+      "Inflation remontée à 3,7 %, la Fed relève ses taux",
+      "Fonds de la Social Security épuisé en 2032",
+      "Guerre en Iran et prix de l'énergie"
+    ]
+  },
+
+  "entreprises": {
+    "participations_federales": {
+      "source": "Benzinga, XTB, Reuters (2025), via presse", "url": "https://benzinga.com/markets/equities/25/10/48061018/trump-administration-now-holds-stakes-in-5-public-companies-heres-a-list-intc-mp-lac-and-more",
+      "statut": "secondaire", "date": "2025-10",
+      "valeurs": [
+        { "entreprise": "Intel", "part": 10, "note": "Subventions du CHIPS Act converties en capital (5,7 à 8,9 Md$ selon les sources)." },
+        { "entreprise": "MP Materials", "part": 15, "note": "Département de la Défense, 400 M$ d'actions préférentielles convertibles (terres rares)." },
+        { "entreprise": "Lithium Americas", "part": 5, "note": "Département de l'Énergie, via la restructuration d'un prêt." },
+        { "entreprise": "Trilogy Metals", "part": 10, "note": "35,6 M$, plus des bons de souscription de 7,5 %." },
+        { "entreprise": "U.S. Steel", "part": 0, "note": "« Action de contrôle » (golden share), utilisée en 2025 pour bloquer la fermeture d'une usine dans l'Illinois." }
+      ],
+      "note_situation_2026": "Statut 2026 non confirmé."
+    }
+  },
+
+  "international": {
+    "alliances": ["OTAN", "G7", "G20", "Membre permanent du Conseil de sécurité de l'ONU", "Puissance nucléaire"],
+    "commerce": "Droits de douane élevés depuis 2025 ; une large part annulée par la Cour suprême en février 2026 (droits IEEPA).",
+    "conflits_crises": ["Guerre en Iran depuis fin février 2026", "Guerre en Ukraine"]
+  },
+
+  "recherche_climat": {
+    "dird_pct_pib": { "valeur": 3.43, "unite": "% PIB", "periode": "2022", "source": "NSF/NCSES", "url": "https://ncses.nsf.gov/pubs/nsf25335", "statut": "officiel", "note": "Dernier total trouvé. En 2024 : R&D financée par les entreprises 2,54 %, financement fédéral 0,63 % du PIB." },
+    "emissions_ges": { "valeur": 5350, "unite": "MtCO2e", "periode": "2025", "source": "Rhodium Group, estimation préliminaire 2025", "url": "https://rhg.com/wp-content/uploads/2026/01/Preliminary-US-Greenhouse-Gas-Emissions-Estimates-for-2025-1.pdf", "date": "2026-01", "statut": "secondaire", "note": "+2,4 % en 2025 (charbon, centres de données, hiver froid)." },
+    "mix_electrique": { "valeur": { "renouvelables_pct": 25.7, "gaz_pct": 40 }, "periode": "2025", "source": "EIA (via Renewables Now)", "url": "https://renewablesnow.com/news/renewables-were-26-percent-of-us-generation-and-36-percent-of-installed-capacity-in-2025-1290338/", "statut": "secondaire" },
+    "objectif_climat": { "valeur": null, "statut": "introuvable", "note": "Les États-Unis ont quitté l'accord de Paris ; aucun objectif fédéral contraignant." }
+  }
+}

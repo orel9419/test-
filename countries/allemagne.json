@@ -673,6 +673,120 @@
       "Guerre en Ukraine : deuxième contributeur d'aide militaire"
     ]
   },
+  "entreprises": {
+    "dax": {
+      "valeur": 25622.61,
+      "unite": "points",
+      "periode": "2026-10 (mi-octobre)",
+      "source": "Deutsche Börse (via ms-aktuell)",
+      "url": "https://ms-aktuell.de/?p=169805",
+      "statut": "marche"
+    },
+    "participations_federales": {
+      "source": "BMWE, KfW, presse",
+      "statut": "secondaire",
+      "valeurs": [
+        {
+          "entreprise": "TenneT Germany",
+          "part": 25.1,
+          "note": "Contrat signé le 03/02/2026 par la KfW pour le compte de l'État fédéral ; droit de veto sur les décisions stratégiques ; finalisation prévue au plus tard au T3 2026.",
+          "url": "https://www.bundeswirtschaftsministerium.de/Redaktion/DE/Pressemitteilungen/2026/02/20260203-vertragsunterzeichnung-zum-einstieg-des-bundes-bei-tennet-germany.html"
+        },
+        {
+          "entreprise": "Uniper",
+          "part": 99,
+          "note": "Sauvée en 2022 ; le ministère des Finances a lancé la vente en mai 2026 (JPMorgan, UBS).",
+          "url": "https://www.energyconnects.com/news/utilities/2026/may/berlin-kicks-off-uniper-sale-as-it-eyes-utility-mega-deal/"
+        },
+        {
+          "entreprise": "Commerzbank",
+          "part": 12,
+          "note": "Offre de rachat d'UniCredit ; le gouvernement s'y oppose publiquement. Part de 12 % : ordre de grandeur, à vérifier.",
+          "url": "https://www.lse.co.uk/news/germany-ponders-last-ditch-plan-to-thwart-italian-bid-for-commerzbank-9jnpigtvcntdscw.html"
+        },
+        {
+          "entreprise": "Hensoldt",
+          "part": 25.1,
+          "note": "Participation de l'État citée par la presse."
+        },
+        {
+          "entreprise": "KNDS",
+          "part": 25,
+          "note": "Entrée d'environ 25 % envisagée (février 2026), non confirmée."
+        },
+        {
+          "entreprise": "Deutsche Telekom",
+          "part": 30,
+          "note": "État et KfW ; ordre de grandeur non vérifié pendant la collecte."
+        },
+        {
+          "entreprise": "Deutsche Bahn",
+          "part": 100,
+          "note": "Entreprise publique."
+        }
+      ]
+    }
+  },
+  "elections": {
+    "calendrier": [
+      {
+        "date": "2027-04-18",
+        "type": "landtag",
+        "land": "Schleswig-Holstein",
+        "source": "wahlrecht.de",
+        "url": "https://www.wahlrecht.de/termine.htm",
+        "statut": "secondaire"
+      },
+      {
+        "date": "2027-04-18",
+        "type": "landtag",
+        "land": "Sarre",
+        "source": "wahlrecht.de",
+        "url": "https://www.wahlrecht.de/termine.htm",
+        "statut": "secondaire"
+      },
+      {
+        "date": "2027-04-25",
+        "type": "landtag",
+        "land": "Rhénanie-du-Nord-Westphalie",
+        "source": "Gouvernement de Rhénanie-du-Nord-Westphalie",
+        "url": "https://www.land.nrw/pressemitteilung/kabinett-setzt-landtagswahl-2027-auf-den-25-april-fest",
+        "statut": "officiel"
+      },
+      {
+        "date": "2027-05",
+        "type": "landtag",
+        "land": "Brême",
+        "source": "Bundesrat",
+        "url": "https://bundesrat.de/EN/organisation-en/laender-en/wahltermine-en/wahltermine-en-node.html",
+        "statut": "a_verifier",
+        "note": "Probablement au printemps 2027."
+      },
+      {
+        "date": "2027-09",
+        "type": "landtag",
+        "land": "Basse-Saxe",
+        "source": "Landtag de Basse-Saxe",
+        "url": "https://www.landtag-niedersachsen.de/fileadmin/user_upload/redaktion/hauptseite/downloads/besucherhinweise/26_08_27_Fact_Sheet_Wahlspezial.pdf",
+        "statut": "secondaire"
+      },
+      {
+        "date": "2029-06",
+        "type": "europeennes",
+        "statut": "a_verifier"
+      }
+    ]
+  },
+  "barometre": {
+    "chancelier": {
+      "valeur": 10,
+      "unite": "% de satisfaits",
+      "periode": "2026-10",
+      "source": "ARD-DeutschlandTrend (via Tagesspiegel)",
+      "url": "https://www.tagesspiegel.de/politik/afd-in-umfrage-weiter-elf-punkte-vor-union-mehrheit-erwartet-bruch-der-merz-regierung--13-prozent-noch-in-diesem-jahr-16199276.html",
+      "statut": "secondaire"
+    }
+  },
   "recherche_climat": {
     "dird_pct_pib": {
       "valeur": 3.17,
