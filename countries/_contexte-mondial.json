@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "description": "Contexte international commun à tous les pays : chocs exogènes de départ",
+    "date_collecte": "2026-11-01",
+    "derniere_mise_a_jour": "2026-11-01"
+  },
+  "choc_energetique": {
+    "origine": {
+      "valeur": "Guerre en Iran depuis fin février 2026 : perturbation du transit par le détroit d'Ormuz et attaques contre des infrastructures gazières au Qatar",
+      "source": "Direction générale du Trésor (Flash conjoncture du 17/07/2026), Le Grand Continent",
+      "url": "https://www.tresor.economie.gouv.fr/Articles/2026/07/17/flash-conjoncture-pays-avances-conflit-au-proche-et-moyen-orient-un-choc-energetique-davantage-petrolier-et-mondialise-qu-en-2022",
+      "date": "2026-07-17", "statut": "officiel"
+    },
+    "brent": {
+      "valeur": 117, "unite": "$/baril", "periode": "2026-10 (fin)",
+      "source": "Presse économique (recherche web)", "statut": "marche",
+      "note": "+43 % en mars par rapport à février (Trésor). Gazole deux fois plus cher qu'avant la guerre."
+    },
+    "gaz_ttf": {
+      "valeur": 97.15, "unite": "€/MWh", "periode": "2026-10 (fin)",
+      "source": "Presse économique (recherche web)",
+      "url": "https://econostrum.info/belgique/gaz-les-prix-explosent-en-europe/",
+      "statut": "marche",
+      "note": "Environ 32 €/MWh avant le conflit. 87,43 €/MWh le 13/10/2026. Livraisons de GNL depuis le Golfe en baisse d'environ 80 % sur un an. Stocks européens avant l'hiver au plus bas depuis 2011."
+    }
+  },
+  "zone_euro": {
+    "inflation": {
+      "valeur": 3.8, "unite": "% a/a", "periode": "2026-10 (flash)",
+      "source": "Eurostat (via FXStreet)",
+      "url": "https://www.fxstreet.com/analysis/european-central-bank-faces-3-year-high-inflation-at-38-202610301539",
+      "date": "2026-10-30", "statut": "secondaire"
+    },
+    "bce": {
+      "valeur": "Taux de dépôt de 2,50 %, maintenu le 29/10/2026. Hausse possible en décembre. C. Lagarde quittera la BCE en février 2027.",
+      "url": "https://www.irishtimes.com/business/2026/10/29/ecb-holds-rates-steady-as-lagardes-departure-overshadows-decision/",
+      "date": "2026-10-29", "statut": "secondaire"
+    }
+  },
+  "otan": {
+    "valeur": "Objectif de 5 % du PIB d'ici 2035 (3,5 % de défense et 1,5 % de sécurité au sens large), fixé à La Haye en juin 2025. Engagement de 70 Md€ d'aide militaire à l'Ukraine pour 2026-2027 par les Européens et le Canada.",
+    "url": "https://allnews.ch/node/140979", "statut": "secondaire"
+  },
+  "etats_unis_apercu": {
+    "deficit_federal_fy2026": { "valeur": 2.0, "unite": "milliers de Md$", "source": "CBO, Monthly Budget Review (08/10/2026)", "url": "https://www.cbo.gov/publication/61985", "statut": "officiel" },
+    "dette_detenue_par_le_public": { "valeur": 32.4, "unite": "milliers de Md$", "source": "CBO", "url": "https://www.cbo.gov/publication/61985", "statut": "officiel" },
+    "elections_mi_mandat": { "valeur": "03/11/2026", "statut": "officiel", "note": "Prévisions non collectées." }
+  }
+}

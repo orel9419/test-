@@ -1,0 +1,367 @@
+{
+  "meta": {
+    "id": "france",
+    "nom": "France",
+    "drapeau": "🇫🇷",
+    "devise": "EUR",
+    "zone_monetaire": "Zone euro",
+    "regime": "semi-presidentiel",
+    "date_collecte": "2026-11-01",
+    "derniere_mise_a_jour": "2026-11-01",
+    "methode": "Collecte manuelle par recherche web le 01/11/2026. Les API Eurostat, FMI, Banque mondiale et OCDE n'étaient pas joignables depuis l'environnement de collecte : à rafraîchir avec le script update-data.",
+    "legende_statut": {
+      "officiel": "Publication de l'institut statistique, de la banque centrale ou du Parlement",
+      "prevision_officielle": "Prévision du gouvernement ou d'une institution publique",
+      "secondaire": "Chiffre officiel relayé par la presse ou un site tiers, non vérifié sur la source primaire",
+      "derive": "Calculé à partir d'autres valeurs sourcées (calcul indiqué en note)",
+      "marche": "Donnée de marché approximative (date à confirmer)",
+      "a_verifier": "Information trouvée mais incohérente ou non recoupée",
+      "introuvable": "Non trouvée lors de la collecte : valeur null, ne pas inventer"
+    }
+  },
+
+  "macro": {
+    "pib_nominal": {
+      "valeur": 2991.1, "unite": "Md€", "periode": "2025",
+      "source": "Insee, comptes des APU 2025 (repris par dettedelafrance.fr)",
+      "url": "https://dettedelafrance.fr/deficit-public-france",
+      "date": "2026-03-27", "statut": "secondaire",
+      "note": "Cohérent avec un déficit de 152,5 Md€ = 5,1 % du PIB."
+    },
+    "croissance_trimestrielle": {
+      "valeur": { "2026T1": -0.2, "2026T2": 0.0, "2026T3": -0.1 }, "unite": "% t/t", "periode": "2026",
+      "source": "Insee, première estimation du PIB T3 2026",
+      "url": "https://www.franceinfo.fr/economie/victime-d-une-baisse-des-exportations-le-pib-recule-de-0-1-au-troisieme-trimestre-2026-en-france-selon-l-insee_8260019.html",
+      "date": "2026-10-30", "statut": "officiel",
+      "note": "T3 : consommation des ménages +0,4 %, investissement -0,6 %, exportations -1,7 %, contribution du commerce extérieur -0,6 pt. Résultats détaillés le 27/11/2026."
+    },
+    "acquis_croissance_2026": {
+      "valeur": 0.2, "unite": "%", "periode": "2026",
+      "source": "Insee (via France Épargne)",
+      "url": "https://www.france-epargne.fr/news/le-pib-francais-recule-de-01-au-troisieme-trimestre-la-cible-de-05-pour-2026-seloigne",
+      "date": "2026-10-30", "statut": "secondaire"
+    },
+    "prevision_croissance_2026_gouvernement": {
+      "valeur": 0.5, "unite": "%", "periode": "2026",
+      "source": "Gouvernement (PLF 2027)",
+      "url": "https://www.france-epargne.fr/news/le-pib-francais-recule-de-01-au-troisieme-trimestre-la-cible-de-05-pour-2026-seloigne",
+      "date": "2026-10-30", "statut": "prevision_officielle",
+      "note": "L'Insee et la Banque de France anticipaient 0,4 %. Jugée hors d'atteinte après le T3."
+    },
+    "prevision_croissance_2027": {
+      "valeur": null, "unite": "%", "periode": "2027",
+      "source": null, "url": null, "date": null, "statut": "introuvable",
+      "note": "Hypothèse macro du PLF 2027 non trouvée."
+    },
+    "inflation_ipc": {
+      "valeur": 3.0, "unite": "% a/a", "periode": "2026-09",
+      "source": "Insee, IPC estimation provisoire septembre 2026",
+      "url": "https://www.insee.fr/fr/statistiques/9056956",
+      "date": "2026-09-30", "statut": "officiel",
+      "note": "2,4 % en août. Énergie +21,2 % sur un an. Le chiffre d'octobre (publié le 30/10/2026) n'a pas été trouvé."
+    },
+    "inflation_ipch": {
+      "valeur": 3.4, "unite": "% a/a", "periode": "2026-09",
+      "source": "Insee (via jechange.fr)",
+      "url": "https://www.jechange.fr/banques/news/inflation-3-pourcent-septembre-2026-livret-a-pensions-smic",
+      "date": "2026-09-30", "statut": "secondaire"
+    },
+    "chomage_bit": {
+      "valeur": 8.3, "unite": "% population active", "periode": "2026T2",
+      "source": "Insee, Informations rapides n°192",
+      "url": "https://www.insee.fr/fr/statistiques/9032359",
+      "date": "2026-08-07", "statut": "officiel",
+      "note": "Plus haut depuis le T3 2020. 2,7 millions de chômeurs. Marge d'erreur ±0,3 pt."
+    },
+    "chomage_jeunes_15_24": {
+      "valeur": 21.6, "unite": "%", "periode": "2026T2",
+      "source": "Insee, Informations rapides n°192",
+      "url": "https://www.insee.fr/fr/statistiques/9032359",
+      "date": "2026-08-07", "statut": "officiel"
+    },
+    "taux_emploi_15_64": {
+      "valeur": 69.0, "unite": "%", "periode": "2026T2",
+      "source": "Insee, Informations rapides n°192",
+      "url": "https://www.insee.fr/fr/statistiques/9032359",
+      "date": "2026-08-07", "statut": "officiel"
+    },
+    "balance_commerciale_biens": {
+      "valeur": -69.2, "unite": "Md€", "periode": "2025",
+      "source": "Douanes (via presse économique)",
+      "url": "https://www.douane.gouv.fr/",
+      "date": "2026-02", "statut": "secondaire",
+      "note": "-79,2 Md€ en 2024. Amélioration due surtout à la baisse de la facture énergétique (environ -11 Md€) avant le choc de 2026."
+    },
+    "taux_directeur_bce_depot": {
+      "valeur": 2.50, "unite": "%", "periode": "2026-10-29",
+      "source": "BCE, décision du 29/10/2026 (via Irish Times)",
+      "url": "https://www.irishtimes.com/business/2026/10/29/ecb-holds-rates-steady-as-lagardes-departure-overshadows-decision/",
+      "date": "2026-10-29", "statut": "secondaire",
+      "note": "Taux maintenus (MRO 2,65 %, prêt marginal 2,90 %). Hausses en juin (2,25 %) et septembre 2026 (2,50 %). Hausse en décembre évoquée. C. Lagarde quittera la BCE en février 2027."
+    },
+    "taux_10_ans": {
+      "valeur": 4.77, "unite": "%", "periode": "2026-10",
+      "source": "France Épargne (OAT 10 ans)",
+      "url": "https://www.france-epargne.fr/news/lecart-entre-loat-et-le-bund-atteint-120-points-de-base-un-niveau-inedit-depuis-2012.md",
+      "date": "2026-10", "statut": "marche",
+      "note": "Date exacte de l'article non vérifiée. 4,48 % le 23/09/2026 et 4,12 % le 21/08/2026."
+    },
+    "spread_bund_10_ans": {
+      "valeur": 120, "unite": "pb", "periode": "2026-10",
+      "source": "France Épargne",
+      "url": "https://www.france-epargne.fr/news/lecart-entre-loat-et-le-bund-atteint-120-points-de-base-un-niveau-inedit-depuis-2012.md",
+      "date": "2026-10", "statut": "marche",
+      "note": "Plus haut depuis 2012. 77 pb mi-juillet 2026."
+    }
+  },
+
+  "finances_publiques": {
+    "deficit_pct_pib": {
+      "valeur": 5.1, "unite": "% PIB", "periode": "2025",
+      "source": "Insee, comptes des APU 2025",
+      "url": "https://www.insee.fr/fr/statistiques/8997691",
+      "date": "2026-03-27", "statut": "officiel",
+      "note": "152,5 Md€. 5,8 % en 2024."
+    },
+    "deficit_md": {
+      "valeur": 152.5, "unite": "Md€", "periode": "2025",
+      "source": "Insee", "url": "https://www.insee.fr/fr/statistiques/8997691",
+      "date": "2026-03-27", "statut": "officiel"
+    },
+    "deficit_prevision_2026": {
+      "valeur": 5.4, "unite": "% PIB", "periode": "2026",
+      "source": "PLF 2027 (Conseil des ministres du 01/10/2026)",
+      "url": "https://www.elysee.fr/emmanuel-macron/2026/10/01/compte-rendu-du-conseil-des-ministres-du-1-octobre-2026",
+      "date": "2026-10-01", "statut": "prevision_officielle",
+      "note": "Révisé de 5,0 % à 5,4 %."
+    },
+    "deficit_cible_2027": {
+      "valeur": 5.0, "unite": "% PIB", "periode": "2027",
+      "source": "PLF 2027",
+      "url": "https://www.assemblee-nationale.fr/dyn/17/textes/l17b3210_projet-loi.pdf",
+      "date": "2026-10-01", "statut": "prevision_officielle",
+      "note": "43 Md€ de mesures nouvelles (54 Md€ avec les mesures déjà engagées). La commission des finances a creusé le déficit d'environ 9,6 Md€ le 09/10/2026."
+    },
+    "dette_pct_pib": {
+      "valeur": 115.6, "unite": "% PIB", "periode": "2025",
+      "source": "Insee, comptes des APU 2025",
+      "url": "https://www.insee.fr/fr/statistiques/8997691",
+      "date": "2026-03-27", "statut": "officiel",
+      "note": "L'Insee Première 2106 indique 115,7 % (révision probable). 112,6 % en 2024."
+    },
+    "dette_md": {
+      "valeur": 3460.5, "unite": "Md€", "periode": "2025",
+      "source": "Insee (via dettedelafrance.fr)",
+      "url": "https://dettedelafrance.fr/dette-de-la-france-2025",
+      "date": "2026-03-27", "statut": "secondaire"
+    },
+    "dette_prevision_2026": {
+      "valeur": 119.3, "unite": "% PIB", "periode": "2026",
+      "source": "PLF 2027", "url": "https://www.budget.gouv.fr/documentation/file-download/33478",
+      "date": "2026-10-01", "statut": "prevision_officielle"
+    },
+    "dette_prevision_2027": {
+      "valeur": 121.7, "unite": "% PIB", "periode": "2027",
+      "source": "PLF 2027", "url": "https://www.budget.gouv.fr/documentation/file-download/33478",
+      "date": "2026-10-01", "statut": "prevision_officielle"
+    },
+    "recettes_pct_pib": {
+      "valeur": 52.1, "unite": "% PIB", "periode": "2025",
+      "source": "Insee (récapitulatif comptes des APU)",
+      "url": "https://www.insee.fr/fr/statistiques/fichier/version-html/8997691/ip2106.pdf",
+      "date": "2026-03-27", "statut": "secondaire"
+    },
+    "depenses_pct_pib": {
+      "valeur": 57.3, "unite": "% PIB", "periode": "2025",
+      "source": "Insee Première n°2106",
+      "url": "https://www.insee.fr/fr/statistiques/8997691",
+      "date": "2026-03-27", "statut": "officiel",
+      "note": "57,2 % dans une autre version : écart de révision."
+    },
+    "prelevements_obligatoires_pct_pib": {
+      "valeur": 43.6, "unite": "% PIB", "periode": "2025",
+      "source": "Insee, série des taux de prélèvements obligatoires",
+      "url": "https://www.insee.fr/fr/statistiques/2381412",
+      "date": "2026-03-27", "statut": "officiel"
+    },
+    "charge_interets_apu": {
+      "valeur": { "2026": 79.2, "2027": 91.2 }, "unite": "Md€", "periode": "2026-2027",
+      "source": "Sénat, PLF 2027 « la loi en clair »",
+      "url": "https://www.senat.fr/travaux-parlementaires/textes-legislatifs/la-loi-en-clair/projet-de-loi-de-finances-pour-2027.html",
+      "date": "2026-10", "statut": "prevision_officielle",
+      "note": "Périmètre probable : toutes administrations publiques. Charge de la dette de l'État seule (mission Engagements financiers) en 2027 : 74,5 Md€ contre 60,3 Md€ selon NosParlementaires, 72,9 contre 62,6 Md€ selon JeChange. Écart de périmètre non résolu."
+    },
+    "maturite_moyenne_dette": {
+      "valeur": null, "unite": "années", "periode": null,
+      "source": null, "url": null, "date": null, "statut": "introuvable",
+      "note": "Non collectée (Agence France Trésor). Le moteur utilisera une hypothèse de modélisation explicitement signalée."
+    },
+    "depenses_par_fonction_cofog": {
+      "periode": "2024", "unite": "Md€",
+      "source": "Comptes de la Nation 2024 / Eurostat COFOG (via chiffrespublics.fr), Insee Première n°2093",
+      "url": "https://chiffrespublics.fr/depenses/",
+      "date": "2026-02", "statut": "secondaire",
+      "note": "Total APU 1 671,8 Md€. Trois fonctions non trouvées : services généraux (GF01, qui inclut les intérêts), ordre et sécurité publics (GF03), protection sociale hors vieillesse (GF10). Ensemble non ventilé : 493,6 Md€. Ventilation 2025 annoncée pour décembre 2026.",
+      "valeurs": {
+        "total": 1671.8,
+        "GF01_services_generaux": null,
+        "GF02_defense": 54.2,
+        "GF03_ordre_securite": null,
+        "GF04_affaires_economiques": 166.1,
+        "GF05_environnement": 30.3,
+        "GF06_logement_equipements": 42.1,
+        "GF07_sante": 261.2,
+        "GF08_loisirs_culture_culte": 43.1,
+        "GF09_enseignement": 148.6,
+        "GF10_vieillesse_retraites": 432.6,
+        "GF10_protection_sociale_hors_vieillesse": null,
+        "residuel_non_ventile_GF01_GF03_GF10hv": 493.6
+      }
+    },
+    "budget_etat_plf_2027_missions": {
+      "periode": "2027", "unite": "Md€ (crédits de paiement)",
+      "source": "PLF 2027 (NosParlementaires, AEF, budget.gouv.fr plafonds)",
+      "url": "https://nosparlementaires.fr/actualites/budget-2027-dossier-plf-88-articles-ce-que-les-deputes-ont-deja-vote",
+      "date": "2026-10", "statut": "secondaire",
+      "valeurs": {
+        "defense": { "2026": 66.5, "2027": 73.2, "note": "Périmètre probablement avec pensions (CAS)." },
+        "enseignement_scolaire": { "2026": 89.62, "2027": 90.86, "note": "Avec CAS pensions. Plafond hors CAS : 65,3 Md€." },
+        "recherche_enseignement_superieur_mires": { "2027": 31.8, "note": "Plafond prévisionnel." },
+        "engagements_financiers_charge_dette": { "2026": 60.3, "2027": 74.5 },
+        "ecologie_developpement_mobilite": { "2027": null, "note": "Introuvable." }
+      }
+    }
+  },
+
+  "politique": {
+    "regime": {
+      "valeur": "Semi-présidentiel (Ve République)",
+      "note": "Le joueur incarne le Premier ministre ; le Président est un acteur autonome (nomination, dissolution)."
+    },
+    "chef_etat": {
+      "valeur": "Emmanuel Macron", "note": "Mandat jusqu'en mai 2027. Ne peut pas se représenter (deux mandats consécutifs).",
+      "statut": "officiel"
+    },
+    "chef_gouvernement": {
+      "valeur": "Sébastien Lecornu (gouvernement Lecornu II depuis octobre 2025)",
+      "source": "Wikipedia, « Second Lecornu government »",
+      "url": "https://en.wikipedia.org/wiki/Second_Lecornu_government",
+      "date": "2026-10", "statut": "secondaire"
+    },
+    "assemblee_nationale": {
+      "sieges": 577, "majorite_absolue": 289,
+      "source": "LCP (détail des votes de la motion de censure du 23/01/2026)",
+      "url": "https://lcp.fr/actualites/les-motions-de-censure-lfi-et-rn-sur-les-recettes-du-budget-rejetees-qui-a-vote-ou-pas",
+      "date": "2026-01-23", "statut": "officiel",
+      "note": "Effectifs de janvier 2026, pas forcément à jour en novembre 2026. Seuil de censure ramené à 288 avec deux sièges vacants.",
+      "groupes": [
+        { "id": "RN",   "nom": "Rassemblement national", "sieges": 122, "bloc": "extreme_droite" },
+        { "id": "EPR",  "nom": "Ensemble pour la République", "sieges": 91, "bloc": "socle_commun" },
+        { "id": "LFI",  "nom": "La France insoumise", "sieges": 71, "bloc": "gauche" },
+        { "id": "SOC",  "nom": "Socialistes et apparentés", "sieges": 69, "bloc": "gauche" },
+        { "id": "DR",   "nom": "Droite républicaine", "sieges": 49, "bloc": "socle_commun" },
+        { "id": "ECOS", "nom": "Écologiste et social", "sieges": 38, "bloc": "gauche" },
+        { "id": "DEM",  "nom": "Les Démocrates", "sieges": 36, "bloc": "socle_commun" },
+        { "id": "HOR",  "nom": "Horizons et indépendants", "sieges": 34, "bloc": "socle_commun" },
+        { "id": "GDR",  "nom": "Gauche démocrate et républicaine", "sieges": 17, "bloc": "gauche" },
+        { "id": "AUTRES", "nom": "LIOT, UDR, non-inscrits et sièges vacants (non ventilés)", "sieges": 50, "bloc": "divers", "statut": "introuvable", "note": "Valeur résiduelle (577 - 527). Ventilation par groupe non trouvée." }
+      ]
+    },
+    "socle_commun_sieges": {
+      "valeur": 210, "statut": "derive",
+      "note": "EPR 91 + DEM 36 + HOR 34 + DR 49. Il manque 79 sièges pour la majorité absolue."
+    },
+    "historique_recent": [
+      { "date": "2026-01-23", "evenement": "49.3 sur la partie recettes du PLF 2026. La motion LFI obtient 269 voix (seuil 288) ; 5 socialistes sur 69 la votent. La motion RN/UDR obtient 142 voix.", "url": "https://www.franceinfo.fr/economie/budget/budget-2026-les-motions-de-censure-du-rn-et-de-lfi-rejetees-par-l-assemblee-nationale_7760618.html" },
+      { "date": "2026-01-27", "evenement": "Deuxième 49.3 (partie dépenses), motions rejetées.", "url": "https://www.franceinfo.fr/economie/budget/budget-2026-les-deux-nouvelles-motions-de-censure-sont-rejetees-le-projet-de-loi-est-donc-adopte-par-l-assemblee-nationale-et-part-au-senat_7767404.html" },
+      { "date": "2026-02-02", "evenement": "Dernières motions rejetées, budget 2026 adopté.", "url": "https://mrc53.over-blog.com/2026/02/le-budget-2026-de-l-etat-a-ete-adopte-la-censure-n-ayant-pas-ete-votee.html" },
+      { "date": "2026-10-01", "evenement": "PLF 2027 présenté en Conseil des ministres : déficit visé à 5,0 %.", "url": "https://www.elysee.fr/emmanuel-macron/2026/10/01/compte-rendu-du-conseil-des-ministres-du-1-octobre-2026" },
+      { "date": "2026-10-02", "evenement": "Lettre du PS (Vallaud, Kanner, Rolland) : budget « pas acceptable », menace de censure maintenue.", "url": "https://echosplus.com/2026/10/03/budget-2027-le-ps-presse-lecornu-de-revoir-sa-copie-et-maintient-la-menace-de-censure/" },
+      { "date": "2026-10-09", "evenement": "La commission des finances rejette la partie recettes du PLF 2027.", "url": "https://www.legifiscal.fr/actualites-fiscales/4684-plf-2027-commission-finances-rejette-partie-recettes-creuse-deficit-environ-10-md.html" },
+      { "date": "2026-10-13", "evenement": "Début de l'examen en séance. Lecornu évoque le 49.3 et les ordonnances de l'article 47 (délai de 70 jours).", "url": "https://www.leclubdesjuristes.com/en-bref/budget-2027-le-projet-arrive-devant-lassemblee-nationale-mardi-13-octobre-17773/" },
+      { "date": "2026-10-23", "evenement": "L'Assemblée rejette le PLFSS 2027, transmis au Sénat dans sa version initiale.", "url": "https://legisocial.fr/actualites-sociales/8204-plfss-2027-rejet-assemblee-nationale.html" }
+    ],
+    "echeances": [
+      { "date": "2027-04", "type": "presidentielle", "note": "Dates exactes des deux tours non collectées." },
+      { "date": "2029", "type": "legislatives_normales", "note": "Pas d'échéance obligatoire avant 2029. Dissolution possible (art. 12)." }
+    ],
+    "sondages_presidentielle": {
+      "source": "Ifop-Fiducial (30/09/2026), Odoxa (mars 2026)",
+      "url": "https://www.sudradio.fr/sud-radio/presidentielle-2027-bardella-et-le-rn-largement-en-tete-au-1er-tour",
+      "date": "2026-09-30", "statut": "secondaire",
+      "valeur": { "Le Pen (RN)": "31-36 %", "Philippe (Horizons)": "16 %", "Glucksmann (Place publique)": "15 %", "Bardella (RN, autre scénario)": "34-38 % (mars-mai 2026)" },
+      "note": "L'éligibilité de M. Le Pen dépend d'une décision de justice (statut non vérifié). Second tour Odoxa (mars 2026) : Philippe 52 %, Bardella 48 %."
+    },
+    "dossiers_chauds": [
+      "Adoption du budget 2027 sans majorité (49.3 ou ordonnances de l'article 47), risque de censure",
+      "Récession technique : PIB -0,2 % au T1 et -0,1 % au T3 2026",
+      "Chômage à 8,3 %, plus haut depuis 2020",
+      "Choc énergétique lié à la guerre en Iran : énergie +21 % sur un an",
+      "Spread OAT-Bund à 120 pb, plus haut depuis 2012",
+      "Réforme des retraites de 2023 suspendue jusqu'après la présidentielle",
+      "Procédure pour déficit excessif de l'UE depuis juillet 2024",
+      "Présidentielle d'avril 2027 : RN en tête des intentions de vote"
+    ],
+    "contraintes_institutionnelles": [
+      { "id": "49.3", "description": "Le gouvernement engage sa responsabilité sur un texte. Utilisable sans limite pour les lois de finances et de financement de la Sécurité sociale, sur un seul autre texte par session." },
+      { "id": "49.2", "description": "Motion de censure : il faut la majorité absolue des membres (289) pour renverser le gouvernement." },
+      { "id": "47", "description": "Sans vote du Parlement dans les 70 jours, le budget peut être mis en vigueur par ordonnance." },
+      { "id": "12", "description": "Dissolution par le Président, au plus une fois par an (la dernière date de juin 2024)." },
+      { "id": "PDE_UE", "description": "Procédure pour déficit excessif ouverte en juillet 2024. Engagement de repasser sous 3 % de déficit en 2029.", "statut": "a_verifier" }
+    ]
+  },
+
+  "international": {
+    "alliances": ["Union européenne", "Zone euro", "OTAN", "Membre permanent du Conseil de sécurité de l'ONU", "G7", "G20", "Puissance nucléaire"],
+    "engagement_otan": {
+      "valeur": "5 % du PIB d'ici 2035, dont 3,5 % de défense militaire et 1,5 % de sécurité au sens large",
+      "source": "Sommet de l'OTAN à La Haye (juin 2025)",
+      "url": "https://allnews.ch/node/140979", "date": "2025-06", "statut": "secondaire"
+    },
+    "programmation_militaire": {
+      "valeur": "Actualisation de la LPM 2024-2030 (projet de loi n°2630, présenté le 08/04/2026)",
+      "url": "https://www.assemblee-nationale.fr/dyn/17/amendements/2630/CION_DEF/DN97",
+      "date": "2026-04-08", "statut": "officiel",
+      "note": "Selon la ministre des Armées C. Vautrin, le budget des armées de 2027 est le double de celui de 2017."
+    },
+    "aide_publique_developpement": { "valeur": null, "statut": "introuvable" },
+    "aide_ukraine_2027": { "valeur": null, "statut": "introuvable" },
+    "conflits_crises": [
+      "Guerre en Iran depuis fin février 2026, perturbation du détroit d'Ormuz (voir _contexte-mondial.json)",
+      "Guerre en Ukraine"
+    ]
+  },
+
+  "recherche_climat": {
+    "dird_pct_pib": {
+      "valeur": 2.18, "unite": "% PIB", "periode": "2024",
+      "source": "SIES (ministère de l'Enseignement supérieur et de la Recherche), note flash",
+      "url": "https://www.enseignementsup-recherche.gouv.fr/fr/la-depense-de-recherche-et-developpement-experimental-en-2024-103227",
+      "date": "2026-07", "statut": "officiel",
+      "note": "64,1 Md€. Entreprises (DIRDE) : 1,44 % du PIB."
+    },
+    "emissions_ges": {
+      "valeur": 364, "unite": "MtCO2e (hors puits)", "periode": "2025",
+      "source": "Citepa, baromètre (avril 2026)",
+      "url": "https://www.ecologie.gouv.fr/presse/barometre-citepa-baisse-emissions-gaz-effet-serre-france-se-poursuit-2025-laction-climatique",
+      "date": "2026-04", "statut": "officiel",
+      "note": "Rapport Secten de juin 2026 : -2,1 % en 2025 (nouvelle valeur absolue non trouvée). 2024 : 367,0 MtCO2e."
+    },
+    "objectif_climat_2030": {
+      "valeur": "-50 % d'émissions brutes par rapport à 1990, soit environ 279 MtCO2e (SNBC 3)",
+      "source": "Citepa / SNBC 3",
+      "url": "https://www.banquedesterritoires.fr/stagnation-des-emissions-de-gaz-effet-de-serre-en-france-en-2025",
+      "date": "2026-06", "statut": "a_verifier",
+      "note": "Adoption définitive de la SNBC 3 par décret non vérifiée. Rythme nécessaire : environ -5 % par an."
+    },
+    "objectif_neutralite": { "valeur": 2050, "statut": "officiel", "note": "Loi énergie-climat de 2019." },
+    "mix_electrique": {
+      "valeur": { "nucleaire_pct": 68.1, "bas_carbone_pct": 95.2, "nucleaire_twh": 373 },
+      "periode": "2025",
+      "source": "RTE, bilan électrique 2025",
+      "url": "https://www.connaissancedesenergies.org/la-production-electrique-bas-carbone-de-la-france-atteint-un-maximum-historique-en-2025",
+      "date": "2026", "statut": "secondaire",
+      "note": "Part des renouvelables seuls dans l'électricité non trouvée au niveau national."
+    }
+  }
+}
