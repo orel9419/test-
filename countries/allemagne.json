@@ -180,7 +180,66 @@
         "GF08_loisirs_culture_culte": null,
         "GF09_enseignement": null,
         "GF10_protection_sociale": 20.4
+      },
+      "estimation_jeu": {
+        "statut": "estimation",
+        "unite": "% PIB",
+        "note": "ESTIMATION DE JEU, NON SOURCÉE : ordres de grandeur des années récentes, notés de mémoire en attendant les données Eurostat (update-data). Seule la protection sociale (20,4) est sourcée. GF01 est hors intérêts. Le moteur ajuste ces parts pour retomber sur les dépenses totales sourcées (50,3 % du PIB).",
+        "valeurs": {
+          "GF01_services_generaux_hors_interets": 4.9,
+          "GF02_defense": 1.5,
+          "GF03_ordre_securite": 1.6,
+          "GF04_affaires_economiques": 4.5,
+          "GF05_environnement": 0.6,
+          "GF06_logement_equipements": 0.5,
+          "GF07_sante": 7.6,
+          "GF08_loisirs_culture_culte": 1.0,
+          "GF09_enseignement": 4.4,
+          "GF10_protection_sociale": 20.4
+        }
       }
+    },
+    "comptes_nationaux_2024": {
+      "valeur": { "depenses_totales": 2139.72, "prestations_sociales_monetaires": 709.52, "prestations_sociales_en_nature": 386.59, "cotisations_sociales_recues": 756.55 },
+      "unite": "Md€", "periode": "2024",
+      "source": "Destatis, recettes et dépenses de l'État au sens de la procédure de déficit",
+      "url": "https://www.destatis.de/DE/Themen/Wirtschaft/Volkswirtschaftliche-Gesamtrechnungen-Inlandsprodukt/Tabellen/eu-stabilitaetspakt-defizit-staat.html",
+      "statut": "officiel",
+      "note": "Les cotisations sociales augmentent de 8,9 % en 2025 (Destatis), soit environ 824 Md€ (valeur dérivée)."
+    },
+    "interets_apu": {
+      "valeur": 48, "unite": "Md€", "periode": "2026",
+      "statut": "estimation",
+      "note": "ESTIMATION DE JEU. Seuls les intérêts du budget fédéral sont sourcés : 30,3 Md€ prévus en 2026 (41,9 en 2027, soit +11,6). Länder, communes et assurances sociales ajoutés par hypothèse."
+    },
+    "recettes_par_prelevement": {
+      "periode": "2025", "unite": "Md€",
+      "note": "Impôts avant répartition entre Bund, Länder et communes. Le moteur ajoute une ligne « autres recettes » pour fermer le total sourcé (2 140,2 Md€).",
+      "valeurs": {
+        "total_impots": { "valeur": 989.8, "source": "Destatis (17/04/2026)", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
+        "tva_umsatzsteuer": { "valeur": 310.2, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel", "note": "TVA sur les importations incluse. Taux normal 19 %." },
+        "impot_salaires_lohnsteuer": { "valeur": 262.7, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
+        "impot_revenu_veranlagt": { "valeur": 78.2, "source": "Calcul : 7,9 % du total (BMF via experten.de)", "url": "https://www.experten.de/id/4950350/steuerrekord-2025-arbeit-und-konsum-tragen-das-wachstum/index.pdf", "statut": "derive" },
+        "impot_societes": { "valeur": 39.2, "source": "BMF (via experten.de)", "url": "https://www.experten.de/id/4950350/steuerrekord-2025-arbeit-und-konsum-tragen-das-wachstum/index.pdf", "statut": "secondaire", "note": "Taux de 15 % (hors solidarité et taxe professionnelle)." },
+        "taxe_professionnelle_gewerbesteuer": { "valeur": 76.4, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
+        "accises_energie": { "valeur": 37.6, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
+        "cotisations_sociales": { "valeur": 824, "source": "Calcul : 756,55 Md€ (2024) × 1,089", "url": "https://www.presseportal.de/pm/32102/6223308", "statut": "derive" }
+      }
+    },
+    "retraites": {
+      "taux_cotisation": { "valeur": 18.6, "unite": "%", "periode": "2026", "source": "Bekanntmachung RVBeitrSBek 2026", "url": "https://www.gesetze-im-internet.de/rvbeitrsbek_2026/BJNR1230A0025.html", "statut": "officiel", "note": "Projection : 19,8 % en 2028 et 20,0 % en 2029 (Bundestag, document 21/3080)." },
+      "rendement_point_cotisation": { "valeur": 21.1, "unite": "Md€", "source": "DRV, chiffres de référence (via Bundestag)", "url": "https://dserver.bundestag.de/btd/21/030/2103080.pdf", "statut": "officiel", "note": "1 point de cotisation rapporte 21,1 Md€ ; 1 point de subvention fédérale coûte environ 3,4 Md€." },
+      "subventions_federales": { "valeur": 93.2, "unite": "Md€", "periode": "2026", "source": "DRV, estimation financière du printemps 2026", "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Experten/finanzbericht-fruehjahr-2026.pdf", "statut": "officiel", "note": "Subvention générale 61,07 + subventions complémentaires 32,10. Une autre source cite 112 Md€ pour l'ensemble des versements fédéraux." },
+      "depenses_drv": { "valeur": 421.3, "unite": "Md€", "periode": "2025 ou 2026", "source": "DRV, estimation financière du printemps 2026", "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Experten/finanzbericht-fruehjahr-2026.pdf", "statut": "a_verifier", "note": "Colonnes du tableau ambiguës (421,3 ou 443,2 Md€)." },
+      "nombre_pensions": { "valeur": 25.47, "unite": "millions", "source": "DRV, données actuelles", "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Statistiken-und-Berichte/statistikpublikationen/aktuelle_daten.html", "statut": "a_verifier", "note": "Dont 18,73 millions de pensions de vieillesse. Année de référence non précisée." },
+      "valeur_point": { "valeur": 42.52, "unite": "€", "periode": "depuis le 01/07/2026", "source": "DRV (via vermoegenszentrum.de)", "url": "https://www.vermoegenszentrum.de/wissen/rentenerhoehung-2026", "statut": "secondaire", "note": "+4,24 % au 01/07/2026." },
+      "taux_de_remplacement_garanti": { "valeur": 48, "unite": "% (Rentenniveau)", "source": "Paquet retraites 2025 (Bundestag, document 21/1929)", "url": "https://dserver.bundestag.de/btd/21/019/2101929.pdf", "statut": "officiel", "note": "Plancher garanti jusqu'en 2031, surcoût pris en charge par le budget fédéral." },
+      "age_legal": { "valeur": 67, "unite": "ans", "statut": "officiel", "note": "Atteint progressivement en 2031. La commission des retraites de 2026 propose 67,5 ans d'ici 2041 et la fin du départ sans décote après 45 ans de cotisation (propositions, pas encore une loi).", "url": "https://www.zdfheute.de/politik/deutschland/rente-reform-kommission-vorschlaege-100.html" },
+      "aktivrente": { "valeur": "Depuis 2026 : jusqu'à 2 000 €/mois de revenus d'activité exonérés d'impôt pour les salariés ayant dépassé l'âge légal", "url": "https://www.ihk-muenchen.de/ratgeber/steuern/aktivrente/", "statut": "officiel", "note": "Coût non trouvé." }
+    },
+    "travail": {
+      "salaire_minimum": { "valeur": { "2026": 13.90, "2027": 14.60 }, "unite": "€/h brut", "source": "Bundesregierung", "url": "https://www.bundesregierung.de/breg-de/bundesregierung/bundeskanzleramt/mindestlohn-steigt-2391010", "statut": "officiel", "note": "Soit environ 2 407 € brut par mois pour 40 h par semaine." },
+      "cotisations_sociales_taux": { "valeur": { "maladie": 14.6, "maladie_complement_moyen": 3.13, "dependance": 3.6, "retraite": 18.6 }, "unite": "%", "periode": "2026", "source": "TK ; Bekanntmachung RV", "url": "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554", "statut": "secondaire", "note": "Complément maladie moyen effectivement prélevé en mars 2026 (2,9 % prévu officiellement)." }
     }
   },
 
@@ -267,6 +326,8 @@
       "url": "https://fr.businessam.be/?p=273751", "date": "2026", "statut": "secondaire"
     },
     "aide_publique_developpement": { "valeur": null, "statut": "introuvable" },
+    "pret_safe_ue": { "valeur": 0, "statut": "secondaire", "url": "https://www.grosswald.org/safe-defence-loans-tracker/", "note": "L'Allemagne ne participerait pas aux prêts SAFE, selon un suivi indépendant non confirmé par la Commission." },
+    "position_budget_ue": { "valeur": "Contributeur net. Avec les Pays-Bas, l'Autriche, le Danemark, la Finlande et la Suède, demande des coupes dans le cadre financier 2028-2034.", "url": "https://www.france-epargne.fr/news/budget-de-lue-six-contributeurs-nets-veulent-reduire-les-1-985-milliards-proposes", "statut": "secondaire" },
     "commerce": "Premier excédent commercial de l'UE. Exposition aux droits de douane américains et à la concurrence chinoise.",
     "conflits_crises": [
       "Guerre en Iran depuis fin février 2026 (voir _contexte-mondial.json)",

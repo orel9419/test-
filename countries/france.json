@@ -198,24 +198,68 @@
     },
     "depenses_par_fonction_cofog": {
       "periode": "2024", "unite": "Md€",
-      "source": "Comptes de la Nation 2024 / Eurostat COFOG (via chiffrespublics.fr), Insee Première n°2093",
-      "url": "https://chiffrespublics.fr/depenses/",
+      "source": "Insee Première n°2093 (février 2026) ; montants détaillés via chiffrespublics.fr (comptes de la Nation / Eurostat) ; IFRAP pour l'ordre public ; DREES pour le détail social",
+      "url": "https://www.insee.fr/fr/statistiques/8735252",
       "date": "2026-02", "statut": "secondaire",
-      "note": "Total APU 1 671,8 Md€. Trois fonctions non trouvées : services généraux (GF01, qui inclut les intérêts), ordre et sécurité publics (GF03), protection sociale hors vieillesse (GF10). Ensemble non ventilé : 493,6 Md€. Ventilation 2025 annoncée pour décembre 2026.",
+      "note": "Total APU 1 671,8 Md€ ; la somme des fonctions (1 671,6) le recoupe. Les intérêts de la dette sont classés dans les services généraux (GF01). Ventilation 2025 annoncée pour décembre 2026.",
       "valeurs": {
         "total": 1671.8,
-        "GF01_services_generaux": null,
+        "GF01_services_generaux": 181,
         "GF02_defense": 54.2,
-        "GF03_ordre_securite": null,
+        "GF03_ordre_securite": 52,
         "GF04_affaires_economiques": 166.1,
         "GF05_environnement": 30.3,
         "GF06_logement_equipements": 42.1,
         "GF07_sante": 261.2,
         "GF08_loisirs_culture_culte": 43.1,
         "GF09_enseignement": 148.6,
-        "GF10_vieillesse_retraites": 432.6,
-        "GF10_protection_sociale_hors_vieillesse": null,
-        "residuel_non_ventile_GF01_GF03_GF10hv": 493.6
+        "GF10_protection_sociale_total": 693,
+        "GF10_dont_vieillesse_retraites": 432.6,
+        "GF10_dont_hors_vieillesse": 260.4
+      },
+      "detail_protection_sociale_drees_2024": {
+        "source": "DREES, Comptes de la protection sociale 2025, fiche 03",
+        "url": "https://www.drees.solidarites-sante.gouv.fr/sites/default/files/2026-05/CPS2025%20-%20Fiche%2003%20-%20Les%20d%C3%A9penses%20de%20protection%20sociale%20en%202024.pdf",
+        "statut": "officiel", "unite": "Md€",
+        "note": "Périmètre DREES (protection sociale), différent de la COFOG.",
+        "valeurs": { "famille": 65.8, "emploi_chomage": 51.1, "pauvrete_exclusion": 34.0, "logement": 16.1 }
+      }
+    },
+    "recettes_par_prelevement": {
+      "periode": "2025", "unite": "Md€",
+      "note": "Périmètres hétérogènes (État, Sécurité sociale, ensemble des administrations) : le moteur ajoute une ligne « autres recettes » qui ferme le total des recettes publiques (52,1 % du PIB).",
+      "valeurs": {
+        "tva": { "valeur": 211.7, "source": "DGFiP, toutes affectations (via Socic/Economie Matin)", "url": "https://www.economiematin.fr/taxes-impots-610-milliards-euros-collectes", "statut": "secondaire", "note": "Taux normal 20 %." },
+        "impot_revenu": { "valeur": 94.9, "source": "Sénat, rapport sur la loi de résultats de gestion 2025", "url": "https://www.senat.fr/rap/l25-736-1/l25-736-1_mono.html", "statut": "officiel" },
+        "impot_societes": { "valeur": 59.9, "source": "Sénat, rapport sur la loi de résultats de gestion 2025", "url": "https://www.senat.fr/rap/l25-736-1/l25-736-1_mono.html", "statut": "officiel", "note": "IS net, budget de l'État. Taux normal 25 %." },
+        "csg": { "valeur": 157, "source": "Commission des comptes de la Sécurité sociale (via Moneyvox)", "url": "https://www.moneyvox.fr/impot/actualites/105355/csg-comprendre-la-contribution-sociale-generalisee-en-3-questions", "statut": "secondaire", "note": "Revenus d'activité 110,7, revenus de remplacement 28,3, capital 17,6 Md€." },
+        "cotisations_sociales": { "valeur": 443, "source": "FIPECO (comptes nationaux)", "url": "https://www.fipeco.fr/fiche/Les-cotisations-sociales", "statut": "secondaire", "note": "14,8 % du PIB, 34 % des prélèvements obligatoires." },
+        "accises_energie": { "valeur": 28.8, "source": "Opéra Énergie (État 16,2 + collectivités 12,6)", "url": "https://opera-energie.com/media/carburants-gaz-electricite-combien-rapportent-les-taxes/", "statut": "secondaire", "note": "Accises sur carburants, gaz et électricité : 40,5 Md€ au total. Trajectoire carbone gelée depuis 2018 (crise des Gilets jaunes)." },
+        "taxe_fonciere": { "valeur": 44.2, "source": "Insee, impôts (données annuelles 1995-2025, provisoire)", "url": "https://www.insee.fr/fr/statistiques/2381408", "statut": "officiel" },
+        "droits_succession": { "valeur": 16, "source": "Economie Matin (DGFiP)", "url": "https://www.economiematin.fr/taxes-impots-610-milliards-euros-collectes", "statut": "secondaire" }
+      }
+    },
+    "retraites": {
+      "depenses": { "valeur": 422.2, "unite": "Md€", "periode": "2025", "source": "COR, rapport annuel (juin 2026)", "url": "https://www.cor-retraites.fr/sites/default/files/2026-06/RA_2026_def.pdf", "statut": "officiel", "note": "14,1 % du PIB, 24,3 % des dépenses publiques. 15,3 % du PIB projeté en 2070." },
+      "solde_systeme": { "valeur": -0.2, "unite": "% PIB", "periode": "2025", "source": "COR 2026 (via Préfon)", "url": "https://www.prefon.asso.fr/nos-actualites/rapport-annuel-2026-du-cor.html", "statut": "secondaire", "note": "-2,4 points de PIB en 2070 dans le scénario de référence. Le COR retient désormais une fécondité de 1,45 à partir de 2028." },
+      "retraites_droit_direct": { "valeur": 17.3, "unite": "millions", "periode": "fin 2024", "source": "DREES, Les retraités et les retraites, édition 2026 (via Sapiendo)", "url": "https://www.sapiendo-retraite.fr/sapiendo-acteur-de-la-retraite/actualites-rh/rapport-drees-2026", "statut": "secondaire", "note": "Dont 16,4 millions résidant en France." },
+      "pension_moyenne_brute": { "valeur": 1705, "unite": "€/mois", "periode": "fin 2024", "source": "DREES (via Meilleurtaux)", "url": "https://placement.meilleurtaux.com/retraite/actualites/2026-mai/retraites-pension-brute-moyenne-a-1-705-euros-en-2024.html", "statut": "secondaire", "note": "Retraités de droit direct résidant en France. Une autre source donne 1 752 €. 1 647 € en incluant les retraités vivant à l'étranger." },
+      "age_conjoncturel_depart": { "valeur": 62.92, "unite": "ans", "periode": "2024", "source": "DREES 2026 (via Sapiendo)", "url": "https://www.sapiendo-retraite.fr/sapiendo-acteur-de-la-retraite/actualites-rh/rapport-drees-2026", "statut": "secondaire", "note": "62 ans et 11 mois." },
+      "ratio_actifs_65plus": { "valeur": 2.5, "periode": "2025", "source": "COR 2026 (via Préfon)", "url": "https://www.prefon.asso.fr/nos-actualites/rapport-annuel-2026-du-cor.html", "statut": "secondaire", "note": "Personnes d'âge actif pour une personne de 65 ans et plus. 1,62 projeté en 2070." },
+      "reforme_2023_suspendue": {
+        "valeur": "La LFSS 2026 suspend jusqu'au 01/01/2028 le relèvement de l'âge légal et de la durée de cotisation. La génération 1964 part avec 170 trimestres. La réforme reprendrait en 2028 (171 trimestres pour la génération 1965).",
+        "cout": { "2026": 0.1, "2027": 1.4, "unite": "Md€" },
+        "source": "Lettre rectificative au PLFSS 2026 (via franceinfo)",
+        "url": "https://www.franceinfo.fr/economie/retraite/reforme-des-retraites/la-suspension-de-la-reforme-des-retraites-coutera-1-4-milliard-d-euros-en-2027-les-complementaires-sante-et-les-retraites-mis-a-contribution_7570171.html",
+        "statut": "secondaire",
+        "note": "Âge légal de la génération concernée : 62 ans et 9 mois (non confirmé par la source). Le COR estime le coût à 1,8 Md€ par an jusqu'en 2032. Financement : sous-indexation des pensions de 0,9 point en 2027 et contribution des complémentaires santé portée à 2,25 %."
+      },
+      "chiffrages_reformes_age": {
+        "statut": "secondaire",
+        "valeurs": [
+          { "mesure": "Âge légal à 64 ans + accélération Touraine (réforme 2023)", "gain_2030_md": 17.7, "note": "Chiffrage initial du gouvernement, avant 4,8 Md€ de mesures d'accompagnement. Révisé ensuite à 3,1 Md€ nets en 2030 (Sénat).", "url": "https://www.france24.com/fr/info-en-continu/20230110-retraites-la-r%C3%A9forme-du-gouvernement-d%C3%A9gagera-pr%C3%A8s-de-18-milliards-d-euros-en-2030" },
+          { "mesure": "Âge légal à 65 ans", "gain_2030_md": 17.6, "note": "Chiffrage IFRAP.", "url": "https://www.ifrap.org/retraite/retraites-le-chiffrage-exclusif-des-differentes-propositions" }
+        ]
       }
     },
     "budget_etat_plf_2027_missions": {
@@ -231,6 +275,30 @@
         "ecologie_developpement_mobilite": { "2027": null, "note": "Introuvable." }
       }
     }
+  },
+
+  "travail": {
+    "duree_legale": { "valeur": 35, "unite": "h/semaine", "statut": "officiel", "note": "Durée légale au-delà de laquelle les heures sont majorées (25 % puis 50 %, sauf accord)." },
+    "duree_habituelle_temps_complet": {
+      "valeur": 38.8, "unite": "h/semaine", "periode": "2024",
+      "source": "Insee, enquête Emploi (fiche Durée du travail)",
+      "url": "https://www.insee.fr/fr/statistiques/8733071",
+      "statut": "officiel",
+      "note": "Cadres 42,0 h, employés 37,3 h. 39,1 h en 2019. Durée annuelle effective : 1 661 h. Les salariés à temps complet travaillent donc déjà, en moyenne, près de 39 h."
+    },
+    "heures_sup_defiscalisees_cout": {
+      "valeur": 2.0, "unite": "Md€/an",
+      "source": "franceinfo (décryptage du budget 2026)",
+      "url": "https://www.franceinfo.fr/replay-radio/le-decryptage-eco/budget-2026-heures-supplementaires-et-primes-defiscalisees-ou-desocialisees-le-retour-des-vieilles-recettes_7500832.html",
+      "statut": "secondaire",
+      "note": "Exonération d'impôt sur le revenu jusqu'à 7 500 €/an et réduction de cotisations salariales. D'autres sources donnent 4,4 Md€ (périmètre plus large). La suppression du plafond aurait été votée par l'Assemblée le 25/10/2025 (sort final non vérifié)."
+    },
+    "smic": {
+      "valeur": { "brut_mensuel": 1867.02, "net_mensuel": 1477.93 }, "unite": "€/mois (35 h)", "periode": "depuis le 01/06/2026",
+      "source": "info.gouv.fr", "url": "https://www.info.gouv.fr/actualite/le-smic-revalorise-le-1er-juin-2026",
+      "statut": "officiel", "note": "Revalorisé de 2,41 % le 01/06/2026, après +1,18 % au 01/01/2026."
+    },
+    "salaire_net_moyen": { "valeur": null, "statut": "introuvable", "note": "Salaire net moyen en équivalent temps plein (Insee) non trouvé." }
   },
 
   "politique": {
@@ -326,6 +394,26 @@
     },
     "aide_publique_developpement": { "valeur": null, "statut": "introuvable" },
     "aide_ukraine_2027": { "valeur": null, "statut": "introuvable" },
+    "pret_safe_ue": {
+      "valeur": 15.09, "unite": "Md€",
+      "source": "France Épargne ; suivi indépendant grosswald.org",
+      "url": "https://www.france-epargne.fr/news/defense-la-france-signe-son-pret-safe-de-15-milliards-deuros-avec-lue",
+      "date": "2026-04", "statut": "secondaire",
+      "note": "Prêts européens à la défense (instrument SAFE, 150 Md€ au total). Enveloppe indicative de 16,2 Md€ pour la France. La Pologne est la première bénéficiaire (43,7 Md€)."
+    },
+    "contribution_budget_ue": {
+      "valeur": { "psr_ue_2025_md": 23.0, "contribution_nette_md": 9.5, "contribution_nette_pct_pib": 0.31 },
+      "source": "Sénat (PSR-UE 2025) ; IRIS (contribution nette)",
+      "url": "https://www.iris-france.org/le-budget-pluriannuel-de-leurope-sous-tensions-financieres-et-pressions-politiques/",
+      "statut": "secondaire",
+      "note": "Négociation du cadre financier pluriannuel 2028-2034 en cours (environ 2 000 Md€ proposés). L'Allemagne, les Pays-Bas, l'Autriche, la Suède, le Danemark et la Finlande demandent des coupes. Première bénéficiaire de la PAC en volume."
+    },
+    "accord_ue_mercosur": {
+      "valeur": "Approuvé à la majorité qualifiée au Conseil en janvier 2026, malgré l'opposition de la France. Ratifié côté Mercosur (Uruguay, Argentine, Brésil). Saisine de la Cour de justice de l'UE par le Parlement européen.",
+      "url": "https://en.mercopress.com/2026/01/09/eu-gives-nod-to-mercosur-fta-despite-fragmented-france-s-rejection",
+      "statut": "secondaire",
+      "note": "Situation en octobre 2026 non vérifiée. Sujet sensible pour les agriculteurs."
+    },
     "conflits_crises": [
       "Guerre en Iran depuis fin février 2026, perturbation du détroit d'Ormuz (voir _contexte-mondial.json)",
       "Guerre en Ukraine"
