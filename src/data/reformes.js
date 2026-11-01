@@ -616,6 +616,84 @@ export const REFORMES = [
     chiffrage: 'Hypothèse de jeu : 3 Md€ par an.',
   },
 
+
+  // ======================================================================
+  // ENTREPRISES : CONTRIBUTIONS ET AIDES (communes)
+  // ======================================================================
+  {
+    id: 'surtaxe_grandes_entreprises',
+    nom: 'Contribution exceptionnelle des grandes entreprises',
+    categorie: 'fiscalite',
+    pays: 'tous',
+    resume: 'Faire contribuer les plus grands groupes au redressement des comptes, au prix d\'un climat des affaires dégradé.',
+    pedagogie: 'En France, une surtaxe d\'impôt sur les sociétés frappe environ 300 groupes : 8 Md€ en 2025, 7,3 Md€ en 2026. Le PLF 2027 proposait une troisième année à taux réduits ; les députés ont supprimé cette prolongation le 28/10/2026. Sans nouvelle décision, ces recettes disparaissent en 2027 (le jeu l\'intègre). Les grands groupes font valoir que leur taux d\'imposition dépasse alors celui de leurs concurrents européens.',
+    sources: [{ texte: 'L\'Argus de l\'assurance, 28/10/2026', url: 'https://www.argusdelassurance.com/reglementation/vie-publique/plf/budget-2027-les-deputes-suppriment-la-prolongation-de-la-surtaxe-exceptionnelle-dimpot-sur-les-societes-pour-les-grandes-entreprises.PHXG6G4DTNAQ5HPE4ZBMPVTA7E.html' }],
+    options: [
+      { id: 'reduite', nom: 'Prolonger à taux réduits (proposition du PLF 2027)' },
+      { id: 'pleine', nom: 'Reconduire au niveau de 2026' },
+    ],
+    delai: 1,
+    appliquer(e, o) { e.entreprises.surtaxe = o; },
+    annuler(e) { e.entreprises.surtaxe = null; },
+    effets(e, o) {
+      // France : la suppression de la recette de base (7,3 Md€) est annulée ; la version réduite rapporte moins (hypothèse : 4,5 Md€)
+      if (e.pays === 'france') return { recettes: { impotSocietes: o === 'reduite' ? -(7.3 - 4.5) * indicePrix(e) : 0 }, potentielBonus: -0.01 };
+      const base = parPays(e, { allemagne: 6, etatsUnis: 50, defaut: 5 });
+      return { recettes: { impotSocietes: (o === 'reduite' ? 0.6 : 1) * base * indicePrix(e) }, potentielBonus: -0.01 };
+    },
+    reaction: () => ({ chocs: { entrepreneurs: -5, salaries: 2, jeunes: 1 }, credibilite: 0.03 }),
+    axes: { fiscal: 0.7, marche: -0.5, rigueur: 0.4 },
+    chiffrage: 'France : 7,3 Md€ en 2026 ; version réduite estimée à 4,5 Md€ (hypothèse de jeu). Allemagne : 6 Md€ et États-Unis : 50 Md$ (hypothèses de jeu).',
+  },
+  {
+    id: 'aides_entreprises',
+    nom: 'Aides publiques aux entreprises',
+    categorie: 'fiscalite',
+    pays: 'tous',
+    resume: 'Exonérations de cotisations, niches fiscales, subventions : 112 à 211 Md€ par an en France selon le périmètre retenu.',
+    pedagogie: 'La commission d\'enquête du Sénat a chiffré les aides publiques aux entreprises à 211 Md€ en 2023 ; le Haut-Commissariat au Plan retient 112 Md€ sur un périmètre plus étroit. Le Sénat recommande de les conditionner (remboursement en cas de délocalisation ou de licenciements après versement). Les réduire rapporte gros, mais une grande partie sert à baisser le coût du travail peu qualifié : l\'emploi en pâtit.',
+    sources: [{ texte: 'Public Sénat : sur quoi repose le calcul des 211 Md€', url: 'https://www.publicsenat.fr/actualites/economie/211-milliards-deuros-daides-publiques-aux-entreprises-sur-quoi-repose-le-calcul-de-la-commission-denquete-du-senat' }],
+    options: [
+      { id: 'conditionner', nom: 'Conditionner les aides (remboursement en cas de délocalisation)' },
+      { id: 'reduire', nom: 'Réduire les aides de 10 %' },
+    ],
+    delai: 2,
+    appliquer(e, o) { e.entreprises.aides = o; if (o === 'conditionner') e.entreprises.bonusSouverainete += 3; },
+    annuler(e) { e.entreprises.aides = null; },
+    effets(e, o, age) {
+      if (o === 'conditionner') return { recettes: { fixe: 0.5 * parPays(e, { etatsUnis: 4, defaut: 1 }) * rampe(age, 8) * indicePrix(e) } };
+      const total = parPays(e, { france: 11.2, allemagne: 5, etatsUnis: 15 });
+      const r = rampe(age, 4);
+      return {
+        recettes: { cotisations: 0.4 * total * r * indicePrix(e), fixe: 0.35 * total * r * indicePrix(e) },
+        depenses: { economieFinances: -0.25 * total * r * indicePrix(e) },
+        chomageStructurel: 0.1 * rampe(age, 8), potentielBonus: -0.01,
+      };
+    },
+    reaction: (e, o) => (o === 'reduire'
+      ? { chocs: { entrepreneurs: -8, agriculteurs: -3, salaries: 1 }, credibilite: 0.08 }
+      : { chocs: { salaries: 3, jeunes: 2, entrepreneurs: -3 } }),
+    axes: { marche: -0.4, fiscal: 0.3 },
+    axesParOption: { reduire: { marche: -0.6, rigueur: 0.6, fiscal: 0.4 }, conditionner: { social: 0.3, marche: -0.3 } },
+    chiffrage: 'Réduire de 10 % : environ 11 Md€ en France (10 % du périmètre du Haut-Commissariat au Plan), 5 Md€ en Allemagne, 15 Md$ aux États-Unis (hypothèses de jeu).',
+  },
+  {
+    id: 'rachats_actions',
+    nom: 'Taxer les rachats d\'actions',
+    categorie: 'fiscalite',
+    pays: 'tous',
+    resume: 'Les grands groupes rachètent leurs propres actions pour soutenir leur cours : faut-il taxer cette pratique plutôt que l\'investissement ?',
+    pedagogie: 'Les États-Unis taxent les rachats d\'actions à 1 % depuis 2023 (Inflation Reduction Act) ; quadrupler ce taux a été proposé en 2024. L\'effet sur l\'investissement est débattu : les rachats rendent aux actionnaires des liquidités qui peuvent être réinvesties ailleurs.',
+    options: [{ id: 'oui', nom: 'Taxe de 4 % sur les rachats d\'actions' }],
+    delai: 2,
+    appliquer(e) { e.entreprises.rachats = true; },
+    annuler(e) { e.entreprises.rachats = false; },
+    effets: (e, o, age) => ({ recettes: { impotSocietes: parPays(e, { france: 1, allemagne: 0.6, etatsUnis: 15 }) * rampe(age, 4) * indicePrix(e) } }),
+    reaction: () => ({ chocs: { entrepreneurs: -3, salaries: 1 } }),
+    axes: { fiscal: 0.5, marche: -0.3 },
+    chiffrage: 'Hypothèses de jeu : environ 1 Md€ en France, 0,6 Md€ en Allemagne, 15 Md$ aux États-Unis par an.',
+  },
+
   // ======================================================================
   // ÉTATS-UNIS
   // ======================================================================

@@ -333,22 +333,23 @@ export function voteSenat(e, positions, saillance = {}) {
 
 function validerReformesEtatsUnis(e, legislatives, directes, positions, saillance, procedure) {
   const pol = e.politique;
-  const vote = voter(e, positions, saillance);
-  pol.votes.push({ tour: e.tour, texte: 'Projet de loi (Chambre)', ...resumeVote(vote) });
-  if (!vote.adopte) return { acceptees: directes, rejet: { raison: `Rejet à la Chambre des représentants (${vote.pour} pour, ${vote.contre} contre).`, vote } };
+  // Réconciliation : la procédure et son périmètre sont fixés avant les votes (résolution budgétaire, règle Byrd)
   let textes = legislatives;
   let exclues = [];
   let seuil = pol.senat.obstruction;
   if (procedure === 'reconciliation') {
     const fy = exerciceBudgetaire(e);
     if (pol.reconciliations.includes(fy)) {
-      return { acceptees: directes, rejet: { raison: `Une loi de réconciliation a déjà été adoptée pour l'exercice ${fy} : ce texte doit réunir 60 sénateurs.`, vote } };
+      return { acceptees: directes, rejet: { raison: `Une loi de réconciliation a déjà été adoptée pour l'exercice ${fy} : ce texte doit réunir 60 sénateurs.` } };
     }
     exclues = legislatives.filter((r) => !reconciliable(r.id));
     textes = legislatives.filter((r) => reconciliable(r.id));
-    if (!textes.length) return { acceptees: directes, rejet: { raison: 'Règle Byrd : aucune de ces mesures ne peut passer par la réconciliation (sans effet budgétaire direct, ou touchant la Social Security).', vote } };
+    if (!textes.length) return { acceptees: directes, rejet: { raison: 'Règle Byrd : aucune de ces mesures ne peut passer par la réconciliation (sans effet budgétaire direct, ou touchant la Social Security).' } };
     seuil = 50; // 50 voix + la voix du vice-président
   }
+  const vote = voter(e, textes === legislatives ? positions : calculerPositions(e, textes), saillance);
+  pol.votes.push({ tour: e.tour, texte: 'Projet de loi (Chambre)', ...resumeVote(vote) });
+  if (!vote.adopte) return { acceptees: directes, rejet: { raison: `Rejet à la Chambre des représentants (${vote.pour} pour, ${vote.contre} contre).`, vote } };
   const senat = voteSenat(e, calculerPositions(e, textes), saillance);
   const lib = libelleTrimestre(e.trimestre);
   pol.votes.push({ tour: e.tour, texte: 'Projet de loi (Sénat)', adopte: senat.pour >= seuil, pour: senat.pour, contre: senat.contre, abstention: 0, detail: [{ id: 'REP', vote: `${senat.pourR} pour`, sieges: pol.senat.REP }, { id: 'DEM', vote: `${senat.pourD} pour`, sieges: pol.senat.DEM }] });
@@ -431,7 +432,7 @@ function scrutinBudgetEtatsUnis(e, procedure) {
   calculerPositions(e);
   majSatisfactions(e);
   const saillance = { social: 1.5, fiscal: 1.5, rigueur: 1.5 };
-  const bonusCR = (procedure === 'cr' || procedure === 'auto_cr') ? 1.3 + 0.4 * (pol.shutdown?.trimestres ?? 0) : 0;
+  const bonusCR = (procedure === 'cr' || procedure === 'auto_cr') ? 1.8 + 0.4 * (pol.shutdown?.trimestres ?? 0) : 0;
   const sauvegarde = pol.groupes.map((g) => g.concessions);
   for (const g of pol.groupes) if (g.id === 'DEM') g.concessions += bonusCR;
   const vote = voter(e, pol.positions, saillance);

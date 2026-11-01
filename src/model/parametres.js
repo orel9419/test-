@@ -109,34 +109,63 @@ export const PARAMETRES = {
     investissement: 0.06,
     transferts: 0.015,
   },
-  /** Multiplicateur d'inertie par mode de jeu (bac à sable = pas d'inertie). */
-  inertieParMode: { bac_a_sable: 20, realiste: 1, difficile: 0.8 },
+  /** Multiplicateur d'inertie par mode de jeu (facile : les décisions produisent leurs effets beaucoup plus vite). */
+  inertieParMode: { facile: 20, intermediaire: 1, expert: 0.8 },
 };
 
-/** Paramètres spécifiques au mode de difficulté. */
+/**
+ * Trois modes de jeu.
+ *  - Facile : pour découvrir. Conseiller actif, prévisions exactes, décisions
+ *    rapides à produire leurs effets, marchés indulgents, pas de défaite (la
+ *    partie continue avec un avertissement), possibilité d'annuler un tour.
+ *  - Intermédiaire : calibré sur les données réelles ; défaites actives,
+ *    conseiller disponible.
+ *  - Expert : marchés nerveux, plus d'événements et de dossiers simultanés,
+ *    opinion plus volatile, partenaires exigeants, prévisions de vote
+ *    incertaines et pas de conseiller.
+ */
 export const MODES = {
-  bac_a_sable: {
-    nom: 'Bac à sable',
-    description: 'Aucune défaite, pas d\'inertie budgétaire. Pour expérimenter librement.',
+  facile: {
+    nom: 'Facile',
+    description: 'Pour découvrir : un conseiller vous guide, les prévisions sont exactes, les décisions agissent vite et vous ne pouvez pas perdre. Vous pouvez annuler un tour.',
     defaitesActives: false,
     nervositeMarches: 0.6,
     frequenceEvenements: 0.6,
     exigencePartenaires: 0.7,
+    maxEvenements: 2,
+    conseiller: true,
+    previsionsExactes: true,
+    annulerTour: true,
+    volatiliteOpinion: 0.8,
   },
-  realiste: {
-    nom: 'Réaliste',
-    description: 'Calibré sur les données réelles. Les défaites sont actives.',
+  intermediaire: {
+    nom: 'Intermédiaire',
+    description: 'Le jeu calibré sur les données réelles : inertie budgétaire, défaites actives (censure, crise de la dette, élections). Le conseiller reste disponible.',
     defaitesActives: true,
     nervositeMarches: 1.0,
     frequenceEvenements: 1.0,
     exigencePartenaires: 1.0,
+    maxEvenements: 3,
+    conseiller: true,
+    previsionsExactes: true,
+    annulerTour: false,
+    volatiliteOpinion: 1,
   },
-  difficile: {
-    nom: 'Difficile',
-    description: 'Marchés nerveux, plus d\'événements, partenaires plus exigeants.',
+  expert: {
+    nom: 'Expert',
+    description: 'Marchés nerveux, davantage de crises et de dossiers à la fois, opinion volatile, prévisions de vote incertaines et aucun conseiller. Le score est majoré.',
     defaitesActives: true,
     nervositeMarches: 1.4,
     frequenceEvenements: 1.4,
     exigencePartenaires: 1.3,
+    maxEvenements: 4,
+    conseiller: false,
+    previsionsExactes: false,
+    annulerTour: false,
+    volatiliteOpinion: 1.3,
   },
 };
+
+/** Anciens noms de modes (sauvegardes antérieures). */
+export const ALIAS_MODES = { bac_a_sable: 'facile', realiste: 'intermediaire', difficile: 'expert' };
+export const normaliserMode = (m) => ALIAS_MODES[m] ?? (MODES[m] ? m : 'intermediaire');

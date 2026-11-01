@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "description": "Grands rendez-vous internationaux (sommets, Jeux olympiques, conférences) accueillis ou suivis par les pays jouables. Chaque entrée indique sa source, sa date de collecte et son statut.",
+    "derniere_mise_a_jour": "2026-11-01",
+    "statuts": "officiel | secondaire | a_verifier | derive"
+  },
+  "evenements": [
+    {
+      "id": "cop31",
+      "nom": "COP31, conférence des Nations unies sur le climat",
+      "lieu": "Antalya (Turquie)",
+      "date": "2026-11-09 au 2026-11-20",
+      "hote": "Turquie (présidence), l'Australie conduisant les négociations",
+      "source": "Wikipédia (2026 United Nations Climate Change Conference), UNCCD",
+      "url": "https://en.wikipedia.org/wiki/2026_United_Nations_Climate_Change_Conference",
+      "statut": "secondaire",
+      "note": "Sommet des chefs d'État et de gouvernement prévu les 11 et 12 novembre."
+    },
+    {
+      "id": "g20_miami",
+      "nom": "Sommet du G20",
+      "lieu": "Trump National Doral, Miami (États-Unis)",
+      "date": "2026-12-14 au 2026-12-15",
+      "hote": "États-Unis (présidence du G20 du 01/12/2025 au 30/11/2026)",
+      "source": "CBS News, Eurovision News, Wikipédia (2026 G20 Miami summit)",
+      "url": "https://en.wikipedia.org/wiki/2026_G20_Miami_summit",
+      "statut": "secondaire",
+      "note": "L'Afrique du Sud n'est pas invitée (annonce du 27/11/2025). Le choix d'un complexe de golf appartenant au président a suscité des critiques."
+    },
+    {
+      "id": "choose_france",
+      "nom": "Sommet Choose France",
+      "lieu": "Versailles (France)",
+      "date": "annuel (1er juin en 2026)",
+      "hote": "France",
+      "source": "info.gouv.fr ; Next ; ActuIA",
+      "url": "https://www.info.gouv.fr/actualite/choose-france-2026-le-rendez-vous-de-l-attractivite-en-france",
+      "statut": "secondaire",
+      "valeurs": { "investissements_annonces_2026_md": 93, "dont_engagements_fermes_md": 45, "investissements_annonces_2025_md": 40.8, "projets_2026": 71 },
+      "note": "Le montant de 2026 additionne des scénarios maximaux ; environ 45 Md€ correspondent à un engagement ferme (SoftBank)."
+    },
+    {
+      "id": "g7_2027",
+      "nom": "Sommet du G7",
+      "lieu": "États-Unis (lieu et date à préciser)",
+      "date": "2027 (à préciser)",
+      "hote": "États-Unis (présidence à partir du 01/01/2027, après la France en 2026)",
+      "source": "Deseret News, NTD (juin 2026)",
+      "url": "https://www.deseret.com/politics/2026/06/17/things-to-know-president-trump-france-trip-group-of-seven-summit/",
+      "statut": "secondaire",
+      "note": "Le jeu place le sommet au T2 2027 (hypothèse : les sommets du G7 ont lieu le plus souvent en juin)."
+    },
+    {
+      "id": "otan_tirana",
+      "nom": "Sommet de l'OTAN",
+      "lieu": "Tirana (Albanie)",
+      "date": "2027 (date à préciser)",
+      "hote": "Albanie",
+      "source": "Décision du sommet de La Haye (2025) ; Tirana Times ; confirmation de Mark Rutte après le sommet d'Ankara (juillet 2026)",
+      "url": "https://en.wikipedia.org/wiki/2027_Albania_NATO_summit",
+      "statut": "a_verifier",
+      "note": "La déclaration d'Ankara ne précise ni la ville ni l'année ; le jeu retient le T3 2027."
+    },
+    {
+      "id": "la28",
+      "nom": "Jeux olympiques et paralympiques de Los Angeles",
+      "lieu": "Los Angeles (États-Unis)",
+      "date": "cérémonie d'ouverture le 2028-07-14 ; Jeux paralympiques à partir du 2028-08-15",
+      "hote": "États-Unis",
+      "source": "Commission de la sécurité intérieure de la Chambre ; The Sports Examiner ; Semafor",
+      "url": "https://www.thesportsexaminer.com/los-angeles-2028-huge-security-funding-win-for-la28-as-1-billion-allocated-for-olympic-security-also-625-million-for-the-2026-fifa-world-cup/",
+      "statut": "secondaire",
+      "valeurs": { "securite_federale_md": 1.0, "transports_demandes_md": 0.875, "deficit_transports_md": 1.7 },
+      "note": "1 Md$ de sécurité prévu par la loi de réconciliation de 2025 (subventions de la FEMA) ; 875 M$ pour les transports en discussion au Congrès ; Los Angeles manquerait de 1,7 Md$ pour des Jeux « sans voiture » (Semafor, 30/06/2026)."
+    },
+    {
+      "id": "jo_alpes_2030",
+      "nom": "Jeux olympiques et paralympiques d'hiver des Alpes françaises",
+      "lieu": "Alpes françaises (Auvergne-Rhône-Alpes, Provence-Alpes-Côte d'Azur)",
+      "date": "février 2030 (le jeu retient le T1 2030)",
+      "hote": "France",
+      "source": "Lyon Capitale ; Made in Marseille ; proposition de résolution de l'Assemblée nationale (n° 3075)",
+      "url": "https://www.lyoncapitale.fr/actualite/jo-2030-dans-les-alpes-les-ecologistes-pointent-un-cheque-en-blanc",
+      "statut": "secondaire",
+      "valeurs": { "budget_cojop_md": 2.132, "part_recettes_privees": 0.75, "garantie_etat_regions_md": 0.515, "solideo_md": 1.0 },
+      "note": "Budget du comité d'organisation adopté en octobre 2025, révisable chaque année. Garantie de l'État et des régions à parts égales, plafonnée à 515 M€ (article 60 du PLF 2026, adoption à vérifier). Repère : la Cour des comptes chiffre le coût public de Paris 2024 à 6,6 Md€ et son effet à +0,07 point de PIB."
+    },
+    {
+      "id": "candidature_munich",
+      "nom": "Candidature olympique de Munich (Jeux d'été 2036, 2040 ou 2044)",
+      "lieu": "Munich (Allemagne)",
+      "date": "choix du DOSB le 2026-09-26 ; attribution par le CIO à une date non fixée",
+      "hote": "Allemagne",
+      "source": "Prise de position du DOSB transmise au Bundestag ; muenchen.de ; Euronews",
+      "url": "https://www.bundestag.de/resource/blob/1222518/261007_dosb.pdf",
+      "statut": "officiel",
+      "valeurs": { "voix_munich": 91, "voix_koln_rhein_ruhr": 50, "approbation_assemblee_pct": 65.54 },
+      "note": "Berlin a retiré sa candidature quelques jours avant le vote, faute de soutien politique. Le calendrier du CIO après 2026 est une hypothèse de jeu."
+    },
+    {
+      "id": "g7_2029",
+      "nom": "Sommet du G7",
+      "lieu": "Allemagne (lieu à préciser)",
+      "date": "2029 (déduit de la rotation)",
+      "hote": "Allemagne",
+      "source": "Rotation habituelle de la présidence du G7 (France 2026, États-Unis 2027, Royaume-Uni 2028, Allemagne 2029)",
+      "url": "https://www.deseret.com/politics/2026/06/17/things-to-know-president-trump-france-trip-group-of-seven-summit/",
+      "statut": "derive",
+      "note": "Ordre de rotation non confirmé par une source primaire pendant la collecte."
+    }
+  ]
+}

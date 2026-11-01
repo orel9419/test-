@@ -48,7 +48,7 @@ export function actionsDisponibles(e) {
 function appliquerEffets(e, eff, source) {
   const i = e.international;
   for (const [p, v] of Object.entries(eff.relations ?? {})) {
-    i.relations[p] = borner((i.relations[p] ?? 0) + v, -100, 100);
+    if (i.relations[p] !== undefined) i.relations[p] = borner(i.relations[p] + v, -100, 100);
   }
   if (eff.influence) i.bonusInfluence += eff.influence;
   if (eff.credibilite) e.finances.credibilite = borner(e.finances.credibilite + eff.credibilite, -1, 1);

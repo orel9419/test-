@@ -37,6 +37,9 @@ export const PARTENAIRES = {
   norvege: 'Norvège',
   mercosur: 'Mercosur (Brésil, Argentine...)',
   afrique: 'Afrique',
+  canada: 'Canada',
+  mexique: 'Mexique',
+  japon: 'Japon',
 };
 
 export const ACTIONS_DIPLOMATIQUES = [

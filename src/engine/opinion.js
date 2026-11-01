@@ -8,6 +8,7 @@
  * vote de départ sont sourcées quand c'est possible (voir countries/*.json).
  */
 import { borner } from '../model/outils.js';
+import { MODES, normaliserMode } from '../model/parametres.js';
 
 export const THEMES = {
   pouvoirAchat: { nom: 'Pouvoir d\'achat', description: 'Revenus réels des ménages, inflation, prix de l\'énergie.' },
@@ -95,9 +96,10 @@ export function majOpinion(e) {
     entreprises: 0.6 * ((e.entreprises?.climatAffaires ?? 100) - 100) + 0.4 * ((e.entreprises?.souverainete ?? 50) - (e.entreprises?.souverainete0 ?? 50)),
     international: 1.2 * (e.international.influence - e.international.influenceInitiale),
   };
+  const vitesse = 0.5 * (MODES[normaliserMode(e.mode)]?.volatiliteOpinion ?? 1);
   for (const [k, delta] of Object.entries(cibles)) {
     const cible = borner(o.themes0[k] + delta, 0, 100);
-    o.themes[k] = o.themes[k] + 0.5 * (cible - o.themes[k]);
+    o.themes[k] = o.themes[k] + vitesse * (cible - o.themes[k]);
   }
   majIntentions(e);
   o.historique.push(instantane(e));

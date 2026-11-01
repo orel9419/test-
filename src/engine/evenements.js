@@ -2,16 +2,22 @@
  * Moteur des événements : tirage en fin de trimestre, présentation au
  * joueur au trimestre suivant, application du choix retenu.
  */
-import { EVENEMENTS } from '../data/evenements.js';
+import { EVENEMENTS as BASE } from '../data/evenements.js';
+import { GRANDS_EVENEMENTS } from '../data/grandsEvenements.js';
+
+/** Catalogue complet : événements aléatoires, dossiers d'entreprises et grands rendez-vous à date fixe. */
+export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS];
 import { appliquerChocs } from './social.js';
 import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
+import { appliquerEffetsEntreprise } from './entreprises.js';
 
 /** Tire les événements du prochain trimestre (au plus deux, plus un mouvement social éventuel). */
-export function genererEvenements(e, alea, frequence = 1) {
+export function genererEvenements(e, alea, frequence = 1, options = {}) {
   const deja = new Set(e.evenements.historique.map((h) => h.id));
-  const candidats = EVENEMENTS.filter((ev) => (ev.pays === 'tous' || ev.pays.includes(e.pays)) && !(ev.unique && deja.has(ev.id)));
+  const candidats = EVENEMENTS.filter((ev) => (ev.pays === 'tous' || ev.pays.includes(e.pays)) && !(ev.unique && deja.has(ev.id))
+    && (!options.calendrierSeulement || ev.calendrier));
   const tires = [];
   for (const ev of candidats) {
     let ok = false;
@@ -20,25 +26,30 @@ export function genererEvenements(e, alea, frequence = 1) {
     const p = Math.min(1, ev.probabilite(e) * (ev.probabilite(e) >= 1 ? 1 : frequence));
     if (alea.tirage(p)) tires.push(ev);
   }
-  // Les événements certains passent en premier, puis deux au plus
-  tires.sort((a, b) => b.probabilite(e) - a.probabilite(e));
-  e.evenements.enAttente = tires.slice(0, 3).map((ev) => ({
+  // Les rendez-vous à date fixe et les événements certains passent en premier
+  tires.sort((a, b) => (b.calendrier ? 1 : 0) - (a.calendrier ? 1 : 0) || b.probabilite(e) - a.probabilite(e));
+  e.evenements.enAttente = tires.slice(0, options.max ?? 3).map((ev) => ({
     id: ev.id,
     titre: ev.titre,
     description: ev.description(e),
     choix: ev.choix.map((c) => ({ id: c.id, texte: c.texte })),
     tour: e.tour,
+    grandRendezVous: !!ev.calendrier,
   }));
 }
 
 /** Applique les effets d'un choix. */
 function appliquerEffets(e, eff, alea) {
-  const r = { depensesExceptionnelles: 0, chocPIB: 0 };
+  const r = { depensesExceptionnelles: 0, chocPIB: 0, cessions: 0 };
   if (eff.depensesExceptionnelles) r.depensesExceptionnelles += eff.depensesExceptionnelles;
+  // Opérations sur le capital (dossiers d'entreprises) : acquisition = dette en plus, cession = dette en moins
+  r.cessions += (eff.cession ?? 0) - (eff.acquisition ?? 0);
+  appliquerEffetsEntreprise(e, eff);
   for (const d of eff.depensesTemporaires ?? []) e.depensesTemporaires.push({ ...d, fin: e.tour + d.duree });
   appliquerChocs(e, eff.chocs);
   if (eff.opinion) e.reformes.actives.push({ id: 'evenement', nom: 'Événement', diplomatique: true, opinion: { ...eff.opinion }, grief: {}, appliquee: true, tourAdoption: e.tour });
-  for (const [p, v] of Object.entries(eff.relations ?? {})) e.international.relations[p] = borner((e.international.relations[p] ?? 0) + v, -100, 100);
+  // Seuls les partenaires suivis par le pays joué sont concernés (pas de relation avec soi-même)
+  for (const [p, v] of Object.entries(eff.relations ?? {})) if (e.international.relations[p] !== undefined) e.international.relations[p] = borner(e.international.relations[p] + v, -100, 100);
   if (eff.influence) e.international.bonusInfluence += eff.influence;
   if (eff.instabilite) e.politique.chocInstabilite = (e.politique.chocInstabilite ?? 0) + eff.instabilite;
   if (eff.credibilite) e.finances.credibilite = borner(e.finances.credibilite + eff.credibilite, -1, 1);
@@ -47,6 +58,16 @@ function appliquerEffets(e, eff, alea) {
   if (eff.energie) e.monde.energie *= eff.energie;
   if (eff.coalition && e.politique.coalition) e.politique.coalition.choc = (e.politique.coalition.choc ?? 0) + eff.coalition;
   if (eff.chocAfD) e.politique.chocAfD = (e.politique.chocAfD ?? 0) + eff.chocAfD;
+  // Fierté nationale (grands événements) : choc de popularité dans tous les groupes
+  if (eff.fierte) appliquerChocs(e, Object.fromEntries(Object.keys(e.social.groupes).map((g) => [g, eff.fierte])));
+  // Engagements d'investissement (Choose France...)
+  if (eff.engagement && e.entreprises) e.entreprises.engagements.push({ id: eff.engagement.id, montant: eff.engagement.montant, debut: e.tour, fin: e.tour + 8 });
+  // Préparation d'un grand événement : les choix sont mémorisés pour le jour J
+  if (eff.grandEvenement) {
+    const { id, ...reste } = eff.grandEvenement;
+    e.grandsEvenements ??= {};
+    e.grandsEvenements[id] = { ...(e.grandsEvenements[id] ?? {}), ...reste };
+  }
   if (eff.reduireGrief) {
     for (const ref of e.reformes.actives) if (ref.grief?.[eff.reduireGrief.groupe]) ref.grief[eff.reduireGrief.groupe] *= 1 - eff.reduireGrief.part;
   }
@@ -71,7 +92,7 @@ function appliquerEffets(e, eff, alea) {
  * @returns {object} effets immédiats agrégés { depensesExceptionnelles, chocPIB }
  */
 export function resoudreEvenements(e, choix = {}, alea) {
-  const total = { depensesExceptionnelles: 0, chocPIB: 0 };
+  const total = { depensesExceptionnelles: 0, chocPIB: 0, cessions: 0 };
   for (const ev of e.evenements.enAttente) {
     const def = EVENEMENTS.find((x) => x.id === ev.id);
     if (!def) continue;
@@ -80,6 +101,7 @@ export function resoudreEvenements(e, choix = {}, alea) {
     const r = appliquerEffets(e, eff, alea);
     total.depensesExceptionnelles += r.depensesExceptionnelles;
     total.chocPIB += r.chocPIB;
+    total.cessions += r.cessions;
     e.evenements.historique.push({ id: ev.id, titre: ev.titre, choix: c.id, texteChoix: c.texte, tour: e.tour });
     e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'evenement', texte: `${ev.titre} — ${c.texte}. ${eff.texte ?? ''}`.trim() });
   }

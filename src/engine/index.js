@@ -19,6 +19,8 @@
  *   referendum: { id, option } (France, une fois par an),
  *   dissolution: true (France), questionConfiance: true (Allemagne),
  *   plafondDette: 'negocier' | 'reconciliation' | 'bras_de_fer' (États-Unis),
+ *   entreprises: [{ id, action }] (rencontre, participation, nationaliser, ceder, action_specifique),
+ *   programmes:  [{ id, commande: 'lancer' | 'arreter' }] (État stratège),
  * }
  */
 import { creerEtatInitial } from './etatInitial.js';
@@ -40,14 +42,20 @@ import { genererObjectifs, majObjectifs, cloturerObjectifs } from './objectifs.j
 import { genererEvenements, resoudreEvenements, depensesTemporairesActives } from './evenements.js';
 import { calculerScore } from './score.js';
 import { initialiserOpinion, majOpinion } from './opinion.js';
+import { majSucces, SUCCES } from './succes.js';
+import { conseils } from './conseiller.js';
+import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
 import { referendum } from './elections.js';
 import { trouverReforme } from './reformes.js';
 import { MINISTERES } from '../model/ministeres.js';
 import { IMPOTS } from '../model/impots.js';
-import { PARAMETRES, MODES } from '../model/parametres.js';
+import { PARAMETRES, MODES, normaliserMode } from '../model/parametres.js';
 import { borner } from '../model/outils.js';
 
-export { reformesDisponibles, actionsDisponibles, calculerScore };
+export { reformesDisponibles, actionsDisponibles, calculerScore, conseils, SUCCES };
+export { programmesDisponibles, valeurPortefeuille, fleuron } from './entreprises.js';
+export { siegesLegislativesFrance } from './elections.js';
+export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 
 /**
  * Prévision des votes avec les décisions envisagées (curseurs, taux, réformes),
@@ -59,7 +67,10 @@ export function previsionPolitique(etat, decisions = {}) {
   appliquerTaux(e, decisions.impots ?? {});
   // Les postes évalués par les partis sont les cibles visées, pas les montants déjà atteints
   for (const l of Object.values(e.budget)) if (l.variationVolume !== undefined && l.montantInitial) l.montant = l.montantInitial * (e.macro.niveauPrix / 100) * (1 + (l.variationVolume ?? 0) / 100) + (l.ajustementReformes ?? 0);
-  return prevoirVotes(e, decisions.reformes ?? []);
+  const p = prevoirVotes(e, decisions.reformes ?? []);
+  // Mode expert : les pointages sont incertains (± 25 voix), comme dans la réalité des négociations
+  p.incertitude = MODES[normaliserMode(e.mode)].previsionsExactes ? 0 : 25;
+  return p;
 }
 
 export function creerPartie(options) {
@@ -75,12 +86,17 @@ export function creerPartie(options) {
   e.precedent = { recettesReformes: 0 };
   e.depensesTemporaires = [];
   e.evenements = { enAttente: [], historique: [] };
+  e.grandsEvenements = {};
   e.graineMonde = (e.graine * 2654435761) >>> 0;
   initialiserPolitique(e, options.donnees);
+  initialiserEntreprises(e);
   e.elections = { historique: [] };
   initialiserOpinion(e);
   e.objectifs = genererObjectifs(e);
   e.historique.push({ ...instantane(e), trimestre: 'Départ' });
+  // Rendez-vous déjà fixés au premier trimestre (COP31, G20...) : tirage séparé, sans toucher à l'aléa de la partie
+  genererEvenements(e, creerAleatoire((e.graine ^ 0x9e3779b9) >>> 0), 1, { calendrierSeulement: true });
+  if (e.statique.devise === '$') e.evenements.enAttente = adapterDevise(e.evenements.enAttente);
   return e;
 }
 
@@ -178,6 +194,7 @@ function instantane(e) {
 export function jouerTour(etat, decisions = {}, options = {}) {
   const e = structuredClone(etat);
   if (e.termine) return e;
+  e.mode = normaliserMode(e.mode); // sauvegardes antérieures (bac à sable, réaliste, difficile)
   const alea = creerAleatoire(e.graine);
   const mode = MODES[e.mode];
   const lib = libelleTrimestre(e.trimestre);
@@ -254,6 +271,20 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   for (const a of decisions.diplomatie ?? []) {
     e.resultatsTour.diplomatie.push(executerAction(e, a.id, a.option, alea));
   }
+  // Entreprises et État stratège : programmes, puis actions sur les fleurons (deux au plus par trimestre, hors rencontres)
+  for (const p of decisions.programmes ?? []) piloterProgramme(e, p.id, p.commande);
+  let operationsCapital = 0; // > 0 : cessions (la dette baisse) ; < 0 : acquisitions (la dette monte)
+  e.resultatsTour.entreprises = [];
+  let actionsLourdes = 0;
+  for (const a of decisions.entreprises ?? []) {
+    if (a.action !== 'rencontre' && ++actionsLourdes > ACTIONS_PAR_TRIMESTRE) {
+      e.resultatsTour.entreprises.push({ ...a, erreur: `Au plus ${ACTIONS_PAR_TRIMESTRE} opérations sur le capital par trimestre.` });
+      continue;
+    }
+    const r = executerActionEntreprise(e, a.id, a.action, alea);
+    operationsCapital += (r.cession ?? 0) - (r.acquisition ?? 0);
+    e.resultatsTour.entreprises.push({ ...a, texte: r.texte, erreur: r.erreur ?? null });
+  }
   if (decisions.partCourtTerme !== undefined) e.finances.partCourtTerme = borner(decisions.partCourtTerme, 0.05, 0.5);
   if (decisions.trajectoire) e.finances.trajectoireAnnoncee = { ...e.finances.trajectoireAnnoncee, ...decisions.trajectoire };
 
@@ -276,11 +307,13 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const effT = majTempsTravail(e);
   const effRet = majRetraites(e, effR);
   const effI = majInternational(e);
+  const effEnt = effetsEntreprises(e);
   majPolitiques(e, e.macro.historiquePrix.at(-1) / e.macro.historiquePrix.at(-2));
 
   const ajustDepenses = { ...effR.depenses };
   for (const [poste, v] of Object.entries(effI.depenses)) ajustDepenses[poste] = (ajustDepenses[poste] ?? 0) + v;
   for (const [poste, v] of Object.entries(depensesTemporairesActives(e))) ajustDepenses[poste] = (ajustDepenses[poste] ?? 0) + v;
+  for (const [poste, v] of Object.entries(effEnt.depenses)) ajustDepenses[poste] = (ajustDepenses[poste] ?? 0) + v;
   ajustDepenses.protectionSociale = (ajustDepenses.protectionSociale ?? 0) + effRet.autresPrestations;
 
   // --- 4. Dépenses ------------------------------------------------------------------
@@ -292,7 +325,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const depPondApres = depensesPondereesMultiplicateur(e.budget);
   let impulsion = (depPondApres / potNomApres - depPondAvant / potNomAvant) * 100;
   for (const [id, v] of Object.entries(varDiscretionnaires)) impulsion -= IMPOTS[id].multiplicateur * v / potNomApres * 100;
-  const recettesReformes = Object.values(effR.recettes).reduce((s, v) => s + v, 0) + effT.recettes + effI.recettes;
+  const recettesReformes = Object.values(effR.recettes).reduce((s, v) => s + v, 0) + effT.recettes + effI.recettes + (effEnt.recettes.impotSocietes ?? 0);
   impulsion -= 0.4 * (recettesReformes - (e.precedent?.recettesReformes ?? 0)) / potNomApres * 100;
   e.precedent = { recettesReformes };
 
@@ -309,17 +342,19 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     offreTravail: effR.offreTravail + effT.offreTravail + effRet.offreTravail,
     actifsSupplementaires: (effRet.actifsSupplementaires ?? 0) + (effR.offreTravail / 100) * e.macro.populationActiveBase / 0.75,
     chomageStructurel: effR.chomageStructurel + effT.chomageStructurel + e.macro.effetCotisations,
-    potentielBonus: effR.potentielBonus + effI.potentielBonus + effetIS,
+    potentielBonus: effR.potentielBonus + effI.potentielBonus + effetIS + effEnt.potentielBonus,
     chocPrix,
   });
 
   // --- 7. Recettes --------------------------------------------------------------
   const ajustRecettes = { ...effR.recettes };
   ajustRecettes.fixe = (ajustRecettes.fixe ?? 0) + effT.recettes + effI.recettes;
+  for (const [cle, v] of Object.entries(effEnt.recettes)) ajustRecettes[cle] = (ajustRecettes[cle] ?? 0) + v;
   const recettes = calculerRecettes(e, ajustRecettes);
 
   // --- 8. Finances publiques ----------------------------------------------------
-  majFinances(e, recettes, totalDepensesPrimaires(e), { cessions: effR.cessions, economieInterets: effI.economieInterets, depensesExceptionnelles: effEv.depensesExceptionnelles });
+  majFinances(e, recettes, totalDepensesPrimaires(e), { cessions: effR.cessions + operationsCapital + (effEv.cessions ?? 0), economieInterets: effI.economieInterets, depensesExceptionnelles: effEv.depensesExceptionnelles });
+  majEntreprises(e, etat);
   const bilan = bilanAnnuel(e);
   if (bilan) {
     const regles = bilan.regles.map((r) => `${r.nom} : ${r.realise.toFixed(1)} % pour un objectif de ${r.cible.toFixed(1)} % (${r.respect ? 'respectée' : 'NON respectée'})`).join(' ; ');
@@ -375,6 +410,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     }
   }
   majObjectifs(e);
+  e.resultatsTour.succes = options.sansPolitique ? [] : majSucces(e);
 
   // --- 12. Historique et passage au trimestre suivant ------------------------------
   e.historique.push(instantane(e));
@@ -388,7 +424,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     cloturerObjectifs(e);
     e.score = calculerScore(e);
   } else if (options.evenementsActifs !== false) {
-    genererEvenements(e, alea, mode.frequenceEvenements);
+    genererEvenements(e, alea, mode.frequenceEvenements, { max: mode.maxEvenements ?? 3 });
   }
   if (e.statique.devise === '$') {
     e.journal = e.journal.map((j, i) => (i >= etat.journal.length ? adapterDevise(j) : j));

@@ -15,8 +15,12 @@
  * Les montants sont des hypothèses de jeu.
  */
 
+import { fleuron } from '../engine/entreprises.js';
+
 const FR = ['france'];
 const DE = ['allemagne'];
+const US = ['etatsUnis'];
+const md = (x) => (Math.round(x * 10) / 10).toLocaleString('fr-FR');
 
 export const EVENEMENTS = [
   // --- Énergie et géopolitique ------------------------------------------------
@@ -43,6 +47,134 @@ export const EVENEMENTS = [
     choix: [
       { id: 'carbone', texte: 'Relever les taxes sur l\'énergie de 10 % pendant que les prix baissent', effets: (e) => { if (e.impots.accisesEnergie) e.impots.accisesEnergie.taux = Math.min(e.impots.accisesEnergie.bornes[1], e.impots.accisesEnergie.taux + 10); return { opinion: { agriculteurs: -4, salaries: -2, jeunes: 2 }, texte: 'La baisse des prix à la pompe est en partie captée par l\'État.' }; } },
       { id: 'laisser', texte: 'Laisser la baisse des prix profiter aux ménages', effets: () => ({ opinion: { salaries: 2, retraites: 1 }, texte: 'Le pouvoir d\'achat se redresse.' }) },
+    ],
+  },
+
+
+  // --- Dossiers d'entreprises (fleurons nationaux) ------------------------------------
+  {
+    id: 'arcelor_dunkerque',
+    titre: 'ArcelorMittal menace l\'avenir de la sidérurgie à Dunkerque',
+    pays: FR,
+    unique: true,
+    condition: (e) => (fleuron(e, 'arcelor')?.partEtat ?? 100) < 100 && (e.monde.energie > 150 || fleuron(e, 'arcelor').sante < 45),
+    probabilite: () => 0.3,
+    description: () => 'Prix de l\'énergie, acier chinois bon marché : le groupe gèle la décarbonation de ses hauts fourneaux et évoque des suppressions de postes. L\'Assemblée a voté en juin 2026 une proposition de loi de nationalisation (LFI), rejetée une première fois par le Sénat ; le RN propose plutôt une « action de contrôle ».',
+    choix: [
+      { id: 'nationaliser', texte: 'Nationaliser temporairement la filiale française (environ 3 Md€, estimation)', effets: () => ({ acquisition: 3, entreprise: { id: 'arcelor', partEtat: 100, nationalisation: true, relation: -20, sante: 10 }, souverainete: 4, climatAffaires: -3, relations: { ue: -3 }, opinion: { salaries: 3, jeunes: 1, entrepreneurs: -3 }, texte: 'L\'État reprend les sites. Il devra financer seul les fours électriques (1,3 Md€ annoncés pour Dunkerque) et convaincre Bruxelles.' }) },
+      { id: 'aide', texte: 'Aider la décarbonation (1 Md€) contre un engagement de maintien des sites', effets: () => ({ depensesTemporaires: [{ poste: 'economieFinances', valeur: 1, duree: 4 }], entreprise: { id: 'arcelor', relation: 10, sante: 12 }, souverainete: 1, opinion: { salaries: 1 }, texte: 'Le groupe confirme ses investissements, sous réserve des prix de l\'énergie.' }) },
+      { id: 'controle', texte: 'Entrer au capital avec une action de contrôle (10 %)', effets: () => ({ acquisition: 0.3, entreprise: { id: 'arcelor', partEtat: 10, actionSpecifique: true, relation: -5 }, souverainete: 3, texte: 'L\'État pourra s\'opposer à toute fermeture ou cession d\'actifs stratégiques.' }) },
+      { id: 'laisser', texte: 'Laisser le groupe décider', effets: () => ({ entreprise: { id: 'arcelor', emplois: -15, sante: -5 }, souverainete: -3, chocPIB: -0.05, opinion: { salaries: -3, jeunes: -1 }, texte: 'Un haut fourneau est mis sous cocon : plusieurs milliers d\'emplois directs et indirects menacés.' }) },
+    ],
+  },
+  {
+    id: 'edf_epr2',
+    titre: 'EDF doit boucler le financement des six réacteurs EPR2',
+    pays: FR,
+    unique: true,
+    condition: (e) => e.tour >= 2,
+    probabilite: () => 0.25,
+    description: () => 'Le coût du programme dépasse les premières estimations. EDF, déjà très endetté, demande à l\'État de s\'engager sur un prêt bonifié couvrant une large part des travaux.',
+    choix: [
+      { id: 'pret', texte: 'Accorder un prêt bonifié de l\'État (8 Md€ cette année)', effets: () => ({ acquisition: 8, entreprise: { id: 'edf', relation: 15, sante: 10 }, souverainete: 3, climatAffaires: 1, texte: 'Le prêt est une opération financière : la dette augmente, pas le déficit. Les premiers réacteurs sont attendus après 2035.' }) },
+      { id: 'tarifs', texte: 'Faire payer les consommateurs par les tarifs de l\'électricité', effets: () => ({ entreprise: { id: 'edf', sante: 8 }, opinion: { salaries: -2, retraites: -2, entrepreneurs: -1 }, texte: 'Les factures augmentent ; l\'opposition dénonce une taxe déguisée.' }) },
+      { id: 'reporter', texte: 'Reporter la décision', effets: () => ({ entreprise: { id: 'edf', sante: -8, relation: -10 }, souverainete: -2, texte: 'Le calendrier glisse ; la filière nucléaire s\'inquiète pour ses compétences.' }) },
+    ],
+  },
+  {
+    id: 'total_new_york',
+    titre: 'TotalEnergies envisage de déplacer sa cotation principale à New York',
+    pays: FR,
+    unique: true,
+    condition: (e) => e.entreprises && e.entreprises.climatAffaires < 97,
+    probabilite: () => 0.15,
+    description: () => 'Le groupe juge les investisseurs américains plus favorables aux hydrocarbures et la fiscalité française instable. Le départ serait symbolique : le siège et les impôts resteraient en France, au moins dans un premier temps.',
+    choix: [
+      { id: 'stabilite', texte: 'Promettre la stabilité fiscale pour les grands groupes', effets: () => ({ climatAffaires: 4, entreprise: { id: 'totalenergies', relation: 15 }, opinion: { salaries: -2, jeunes: -2, entrepreneurs: 2 }, texte: 'Le groupe reste à Paris. La gauche dénonce un chantage.' }) },
+      { id: 'fermete', texte: 'Répondre fermement : les avantages publics seront conditionnés', effets: () => ({ climatAffaires: -3, entreprise: { id: 'totalenergies', relation: -15 }, souverainete: 1, opinion: { salaries: 2, jeunes: 2 }, texte: 'Le bras de fer est populaire, les investisseurs s\'inquiètent.' }) },
+      { id: 'laisser', texte: 'Laisser faire', effets: () => ({ climatAffaires: -2, souverainete: -2, influence: -1, texte: 'La place de Paris perd sa première capitalisation énergétique.' }) },
+    ],
+  },
+  {
+    id: 'rachat_strategique',
+    titre: 'Un groupe étranger veut racheter une pépite technologique',
+    pays: 'tous',
+    condition: (e) => e.tour >= 1,
+    probabilite: () => 0.08,
+    description: (e) => `Un groupe ${e.pays === 'etatsUnis' ? 'adossé à des capitaux chinois' : 'américain'} propose de racheter une entreprise de pointe (${e.pays === 'etatsUnis' ? 'IA et puces' : 'composants pour la défense et le spatial'}). Le contrôle des investissements étrangers permet de s'y opposer.`,
+    choix: [
+      { id: 'bloquer', texte: 'Bloquer le rachat (contrôle des investissements étrangers)', effets: (e) => ({ souverainete: 3, climatAffaires: -1, relations: e.pays === 'etatsUnis' ? { chine: -4 } : { etatsUnis: -3 }, texte: 'Le rachat est interdit. Il faudra trouver des investisseurs nationaux.' }) },
+      { id: 'conditions', texte: 'Autoriser sous conditions (emplois, brevets, sites maintenus)', effets: () => ({ souverainete: -1, climatAffaires: 1, texte: 'L\'acquéreur s\'engage pour cinq ans. Le contrôle du respect des engagements sera délicat.' }) },
+      { id: 'public', texte: 'Faire racheter par un fonds public (Bpifrance, KfW ou fonds fédéral)', effets: (e) => ({ acquisition: e.pays === 'etatsUnis' ? 8 : 1.5, souverainete: 4, climatAffaires: -1, texte: 'La pépite reste nationale, l\'État est actionnaire.' }) },
+    ],
+  },
+  {
+    id: 'unicredit_commerzbank',
+    titre: 'UniCredit lance une offre sur Commerzbank',
+    pays: DE,
+    unique: true,
+    condition: (e) => (fleuron(e, 'commerzbank')?.partEtat ?? 0) > 0,
+    probabilite: () => 0.3,
+    description: () => 'La banque italienne, déjà premier actionnaire, veut prendre le contrôle. Le gouvernement fédéral s\'y oppose publiquement ; la Commission européenne et la BCE plaident pour une union bancaire avec des banques transfrontalières.',
+    choix: [
+      { id: 'refuser', texte: 'Refuser de vendre les parts de l\'État et faire pression sur les actionnaires', effets: () => ({ souverainete: 2, relations: { italie: -6, ue: -3 }, entreprise: { id: 'commerzbank', valeur: -4 }, opinion: { salaries: 1 }, texte: 'L\'offre échoue pour l\'instant ; l\'Allemagne est accusée de freiner l\'union bancaire.' }) },
+      { id: 'vendre', texte: 'Vendre les 12 % de l\'État à UniCredit', effets: (e) => { const f = fleuron(e, 'commerzbank'); return { cession: f.valeurMarche * f.partEtat / 100 * 1.15, entreprise: { id: 'commerzbank', partEtat: 0 }, souverainete: -3, relations: { italie: 6, ue: 4 }, opinion: { salaries: -2 }, texte: `L'État encaisse ${md(f.valeurMarche * f.partEtat / 100 * 1.15)} Md€ avec la prime de contrôle. Les syndicats redoutent des suppressions de postes.` }; } },
+      { id: 'garanties', texte: 'Négocier des garanties (siège à Francfort, emplois, crédit aux PME)', effets: () => ({ relations: { italie: 2 }, souverainete: -1, texte: 'Un accord est trouvé : l\'intégration se fera progressivement.' }) },
+    ],
+  },
+  {
+    id: 'thyssenkrupp_acier',
+    titre: 'Thyssenkrupp Steel menace de fermer des sites',
+    pays: DE,
+    unique: true,
+    condition: (e) => e.monde.energie > 140 || (fleuron(e, 'thyssenkrupp')?.sante ?? 60) < 45,
+    probabilite: () => 0.25,
+    description: () => 'Le premier sidérurgiste allemand veut réduire fortement ses capacités et ses effectifs. L\'usine de réduction directe à l\'hydrogène de Duisbourg, subventionnée par l\'État fédéral et la Rhénanie-du-Nord-Westphalie, est remise en cause.',
+    choix: [
+      { id: 'hydrogene', texte: 'Garantir un prix de l\'électricité industrielle (Industriestrompreis) pour la sidérurgie', effets: () => ({ depensesTemporaires: [{ poste: 'economieFinances', valeur: 3, duree: 8 }], entreprise: { id: 'thyssenkrupp', sante: 15, relation: 15 }, souverainete: 2, coalition: 4, texte: 'Les sites sont maintenus ; Bruxelles surveille ces aides.' }) },
+      { id: 'capital', texte: 'Entrer au capital de la branche acier (environ 2 Md€)', effets: () => ({ acquisition: 2, entreprise: { id: 'thyssenkrupp', partEtat: 25, sante: 10 }, souverainete: 4, climatAffaires: -2, coalition: 6, texte: 'L\'État fédéral devient actionnaire de référence de l\'acier allemand.' }) },
+      { id: 'laisser', texte: 'Laisser la restructuration se faire', effets: () => ({ entreprise: { id: 'thyssenkrupp', emplois: -15 }, chocPIB: -0.05, coalition: -8, chocAfD: 0.5, opinion: { salaries: -3 }, texte: 'IG Metall manifeste dans la Ruhr ; le SPD est furieux.' }) },
+    ],
+  },
+  {
+    id: 'uniper_vente',
+    titre: 'Vente d\'Uniper : le moment est-il venu ?',
+    pays: DE,
+    unique: true,
+    condition: (e) => (fleuron(e, 'uniper')?.partEtat ?? 0) > 50,
+    probabilite: () => 0.3,
+    description: (e) => `Sauvé en 2022 pour éviter une rupture d'approvisionnement en gaz, Uniper est détenu à 99 % par l'État. Le ministère des Finances a lancé la vente en mai 2026. Valeur estimée de la participation : ${md(fleuron(e, 'uniper').valeurMarche * 0.99)} Md€.`,
+    choix: [
+      { id: 'vendre', texte: 'Vendre maintenant à un énergéticien', effets: (e) => { const f = fleuron(e, 'uniper'); return { cession: f.valeurMarche * f.partEtat / 100, entreprise: { id: 'uniper', partEtat: 25 }, souverainete: -2, texte: 'L\'État garde une minorité de blocage de 25 % pour la sécurité d\'approvisionnement.' }; } },
+      { id: 'attendre', texte: 'Attendre de meilleures conditions de marché', effets: () => ({ texte: 'La vente est reportée ; Bruxelles rappelle l\'engagement de céder d\'ici 2028.', relations: { ue: -1 } }) },
+      { id: 'garder', texte: 'Garder Uniper comme opérateur public de sécurité énergétique', effets: () => ({ souverainete: 3, relations: { ue: -4 }, climatAffaires: -1, texte: 'L\'Allemagne devra négocier avec la Commission, qui avait conditionné l\'aide de 2022 à une cession.' }) },
+    ],
+  },
+  {
+    id: 'intel_soutien',
+    titre: 'Intel demande un nouveau soutien fédéral',
+    pays: US,
+    unique: true,
+    condition: (e) => e.tour >= 1,
+    probabilite: () => 0.2,
+    description: () => 'Les usines de l\'Ohio prennent du retard. Intel, dont l\'État fédéral détient environ 10 % depuis la conversion des subventions du CHIPS Act en 2025, demande des commandes publiques et des capitaux.',
+    choix: [
+      { id: 'capital', texte: 'Monter à 20 % du capital (environ 18 Md$)', effets: () => ({ acquisition: 18, entreprise: { id: 'intel', partEtat: 20, sante: 12, relation: 10 }, souverainete: 4, climatAffaires: -1, texte: 'Le Trésor devient le premier actionnaire d\'Intel.' }) },
+      { id: 'commandes', texte: 'Imposer des puces produites aux États-Unis dans les marchés de défense', effets: () => ({ depensesTemporaires: [{ poste: 'defense', valeur: 4, duree: 8 }], entreprise: { id: 'intel', sante: 8 }, souverainete: 2, texte: 'Les commandes de défense garantissent des débouchés.' }) },
+      { id: 'laisser', texte: 'Laisser le marché trancher', effets: () => ({ entreprise: { id: 'intel', sante: -10, valeur: -8 }, souverainete: -3, texte: 'Le chantier de l\'Ohio est encore retardé.' }) },
+    ],
+  },
+  {
+    id: 'nvidia_chine',
+    titre: 'Puces d\'IA : faut-il autoriser les ventes de Nvidia à la Chine ?',
+    pays: US,
+    unique: true,
+    condition: (e) => e.tour >= 1,
+    probabilite: () => 0.2,
+    description: () => 'En 2025, l\'administration a autorisé certaines ventes en Chine en échange de 15 % du chiffre d\'affaires réalisé. Les faucons du Congrès y voient une menace pour la sécurité nationale.',
+    choix: [
+      { id: 'autoriser', texte: 'Autoriser contre 15 % du chiffre d\'affaires', effets: () => ({ entreprise: { id: 'nvidia', valeur: 4 }, relations: { chine: 4 }, souverainete: -2, depensesTemporaires: [{ poste: 'economieFinances', valeur: -2, duree: 4 }], texte: 'Le Trésor encaisse environ 2 Md$ (estimation) ; la Chine continue de développer ses propres puces.' }) },
+      { id: 'interdire', texte: 'Interdire les ventes de puces avancées', effets: () => ({ entreprise: { id: 'nvidia', valeur: -6 }, relations: { chine: -6 }, souverainete: 3, texte: 'Pékin riposte en restreignant ses exportations de terres rares.' }) },
     ],
   },
 
@@ -216,9 +348,11 @@ export const EVENEMENTS = [
     id: 'sommet_otan',
     titre: 'Sommet de l\'OTAN',
     pays: 'tous',
+    calendrier: true,
     condition: (e) => e.trimestre.t === 3 && e.trimestre.annee >= 2027,
-    probabilite: () => 0.6,
-    description: (e) => `Washington exige une accélération vers 3,5 % du PIB de dépenses de défense. Votre pays est à ${(e.budget.defense.montant / e.macro.pibNominal * 100).toFixed(1)} %.`,
+    // 2027 : sommet de Tirana (Albanie), date à confirmer ; ensuite, sommet annuel supposé
+    probabilite: (e) => (e.trimestre.annee === 2027 ? 1 : 0.6),
+    description: (e) => `${e.trimestre.annee === 2027 ? 'Sommet de Tirana, le premier organisé en Albanie (date à confirmer). ' : ''}${e.pays === 'etatsUnis' ? 'Vous exigez des alliés européens une accélération vers 3,5 % du PIB de dépenses de défense ; ils attendent en retour un engagement américain clair.' : 'Washington exige une accélération vers 3,5 % du PIB de dépenses de défense.'} Votre pays est à ${(e.budget.defense.montant / e.macro.pibNominal * 100).toFixed(1)} %.`,
     choix: [
       { id: 'engager', texte: 'S\'engager sur une hausse supplémentaire de 5 % du budget de défense', effets: (e) => { e.budget.defense.variationVolume = (e.budget.defense.variationVolume ?? 0) + 5; return { relations: { etatsUnis: 8, pologne: 5 }, influence: 2, texte: 'Les alliés saluent l\'effort.' }; } },
       { id: 'temporiser', texte: 'Temporiser au nom des contraintes budgétaires', effets: () => ({ relations: { etatsUnis: -8 }, influence: -1, texte: 'Washington menace de réduire sa présence en Europe.' }) },

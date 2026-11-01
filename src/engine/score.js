@@ -54,7 +54,7 @@ export function calculerScore(e) {
   const pond = PONDERATIONS[e.statique.regime] ?? PONDERATIONS['semi-presidentiel'];
   let total = 0;
   for (const [k, w] of Object.entries(pond)) total += w * c[k];
-  const bonusMode = { bac_a_sable: 0.8, realiste: 1, difficile: 1.15 }[e.mode] ?? 1;
+  const bonusMode = { facile: 0.8, intermediaire: 1, expert: 1.15 }[e.mode] ?? 1;
   total = Math.round(total * bonusMode);
   const mention = total >= 80 ? 'Homme ou femme d\'État' : total >= 65 ? 'Mandat réussi' : total >= 50 ? 'Bilan honorable' : total >= 35 ? 'Bilan contesté' : 'Mandat chaotique';
   return { total, composantes: c, ponderations: pond, mention };

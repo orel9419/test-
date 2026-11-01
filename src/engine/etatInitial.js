@@ -5,7 +5,7 @@ import { profilFrance } from '../model/pays/france.js';
 import { profilAllemagne } from '../model/pays/allemagne.js';
 import { profilEtatsUnis } from '../model/pays/etatsUnis.js';
 import { MINISTERES, GROUPES } from '../model/ministeres.js';
-import { PARAMETRES } from '../model/parametres.js';
+import { PARAMETRES, normaliserMode } from '../model/parametres.js';
 import { etatMondeInitial, initialiserHistoriqueEnergieZE } from './monde.js';
 import { etatRetraitesInitial } from './retraites.js';
 import { etatTravailInitial } from './travail.js';
@@ -41,7 +41,8 @@ const OUVERTURE = { france: 0.33, allemagne: 0.45, etatsUnis: 0.11 };
  * Crée une nouvelle partie.
  * @param {object} options { pays, donnees (JSON du pays), contexte (JSON mondial), mode, graine }
  */
-export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', graine = 12345 }) {
+export function creerEtatInitial({ pays, donnees, contexte, mode: modeDemande = 'intermediaire', graine = 12345 }) {
+  const mode = normaliserMode(modeDemande);
   const fabrique = PROFILS[pays];
   if (!fabrique) throw new Error(`Pays inconnu : ${pays}`);
   const p = fabrique(donnees);

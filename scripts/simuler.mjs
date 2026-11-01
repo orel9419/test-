@@ -4,7 +4,8 @@
  *
  * Usage : npm run simuler -- [france|allemagne|etatsUnis] [scenario]
  * Scénarios : statu_quo, retraites_65_compensees, 39h_exo2, rigueur, rigueur_compromis, relance
- * Option : --sans-politique (ni vote ni élection : effets économiques seuls)
+ * Options : --sans-politique (ni vote ni élection : effets économiques seuls),
+ *           --mode=facile|intermediaire|expert, --mandat-complet
  */
 import { readFileSync } from 'node:fs';
 import { creerPartie, jouerTour } from '../src/engine/index.js';
@@ -26,7 +27,7 @@ const SCENARIOS = {
 };
 
 const calendrier = process.argv.includes('--mandat-complet') ? 'mandat_complet' : 'reel';
-let e = creerPartie({ pays, donnees: lire(pays), contexte: lire('_contexte-mondial'), mode: 'realiste', graine: 42, calendrier });
+let e = creerPartie({ pays, donnees: lire(pays), contexte: lire('_contexte-mondial'), mode: process.argv.find((a) => a.startsWith('--mode='))?.slice(7) ?? 'intermediaire', graine: 42, calendrier });
 const fmt = (x, n = 1) => (x === undefined || x === null || Number.isNaN(x) ? '—' : x.toFixed(n));
 console.log(`\n${e.statique.drapeau} ${e.statique.nom} — scénario « ${scenario} » — données du ${e.statique.dateDonnees}`);
 console.log('Trim.    PIB Md€  Crois.a  Infl.  Chôm.  Déficit  Dette   Intérêts  OAT/Bund  Spread  BCE   Popul.  Cohés.  Émiss.  Énergie');

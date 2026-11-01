@@ -64,7 +64,7 @@ export function projectionPresidentielleEtatsUnis(e) {
 }
 
 /** Facteur de difficulté des cibles selon le mode. */
-const EXIGENCE = { bac_a_sable: 0.7, realiste: 1, difficile: 1.2 };
+const EXIGENCE = { facile: 0.7, intermediaire: 1, expert: 1.2 };
 
 /**
  * Règles de génération. Chaque règle : condition (sur l'état de départ),
