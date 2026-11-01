@@ -1,0 +1,25 @@
+{
+  "name": "chef-de-gouvernement",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Simulation de gouvernement : budget, dette, réformes, politique et diplomatie à partir de données réelles",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "simuler": "node scripts/simuler.mjs",
+    "update-data": "node scripts/update-data.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  }
+}

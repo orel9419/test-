@@ -11,163 +11,256 @@
     "methode": "Collecte manuelle par recherche web le 01/11/2026. Les API Eurostat, FMI, Banque mondiale et OCDE n'étaient pas joignables depuis l'environnement de collecte : à rafraîchir avec le script update-data.",
     "legende_statut": "Voir countries/france.json (même légende)"
   },
-
   "macro": {
     "pib_nominal": {
-      "valeur": 4470, "unite": "Md€", "periode": "2025",
+      "valeur": 4470,
+      "unite": "Md€",
+      "periode": "2025",
       "source": "Calcul : dette Maastricht 2 838 Md€ / 63,5 % (Bundesbank)",
       "url": "https://www.bundesbank.de/de/aufgaben/themen/deutsche-staatsschulden-wachsen-2025-um-144-milliarden-euro--992732",
-      "date": "2026-04", "statut": "derive",
+      "date": "2026-04",
+      "statut": "derive",
       "note": "Recoupement : dépenses 2 259,3 Md€ / Staatsquote 50,3 % ≈ 4 492 Md€. Le PIB nominal publié par Destatis n'a pas été trouvé."
     },
     "croissance_2025": {
-      "valeur": 0.2, "unite": "%", "periode": "2025",
+      "valeur": 0.2,
+      "unite": "%",
+      "periode": "2025",
       "source": "Destatis, communiqué du 15/01/2026",
       "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/01/PD26%5F017%5F811.html",
-      "date": "2026-01-15", "statut": "officiel"
+      "date": "2026-01-15",
+      "statut": "officiel"
     },
     "croissance_trimestrielle": {
-      "valeur": { "2026T3": 0.2 }, "unite": "% t/t", "periode": "2026T3",
+      "valeur": {
+        "2026T3": 0.2
+      },
+      "unite": "% t/t",
+      "periode": "2026T3",
       "source": "Destatis, estimation rapide du PIB T3 2026",
       "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/10/PD26_381_811.html",
-      "date": "2026-10-30", "statut": "officiel",
+      "date": "2026-10-30",
+      "statut": "officiel",
       "note": "+1,3 % sur un an. Quatrième trimestre de croissance d'affilée. Investissements en baisse, exportations en net ralentissement. Résultats détaillés le 25/11/2026."
     },
     "prevision_croissance": {
-      "valeur": { "2026": 0.7, "2027": 0.9 }, "unite": "%", "periode": "2026-2027",
+      "valeur": {
+        "2026": 0.7,
+        "2027": 0.9
+      },
+      "unite": "%",
+      "periode": "2026-2027",
       "source": "Bundesbank, projection de juin 2026 (via presse)",
       "url": "https://www.berliner-zeitung.de/article/200-milliarden-neue-schulden-bundesbank-sieht-deutschlands-finanzlage-weiter-kippen-10173492",
-      "date": "2026-06", "statut": "secondaire"
+      "date": "2026-06",
+      "statut": "secondaire"
     },
     "inflation_ipc": {
-      "valeur": 3.3, "unite": "% a/a", "periode": "2026-09",
+      "valeur": 3.3,
+      "unite": "% a/a",
+      "periode": "2026-09",
       "source": "Destatis, estimation provisoire septembre 2026",
       "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/09/PD26_348_611.html",
-      "date": "2026-09-30", "statut": "officiel",
+      "date": "2026-09-30",
+      "statut": "officiel",
       "note": "Inflation sous-jacente 2,4 %, énergie +14,9 %. 2,9 % en août. Chiffre d'octobre non trouvé."
     },
     "chomage_national_ba": {
-      "valeur": 6.4, "unite": "% (définition nationale, inscrits)", "periode": "2026-09",
+      "valeur": 6.4,
+      "unite": "% (définition nationale, inscrits)",
+      "periode": "2026-09",
       "source": "Bundesagentur für Arbeit, rapport mensuel de septembre 2026",
       "url": "https://www.arbeitsagentur.de/presse/2026-37-arbeitsmarkt-im-september-2026",
-      "date": "2026-09-30", "statut": "officiel",
+      "date": "2026-09-30",
+      "statut": "officiel",
       "note": "2 994 000 chômeurs inscrits (+40 000 sur un an). Ce n'est pas le taux BIT : non comparable directement avec la France."
     },
     "chomage_bit": {
-      "valeur": null, "unite": "%", "periode": null,
-      "source": null, "url": null, "date": null, "statut": "introuvable"
+      "valeur": null,
+      "unite": "%",
+      "periode": null,
+      "source": null,
+      "url": null,
+      "date": null,
+      "statut": "introuvable"
     },
     "balance_commerciale_biens": {
-      "valeur": 200.5, "unite": "Md€", "periode": "2025",
+      "valeur": 200.5,
+      "unite": "Md€",
+      "periode": "2025",
       "source": "Destatis",
       "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/02/PD26_056_51.html",
-      "date": "2026-02", "statut": "officiel",
+      "date": "2026-02",
+      "statut": "officiel",
       "note": "Exportations 1 563,0 Md€, importations 1 362,5 Md€ (242,9 Md€ d'excédent en 2024). Excédent avec les États-Unis : 51,9 Md€. Déficit avec la Chine : 89,3 Md€. La Chine redevient le premier partenaire commercial."
     },
     "taux_directeur_bce_depot": {
-      "valeur": 2.50, "unite": "%", "periode": "2026-10-29",
+      "valeur": 2.5,
+      "unite": "%",
+      "periode": "2026-10-29",
       "source": "BCE (via Irish Times)",
       "url": "https://www.irishtimes.com/business/2026/10/29/ecb-holds-rates-steady-as-lagardes-departure-overshadows-decision/",
-      "date": "2026-10-29", "statut": "secondaire"
+      "date": "2026-10-29",
+      "statut": "secondaire"
     },
     "taux_10_ans": {
-      "valeur": 3.55, "unite": "%", "periode": "2026-09",
+      "valeur": 3.55,
+      "unite": "%",
+      "periode": "2026-09",
       "source": "Bundesbank, rendements des titres fédéraux (moyenne de septembre 2026)",
       "url": "https://www.bundesbank.de/resource/blob/964932/5fad25e75c052df5af91e534511b6afe/472B63F073F071307366337C94F8C870/2026-10-20-rendite-download.pdf",
-      "date": "2026-10-20", "statut": "marche",
+      "date": "2026-10-20",
+      "statut": "marche",
       "note": "Lecture approximative de la colonne. Cohérent avec OAT 4,77 % moins 120 pb, soit environ 3,57 %. Fin juillet : 3,12 % ; fin août : 3,27 %."
     }
   },
-
   "finances_publiques": {
     "deficit_pct_pib": {
-      "valeur": 2.7, "unite": "% PIB", "periode": "2025",
+      "valeur": 2.7,
+      "unite": "% PIB",
+      "periode": "2025",
       "source": "Destatis, résultat provisoire",
       "url": "https://vergabeblog.de/2026-03-06/staatsdefizit-erhoeht-sich-im-jahr-2025-leicht-auf-1191-milliarden-euro/",
-      "date": "2026-03-06", "statut": "secondaire",
+      "date": "2026-03-06",
+      "statut": "secondaire",
       "note": "119,1 Md€, dont Bund 79,6 Md€. Une révision à 127,3 Md€ est citée par la Berliner Zeitung (non vérifié)."
     },
     "deficit_md": {
-      "valeur": 119.1, "unite": "Md€", "periode": "2025",
-      "source": "Destatis", "url": "https://vergabeblog.de/2026-03-06/staatsdefizit-erhoeht-sich-im-jahr-2025-leicht-auf-1191-milliarden-euro/",
-      "date": "2026-03-06", "statut": "secondaire"
+      "valeur": 119.1,
+      "unite": "Md€",
+      "periode": "2025",
+      "source": "Destatis",
+      "url": "https://vergabeblog.de/2026-03-06/staatsdefizit-erhoeht-sich-im-jahr-2025-leicht-auf-1191-milliarden-euro/",
+      "date": "2026-03-06",
+      "statut": "secondaire"
     },
     "deficit_prevision": {
-      "valeur": { "2026": 4.0, "2027": 4.5 }, "unite": "% PIB", "periode": "2026-2027",
+      "valeur": {
+        "2026": 4,
+        "2027": 4.5
+      },
+      "unite": "% PIB",
+      "periode": "2026-2027",
       "source": "Bundesbank, projection de juin 2026 (via presse)",
       "url": "https://www.berliner-zeitung.de/article/200-milliarden-neue-schulden-bundesbank-sieht-deutschlands-finanzlage-weiter-kippen-10173492",
-      "date": "2026-06", "statut": "secondaire",
+      "date": "2026-06",
+      "statut": "secondaire",
       "note": "Environ 5 % en 2028 selon la même source."
     },
     "dette_pct_pib": {
-      "valeur": 63.5, "unite": "% PIB", "periode": "2025",
+      "valeur": 63.5,
+      "unite": "% PIB",
+      "periode": "2025",
       "source": "Deutsche Bundesbank",
       "url": "https://www.bundesbank.de/de/aufgaben/themen/deutsche-staatsschulden-wachsen-2025-um-144-milliarden-euro--992732",
-      "date": "2026-04", "statut": "officiel"
+      "date": "2026-04",
+      "statut": "officiel"
     },
     "dette_md": {
-      "valeur": 2838, "unite": "Md€", "periode": "2025",
+      "valeur": 2838,
+      "unite": "Md€",
+      "periode": "2025",
       "source": "Deutsche Bundesbank (+144 Md€ en 2025)",
       "url": "https://www.bundesbank.de/de/aufgaben/themen/deutsche-staatsschulden-wachsen-2025-um-144-milliarden-euro--992732",
-      "date": "2026-04", "statut": "officiel"
+      "date": "2026-04",
+      "statut": "officiel"
     },
     "dette_prevision": {
-      "valeur": "environ 68 à 70 % du PIB en 2028", "unite": "% PIB",
+      "valeur": "environ 68 à 70 % du PIB en 2028",
+      "unite": "% PIB",
       "source": "Bundesbank (projections de décembre 2025 et juin 2026, via presse)",
       "url": "https://www.berliner-zeitung.de/article/200-milliarden-neue-schulden-bundesbank-sieht-deutschlands-finanzlage-weiter-kippen-10173492",
-      "date": "2026-06", "statut": "secondaire"
+      "date": "2026-06",
+      "statut": "secondaire"
     },
     "depenses_md": {
-      "valeur": 2259.3, "unite": "Md€", "periode": "2025",
+      "valeur": 2259.3,
+      "unite": "Md€",
+      "periode": "2025",
       "source": "Destatis (via statistiken-aktuell.de)",
       "url": "https://statistiken-aktuell.de/staatsquote-2025-datenmonitor/",
-      "date": "2026-01-15", "statut": "secondaire", "note": "+5,6 % sur un an."
+      "date": "2026-01-15",
+      "statut": "secondaire",
+      "note": "+5,6 % sur un an."
     },
     "recettes_md": {
-      "valeur": 2140.2, "unite": "Md€", "periode": "2025",
+      "valeur": 2140.2,
+      "unite": "Md€",
+      "periode": "2025",
       "source": "Destatis (via statistiken-aktuell.de)",
       "url": "https://statistiken-aktuell.de/staatsquote-2025-datenmonitor/",
-      "date": "2026-01-15", "statut": "secondaire", "note": "+5,7 % sur un an."
+      "date": "2026-01-15",
+      "statut": "secondaire",
+      "note": "+5,7 % sur un an."
     },
     "depenses_pct_pib": {
-      "valeur": 50.3, "unite": "% PIB", "periode": "2025",
+      "valeur": 50.3,
+      "unite": "% PIB",
+      "periode": "2025",
       "source": "Destatis, communiqué n°017 du 15/01/2026 (Staatsquote)",
       "url": "https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/01/PD26%5F017%5F811.html",
-      "date": "2026-01-15", "statut": "officiel"
+      "date": "2026-01-15",
+      "statut": "officiel"
     },
     "recettes_pct_pib": {
-      "valeur": 47.9, "unite": "% PIB", "periode": "2025",
-      "source": "Calcul : 2 140,2 / 4 470", "statut": "derive"
+      "valeur": 47.9,
+      "unite": "% PIB",
+      "periode": "2025",
+      "source": "Calcul : 2 140,2 / 4 470",
+      "statut": "derive"
     },
     "regle_budgetaire_nationale": {
       "valeur": "Frein à l'endettement (Schuldenbremse, art. 109 et 115 GG) : déficit structurel du Bund limité à 0,35 % du PIB. Les dépenses de défense au-delà de 1 % du PIB sont exemptées (réforme de mars 2025). Fonds spécial Infrastructures et neutralité climatique de 500 Md€ sur 12 ans (art. 143h GG).",
       "source": "Grundgesetz (texte de référence) ; ZDF pour l'application au budget 2027",
       "url": "https://www.zdfheute.de/politik/deutschland/bundeshaushalt-2027-schulden-regierung-finanzen-100.html",
-      "date": "2026-09", "statut": "a_verifier",
+      "date": "2026-09",
+      "statut": "a_verifier",
       "note": "Les montants de la réforme de 2025 (500 Md€, seuil de 1 %) viennent du texte constitutionnel et n'ont pas été re-vérifiés en ligne pendant la collecte."
     },
     "budget_federal_2027_projet": {
-      "periode": "2027", "unite": "Md€",
+      "periode": "2027",
+      "unite": "Md€",
       "source": "Bundesfinanzministerium, projet de budget fédéral 2027 (06/07/2026) ; Bundestag hib",
       "url": "https://www.bundesfinanzministerium.de/Content/DE/Pressemitteilungen/Finanzpolitik/2026/07/2026-07-06-regierungsentwurf-bundeshaushalt-2027.html",
-      "date": "2026-07-06", "statut": "officiel",
+      "date": "2026-07-06",
+      "statut": "officiel",
       "note": "Première lecture au Bundestag le 08/09/2026. Adoption prévue en novembre 2026. Trou initial de 34 Md€ « entièrement comblé » selon le gouvernement.",
       "valeurs": {
         "depenses_totales": 555.4,
         "emprunt_net_budget_central": 118.7,
-        "emprunt_total_avec_fonds_speciaux": { "valeur": 196.5, "note": "Chiffre des Eckwerte d'avril 2026 ; « plus de 200 Md€ » cité lors du débat." },
+        "emprunt_total_avec_fonds_speciaux": {
+          "valeur": 196.5,
+          "note": "Chiffre des Eckwerte d'avril 2026 ; « plus de 200 Md€ » cité lors du débat."
+        },
         "exemption_defense_frein_endettement": 85.4,
-        "ep11_travail_affaires_sociales": { "2026": 197.3, "2027": 201.5, "note": "Dont minimum vital des demandeurs d'emploi (Grundsicherung) : 50,8 Md€." },
-        "ep14_defense": { "2026": 82.7, "2027": 109.7 },
-        "interets": { "2027": 41.9, "2028": 55.2, "2029": 68.1, "2030": 80.7 },
-        "aide_militaire_ukraine": { "2026": 11.5, "2027": 11.6 }
+        "ep11_travail_affaires_sociales": {
+          "2026": 197.3,
+          "2027": 201.5,
+          "note": "Dont minimum vital des demandeurs d'emploi (Grundsicherung) : 50,8 Md€."
+        },
+        "ep14_defense": {
+          "2026": 82.7,
+          "2027": 109.7
+        },
+        "interets": {
+          "2027": 41.9,
+          "2028": 55.2,
+          "2029": 68.1,
+          "2030": 80.7
+        },
+        "aide_militaire_ukraine": {
+          "2026": 11.5,
+          "2027": 11.6
+        }
       }
     },
     "depenses_par_fonction_cofog": {
-      "periode": "2024", "unite": "% PIB",
+      "periode": "2024",
+      "unite": "% PIB",
       "source": "Eurostat Statistics Explained (COFOG) ; Destatis",
       "url": "https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Government_expenditure_by_function_%E2%80%93_COFOG",
-      "date": "2026", "statut": "introuvable",
+      "date": "2026",
+      "statut": "introuvable",
       "note": "Ventilation complète NON trouvée. Seule la protection sociale (20,4 % du PIB) vient d'Eurostat. Éducation : 4,6 % du PIB selon Destatis (périmètre « budget de l'éducation », différent de la COFOG GF09) ; 9,1 % des dépenses totales selon Eurostat. À compléter avec update-data (Eurostat gov_10a_exp).",
       "valeurs": {
         "GF01_services_generaux": null,
@@ -193,56 +286,193 @@
           "GF05_environnement": 0.6,
           "GF06_logement_equipements": 0.5,
           "GF07_sante": 7.6,
-          "GF08_loisirs_culture_culte": 1.0,
+          "GF08_loisirs_culture_culte": 1,
           "GF09_enseignement": 4.4,
           "GF10_protection_sociale": 20.4
         }
       }
     },
     "comptes_nationaux_2024": {
-      "valeur": { "depenses_totales": 2139.72, "prestations_sociales_monetaires": 709.52, "prestations_sociales_en_nature": 386.59, "cotisations_sociales_recues": 756.55 },
-      "unite": "Md€", "periode": "2024",
+      "valeur": {
+        "depenses_totales": 2139.72,
+        "prestations_sociales_monetaires": 709.52,
+        "prestations_sociales_en_nature": 386.59,
+        "cotisations_sociales_recues": 756.55
+      },
+      "unite": "Md€",
+      "periode": "2024",
       "source": "Destatis, recettes et dépenses de l'État au sens de la procédure de déficit",
       "url": "https://www.destatis.de/DE/Themen/Wirtschaft/Volkswirtschaftliche-Gesamtrechnungen-Inlandsprodukt/Tabellen/eu-stabilitaetspakt-defizit-staat.html",
       "statut": "officiel",
       "note": "Les cotisations sociales augmentent de 8,9 % en 2025 (Destatis), soit environ 824 Md€ (valeur dérivée)."
     },
     "interets_apu": {
-      "valeur": 48, "unite": "Md€", "periode": "2026",
+      "valeur": 48,
+      "unite": "Md€",
+      "periode": "2026",
       "statut": "estimation",
       "note": "ESTIMATION DE JEU. Seuls les intérêts du budget fédéral sont sourcés : 30,3 Md€ prévus en 2026 (41,9 en 2027, soit +11,6). Länder, communes et assurances sociales ajoutés par hypothèse."
     },
     "recettes_par_prelevement": {
-      "periode": "2025", "unite": "Md€",
+      "periode": "2025",
+      "unite": "Md€",
       "note": "Impôts avant répartition entre Bund, Länder et communes. Le moteur ajoute une ligne « autres recettes » pour fermer le total sourcé (2 140,2 Md€).",
       "valeurs": {
-        "total_impots": { "valeur": 989.8, "source": "Destatis (17/04/2026)", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
-        "tva_umsatzsteuer": { "valeur": 310.2, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel", "note": "TVA sur les importations incluse. Taux normal 19 %." },
-        "impot_salaires_lohnsteuer": { "valeur": 262.7, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
-        "impot_revenu_veranlagt": { "valeur": 78.2, "source": "Calcul : 7,9 % du total (BMF via experten.de)", "url": "https://www.experten.de/id/4950350/steuerrekord-2025-arbeit-und-konsum-tragen-das-wachstum/index.pdf", "statut": "derive" },
-        "impot_societes": { "valeur": 39.2, "source": "BMF (via experten.de)", "url": "https://www.experten.de/id/4950350/steuerrekord-2025-arbeit-und-konsum-tragen-das-wachstum/index.pdf", "statut": "secondaire", "note": "Taux de 15 % (hors solidarité et taxe professionnelle)." },
-        "taxe_professionnelle_gewerbesteuer": { "valeur": 76.4, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
-        "accises_energie": { "valeur": 37.6, "source": "Destatis", "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html", "statut": "officiel" },
-        "cotisations_sociales": { "valeur": 824, "source": "Calcul : 756,55 Md€ (2024) × 1,089", "url": "https://www.presseportal.de/pm/32102/6223308", "statut": "derive" }
+        "total_impots": {
+          "valeur": 989.8,
+          "source": "Destatis (17/04/2026)",
+          "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html",
+          "statut": "officiel"
+        },
+        "tva_umsatzsteuer": {
+          "valeur": 310.2,
+          "source": "Destatis",
+          "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html",
+          "statut": "officiel",
+          "note": "TVA sur les importations incluse. Taux normal 19 %."
+        },
+        "impot_salaires_lohnsteuer": {
+          "valeur": 262.7,
+          "source": "Destatis",
+          "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html",
+          "statut": "officiel"
+        },
+        "impot_revenu_veranlagt": {
+          "valeur": 78.2,
+          "source": "Calcul : 7,9 % du total (BMF via experten.de)",
+          "url": "https://www.experten.de/id/4950350/steuerrekord-2025-arbeit-und-konsum-tragen-das-wachstum/index.pdf",
+          "statut": "derive"
+        },
+        "impot_societes": {
+          "valeur": 39.2,
+          "source": "BMF (via experten.de)",
+          "url": "https://www.experten.de/id/4950350/steuerrekord-2025-arbeit-und-konsum-tragen-das-wachstum/index.pdf",
+          "statut": "secondaire",
+          "note": "Taux de 15 % (hors solidarité et taxe professionnelle)."
+        },
+        "taxe_professionnelle_gewerbesteuer": {
+          "valeur": 76.4,
+          "source": "Destatis",
+          "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html",
+          "statut": "officiel"
+        },
+        "accises_energie": {
+          "valeur": 37.6,
+          "source": "Destatis",
+          "url": "https://www.destatis.de/DE/Themen/Staat/Steuern/Steuereinnahmen/steuereinnahmen.html",
+          "statut": "officiel"
+        },
+        "cotisations_sociales": {
+          "valeur": 824,
+          "source": "Calcul : 756,55 Md€ (2024) × 1,089",
+          "url": "https://www.presseportal.de/pm/32102/6223308",
+          "statut": "derive"
+        }
       }
     },
     "retraites": {
-      "taux_cotisation": { "valeur": 18.6, "unite": "%", "periode": "2026", "source": "Bekanntmachung RVBeitrSBek 2026", "url": "https://www.gesetze-im-internet.de/rvbeitrsbek_2026/BJNR1230A0025.html", "statut": "officiel", "note": "Projection : 19,8 % en 2028 et 20,0 % en 2029 (Bundestag, document 21/3080)." },
-      "rendement_point_cotisation": { "valeur": 21.1, "unite": "Md€", "source": "DRV, chiffres de référence (via Bundestag)", "url": "https://dserver.bundestag.de/btd/21/030/2103080.pdf", "statut": "officiel", "note": "1 point de cotisation rapporte 21,1 Md€ ; 1 point de subvention fédérale coûte environ 3,4 Md€." },
-      "subventions_federales": { "valeur": 93.2, "unite": "Md€", "periode": "2026", "source": "DRV, estimation financière du printemps 2026", "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Experten/finanzbericht-fruehjahr-2026.pdf", "statut": "officiel", "note": "Subvention générale 61,07 + subventions complémentaires 32,10. Une autre source cite 112 Md€ pour l'ensemble des versements fédéraux." },
-      "depenses_drv": { "valeur": 421.3, "unite": "Md€", "periode": "2025 ou 2026", "source": "DRV, estimation financière du printemps 2026", "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Experten/finanzbericht-fruehjahr-2026.pdf", "statut": "a_verifier", "note": "Colonnes du tableau ambiguës (421,3 ou 443,2 Md€)." },
-      "nombre_pensions": { "valeur": 25.47, "unite": "millions", "source": "DRV, données actuelles", "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Statistiken-und-Berichte/statistikpublikationen/aktuelle_daten.html", "statut": "a_verifier", "note": "Dont 18,73 millions de pensions de vieillesse. Année de référence non précisée." },
-      "valeur_point": { "valeur": 42.52, "unite": "€", "periode": "depuis le 01/07/2026", "source": "DRV (via vermoegenszentrum.de)", "url": "https://www.vermoegenszentrum.de/wissen/rentenerhoehung-2026", "statut": "secondaire", "note": "+4,24 % au 01/07/2026." },
-      "taux_de_remplacement_garanti": { "valeur": 48, "unite": "% (Rentenniveau)", "source": "Paquet retraites 2025 (Bundestag, document 21/1929)", "url": "https://dserver.bundestag.de/btd/21/019/2101929.pdf", "statut": "officiel", "note": "Plancher garanti jusqu'en 2031, surcoût pris en charge par le budget fédéral." },
-      "age_legal": { "valeur": 67, "unite": "ans", "statut": "officiel", "note": "Atteint progressivement en 2031. La commission des retraites de 2026 propose 67,5 ans d'ici 2041 et la fin du départ sans décote après 45 ans de cotisation (propositions, pas encore une loi).", "url": "https://www.zdfheute.de/politik/deutschland/rente-reform-kommission-vorschlaege-100.html" },
-      "aktivrente": { "valeur": "Depuis 2026 : jusqu'à 2 000 €/mois de revenus d'activité exonérés d'impôt pour les salariés ayant dépassé l'âge légal", "url": "https://www.ihk-muenchen.de/ratgeber/steuern/aktivrente/", "statut": "officiel", "note": "Coût non trouvé." }
-    },
-    "travail": {
-      "salaire_minimum": { "valeur": { "2026": 13.90, "2027": 14.60 }, "unite": "€/h brut", "source": "Bundesregierung", "url": "https://www.bundesregierung.de/breg-de/bundesregierung/bundeskanzleramt/mindestlohn-steigt-2391010", "statut": "officiel", "note": "Soit environ 2 407 € brut par mois pour 40 h par semaine." },
-      "cotisations_sociales_taux": { "valeur": { "maladie": 14.6, "maladie_complement_moyen": 3.13, "dependance": 3.6, "retraite": 18.6 }, "unite": "%", "periode": "2026", "source": "TK ; Bekanntmachung RV", "url": "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554", "statut": "secondaire", "note": "Complément maladie moyen effectivement prélevé en mars 2026 (2,9 % prévu officiellement)." }
+      "taux_cotisation": {
+        "valeur": 18.6,
+        "unite": "%",
+        "periode": "2026",
+        "source": "Bekanntmachung RVBeitrSBek 2026",
+        "url": "https://www.gesetze-im-internet.de/rvbeitrsbek_2026/BJNR1230A0025.html",
+        "statut": "officiel",
+        "note": "Projection : 19,8 % en 2028 et 20,0 % en 2029 (Bundestag, document 21/3080)."
+      },
+      "rendement_point_cotisation": {
+        "valeur": 21.1,
+        "unite": "Md€",
+        "source": "DRV, chiffres de référence (via Bundestag)",
+        "url": "https://dserver.bundestag.de/btd/21/030/2103080.pdf",
+        "statut": "officiel",
+        "note": "1 point de cotisation rapporte 21,1 Md€ ; 1 point de subvention fédérale coûte environ 3,4 Md€."
+      },
+      "subventions_federales": {
+        "valeur": 93.2,
+        "unite": "Md€",
+        "periode": "2026",
+        "source": "DRV, estimation financière du printemps 2026",
+        "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Experten/finanzbericht-fruehjahr-2026.pdf",
+        "statut": "officiel",
+        "note": "Subvention générale 61,07 + subventions complémentaires 32,10. Une autre source cite 112 Md€ pour l'ensemble des versements fédéraux."
+      },
+      "depenses_drv": {
+        "valeur": 421.3,
+        "unite": "Md€",
+        "periode": "2025 ou 2026",
+        "source": "DRV, estimation financière du printemps 2026",
+        "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Experten/finanzbericht-fruehjahr-2026.pdf",
+        "statut": "a_verifier",
+        "note": "Colonnes du tableau ambiguës (421,3 ou 443,2 Md€)."
+      },
+      "nombre_pensions": {
+        "valeur": 25.47,
+        "unite": "millions",
+        "source": "DRV, données actuelles",
+        "url": "https://www.deutsche-rentenversicherung.de/SharedDocs/Downloads/DE/Statistiken-und-Berichte/statistikpublikationen/aktuelle_daten.html",
+        "statut": "a_verifier",
+        "note": "Dont 18,73 millions de pensions de vieillesse. Année de référence non précisée."
+      },
+      "valeur_point": {
+        "valeur": 42.52,
+        "unite": "€",
+        "periode": "depuis le 01/07/2026",
+        "source": "DRV (via vermoegenszentrum.de)",
+        "url": "https://www.vermoegenszentrum.de/wissen/rentenerhoehung-2026",
+        "statut": "secondaire",
+        "note": "+4,24 % au 01/07/2026."
+      },
+      "taux_de_remplacement_garanti": {
+        "valeur": 48,
+        "unite": "% (Rentenniveau)",
+        "source": "Paquet retraites 2025 (Bundestag, document 21/1929)",
+        "url": "https://dserver.bundestag.de/btd/21/019/2101929.pdf",
+        "statut": "officiel",
+        "note": "Plancher garanti jusqu'en 2031, surcoût pris en charge par le budget fédéral."
+      },
+      "age_legal": {
+        "valeur": 67,
+        "unite": "ans",
+        "statut": "officiel",
+        "note": "Atteint progressivement en 2031. La commission des retraites de 2026 propose 67,5 ans d'ici 2041 et la fin du départ sans décote après 45 ans de cotisation (propositions, pas encore une loi).",
+        "url": "https://www.zdfheute.de/politik/deutschland/rente-reform-kommission-vorschlaege-100.html"
+      },
+      "aktivrente": {
+        "valeur": "Depuis 2026 : jusqu'à 2 000 €/mois de revenus d'activité exonérés d'impôt pour les salariés ayant dépassé l'âge légal",
+        "url": "https://www.ihk-muenchen.de/ratgeber/steuern/aktivrente/",
+        "statut": "officiel",
+        "note": "Coût non trouvé."
+      }
     }
   },
-
+  "travail": {
+    "salaire_minimum": {
+      "valeur": {
+        "2026": 13.9,
+        "2027": 14.6
+      },
+      "unite": "€/h brut",
+      "source": "Bundesregierung",
+      "url": "https://www.bundesregierung.de/breg-de/bundesregierung/bundeskanzleramt/mindestlohn-steigt-2391010",
+      "statut": "officiel",
+      "note": "Soit environ 2 407 € brut par mois pour 40 h par semaine."
+    },
+    "cotisations_sociales_taux": {
+      "valeur": {
+        "maladie": 14.6,
+        "maladie_complement_moyen": 3.13,
+        "dependance": 3.6,
+        "retraite": 18.6
+      },
+      "unite": "%",
+      "periode": "2026",
+      "source": "TK ; Bekanntmachung RV",
+      "url": "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554",
+      "statut": "secondaire",
+      "note": "Complément maladie moyen effectivement prélevé en mars 2026 (2,9 % prévu officiellement)."
+    }
+  },
   "politique": {
     "regime": {
       "valeur": "Parlementaire fédéral, gouvernement de coalition",
@@ -254,43 +484,108 @@
       "note": "Vice-chancelier et ministre des Finances : Lars Klingbeil (SPD)."
     },
     "coalition": {
-      "partis": ["CDU/CSU", "SPD"],
+      "partis": [
+        "CDU/CSU",
+        "SPD"
+      ],
       "accord": "Accord de coalition « Verantwortung für Deutschland » (2025)",
       "statut": "officiel"
     },
     "bundestag": {
-      "sieges": 630, "majorite_absolue": 316,
+      "sieges": 630,
+      "majorite_absolue": 316,
       "source": "Résultats officiels de l'élection du 23/02/2025 (Bundeswahlleiterin, via ORF et Bundestag)",
       "url": "https://www.bundestag.de/dokumente/textarchiv/2025/kw09-wahlergebnis-1049580",
-      "date": "2025-03", "statut": "officiel",
+      "date": "2025-03",
+      "statut": "officiel",
       "note": "Sièges attribués à l'élection. Un site tiers donne des chiffres différents, non retenus.",
       "groupes": [
-        { "id": "CDUCSU", "nom": "CDU/CSU", "sieges": 208, "bloc": "coalition" },
-        { "id": "AFD",    "nom": "AfD", "sieges": 152, "bloc": "opposition_droite" },
-        { "id": "SPD",    "nom": "SPD", "sieges": 120, "bloc": "coalition" },
-        { "id": "GRUENE", "nom": "Bündnis 90/Die Grünen", "sieges": 85, "bloc": "opposition_gauche" },
-        { "id": "LINKE",  "nom": "Die Linke", "sieges": 64, "bloc": "opposition_gauche" },
-        { "id": "SSW",    "nom": "SSW", "sieges": 1, "bloc": "divers" }
+        {
+          "id": "CDUCSU",
+          "nom": "CDU/CSU",
+          "sieges": 208,
+          "bloc": "coalition"
+        },
+        {
+          "id": "AFD",
+          "nom": "AfD",
+          "sieges": 152,
+          "bloc": "opposition_droite"
+        },
+        {
+          "id": "SPD",
+          "nom": "SPD",
+          "sieges": 120,
+          "bloc": "coalition"
+        },
+        {
+          "id": "GRUENE",
+          "nom": "Bündnis 90/Die Grünen",
+          "sieges": 85,
+          "bloc": "opposition_gauche"
+        },
+        {
+          "id": "LINKE",
+          "nom": "Die Linke",
+          "sieges": 64,
+          "bloc": "opposition_gauche"
+        },
+        {
+          "id": "SSW",
+          "nom": "SSW",
+          "sieges": 1,
+          "bloc": "divers"
+        }
       ]
     },
-    "coalition_sieges": { "valeur": 328, "statut": "derive", "note": "208 + 120 : 12 sièges au-dessus de la majorité absolue." },
+    "coalition_sieges": {
+      "valeur": 328,
+      "statut": "derive",
+      "note": "208 + 120 : 12 sièges au-dessus de la majorité absolue."
+    },
     "bundesrat": {
-      "voix": 69, "majorite": 35,
-      "composition": null, "statut": "introuvable",
+      "voix": 69,
+      "majorite": 35,
+      "composition": null,
+      "statut": "introuvable",
       "note": "Répartition après les élections régionales de 2026 non collectée."
     },
     "sondages": {
-      "valeur": { "AfD": "27-30 %", "CDU/CSU": "18-20 %" },
+      "valeur": {
+        "AfD": "27-30 %",
+        "CDU/CSU": "18-20 %"
+      },
       "source": "INSA (24/10/2026), YouGov, ARD-DeutschlandTrend (octobre 2026), via Tagesspiegel",
       "url": "https://www.tagesspiegel.de/politik/afd-in-umfrage-weiter-elf-punkte-vor-union-mehrheit-erwartet-bruch-der-merz-regierung--13-prozent-noch-in-diesem-jahr-16199276.html",
-      "date": "2026-10", "statut": "secondaire",
+      "date": "2026-10",
+      "statut": "secondaire",
       "note": "Satisfaction envers Merz : 10 % (DeutschlandTrend d'octobre). 53 % des sympathisants de l'Union s'attendent à une rupture anticipée de la coalition. SPD, Verts et Linke non collectés."
     },
     "elections_regionales_2026": [
-      { "land": "Saxe-Anhalt", "date": "2026-09-06", "resultat": "AfD 43,8 %, CDU 17,2 %, SPD 9,3 %, Verts 8,9 %, Linke 8,6 %. Majorité absolue manquée par l'AfD, formation du gouvernement ouverte.", "url": "https://www.bpb.de/kurz-knapp/hintergrund-aktuell/581006/landtagswahl-in-sachsen-anhalt-2026-afd-staerkste-kraft/" },
-      { "land": "Mecklembourg-Poméranie-Occidentale", "date": "2026-09-20", "resultat": "AfD environ 38 % et en tête, SPD juste derrière, CDU hors du Landtag. Merz parle de « désastre ».", "url": "https://www.zdfheute.de/politik/deutschland/wahl-mecklenburg-vorpommern-2026-wahl-berlin-reaktionen-parteien-liveticker-100.html" },
-      { "land": "Berlin", "date": "2026-09-20", "resultat": "Die Linke en tête avec environ 25 %.", "url": "https://de.euronews.com/2026/09/20/linke-afd-wahl-berlin-mv" },
-      { "land": "Bade-Wurtemberg et Rhénanie-Palatinat", "date": "2026-03", "resultat": null, "statut": "introuvable" }
+      {
+        "land": "Saxe-Anhalt",
+        "date": "2026-09-06",
+        "resultat": "AfD 43,8 %, CDU 17,2 %, SPD 9,3 %, Verts 8,9 %, Linke 8,6 %. Majorité absolue manquée par l'AfD, formation du gouvernement ouverte.",
+        "url": "https://www.bpb.de/kurz-knapp/hintergrund-aktuell/581006/landtagswahl-in-sachsen-anhalt-2026-afd-staerkste-kraft/"
+      },
+      {
+        "land": "Mecklembourg-Poméranie-Occidentale",
+        "date": "2026-09-20",
+        "resultat": "AfD environ 38 % et en tête, SPD juste derrière, CDU hors du Landtag. Merz parle de « désastre ».",
+        "url": "https://www.zdfheute.de/politik/deutschland/wahl-mecklenburg-vorpommern-2026-wahl-berlin-reaktionen-parteien-liveticker-100.html"
+      },
+      {
+        "land": "Berlin",
+        "date": "2026-09-20",
+        "resultat": "Die Linke en tête avec environ 25 %.",
+        "url": "https://de.euronews.com/2026/09/20/linke-afd-wahl-berlin-mv"
+      },
+      {
+        "land": "Bade-Wurtemberg et Rhénanie-Palatinat",
+        "date": "2026-03",
+        "resultat": null,
+        "statut": "introuvable"
+      }
     ],
     "dossiers_chauds": [
       "Adoption du budget fédéral 2027 en novembre 2026 : endettement record grâce à l'exemption défense",
@@ -302,65 +597,121 @@
       "Charge d'intérêts fédérale qui doublerait entre 2027 et 2030"
     ],
     "echeances": [
-      { "date": "2026-11", "type": "vote_budget", "note": "Adoption du budget 2027 au Bundestag." },
-      { "date": "2029", "type": "bundestag", "note": "Élection fédérale régulière (législature de 4 ans à partir du 25/03/2025). Date exacte non collectée." }
+      {
+        "date": "2026-11",
+        "type": "vote_budget",
+        "note": "Adoption du budget 2027 au Bundestag."
+      },
+      {
+        "date": "2029",
+        "type": "bundestag",
+        "note": "Élection fédérale régulière (législature de 4 ans à partir du 25/03/2025). Date exacte non collectée."
+      }
     ],
     "contraintes_institutionnelles": [
-      { "id": "art67", "description": "Motion de défiance constructive : l'opposition doit élire un nouveau Chancelier à la majorité absolue." },
-      { "id": "art68", "description": "Question de confiance : en cas d'échec, le Président fédéral peut dissoudre le Bundestag." },
-      { "id": "schuldenbremse", "description": "Frein à l'endettement inscrit dans la Constitution. Toute réforme demande une majorité des deux tiers au Bundestag et au Bundesrat." },
-      { "id": "bundesrat", "description": "Les lois qui touchent les Länder (lois Zustimmungsgesetze) doivent être approuvées par le Bundesrat." },
-      { "id": "karlsruhe", "description": "La Cour constitutionnelle a annulé en 2023 la réaffectation de 60 Md€ de crédits Covid au climat : risque juridique sur les montages budgétaires." }
+      {
+        "id": "art67",
+        "description": "Motion de défiance constructive : l'opposition doit élire un nouveau Chancelier à la majorité absolue."
+      },
+      {
+        "id": "art68",
+        "description": "Question de confiance : en cas d'échec, le Président fédéral peut dissoudre le Bundestag."
+      },
+      {
+        "id": "schuldenbremse",
+        "description": "Frein à l'endettement inscrit dans la Constitution. Toute réforme demande une majorité des deux tiers au Bundestag et au Bundesrat."
+      },
+      {
+        "id": "bundesrat",
+        "description": "Les lois qui touchent les Länder (lois Zustimmungsgesetze) doivent être approuvées par le Bundesrat."
+      },
+      {
+        "id": "karlsruhe",
+        "description": "La Cour constitutionnelle a annulé en 2023 la réaffectation de 60 Md€ de crédits Covid au climat : risque juridique sur les montages budgétaires."
+      }
     ]
   },
-
   "international": {
-    "alliances": ["Union européenne", "Zone euro", "OTAN", "G7", "G20"],
+    "alliances": [
+      "Union européenne",
+      "Zone euro",
+      "OTAN",
+      "G7",
+      "G20"
+    ],
     "engagement_otan": {
       "valeur": "5 % du PIB d'ici 2035, dont 3,5 % de défense militaire",
       "source": "Sommet de l'OTAN à La Haye (juin 2025)",
-      "url": "https://allnews.ch/node/140979", "date": "2025-06", "statut": "secondaire"
+      "url": "https://allnews.ch/node/140979",
+      "date": "2025-06",
+      "statut": "secondaire"
     },
     "depenses_securite_2027": {
       "valeur": "Plus de 130 Md€ : défense 109,7 + Ukraine 11,6 + autres postes de sécurité 9,4",
-      "url": "https://fr.businessam.be/?p=273751", "date": "2026", "statut": "secondaire"
+      "url": "https://fr.businessam.be/?p=273751",
+      "date": "2026",
+      "statut": "secondaire"
     },
-    "aide_publique_developpement": { "valeur": null, "statut": "introuvable" },
-    "pret_safe_ue": { "valeur": 0, "statut": "secondaire", "url": "https://www.grosswald.org/safe-defence-loans-tracker/", "note": "L'Allemagne ne participerait pas aux prêts SAFE, selon un suivi indépendant non confirmé par la Commission." },
-    "position_budget_ue": { "valeur": "Contributeur net. Avec les Pays-Bas, l'Autriche, le Danemark, la Finlande et la Suède, demande des coupes dans le cadre financier 2028-2034.", "url": "https://www.france-epargne.fr/news/budget-de-lue-six-contributeurs-nets-veulent-reduire-les-1-985-milliards-proposes", "statut": "secondaire" },
+    "aide_publique_developpement": {
+      "valeur": null,
+      "statut": "introuvable"
+    },
+    "pret_safe_ue": {
+      "valeur": 0,
+      "statut": "secondaire",
+      "url": "https://www.grosswald.org/safe-defence-loans-tracker/",
+      "note": "L'Allemagne ne participerait pas aux prêts SAFE, selon un suivi indépendant non confirmé par la Commission."
+    },
+    "position_budget_ue": {
+      "valeur": "Contributeur net. Avec les Pays-Bas, l'Autriche, le Danemark, la Finlande et la Suède, demande des coupes dans le cadre financier 2028-2034.",
+      "url": "https://www.france-epargne.fr/news/budget-de-lue-six-contributeurs-nets-veulent-reduire-les-1-985-milliards-proposes",
+      "statut": "secondaire"
+    },
     "commerce": "Premier excédent commercial de l'UE. Exposition aux droits de douane américains et à la concurrence chinoise.",
     "conflits_crises": [
       "Guerre en Iran depuis fin février 2026 (voir _contexte-mondial.json)",
       "Guerre en Ukraine : deuxième contributeur d'aide militaire"
     ]
   },
-
   "recherche_climat": {
     "dird_pct_pib": {
-      "valeur": 3.17, "unite": "% PIB", "periode": "2024",
+      "valeur": 3.17,
+      "unite": "% PIB",
+      "periode": "2024",
       "source": "Destatis (via statistiken-aktuell.de), Stifterverband",
       "url": "https://statistiken-aktuell.de/fe-monitor-deutschland/",
-      "date": "2026", "statut": "secondaire",
+      "date": "2026",
+      "statut": "secondaire",
       "note": "137,1 Md€, plus haut depuis 1995. Entreprises : 2,14 % du PIB. Objectif de 3,5 % repoussé à 2030."
     },
     "emissions_ges": {
-      "valeur": 648.9, "unite": "MtCO2e", "periode": "2025",
+      "valeur": 648.9,
+      "unite": "MtCO2e",
+      "periode": "2025",
       "source": "Umweltbundesamt (UBA), données d'émissions 2025",
       "url": "https://www.umweltbundesamt.de/presse/pressemitteilungen/treibhausgasdaten-zeigen-klimaschutz-braucht-neuen",
-      "date": "2026-03-14", "statut": "officiel",
+      "date": "2026-03-14",
+      "statut": "officiel",
       "note": "-0,1 % sur un an et -48 % par rapport à 1990. Transports 146,3 Mt, bâtiment 103,4 Mt, industrie 144,1 Mt. Il faudrait -42 Mt par an jusqu'en 2030."
     },
     "objectif_climat_2030": {
       "valeur": "-65 % par rapport à 1990 (loi sur la protection du climat, KSG)",
-      "url": "https://www.umweltbundesamt.de/indikator-emission-von-treibhausgasen", "statut": "officiel"
+      "url": "https://www.umweltbundesamt.de/indikator-emission-von-treibhausgasen",
+      "statut": "officiel"
     },
-    "objectif_neutralite": { "valeur": 2045, "statut": "officiel" },
+    "objectif_neutralite": {
+      "valeur": 2045,
+      "statut": "officiel"
+    },
     "mix_electrique": {
-      "valeur": { "renouvelables_pct_conso_brute": 55.1 },
+      "valeur": {
+        "renouvelables_pct_conso_brute": 55.1
+      },
       "periode": "2025",
       "source": "AGEE-Stat / UBA",
       "url": "https://www.umweltbundesamt.de/themen/erneuerbare-energien-in-deutschland-wachstum-2025",
-      "date": "2026-03", "statut": "officiel",
+      "date": "2026-03",
+      "statut": "officiel",
       "note": "Autres mesures : 57,9 % de la production brute (BDEW), 58,6 % de la production intérieure (Destatis)."
     }
   }
