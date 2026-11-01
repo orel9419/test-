@@ -24,6 +24,7 @@
  */
 
 import { REFORMES_FRANCE } from './reformesFrance.js';
+import { REFORMES_LIBERALES, REFORMES_SOCIALES } from './reformesOrientations.js';
 
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const indicePrix = (e) => e.macro.niveauPrix / 100;
@@ -814,4 +815,15 @@ const VEHICULES = {
 };
 for (const r of REFORMES_COMMUNES) if (!r.vehicule && VEHICULES[r.id]) r.vehicule = VEHICULES[r.id];
 
-export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE];
+/**
+ * Orientation indicative des réformes existantes (les nouvelles la portent
+ * directement). Beaucoup de réformes se discutent des deux côtés : seules
+ * celles dont l'inspiration est nette sont classées.
+ */
+const ORIENTATIONS = {
+  liberale: ['annualisation', 'plafond_aides_smic', 'travail_dimanche', 'non_remplacement', 'privatisations', 'tva_sociale', 'cvae', 'capi_per', 'capi_pilier', 'capi_transition', 'jour_ferie', 'agences_operateurs', 'fonction_publique_temps', 'ir_classes_moyennes', 'cumul_emploi_retraite'],
+  sociale: ['retraites_penibilite', 'retraites_minimum', 'retraites_carrieres_longues', 'taxe_hauts_patrimoines', 'surtaxe_grandes_entreprises', 'rachats_actions', 'cdhr', 'taxe_holdings', 'prime_activite', 'deserts_medicaux', 'plan_hopital', 'enseignants', 'bouclier_energie', 'taxe_superprofits', 'vie_chere_outremer'],
+};
+for (const [orientation, ids] of Object.entries(ORIENTATIONS)) for (const r of [...REFORMES_COMMUNES, ...REFORMES_FRANCE]) if (ids.includes(r.id)) r.orientation = orientation;
+
+export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES];

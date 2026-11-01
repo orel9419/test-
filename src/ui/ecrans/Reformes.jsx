@@ -18,6 +18,7 @@ const VEHICULES = {
   PLFSS: { nom: 'Financement de la Sécu', aide: 'Projet de loi de financement de la Sécurité sociale : le 49.3 y est utilisable sans limite.' },
   loi: { nom: 'Loi ordinaire', aide: 'Loi ordinaire : il faut une majorité ; un seul 49.3 par session pour les textes non financiers.' },
   'décret': { nom: 'Décret', aide: 'Décret ou mesure réglementaire : pas de vote au Parlement, application rapide.' },
+  'loi constitutionnelle': { nom: 'Révision constitutionnelle', aide: 'Révision de la Constitution : trois cinquièmes des suffrages exprimés au Congrès, pas de 49.3 possible.' },
 };
 
 /** Résultat d'un chiffrage par simulation. */
@@ -47,6 +48,10 @@ function pronostic(partie, r, option) {
   if (!r.vote) return { classe: 'bon', texte: 'Pas de vote' };
   if (partie.pays !== 'france') return null;
   const v = voterTexte(partie, [{ id: r.id, option }]);
+  if (r.majoriteRenforcee) {
+    const ok = v.pour >= 0.6 * (v.pour + v.contre);
+    return { classe: ok ? 'bon' : 'mauvais', texte: `${ok ? 'Trois cinquièmes atteints' : 'Trois cinquièmes non atteints'} (${v.pour} pour, ${v.contre} contre)`, vote: v };
+  }
   const financier = ['PLF', 'PLFSS'].includes(r.vehicule);
   if (v.adopte) return { classe: 'bon', texte: `Majorité probable (${v.pour} pour, ${v.contre} contre)`, vote: v };
   return { classe: financier ? 'moyen' : 'mauvais', texte: `${financier ? '49.3 nécessaire' : 'Rejet probable'} (${v.pour} pour, ${v.contre} contre)`, vote: v };
@@ -60,6 +65,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
   const [theme, setTheme] = useState('tous');
   const [recherche, setRecherche] = useState('');
   const [majoritaires, setMajoritaires] = useState(false);
+  const [orientation, setOrientation] = useState('toutes');
   const proposees = decisions.reformes;
   const fr = partie.pays === 'france';
   const us = partie.pays === 'etatsUnis';
@@ -78,10 +84,12 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
     }, 20);
   };
 
-  const themesPresents = Object.keys(THEMES).filter((t) => liste.some((r) => r.categorie === t));
+  const selonOrientation = liste.filter((r) => orientation === 'toutes' || r.orientation === orientation);
+  const themesPresents = Object.keys(THEMES).filter((t) => selonOrientation.some((r) => r.categorie === t));
   const filtre = recherche.trim().toLowerCase();
   const visibles = liste.filter((r) => {
     if (theme !== 'tous' && r.categorie !== theme) return false;
+    if (orientation !== 'toutes' && r.orientation !== orientation) return false;
     if (filtre && !`${r.nom} ${r.resume}`.toLowerCase().includes(filtre)) return false;
     if (majoritaires) { const p = pronostic(partie, r, options[r.id] ?? r.options[0].id); if (p && p.classe === 'mauvais') return false; }
     return true;
@@ -151,10 +159,20 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
           <input type="search" placeholder="Rechercher une réforme…" value={recherche} onChange={(ev) => setRecherche(ev.target.value)} aria-label="Rechercher une réforme" className="champ-recherche" />
           {fr && <label className="petit"><input type="checkbox" checked={majoritaires} onChange={(ev) => setMajoritaires(ev.target.checked)} /> Seulement celles qui peuvent passer</label>}
         </div>
+        {fr && (
+          <div className="puces" role="tablist" aria-label="Orientation">
+            {[['toutes', 'Toutes orientations'], ['liberale', 'Libérales'], ['sociale', 'Sociales']].map(([id, nom]) => (
+              <button key={id} type="button" role="tab" aria-selected={orientation === id} className={`puce orientation-${id} ${orientation === id ? 'active' : ''}`} onClick={() => setOrientation(id)}>
+                {nom}{id !== 'toutes' && ` (${liste.filter((r) => r.orientation === id).length})`}
+              </button>
+            ))}
+            <Info texte="Orientation indicative : libérale (marché, baisse des prélèvements et de la dépense, flexibilité) ou sociale (redistribution, protection, services publics). Beaucoup de réformes se discutent des deux côtés." />
+          </div>
+        )}
         <div className="puces" role="tablist" aria-label="Thèmes">
-          <button type="button" role="tab" aria-selected={theme === 'tous'} className={`puce ${theme === 'tous' ? 'active' : ''}`} onClick={() => setTheme('tous')}>Tous ({liste.length})</button>
+          <button type="button" role="tab" aria-selected={theme === 'tous'} className={`puce ${theme === 'tous' ? 'active' : ''}`} onClick={() => setTheme('tous')}>Tous ({selonOrientation.length})</button>
           {themesPresents.map((t) => (
-            <button key={t} type="button" role="tab" aria-selected={theme === t} className={`puce ${theme === t ? 'active' : ''}`} onClick={() => setTheme(t)}>{THEMES[t]} ({liste.filter((r) => r.categorie === t).length})</button>
+            <button key={t} type="button" role="tab" aria-selected={theme === t} className={`puce ${theme === t ? 'active' : ''}`} onClick={() => setTheme(t)}>{THEMES[t]} ({selonOrientation.filter((r) => r.categorie === t).length})</button>
           ))}
         </div>
       </div>
@@ -176,6 +194,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                 <div className="ligne espace">
                   <strong>{r.nom}</strong>
                   <span className="ligne">
+                    {r.orientation && <span className={`etiquette orientation-${r.orientation}`}>{r.orientation === 'liberale' ? 'Libérale' : 'Sociale'}</span>}
                     {v && <span className="etiquette" title={v.aide}>{v.nom}</span>}
                     {pr && <span className={`pronostic ${pr.classe}`} title="Pronostic du vote à l'Assemblée pour cette réforme seule, avec l'option choisie">{pr.texte}</span>}
                     {r.compensation && <span className="etiquette">compensation</span>}

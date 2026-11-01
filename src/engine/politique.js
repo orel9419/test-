@@ -334,6 +334,22 @@ export function validerReformes(e, reformes, procedure = 'vote') {
 
   if (e.pays === 'etatsUnis') return validerReformesEtatsUnis(e, legislatives, directes, positions, saillance, procedure);
 
+  // France : révision constitutionnelle (règle d'or...) : trois cinquièmes des suffrages exprimés au Congrès, pas de 49.3 possible
+  const constitutionnelles = legislatives.filter((r) => trouverReforme(r.id)?.majoriteRenforcee);
+  if (constitutionnelles.length) {
+    const vc = voterTexte(e, constitutionnelles);
+    const exprimes = vc.pour + vc.contre;
+    if (vc.pour < 0.6 * exprimes) {
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Révision constitutionnelle rejetée : ${vc.pour} voix pour sur ${exprimes} suffrages exprimés, il en faut les trois cinquièmes.` });
+      const reste = legislatives.filter((r) => !constitutionnelles.includes(r));
+      if (!reste.length) return { acceptees: directes, rejet: { raison: `Révision constitutionnelle : ${vc.pour} voix sur ${exprimes} exprimées, trois cinquièmes nécessaires.`, vote: vc } };
+      return validerReformes(e, [...directes, ...reste], procedure);
+    }
+    if (legislatives.length === constitutionnelles.length) {
+      pol.votes.push({ tour: e.tour, texte: 'Révision constitutionnelle (Congrès)', ...resumeVote(vc) });
+      return { acceptees: reformes, rejet: null, vote: vc };
+    }
+  }
   // France : le texte est jugé sur son contenu
   const vote = voterTexte(e, legislatives);
   pol.votes.push({ tour: e.tour, texte: 'Projet de loi de réformes', ...resumeVote(vote) });

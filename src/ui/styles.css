@@ -312,3 +312,8 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 .reforme-proposee { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
 .capitalisation { border-top: 3px solid var(--serie-3); }
 details ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+
+.etiquette.orientation-liberale { background: color-mix(in srgb, var(--serie-1) 16%, transparent); color: var(--encre); }
+.etiquette.orientation-sociale { background: color-mix(in srgb, var(--serie-5) 18%, transparent); color: var(--encre); }
+.puce.orientation-liberale.active { background: var(--serie-1); border-color: var(--serie-1); }
+.puce.orientation-sociale.active { background: var(--serie-5); border-color: var(--serie-5); color: #fff; }

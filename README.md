@@ -39,7 +39,7 @@ Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France,
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **58 réformes** couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   En France, **88 réformes** (dont 30 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.
@@ -174,7 +174,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes (dont reformesFrance.js), actions diplomatiques,
+src/data/               catalogues : réformes (dont reformesFrance.js et reformesOrientations.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
 src/ui/                 interface React (écrans, composants, sauvegarde)
 tests/                  tests unitaires (Vitest)

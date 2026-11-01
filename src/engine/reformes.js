@@ -20,7 +20,7 @@ export function reformesDisponibles(e) {
       id: r.id, nom: r.nom, categorie: r.categorie, resume: r.resume, pedagogie: r.pedagogie, sources: r.sources ?? [],
       options: r.options, chiffrage: r.chiffrage, compensation: !!r.compensation, majoriteRenforcee: !!r.majoriteRenforcee,
       vehicule: r.vote === false ? (r.vehicule ?? 'décret') : (r.vehicule ?? 'loi'), vote: r.vote !== false,
-      pour: r.pour ?? [], contre: r.contre ?? [], exemples: r.exemples ?? [],
+      pour: r.pour ?? [], contre: r.contre ?? [], exemples: r.exemples ?? [], orientation: r.orientation ?? null,
       active: active ? active.option : null, disponible: !dejaUnique,
     };
   });

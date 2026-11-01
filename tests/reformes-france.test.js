@@ -17,9 +17,9 @@ const nouvelle = (options = {}) => creerPartie({ pays: 'france', donnees: lire('
 const SANS = { evenementsActifs: false, sansPolitique: true, forcerReformes: true };
 
 describe('Catalogue de réformes (France)', () => {
-  it('propose au moins 40 réformes réparties en au moins 12 thèmes', () => {
+  it('propose au moins 80 réformes réparties en au moins 12 thèmes', () => {
     const liste = reformesDisponibles(nouvelle());
-    expect(liste.length).toBeGreaterThanOrEqual(40);
+    expect(liste.length).toBeGreaterThanOrEqual(80);
     expect(new Set(liste.map((r) => r.categorie)).size).toBeGreaterThanOrEqual(12);
     for (const r of liste) {
       expect(r.vehicule).toBeTruthy();
@@ -33,6 +33,29 @@ describe('Catalogue de réformes (France)', () => {
     for (let k = 0; k < 3; k++) e = jouerTour(e, {}, SANS);
     expect(Number.isFinite(e.finances.deficitRatio)).toBe(true);
     expect(Number.isFinite(e.macro.pibNominal)).toBe(true);
+  });
+});
+
+describe('Réformes libérales et sociales', () => {
+  it('au moins 15 réformes de chaque orientation', () => {
+    const liste = reformesDisponibles(nouvelle());
+    expect(liste.filter((r) => r.orientation === 'liberale').length).toBeGreaterThanOrEqual(15);
+    expect(liste.filter((r) => r.orientation === 'sociale').length).toBeGreaterThanOrEqual(15);
+  });
+  it('une révision constitutionnelle exige les trois cinquièmes des suffrages exprimés', () => {
+    const e = nouvelle();
+    const r = validerReformes(e, [{ id: 'regle_or', option: 'oui' }], '49.3');
+    const v = voterTexte(e, [{ id: 'regle_or', option: 'oui' }]);
+    if (v.pour < 0.6 * (v.pour + v.contre)) {
+      expect(r.acceptees.length).toBe(0);
+      expect(r.rejet.raison).toMatch(/trois cinquièmes/);
+    } else expect(r.rejet).toBeNull();
+  });
+  it('les réformes sociales consensuelles trouvent une majorité, la flat tax non', () => {
+    const e = nouvelle();
+    expect(voterTexte(e, [{ id: 'grand_age', option: 'oui' }]).adopte).toBe(true);
+    expect(voterTexte(e, [{ id: 'travailleurs_plateformes', option: 'oui' }]).adopte).toBe(true);
+    expect(voterTexte(e, [{ id: 'flat_tax', option: 'vingt_cinq' }]).adopte).toBe(false);
   });
 });
 
