@@ -317,3 +317,44 @@ details ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
 .etiquette.orientation-sociale { background: color-mix(in srgb, var(--serie-5) 18%, transparent); color: var(--encre); }
 .puce.orientation-liberale.active { background: var(--serie-1); border-color: var(--serie-1); }
 .puce.orientation-sociale.active { background: var(--serie-5); border-color: var(--serie-5); color: #fff; }
+
+/* --- Application installée et mobile ------------------------------------------- */
+html, body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+body { background: var(--plan); }
+.entete { padding-top: max(0.6rem, env(safe-area-inset-top)); padding-left: max(1.2rem, env(safe-area-inset-left)); padding-right: max(1.2rem, env(safe-area-inset-right)); }
+.nom-court { display: none; }
+.onglet-contenu { display: inline-flex; align-items: center; }
+.barre-validation-mobile { display: none; }
+.installation { border-left: 4px solid var(--accent); }
+@media (max-width: 760px) {
+  .entete { position: static; gap: 0.5rem; }
+  .entete .indicateurs { gap: 0.8rem; }
+  .progression-mandat { display: none; }
+  .mise-en-page { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
+  .navigation {
+    position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 40; flex-direction: row; gap: 0; overflow-x: auto;
+    background: var(--surface); border-top: 1px solid var(--bordure); box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    height: calc(64px + env(safe-area-inset-bottom)); align-items: stretch;
+    padding: 0.2rem 0.2rem calc(0.2rem + env(safe-area-inset-bottom)); scrollbar-width: none;
+  }
+  .navigation::-webkit-scrollbar { display: none; }
+  .onglet { position: relative; flex: 0 0 auto; min-width: 68px; padding: 0.3rem 0.25rem; justify-content: center; border-radius: 10px; }
+  .onglet-contenu { flex-direction: column; gap: 0.05rem; font-size: 0.68rem; line-height: 1.1; }
+  .onglet-icone { width: auto; font-size: 1.3rem; }
+  .nom-long { display: none; }
+  .nom-court { display: inline; }
+  .onglet .pastille, .onglet .etiquette { position: absolute; top: 0; right: 4px; font-size: 0.62rem; padding: 0 0.3rem; }
+  .barre-validation-mobile {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    position: fixed; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom)); z-index: 41;
+    padding: 0.45rem 0.8rem; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--bordure);
+  }
+  .barre-validation-mobile .bouton { flex-shrink: 0; }
+  .notifications { bottom: calc(120px + env(safe-area-inset-bottom)); }
+  .visite { bottom: calc(120px + env(safe-area-inset-bottom)); }
+  .colonne-droite .bouton-valider { display: none; }
+}
+@media (display-mode: standalone) {
+  .entete { padding-top: max(0.8rem, env(safe-area-inset-top)); }
+}

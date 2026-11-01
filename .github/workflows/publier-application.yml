@@ -1,0 +1,37 @@
+# Publie l'application (version installable) sur GitHub Pages, branche gh-pages,
+# à chaque mise à jour du jeu. Activation unique dans le dépôt :
+# Settings > Pages > Build and deployment > Source : « Deploy from a branch », branche gh-pages, dossier / (root).
+name: Publier l'application
+
+on:
+  push:
+    branches: [claude/chef-de-gouvernement, main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publier-application
+  cancel-in-progress: true
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: touch dist/.nojekyll
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Publication de l'application"

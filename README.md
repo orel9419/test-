@@ -26,6 +26,18 @@ npm run simuler -- allemagne rigueur
 npm run simuler -- etatsUnis statu_quo --mode=expert
 ```
 
+## Installer l'application sur un téléphone ou un ordinateur
+
+Le jeu est une **application web installable** (PWA). Une fois installée, elle s'ouvre en plein écran depuis une icône et fonctionne **hors connexion** après la première visite.
+
+1. Publication : à chaque mise à jour, le workflow `.github/workflows/publier-application.yml` construit le jeu et le publie sur la branche `gh-pages`. Il faut l'activer une fois dans le dépôt : **Settings → Pages → Source : « Deploy from a branch », branche `gh-pages`, dossier `/ (root)`**. L'adresse est alors `https://<compte>.github.io/<dépôt>/`.
+2. Installation :
+   - **Android** (Chrome) : ouvrir l'adresse, puis toucher « Installer » sur l'écran d'accueil du jeu, ou le menu ⋮ → « Installer l'application » ;
+   - **iPhone et iPad** (Safari) : bouton Partager → « Sur l'écran d'accueil » ;
+   - **ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
+
+Sur mobile, la navigation passe dans une barre en bas de l'écran, avec un bouton « Valider le trimestre » toujours accessible. La partie est sauvegardée sur l'appareil ; le bouton « Sauvegarder » permet aussi de la copier pour la reprendre ailleurs.
+
 ## Comment jouer
 
 Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France, 16 pour l'Allemagne, 9 pour les États-Unis (jusqu'à la présidentielle de novembre 2028). À chaque tour, vous pouvez :
@@ -176,7 +188,8 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   score.js              score final
 src/data/               catalogues : réformes (dont reformesFrance.js et reformesOrientations.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
-src/ui/                 interface React (écrans, composants, sauvegarde)
+src/ui/                 interface React (écrans, composants, sauvegarde, installation)
+public/                 manifeste de l'application, service worker (hors connexion), icônes
 tests/                  tests unitaires (Vitest)
 ```
 

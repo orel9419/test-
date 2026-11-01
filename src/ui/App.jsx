@@ -31,19 +31,19 @@ import Objectifs from './ecrans/Objectifs.jsx';
 import BilanTour from './ecrans/BilanTour.jsx';
 
 const ONGLETS = [
-  { id: 'tableau', nom: 'Tableau de bord', icone: '📊' },
-  { id: 'budget', nom: 'Budget des ministères', icone: '🏛️' },
-  { id: 'fiscalite', nom: 'Impôts et dette', icone: '💶' },
-  { id: 'reformes', nom: 'Réformes', icone: '📜' },
-  { id: 'parlement', nom: 'Parlement', icone: '🗳️' },
-  { id: 'entreprises', nom: 'Entreprises et État stratège', icone: '🏭' },
-  { id: 'opinion', nom: 'Opinion et élections', icone: '📣' },
-  { id: 'diplomatie', nom: 'Diplomatie', icone: '🌍' },
-  { id: 'rendezvous', nom: 'Grands rendez-vous', icone: '🏅' },
-  { id: 'evenements', nom: 'Événements', icone: '⚡' },
-  { id: 'menages', nom: 'Ménages', icone: '👪' },
-  { id: 'journal', nom: 'Journal', icone: '🗞️' },
-  { id: 'sources', nom: 'Données et sources', icone: '🔎' },
+  { id: 'tableau', nom: 'Tableau de bord', court: 'Accueil', icone: '📊' },
+  { id: 'reformes', nom: 'Réformes', court: 'Réformes', icone: '📜' },
+  { id: 'budget', nom: 'Budget des ministères', court: 'Budget', icone: '🏛️' },
+  { id: 'parlement', nom: 'Parlement', court: 'Parlement', icone: '🗳️' },
+  { id: 'evenements', nom: 'Événements', court: 'Événements', icone: '⚡' },
+  { id: 'fiscalite', nom: 'Impôts et dette', court: 'Impôts', icone: '💶' },
+  { id: 'entreprises', nom: 'Entreprises et État stratège', court: 'Entreprises', icone: '🏭' },
+  { id: 'opinion', nom: 'Opinion et élections', court: 'Opinion', icone: '📣' },
+  { id: 'diplomatie', nom: 'Diplomatie', court: 'Monde', icone: '🌍' },
+  { id: 'rendezvous', nom: 'Grands rendez-vous', court: 'Sommets', icone: '🏅' },
+  { id: 'menages', nom: 'Ménages', court: 'Ménages', icone: '👪' },
+  { id: 'journal', nom: 'Journal', court: 'Journal', icone: '🗞️' },
+  { id: 'sources', nom: 'Données et sources', court: 'Sources', icone: '🔎' },
 ];
 
 const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false };
@@ -267,7 +267,7 @@ export default function App() {
           <nav className="navigation" aria-label="Sections">
             {ONGLETS.map((o) => (
               <button key={o.id} type="button" className={`onglet ${onglet === o.id ? 'actif' : ''}`} onClick={() => setOnglet(o.id)} aria-current={onglet === o.id ? 'page' : undefined}>
-                <span><span className="onglet-icone" aria-hidden="true">{o.icone}</span>{nomOnglet(o)}</span>
+                <span className="onglet-contenu"><span className="onglet-icone" aria-hidden="true">{o.icone}</span><span className="nom-long">{nomOnglet(o)}</span><span className="nom-court">{o.id === 'parlement' && us ? 'Congrès' : o.court}</span></span>
                 {o.id === 'evenements' && nbEvenements > 0 && <span className="pastille pulse">{nbEvenements}</span>}
                 {o.id === 'reformes' && decisions.reformes.length > 0 && <span className="etiquette">{decisions.reformes.length}</span>}
                 {o.id === 'diplomatie' && decisions.diplomatie.length > 0 && <span className="etiquette">{decisions.diplomatie.length}</span>}
@@ -310,6 +310,12 @@ export default function App() {
             {mode.conseiller && onglet !== 'tableau' && <Conseiller conseils={conseils} allerA={setOnglet} compact />}
             <Objectifs partie={partie} />
           </aside>
+        </div>
+      )}
+      {!partie.termine && (
+        <div className="barre-validation-mobile">
+          <span className="petit">{libelleTrimestre(partie.trimestre)}{decisions.reformes.length ? ` · ${decisions.reformes.length} réforme(s)` : ''}{nbEvenements ? ` · ${nbEvenements} événement(s)` : ''}</span>
+          <button type="button" className="bouton principal" onClick={validerTour}>Valider le trimestre</button>
         </div>
       )}
       {bilan && <BilanTour avant={bilan.avant} apres={bilan.apres} onFermer={() => { setBilan(null); notifier(attente.current); attente.current = []; }} onAnnuler={precedent ? annulerTour : null} />}

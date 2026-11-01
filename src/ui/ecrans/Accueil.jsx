@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { etatInstallation, suivreInstallation, installer } from '../installation.js';
 import { PAYS, PAYS_A_VENIR } from '../donnees.js';
 import { MODES } from '../../model/parametres.js';
 import { pct } from '../format.js';
@@ -19,6 +20,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
         <button type="button" className="bouton" onClick={onTheme} aria-label="Changer de thème">{theme === 'dark' ? '☀︎ Thème clair' : '☾ Thème sombre'}</button>
       </div>
 
+      <Installation />
       {message && <div className="alerte" role="status">{message}</div>}
       {sauvegarde && (
         <div className="carte ligne espace">
@@ -81,6 +83,29 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
 
       <div className="carte petit muet">
         <strong>Comment jouer.</strong> Un tour = un trimestre. À chaque tour, répartissez le budget entre les ministères, fixez les impôts, proposez des réformes (avec leurs compensations), pilotez les participations de l'État et les fleurons, agissez à l'international, préparez les grands rendez-vous et tranchez les événements, puis validez (Ctrl + Entrée). Les données de départ sont sourcées (onglet « Données et sources ») ; les paramètres du modèle sont des hypothèses documentées.
+      </div>
+    </div>
+  );
+}
+
+/** Proposition d'installer le jeu comme une application (écran d'accueil, plein écran, hors connexion). */
+function Installation() {
+  const [etat, setEtat] = useState(etatInstallation);
+  const [ferme, setFerme] = useState(false);
+  useEffect(() => suivreInstallation(() => setEtat(etatInstallation())), []);
+  if (ferme || etat.installee || etat.integree || (!etat.possible && !etat.ios)) return null;
+  return (
+    <div className="carte installation ligne espace">
+      <div className="ligne" style={{ flexWrap: 'nowrap' }}>
+        <img src="./icones/icone-192.png" alt="" width="44" height="44" style={{ borderRadius: 10 }} />
+        <div>
+          <strong>Installer l'application</strong>
+          <div className="petit muet">{etat.ios ? 'Sur iPhone ou iPad : touchez le bouton Partager, puis « Sur l\'écran d\'accueil ».' : 'Icône sur l\'écran d\'accueil, plein écran et jeu hors connexion.'}</div>
+        </div>
+      </div>
+      <div className="ligne">
+        {etat.possible && <button type="button" className="bouton principal" onClick={() => installer()}>Installer</button>}
+        <button type="button" className="bouton" onClick={() => setFerme(true)}>Plus tard</button>
       </div>
     </div>
   );
