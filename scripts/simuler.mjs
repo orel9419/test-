@@ -2,7 +2,7 @@
  * Simulation en ligne de commande : joue une partie avec des décisions
  * scénarisées et affiche les indicateurs clés. Sert à vérifier le moteur.
  *
- * Usage : npm run simuler -- [france|allemagne] [scenario]
+ * Usage : npm run simuler -- [france|allemagne|etatsUnis] [scenario]
  * Scénarios : statu_quo, retraites_65_compensees, 39h_exo2, rigueur, rigueur_compromis, relance
  * Option : --sans-politique (ni vote ni élection : effets économiques seuls)
  */
@@ -13,7 +13,8 @@ const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const pays = args[0] ?? 'france';
 const scenario = args[1] ?? 'statu_quo';
 const options = process.argv.includes('--sans-politique') ? { sansPolitique: true, forcerReformes: true } : {};
-const lire = (f) => JSON.parse(readFileSync(new URL(`../countries/${f}.json`, import.meta.url), 'utf8'));
+const FICHIERS = { etatsUnis: 'etats-unis' };
+const lire = (f) => JSON.parse(readFileSync(new URL(`../countries/${FICHIERS[f] ?? f}.json`, import.meta.url), 'utf8'));
 
 const SCENARIOS = {
   statu_quo: () => ({}),

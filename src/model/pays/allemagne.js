@@ -110,7 +110,10 @@ export function profilAllemagne(d) {
       nbTours: 16, // mandat de 4 ans
       echeances: [
         { id: 'budget2027', annee: 2026, t: 4, type: 'vote_budget', nom: 'Vote du budget fédéral 2027 (novembre)' },
+        { id: 'landtag2027a', annee: 2027, t: 2, type: 'landtag', laender: ['Schleswig-Holstein', 'Sarre', 'Rhénanie-du-Nord-Westphalie', 'Brême'], nom: 'Élections régionales : Schleswig-Holstein et Sarre (18 avril), Rhénanie-du-Nord-Westphalie (25 avril), Brême (mai, à vérifier)' },
+        { id: 'landtag2027b', annee: 2027, t: 3, type: 'landtag', laender: ['Basse-Saxe'], nom: 'Élection régionale en Basse-Saxe (septembre 2027)' },
         { id: 'cotisationsRetraite2028', annee: 2028, t: 1, type: 'loi', nom: 'Cotisation retraite prévue à 19,8 % (projection)' },
+        { id: 'europeennes2029', annee: 2029, t: 2, type: 'europeennes', nom: 'Élections européennes (juin 2029, date à vérifier)' },
         { id: 'bundestag2029', annee: 2029, t: 1, type: 'legislatives', nom: 'Élections fédérales (Bundestag)', note: 'Date dérivée : 46 à 48 mois après la constitution du Bundestag (25/03/2025).' },
       ],
     },

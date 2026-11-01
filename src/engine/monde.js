@@ -17,6 +17,14 @@ import { borner } from '../model/outils.js';
  */
 export const ENERGIE_DEPART = 0.6 * (117 / 73) * 100 + 0.4 * (97.15 / 32) * 100;
 
+/**
+ * Taux directeur qui s'applique au pays : BCE pour la zone euro, Réserve
+ * fédérale pour les États-Unis.
+ */
+export function tauxDirecteur(e) {
+  return e.statique?.banqueCentrale === 'fed' ? e.monde.tauxFed : e.monde.tauxBCE;
+}
+
 export function etatMondeInitial(contexte) {
   return {
     energie: ENERGIE_DEPART,
@@ -87,6 +95,15 @@ export function majMonde(e, alea, options = {}) {
     + b.poidsEcart * m.ecartZE;
   const brut = m.tauxBCE + b.lissage * (cibleTaux - m.tauxBCE);
   m.tauxBCE = borner(Math.round(brut / b.pas) * b.pas, 0, 6);
+
+  // Réserve fédérale (si le pays joué est les États-Unis) : règle de Taylor sur l'inflation
+  // sous-jacente américaine, l'inflation totale et l'écart de production, lissée, par pas de 0,25.
+  if (options.macroPays && m.tauxFed !== undefined) {
+    const mp = options.macroPays;
+    const cible = 0.75 + mp.inflationSousJacente + 0.5 * (mp.inflationSousJacente - 2) + 0.25 * (mp.inflation - 2) + 0.5 * mp.ecartProduction - (options.pressionSurLaFed ?? 0);
+    const brutFed = m.tauxFed + b.lissage * (cible - m.tauxFed);
+    m.tauxFed = borner(Math.round(brutFed / b.pas) * b.pas, 0, 8);
+  }
 }
 
 /** Initialise l'historique d'énergie de la zone euro pour que le glissement de départ soit cohérent. */

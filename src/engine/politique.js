@@ -14,14 +14,22 @@
  * Allemagne (coalition) : accord de coalition, satisfaction du partenaire
  * (SPD), défections, Bundesrat pour les lois fiscales, majorité des deux
  * tiers pour réviser la Constitution, élection fédérale de 2029.
+ * États-Unis (présidentiel) : le président ne dissout pas et ne peut pas être
+ * renversé, mais il lui faut la Chambre (majorité simple) ET le Sénat
+ * (60 voix pour vaincre l'obstruction, ou 51 par la « réconciliation »
+ * budgétaire, une fois par exercice et hors Social Security), un budget voté
+ * avant le 1er octobre (sinon shutdown) et le relèvement du plafond de la dette.
  */
 import { PARTIS, SONDAGES_DEPART, ACCORD_COALITION } from '../data/partis.js';
 import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
+import { legislativesFrance, electionsDuTrimestre } from './elections.js';
 
 const AXES = ['social', 'fiscal', 'retraites', 'travail', 'ecologie', 'europe', 'marche', 'securite', 'rigueur'];
 const POSTURE = { gouvernement: 1.5, soutien: 0.5, pivot: -0.3, opposition: -1.5 };
+/** Popularité « normale » de l'exécutif, au-delà de laquelle les partis hésitants se rallient (estimation). */
+const POPULARITE_REFERENCE = { france: 26, allemagne: 26, etatsUnis: 38 };
 
 export function initialiserPolitique(e, donnees) {
   const defs = PARTIS[e.pays];
@@ -29,6 +37,9 @@ export function initialiserPolitique(e, donnees) {
   if (e.pays === 'france') {
     const sources = donnees.politique.assemblee_nationale.groupes;
     groupes = defs.map((p) => ({ ...p, sieges: p.siegesEstimes ?? sources.find((g) => g.id === p.id)?.sieges ?? 0 }));
+  } else if (e.pays === 'etatsUnis') {
+    // Chambre : 217 républicains (dont environ 30 au Freedom Caucus), 214 démocrates + 1 indépendant, 3 sièges vacants
+    groupes = defs.map((p) => ({ ...p, sieges: p.siegesEstimes }));
   } else {
     const sources = donnees.politique.bundestag.groupes;
     groupes = defs.map((p) => ({ ...p, sieges: sources.find((g) => g.id === p.id)?.sieges ?? 0 }));
@@ -53,6 +64,15 @@ export function initialiserPolitique(e, donnees) {
     pol.coalition = { partenaire: 'SPD', satisfaction: 45, trimestresCrise: 0, rompue: false, engagements: ACCORD_COALITION.map((x) => ({ id: x.id, nom: x.nom, porteur: x.porteur, respecte: true })) };
     pol.bundesrat = { voix: 69, majorite: 35, soutien: 36, note: 'Soutien estimé : composition après les élections régionales de 2026 non collectée.' };
     pol.intentions = { ...SONDAGES_DEPART.allemagne.intentions };
+  } else if (e.pays === 'etatsUnis') {
+    const senat = donnees?.politique?.senat?.groupes ?? [];
+    pol.senat = { REP: senat.find((g) => g.id === 'REP')?.sieges ?? 53, DEM: senat.find((g) => g.id === 'DEM')?.sieges ?? 47, obstruction: 60 };
+    pol.gouvernementDivise = false;
+    pol.reconciliations = [];
+    pol.shutdown = null;
+    pol.shutdowns = [];
+    pol.plafondDette = { trimestresMesuresExceptionnelles: 0, relevements: [] };
+    pol.presidentielle = { partCamp: SONDAGES_DEPART.etatsUnis.presidentielle.camp, tenue: false };
   } else {
     pol.presidentielle = { partCamp: SONDAGES_DEPART.france.presidentielle2ndTour.camp, tenue: false };
   }
@@ -76,7 +96,10 @@ export function calculerPositions(e, reformesEnPlus = []) {
   p.social += variationPostes(e, ['protectionSociale', 'sante', 'logement', 'education', 'travailEmploi']) / 8;
   p.fiscal += (imp.impotRevenu.taux - 100) / 10 + ((imp.impotSocietes?.taux ?? 0) - (imp.impotSocietes?.tauxRef ?? 0)) / 5
     + ((imp.droitsSuccession?.taux ?? 100) - 100) / 60;
-  p.social -= ((imp.tva.taux - imp.tva.tauxRef) / 4) + ((imp.csg ? imp.csg.taux - imp.csg.tauxRef : 0) / 2);
+  p.social -= (imp.tva ? (imp.tva.taux - imp.tva.tauxRef) / 4 : 0) + ((imp.csg ? imp.csg.taux - imp.csg.tauxRef : 0) / 2)
+    + (imp.droitsDouane ? (imp.droitsDouane.taux - imp.droitsDouane.tauxRef) / 10 : 0);
+  // Droits de douane : position protectionniste (contre l'Europe et le marché ouvert)
+  if (imp.droitsDouane) { p.marche -= (imp.droitsDouane.taux - imp.droitsDouane.tauxRef) / 15; p.europe -= (imp.droitsDouane.taux - imp.droitsDouane.tauxRef) / 15; }
   p.ecologie += variationPostes(e, ['ecologieEnergie', 'transports']) / 10 + ((imp.accisesEnergie?.taux ?? 100) - 100) / 40;
   p.marche += -((imp.impotSocietes?.taux ?? 0) - (imp.impotSocietes?.tauxRef ?? 0)) / 5 - ((imp.cotisations?.taux ?? 100) - 100) / 10;
   p.securite += variationPostes(e, ['defense', 'interieurJustice']) / 10;
@@ -105,15 +128,16 @@ export function satisfaction(e, g, positions = e.politique.positions, saillance 
   let s = POSTURE[g.posture] ?? 0;
   for (const a of AXES) s += 0.8 * (saillance[a] ?? 1) * (g.axes[a] ?? 0) * (positions[a] ?? 0);
   const pop = e.social?.popularite ?? 25;
-  if (g.posture === 'pivot' || g.posture === 'soutien') s += 0.03 * (pop - 26);
-  else if (g.posture === 'opposition') s += 0.01 * (pop - 26);
+  const ref = POPULARITE_REFERENCE[e.pays] ?? 26;
+  if (g.posture === 'pivot' || g.posture === 'soutien') s += 0.03 * (pop - ref);
+  else if (g.posture === 'opposition') s += 0.01 * (pop - ref);
   // Approche des élections : les oppositions durcissent leur position
   if (g.posture === 'opposition' && trimestresAvantElection(e) <= 3) s -= 0.3;
   return s + (g.concessions ?? 0);
 }
 
 function trimestresAvantElection(e) {
-  const prochaine = (e.statique.calendrier.echeances || []).find((x) => ['presidentielle', 'legislatives'].includes(x.type) && (x.annee > e.trimestre.annee || (x.annee === e.trimestre.annee && x.t >= e.trimestre.t)));
+  const prochaine = (e.statique.calendrier.echeances || []).find((x) => ['presidentielle', 'legislatives', 'mi_mandat'].includes(x.type) && (x.annee > e.trimestre.annee || (x.annee === e.trimestre.annee && x.t >= e.trimestre.t)));
   if (!prochaine) return 99;
   return (prochaine.annee - e.trimestre.annee) * 4 + (prochaine.t - e.trimestre.t);
 }
@@ -129,6 +153,10 @@ export function majSatisfactions(e) {
     const censeurs = pol.groupes.filter((g) => g.posture !== 'gouvernement' && g.satisfaction < (g.seuilCensure ?? -0.5)).reduce((s, g) => s + g.sieges, 0);
     pol.siegesCenseurs = censeurs;
     const base = 0.2 + 0.5 * Math.max(0, censeurs - 240) / 50 + (pol.cohabitation ? 0.3 : 0);
+    e.macro.instabilitePolitique = borner(0.7 * e.macro.instabilitePolitique + 0.3 * base + (pol.chocInstabilite ?? 0), 0, 1);
+  } else if (e.pays === 'etatsUnis') {
+    // Instabilité : gouvernement divisé, shutdown, bras de fer sur le plafond de la dette
+    const base = 0.25 + (pol.gouvernementDivise ? 0.15 : 0) + (pol.shutdown ? 0.2 : 0) + (pol.plafondDette?.trimestresMesuresExceptionnelles ? 0.25 : 0);
     e.macro.instabilitePolitique = borner(0.7 * e.macro.instabilitePolitique + 0.3 * base + (pol.chocInstabilite ?? 0), 0, 1);
   } else {
     const c = pol.coalition;
@@ -150,7 +178,8 @@ export function voter(e, positions, saillance = {}) {
   const detail = [];
   for (const g of pol.groupes) {
     let sat = satisfaction(e, g, positions, saillance);
-    let vote = sat > 0.3 ? 'pour' : sat < -0.3 ? 'contre' : 'abstention';
+    // Au Congrès américain, on vote pour ou contre (l'abstention « present » est rarissime)
+    let vote = e.pays === 'etatsUnis' ? (sat > 0 ? 'pour' : 'contre') : sat > 0.3 ? 'pour' : sat < -0.3 ? 'contre' : 'abstention';
     let sieges = g.sieges;
     let defections = 0;
     // Allemagne : défections dans la coalition si le partenaire est mécontent
@@ -160,7 +189,12 @@ export function voter(e, positions, saillance = {}) {
       defections = Math.round(Math.max(0, 35 - satCoalition) / 2);
       if (pol.coalition.rompue && g.partenaire) { vote = sat > 0.3 ? 'pour' : 'contre'; defections = 0; }
     }
-    if (vote === 'pour') { pour += sieges - defections; contre += defections; } else if (vote === 'contre') contre += sieges; else abstention += sieges;
+    if (e.pays === 'etatsUnis') {
+      // Élus peu disciplinés : la part de « oui » croît avec la satisfaction du groupe (de 0 à −0,5 jusqu'à 100 % à +0,5)
+      const oui = Math.round(sieges * borner(0.5 + sat, 0, 1));
+      pour += oui; contre += sieges - oui;
+      defections = vote === 'pour' ? sieges - oui : oui;
+    } else if (vote === 'pour') { pour += sieges - defections; contre += defections; } else if (vote === 'contre') contre += sieges; else abstention += sieges;
     detail.push({ id: g.id, nom: g.nom, sieges, vote, defections, satisfaction: sat });
   }
   return { adopte: pour > contre && (e.pays !== 'allemagne' || pour >= pol.majorite || pour > contre), pour, contre, abstention, detail };
@@ -239,6 +273,8 @@ export function validerReformes(e, reformes, procedure = 'vote') {
     return { acceptees: reformes, rejet: null, vote };
   }
 
+  if (e.pays === 'etatsUnis') return validerReformesEtatsUnis(e, legislatives, directes, positions, saillance, procedure);
+
   // France
   const vote = voter(e, positions, saillance);
   pol.votes.push({ tour: e.tour, texte: 'Projet de loi de réformes', ...resumeVote(vote) });
@@ -256,6 +292,211 @@ export function validerReformes(e, reformes, procedure = 'vote') {
     return { acceptees: censure.adoptee ? [] : reformes, rejet: null, vote, censure };
   }
   return { acceptees: directes, rejet: { raison: `Rejet à l'Assemblée (${vote.pour} pour, ${vote.contre} contre, ${vote.abstention} abstentions).`, vote } };
+}
+
+// ---------------------------------------------------------------------------
+// États-Unis : Sénat, réconciliation, shutdown, plafond de la dette
+// ---------------------------------------------------------------------------
+
+/** Exercice budgétaire fédéral (du 1er octobre au 30 septembre) : FY2027 commence en octobre 2026. */
+export function exerciceBudgetaire(e) {
+  return e.trimestre.annee + (e.trimestre.t === 4 ? 1 : 0);
+}
+
+/**
+ * Catégories de réformes qui peuvent passer par la réconciliation budgétaire
+ * (recettes, dépenses obligatoires, dette). La « règle Byrd » exclut les
+ * dispositions sans effet budgétaire et toute modification de la Social Security.
+ */
+const RECONCILIABLE = ['fiscalite', 'protection_sociale', 'sante', 'energie', 'dette', 'fonction_publique'];
+export function reconciliable(id) {
+  const def = trouverReforme(id);
+  return !!def && RECONCILIABLE.includes(def.categorie) && !def.horsReconciliation;
+}
+
+/**
+ * Vote au Sénat. Chaque camp vote selon la satisfaction de son groupe à la
+ * Chambre ; une fraction des sénateurs franchit la ligne quand le texte leur
+ * convient à moitié (de 0 % à une satisfaction de −0,3 jusqu'à 100 % à +0,5).
+ */
+export function voteSenat(e, positions, saillance = {}) {
+  const pol = e.politique;
+  const g = (id) => pol.groupes.find((x) => x.id === id);
+  const satR = 0.85 * satisfaction(e, g('REP'), positions, saillance) + 0.15 * satisfaction(e, g('FREEDOM'), positions, saillance);
+  const satD = satisfaction(e, g('DEM'), positions, saillance);
+  const part = (x) => borner((x + 0.3) / 0.8, 0, 1);
+  // Le camp présidentiel occupe la vice-présidence, qui départage les égalités
+  const pourR = Math.round(pol.senat.REP * part(satR));
+  const pourD = Math.round(pol.senat.DEM * part(satD));
+  return { pour: pourR + pourD, contre: 100 - pourR - pourD, pourR, pourD, satR, satD };
+}
+
+function validerReformesEtatsUnis(e, legislatives, directes, positions, saillance, procedure) {
+  const pol = e.politique;
+  const vote = voter(e, positions, saillance);
+  pol.votes.push({ tour: e.tour, texte: 'Projet de loi (Chambre)', ...resumeVote(vote) });
+  if (!vote.adopte) return { acceptees: directes, rejet: { raison: `Rejet à la Chambre des représentants (${vote.pour} pour, ${vote.contre} contre).`, vote } };
+  let textes = legislatives;
+  let exclues = [];
+  let seuil = pol.senat.obstruction;
+  if (procedure === 'reconciliation') {
+    const fy = exerciceBudgetaire(e);
+    if (pol.reconciliations.includes(fy)) {
+      return { acceptees: directes, rejet: { raison: `Une loi de réconciliation a déjà été adoptée pour l'exercice ${fy} : ce texte doit réunir 60 sénateurs.`, vote } };
+    }
+    exclues = legislatives.filter((r) => !reconciliable(r.id));
+    textes = legislatives.filter((r) => reconciliable(r.id));
+    if (!textes.length) return { acceptees: directes, rejet: { raison: 'Règle Byrd : aucune de ces mesures ne peut passer par la réconciliation (sans effet budgétaire direct, ou touchant la Social Security).', vote } };
+    seuil = 50; // 50 voix + la voix du vice-président
+  }
+  const senat = voteSenat(e, calculerPositions(e, textes), saillance);
+  const lib = libelleTrimestre(e.trimestre);
+  pol.votes.push({ tour: e.tour, texte: 'Projet de loi (Sénat)', adopte: senat.pour >= seuil, pour: senat.pour, contre: senat.contre, abstention: 0, detail: [{ id: 'REP', vote: `${senat.pourR} pour`, sieges: pol.senat.REP }, { id: 'DEM', vote: `${senat.pourD} pour`, sieges: pol.senat.DEM }] });
+  if (senat.pour < seuil) {
+    const raison = seuil === 50
+      ? `Le Sénat rejette la loi de réconciliation (${senat.pour} voix, il en faut 50 plus celle du vice-président).`
+      : `Obstruction au Sénat : ${senat.pour} voix seulement, il en faut 60 pour clore les débats. Essayez la réconciliation (mesures budgétaires) ou un compromis avec les démocrates.`;
+    return { acceptees: directes, rejet: { raison, vote }, senat };
+  }
+  if (procedure === 'reconciliation') {
+    pol.reconciliations.push(exerciceBudgetaire(e));
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Loi de réconciliation adoptée au Sénat (${senat.pour} voix) pour l'exercice ${exerciceBudgetaire(e)}.` });
+  }
+  return {
+    acceptees: [...directes, ...textes],
+    rejet: exclues.length ? { raison: `Règle Byrd : ${exclues.map((r) => trouverReforme(r.id)?.nom).join(', ')} ne peut pas figurer dans une loi de réconciliation.` } : null,
+    vote, senat,
+  };
+}
+
+/** Postes discrétionnaires du budget fédéral (votés chaque année ; le reste est « obligatoire »). */
+const POSTES_DISCRETIONNAIRES = ['defense', 'education', 'recherche', 'affairesEtrangeres', 'interieurJustice', 'ecologieEnergie', 'transports', 'logement', 'culture', 'economieFinances', 'agriculture'];
+
+/**
+ * Vote des crédits annuels (appropriations) aux États-Unis : Chambre, puis
+ * 60 voix au Sénat. Procédures :
+ *  - 'complet'   : vos crédits, tels quels ;
+ *  - 'cr'        : loi de financement provisoire (continuing resolution) qui
+ *                  reconduit les crédits discrétionnaires de l'an passé ;
+ *  - 'compromis' : concessions aux démocrates (santé, solidarités, éducation).
+ * Sans accord : shutdown des administrations non essentielles.
+ */
+function voterBudgetEtatsUnis(e, procedure) {
+  const pol = e.politique;
+  const lib = libelleTrimestre(e.trimestre);
+  const fy = exerciceBudgetaire(e) + (e.trimestre.t === 3 ? 1 : 0);
+  let note = '';
+  if (procedure === 'compromis') {
+    for (const p of ['protectionSociale', 'education', 'sante']) e.budget[p].variationVolume = (e.budget[p].variationVolume ?? 0) + (p === 'sante' ? 1 : 2);
+    pol.groupes.find((g) => g.id === 'DEM').concessions += 1.2;
+    pol.groupes.find((g) => g.id === 'FREEDOM').concessions -= 0.6;
+    note = 'Compromis avec les démocrates : +2 % pour les solidarités et l\'éducation, +1 % pour la santé.';
+  }
+  if (procedure === 'cr' || procedure === 'auto_cr') {
+    for (const id of POSTES_DISCRETIONNAIRES) if (e.budget[id] && pol.variationsDebutAnnee[id] !== undefined) e.budget[id].variationVolume = pol.variationsDebutAnnee[id];
+    note = 'Financement provisoire : les crédits discrétionnaires de l\'an passé sont reconduits.';
+  }
+  const { vote, senat, adopte } = scrutinBudgetEtatsUnis(e, procedure);
+  pol.votes.push({ tour: e.tour, texte: `Crédits de l'exercice ${fy}`, ...resumeVote(vote) });
+  const resultat = { vote, senat, procedure, adopte, censure: null, note };
+  if (adopte) {
+    pol.budgetsAdoptes.push(fy);
+    pol.variationsDebutAnnee = Object.fromEntries(Object.entries(e.budget).map(([id, l]) => [id, l.variationVolume]));
+    pol.tauxDebutAnnee = Object.fromEntries(Object.entries(e.impots).map(([id, c]) => [id, c.taux]));
+    if (pol.shutdown) {
+      pol.shutdowns.push({ ...pol.shutdown, fin: e.tour });
+      note += ` Fin du shutdown après ${pol.shutdown.trimestres} trimestre(s).`;
+      pol.shutdown = null;
+    }
+  } else {
+    // Shutdown : les dépenses obligatoires (Social Security, Medicare) continuent, pas les administrations
+    if (!pol.shutdown) pol.shutdown = { debut: e.tour, trimestres: 0, exercice: fy };
+    pol.shutdown.trimestres += 1;
+    appliquerChocsSociaux(e, { fonctionnaires: -6, salaries: -2, retraites: -1, jeunes: -2, entrepreneurs: -2, agriculteurs: -2 });
+    pol.chocInstabilite = (pol.chocInstabilite ?? 0) + 0.08;
+    note += ' SHUTDOWN : environ 750 000 agents fédéraux au chômage technique, parcs et services fermés, versements agricoles suspendus.';
+  }
+  e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Crédits de l'exercice ${fy} : Chambre ${vote.pour} pour, ${vote.contre} contre ; Sénat ${senat.pour} voix (60 nécessaires). ${adopte ? 'Adoptés.' : 'Rejetés.'} ${note}`.trim() });
+  return resultat;
+}
+
+/**
+ * Scrutin sur les crédits (Chambre puis Sénat), sans effet de bord durable.
+ * Une loi de financement provisoire « propre » est le véhicule habituel du
+ * compromis : les démocrates la jugent bien moins sévèrement qu'un budget
+ * complet, et d'autant moins que le shutdown dure (hypothèse de jeu).
+ */
+function scrutinBudgetEtatsUnis(e, procedure) {
+  const pol = e.politique;
+  calculerPositions(e);
+  majSatisfactions(e);
+  const saillance = { social: 1.5, fiscal: 1.5, rigueur: 1.5 };
+  const bonusCR = (procedure === 'cr' || procedure === 'auto_cr') ? 1.3 + 0.4 * (pol.shutdown?.trimestres ?? 0) : 0;
+  const sauvegarde = pol.groupes.map((g) => g.concessions);
+  for (const g of pol.groupes) if (g.id === 'DEM') g.concessions += bonusCR;
+  const vote = voter(e, pol.positions, saillance);
+  const senat = voteSenat(e, pol.positions, saillance);
+  pol.groupes.forEach((g, i) => { g.concessions = sauvegarde[i]; });
+  return { vote, senat, adopte: vote.adopte && senat.pour >= pol.senat.obstruction };
+}
+
+/** Chocs de popularité par groupe (sans dépendance circulaire avec social.js). */
+function appliquerChocsSociaux(e, chocs) {
+  for (const [g, v] of Object.entries(chocs)) if (e.social.groupes[g]) e.social.groupes[g].chocs += v;
+}
+
+/**
+ * Plafond légal de la dette. Quand la dette brute l'atteint, le Trésor recourt
+ * à des « mesures exceptionnelles » pendant environ un trimestre (la « date X »),
+ * puis ne peut plus payer toutes ses factures.
+ * @param {string} choix 'negocier' | 'reconciliation' | 'bras_de_fer'
+ * @returns {object|null} défaite éventuelle
+ */
+function gererPlafondDette(e, choix = 'negocier') {
+  const f = e.finances;
+  const pol = e.politique;
+  const pl = pol.plafondDette;
+  const lib = libelleTrimestre(e.trimestre);
+  if (f.margePlafond === undefined || f.margePlafond > 0) { pl.trimestresMesuresExceptionnelles = 0; return null; }
+  pl.trimestresMesuresExceptionnelles += 1;
+  const releve = (montant, comment) => {
+    e.statique.regles.nationale.plafond += montant;
+    f.margePlafond += montant;
+    pl.relevements.push({ tour: e.tour, montant, comment });
+    pl.trimestresMesuresExceptionnelles = 0;
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Plafond de la dette relevé de ${montant} Md$ (${comment}). Nouveau plafond : ${Math.round(e.statique.regles.nationale.plafond)} Md$.` });
+  };
+  if (choix === 'reconciliation') {
+    const fy = exerciceBudgetaire(e);
+    const senat = voteSenat(e, pol.positions, { rigueur: 2 });
+    if (!pol.reconciliations.includes(fy) && senat.pourR >= 50 && voter(e, pol.positions, { rigueur: 2 }).adopte) {
+      pol.reconciliations.push(fy);
+      // Le Freedom Caucus exige des économies en échange de son vote
+      pol.groupes.find((g) => g.id === 'FREEDOM').concessions -= 0.4;
+      releve(5000, 'par une loi de réconciliation votée par les seuls républicains');
+      return null;
+    }
+  } else if (choix === 'negocier') {
+    const senat = voteSenat(e, pol.positions, { rigueur: 1 });
+    const chambre = voter(e, pol.positions, { rigueur: 1 });
+    // Personne ne veut porter la responsabilité d'un défaut : chaque trimestre de mesures exceptionnelles rapproche les camps
+    const pression = 0.6 * pl.trimestresMesuresExceptionnelles;
+    if ((chambre.adopte || pol.gouvernementDivise) && senat.pour + Math.round(pol.senat.DEM * borner(pression, 0, 1)) >= 60) {
+      pol.groupes.find((g) => g.id === 'DEM').concessions += 0.3;
+      releve(2500, 'après un accord bipartisan qui plafonne les dépenses discrétionnaires');
+      for (const id of POSTES_DISCRETIONNAIRES) if (e.budget[id]) e.budget[id].variationVolume = (e.budget[id].variationVolume ?? 0) - 1;
+      return null;
+    }
+  }
+  // Bras de fer ou échec : les marchés s'inquiètent, la note souveraine est menacée
+  f.chocTaux = (f.chocTaux ?? 0) + 0.25;
+  f.credibilite = borner(f.credibilite - 0.15, -1, 1);
+  appliquerChocsSociaux(e, { retraites: -3, salaries: -2, entrepreneurs: -3 });
+  e.journal.push({ tour: e.tour, trimestre: lib, type: 'alerte', texte: `Plafond de la dette atteint : le Trésor recourt aux mesures exceptionnelles (${pl.trimestresMesuresExceptionnelles}e trimestre). Les taux montent, les agences de notation menacent.` });
+  if (pl.trimestresMesuresExceptionnelles >= 3) {
+    return { cause: 'defaut', texte: 'Le plafond de la dette n\'a pas été relevé à temps : les États-Unis ont fait défaut sur une partie de leurs paiements, une première historique.' };
+  }
+  return null;
 }
 
 function resumeVote(v) {
@@ -283,6 +524,11 @@ function compromisBudgetaire(e) {
  * @returns {object} résultat
  */
 export function voterBudget(e, procedure = 'auto') {
+  if (e.pays === 'etatsUnis') {
+    // Par défaut : le budget complet s'il passe, sinon une loi de financement provisoire
+    if (procedure === 'auto' || procedure === 'vote') procedure = scrutinBudgetEtatsUnis(e, 'complet').adopte ? 'complet' : 'cr';
+    return voterBudgetEtatsUnis(e, procedure);
+  }
   const pol = e.politique;
   const lib = libelleTrimestre(e.trimestre);
   let note = '';
@@ -389,32 +635,15 @@ function presidentielle(e, alea) {
   const victoire = part >= 50;
   const lib = libelleTrimestre(e.trimestre);
   if (victoire) {
-    // Législatives qui suivent : le « fait majoritaire » renforce le bloc central
-    const bonus = Math.round(borner(4 * (part - 50) * 3 + 3 * (e.social.popularite - 26), -40, 110));
-    redistribuerSieges(e, ['EPR', 'DEM', 'HOR'], bonus);
-    e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : la candidate ou le candidat de votre camp l'emporte avec ${part.toFixed(1)} % au second tour. Aux législatives qui suivent, le bloc central obtient ${blocCentral(e)} sièges (majorité absolue : ${pol.majorite}).` });
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : la candidate ou le candidat de votre camp l'emporte avec ${part.toFixed(1)} % au second tour.` });
+    // Législatives qui suivent : le « fait majoritaire » donne un élan au camp présidentiel (hypothèse : 8 points + l'avance du second tour)
+    legislativesFrance(e, alea, 8 + 0.8 * (part - 50));
+    if (e.opinion) e.opinion.intentions.centre += 3; // état de grâce
   } else {
     pol.cohabitation = true;
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : le Rassemblement national l'emporte (${(100 - part).toFixed(1)} % au second tour). Votre camp perd l'Élysée.` });
   }
   return { victoire, part };
-}
-
-function blocCentral(e) {
-  return e.politique.groupes.filter((g) => ['EPR', 'DEM', 'HOR'].includes(g.id)).reduce((s, g) => s + g.sieges, 0);
-}
-
-/** Transfère des sièges vers un bloc, pris aux autres groupes au prorata. */
-function redistribuerSieges(e, bloc, delta) {
-  const pol = e.politique;
-  const dedans = pol.groupes.filter((g) => bloc.includes(g.id));
-  const dehors = pol.groupes.filter((g) => !bloc.includes(g.id));
-  const totalDedans = dedans.reduce((s, g) => s + g.sieges, 0);
-  const totalDehors = dehors.reduce((s, g) => s + g.sieges, 0);
-  for (const g of dedans) g.sieges = Math.max(0, Math.round(g.sieges + delta * g.sieges / totalDedans));
-  for (const g of dehors) g.sieges = Math.max(0, Math.round(g.sieges - delta * g.sieges / totalDehors));
-  const ecart = pol.sieges - pol.groupes.reduce((s, g) => s + g.sieges, 0);
-  dedans[0].sieges += ecart;
 }
 
 /** Élection fédérale allemande. */
@@ -451,7 +680,12 @@ export function majPolitique(e, alea, decisions = {}) {
   majSatisfactions(e);
   let defaite = null;
 
-  if (e.pays === 'allemagne') {
+  if (e.pays === 'etatsUnis') {
+    // Shutdown en cours : nouvelle tentative de financement provisoire à chaque trimestre
+    if (pol.shutdown && pol.shutdown.debut !== e.tour) voterBudgetEtatsUnis(e, 'auto_cr');
+    const d = gererPlafondDette(e, decisions.plafondDette);
+    if (d) defaite = d;
+  } else if (e.pays === 'allemagne') {
     majIntentions(e);
     const r = majCoalition(e);
     if (r?.rupture) {
@@ -467,24 +701,42 @@ export function majPolitique(e, alea, decisions = {}) {
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Motion de censure spontanée adoptée (${censure.voix} voix) : le gouvernement est renversé.` });
       defaite = { cause: 'censure', texte: 'Une motion de censure a renversé votre gouvernement.' };
     }
-    // Dissolution demandée par le joueur
+    // Dissolution demandée par le joueur (article 12 : pas de nouvelle dissolution dans l'année qui suit)
     if (decisions.dissolution && !defaite) {
       const d = pol.derniereDissolution;
       const ecart = (e.trimestre.annee - d.annee) * 4 + (e.trimestre.t - d.t);
       if (ecart >= 4 && !pol.cohabitation) {
-        const bonus = Math.round(borner(3 * (e.social.popularite - 30) + alea.normale(0, 15), -80, 90));
-        redistribuerSieges(e, ['EPR', 'DEM', 'HOR'], bonus);
+        // Le résultat découle des intentions de vote du baromètre, donc de votre bilan
+        legislativesFrance(e, alea, 0);
         pol.derniereDissolution = { ...e.trimestre };
-        e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Dissolution et législatives anticipées : le bloc central obtient ${blocCentral(e)} sièges (majorité absolue : ${pol.majorite}).` });
         majSatisfactions(e);
       }
     }
   }
 
+  // Allemagne : question de confiance (article 68 de la Loi fondamentale)
+  if (e.pays === 'allemagne' && decisions.questionConfiance && !defaite) {
+    const c = pol.coalition;
+    if (!c.rompue && c.satisfaction >= 30) {
+      c.satisfaction = Math.min(100, c.satisfaction + 10);
+      pol.chocInstabilite = (pol.chocInstabilite ?? 0) - 0.05;
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: 'Question de confiance : le Bundestag vous renouvelle sa confiance. La coalition se ressoude, pour un temps.' });
+    } else {
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: 'Question de confiance perdue : le président fédéral dissout le Bundestag (comme en décembre 2024). Élections anticipées.' });
+      const el = electionFederale(e, alea);
+      if (!el.victoire) defaite = { cause: 'election', texte: 'Les élections anticipées après la question de confiance vous ont fait perdre la chancellerie.' };
+    }
+  }
+
+  // Élections intermédiaires et nationales du calendrier (régionales, Länder, européennes, mi-mandat, présidentielle américaine)
+  const dEl = electionsDuTrimestre(e, alea);
+  if (dEl) defaite = defaite ?? dEl;
+  majSatisfactions(e);
+
   // Élections prévues au calendrier
   for (const ech of (e.statique.calendrier.echeances || [])) {
     if (ech.annee !== e.trimestre.annee || ech.t !== e.trimestre.t) continue;
-    if (ech.type === 'presidentielle') {
+    if (ech.type === 'presidentielle' && e.pays === 'france') {
       const r = presidentielle(e, alea);
       if (!r.victoire) defaite = { cause: 'presidentielle', texte: 'Votre camp a perdu l\'élection présidentielle : un nouveau Premier ministre est nommé.' };
     }
@@ -507,6 +759,7 @@ export function prevoirVotes(e, reformes = []) {
   majSatisfactions(e);
   const budget = voter(e, e.politique.positions, { social: 1.5, fiscal: 1.5, rigueur: 1.5 });
   const censure = e.pays === 'france' ? motionCensure(e) : null;
+  const senatBudget = e.pays === 'etatsUnis' ? voteSenat(e, e.politique.positions, { social: 1.5, fiscal: 1.5, rigueur: 1.5 }).pour : null;
   let texte = null;
   const legislatives = reformes.filter((r) => trouverReforme(r.id)?.vote !== false);
   if (legislatives.length) {
@@ -518,6 +771,12 @@ export function prevoirVotes(e, reformes = []) {
       for (const g of e.politique.groupes) g.satisfaction = satisfaction(e, g, positions, saillance);
       texte.censureApres493 = motionCensure(e, -0.2);
       e.politique.groupes.forEach((g, i) => { g.satisfaction = sauvegarde[i]; });
+    } else if (e.pays === 'etatsUnis') {
+      const senat = voteSenat(e, positions, saillance);
+      texte.senat = { pour: senat.pour, obstruction: e.politique.senat.obstruction };
+      const recon = legislatives.filter((r) => reconciliable(r.id));
+      texte.senatReconciliation = recon.length ? voteSenat(e, calculerPositions(e, recon), saillance).pour : null;
+      texte.reconciliationDisponible = !e.politique.reconciliations.includes(exerciceBudgetaire(e));
     } else {
       const spd = e.politique.groupes.find((g) => g.partenaire);
       texte.accordPartenaire = e.politique.coalition.rompue || satisfaction(e, { ...spd, posture: 'pivot', concessions: 0 }, positions, saillance) > -0.4 || e.politique.coalition.satisfaction > 70;
@@ -525,9 +784,9 @@ export function prevoirVotes(e, reformes = []) {
     }
   }
   return {
-    budget: resumeVote(budget),
+    budget: { ...resumeVote(budget), senat: senatBudget },
     censure: censure ? { voix: censure.voix, majorite: censure.majorite, adoptee: censure.adoptee } : null,
-    texte: texte ? { ...resumeVote(texte), censureApres493: texte.censureApres493 ? { voix: texte.censureApres493.voix, majorite: texte.censureApres493.majorite, adoptee: texte.censureApres493.adoptee } : null, accordPartenaire: texte.accordPartenaire, deuxTiers: texte.deuxTiers } : null,
+    texte: texte ? { ...resumeVote(texte), censureApres493: texte.censureApres493 ? { voix: texte.censureApres493.voix, majorite: texte.censureApres493.majorite, adoptee: texte.censureApres493.adoptee } : null, accordPartenaire: texte.accordPartenaire, deuxTiers: texte.deuxTiers, senat: texte.senat, senatReconciliation: texte.senatReconciliation, reconciliationDisponible: texte.reconciliationDisponible } : null,
     satisfactions: e.politique.groupes.map((g) => ({ id: g.id, nom: g.nom, sieges: g.sieges, satisfaction: g.satisfaction, posture: g.posture, couleur: g.couleur })),
   };
 }

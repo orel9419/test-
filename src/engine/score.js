@@ -37,7 +37,8 @@ export function calculerScore(e) {
   const pa = e.menages.reduce((s, x) => s + (x.variationPct ?? 0), 0) / e.menages.length;
   c.bienEtre = borner(50 + 4 * pa - 6 * (m.chomage - depart.chomage) + 0.8 * (e.social.cohesion - depart.cohesion), 0, 100);
   const baisseEmissions = (e.climat.emissions0 - e.climat.emissions) / e.climat.emissions0 * 100;
-  const baisseVisee = (e.climat.emissions0 - e.climat.objectif2030) / e.climat.emissions0 * 100;
+  // Sans objectif national (États-Unis), la référence est une baisse de 5 % sur le mandat (hypothèse de jeu)
+  const baisseVisee = e.climat.objectif2030 ? (e.climat.emissions0 - e.climat.objectif2030) / e.climat.emissions0 * 100 : 5;
   c.transition = borner(100 * baisseEmissions / Math.max(1, baisseVisee), 0, 100);
   const rd0 = e.statique.stocksInitiaux.recherche;
   const potentielGagne = (m.pibPotentiel / (e.historique.length > 1 ? 100 / (1 + depart.ecart / 100) : m.pibPotentiel) - 1) * 100;

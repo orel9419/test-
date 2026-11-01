@@ -26,6 +26,7 @@ export function indicesAssiettes(e) {
   return {
     pib: yn,
     consommation: yn,
+    importations: yn * (1 + 0.5 * (mac.ecartProduction - ref.ecartProduction) / 100),
     revenus: Math.pow(masseSalariale, 1.2),
     profits: Math.max(0.3, profits),
     revenusLarges: 0.7 * masseSalariale + 0.18 * pensions + 0.12 * yn,

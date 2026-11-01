@@ -12,6 +12,7 @@
 import { PARAMETRES } from '../model/parametres.js';
 import { MODES } from '../model/parametres.js';
 import { borner } from '../model/outils.js';
+import { tauxDirecteur } from './monde.js';
 
 /** Prime de risque souveraine (points de pourcentage), hors calibrage. */
 export function primeRisqueModele(detteRatio, deficitRatio, instabilite, credibilite) {
@@ -56,7 +57,8 @@ export function majFinances(e, recettes, depensesPrimaires, options = {}) {
 
   // Taux d'émission et taux moyen de la dette
   const partCT = f.partCourtTerme ?? PARAMETRES.partCourtTerme;
-  const tauxEmission = (1 - partCT) * f.taux10 + partCT * e.monde.tauxBCE;
+  const tauxCourt = tauxDirecteur(e);
+  const tauxEmission = (1 - partCT) * f.taux10 + partCT * tauxCourt;
   const maturite = f.maturiteMoyenne * (1 - 0.6 * (partCT - PARAMETRES.partCourtTerme)); // plus de court terme = maturité plus courte
   const refinance = detteAvant / (4 * maturite);
   const nouveau = Math.max(0, besoin);
@@ -72,11 +74,19 @@ export function majFinances(e, recettes, depensesPrimaires, options = {}) {
   const deficitMoyen = f.historiqueDeficit.reduce((s, x) => s + x, 0) / f.historiqueDeficit.length;
 
   // Taux à 10 ans : BCE + prime de terme + prime de risque (× nervosité des marchés) + calibrage résiduel
-  const prime = primeRisqueModele(f.detteRatio, deficitMoyen, m.instabilitePolitique, f.credibilite) * mode.nervositeMarches;
+  const prime = primeRisqueModele(f.detteRatio, deficitMoyen, m.instabilitePolitique, f.credibilite) * mode.nervositeMarches * (e.statique.sensibiliteMarches ?? 1);
   f.calibrageTaux *= 0.9; // le résidu de calibrage s'efface progressivement
-  f.taux10 = borner(e.monde.tauxBCE + PARAMETRES.primeTerme + prime + f.calibrageTaux + (f.chocTaux ?? 0), 0, 15);
+  f.taux10 = borner(tauxCourt + PARAMETRES.primeTerme + prime + f.calibrageTaux + (f.chocTaux ?? 0), 0, 15);
   f.chocTaux = (f.chocTaux ?? 0) * 0.8;
-  f.spread = (f.taux10 - tauxReferenceBund(e.monde.tauxBCE)) * 100; // points de base
+  // Zone euro : écart avec le Bund ; ailleurs : prime de risque par rapport au taux sans risque du pays
+  f.spread = (f.taux10 - tauxReferenceBund(tauxCourt)) * 100; // points de base
+
+  // Plafond légal de la dette (États-Unis) : dette brute = dette détenue par le public + dette intragouvernementale
+  const nat = e.statique.regles.nationale;
+  if (nat?.type === 'plafond_dette') {
+    f.detteBrute = f.dette + (e.statique.detteIntragouvernementale ?? 0);
+    f.margePlafond = nat.plafond - f.detteBrute;
+  }
   f.crise = f.spread > PARAMETRES.seuilCriseSpread;
 
   // Cumul annuel (pour les règles budgétaires, évaluées au T4)

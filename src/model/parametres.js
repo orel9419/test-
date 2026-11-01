@@ -89,7 +89,7 @@ export const PARAMETRES = {
   },
 
   /** Choc énergétique : effet sur l'écart de production d'une hausse de 10 % du prix mondial de l'énergie. */
-  sensibiliteEnergie: { france: 0.10, allemagne: 0.18, defaut: 0.14 },
+  sensibiliteEnergie: { france: 0.10, allemagne: 0.18, etatsUnis: 0.03, defaut: 0.14 }, // les États-Unis exportent du pétrole et du gaz
 
   /** Popularité : vitesse de retour vers l'ancrage et poids de l'économie. */
   popularite: {

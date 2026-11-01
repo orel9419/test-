@@ -110,7 +110,7 @@ export function majInternational(e) {
   }
 
   // Prêts SAFE : intérêts économisés = montant × (taux souverain − taux européen)
-  const tauxUE = e.monde.tauxBCE + 1.05;
+  const tauxUE = e.monde.tauxBCE + 1.05; // l'UE emprunte à un taux proche de celui de l'Allemagne
   const economieInterets = i.safe * Math.max(0, e.finances.taux10 - tauxUE) / 100;
 
   // Réactions des partenaires à la politique budgétaire (procédure européenne)

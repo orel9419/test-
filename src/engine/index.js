@@ -14,12 +14,17 @@
  *   diplomatie: [{ id, option }],
  *   partCourtTerme: 0.05 à 0.5 (part des émissions de dette à moins d'un an),
  *   trajectoire: { [annee]: déficit annoncé en % du PIB },
+ *   procedureReformes: 'vote' | '49.3' (France) | 'reconciliation' (États-Unis),
+ *   procedureBudget: 'auto' | '49.3' | 'ordonnances' | 'compromis' | 'complet' | 'cr' (États-Unis),
+ *   referendum: { id, option } (France, une fois par an),
+ *   dissolution: true (France), questionConfiance: true (Allemagne),
+ *   plafondDette: 'negocier' | 'reconciliation' | 'bras_de_fer' (États-Unis),
  * }
  */
 import { creerEtatInitial } from './etatInitial.js';
 import { creerAleatoire } from './aleatoire.js';
 import { libelleTrimestre, trimestreSuivant } from './calendrier.js';
-import { majMonde } from './monde.js';
+import { majMonde, tauxDirecteur } from './monde.js';
 import { majReformes, adopterReforme, reformesDisponibles } from './reformes.js';
 import { majTempsTravail } from './travail.js';
 import { majRetraites } from './retraites.js';
@@ -34,6 +39,9 @@ import { initialiserPolitique, validerReformes, voterBudget, majPolitique, prevo
 import { genererObjectifs, majObjectifs, cloturerObjectifs } from './objectifs.js';
 import { genererEvenements, resoudreEvenements, depensesTemporairesActives } from './evenements.js';
 import { calculerScore } from './score.js';
+import { initialiserOpinion, majOpinion } from './opinion.js';
+import { referendum } from './elections.js';
+import { trouverReforme } from './reformes.js';
 import { MINISTERES } from '../model/ministeres.js';
 import { IMPOTS } from '../model/impots.js';
 import { PARAMETRES, MODES } from '../model/parametres.js';
@@ -69,6 +77,8 @@ export function creerPartie(options) {
   e.evenements = { enAttente: [], historique: [] };
   e.graineMonde = (e.graine * 2654435761) >>> 0;
   initialiserPolitique(e, options.donnees);
+  e.elections = { historique: [] };
+  initialiserOpinion(e);
   e.objectifs = genererObjectifs(e);
   e.historique.push({ ...instantane(e), trimestre: 'Départ' });
   return e;
@@ -132,6 +142,17 @@ function majClimat(e) {
     * taxe;
 }
 
+/**
+ * Textes du moteur rédigés en euros : convertis en dollars pour les États-Unis
+ * (les montants sont déjà exprimés dans la monnaie du pays).
+ */
+function adapterDevise(valeur) {
+  if (typeof valeur === 'string') return valeur.replace(/Md€/g, 'Md$').replace(/ ?€/g, ' $');
+  if (Array.isArray(valeur)) return valeur.map(adapterDevise);
+  if (valeur && typeof valeur === 'object') return Object.fromEntries(Object.entries(valeur).map(([k, v]) => [k, adapterDevise(v)]));
+  return valeur;
+}
+
 /** Photographie des indicateurs pour les graphiques. */
 function instantane(e) {
   const m = e.macro, f = e.finances, s = e.social;
@@ -140,7 +161,7 @@ function instantane(e) {
     pib: m.pibNominal, croissanceT: m.croissanceTrimestrielle, croissanceA: m.croissanceAnnuelle,
     inflation: m.inflation, chomage: m.chomage, ecart: m.ecartProduction,
     deficit: f.deficitRatio, dette: f.detteRatio, interets: f.interets, taux10: f.taux10, spread: f.spread,
-    recettes: f.recettes, depenses: f.depenses, tauxBCE: e.monde.tauxBCE, energie: e.monde.energie,
+    recettes: f.recettes, depenses: f.depenses, tauxBCE: tauxDirecteur(e), energie: e.monde.energie,
     popularite: s.popularite, cohesion: s.cohesion, risqueSocial: s.risqueGlobal,
     emissions: e.climat.emissions, influence: e.international.influence,
     groupes: Object.fromEntries(Object.entries(s.groupes).map(([id, g]) => [id, g.popularite])),
@@ -175,11 +196,24 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   }
   const varDiscretionnaires = appliquerTaux(e, decisions.impots ?? {});
   // Une hausse de TVA est répercutée sur les prix sur environ un an
-  const tauxTvaAvant = etat.impots.tva.taux;
-  if (e.impots.tva.taux !== tauxTvaAvant) {
+  if (e.impots.tva && e.impots.tva.taux !== etat.impots.tva.taux) {
+    const tauxTvaAvant = etat.impots.tva.taux;
     const part = e.impots.tva.partPilotable ?? IMPOTS.tva.partPilotable;
     const choc = PARAMETRES.repercussionTVA * part * (e.impots.tva.taux - tauxTvaAvant) / (100 + tauxTvaAvant) * 100;
     for (let k = 0; k < 4; k++) e.macro.chocsPrixEnAttente.push(choc / 4);
+  }
+  // Droits de douane : hausse des prix (environ 60 % répercutés sur 15 % de la consommation importée),
+  // représailles des partenaires et pertes d'exportations
+  if (e.impots.droitsDouane && e.impots.droitsDouane.taux !== etat.impots.droitsDouane.taux) {
+    const delta = e.impots.droitsDouane.taux - etat.impots.droitsDouane.taux;
+    const choc = 0.6 * 0.15 * delta;
+    for (let k = 0; k < 4; k++) e.macro.chocsPrixEnAttente.push(choc / 4);
+    if (delta > 0) {
+      for (const p of ['chine', 'ue', 'canada', 'mexique']) if (e.international.relations[p] !== undefined) e.international.relations[p] -= 1.5 * delta;
+      e.international.chocExport -= 0.02 * delta;
+      e.social.groupes.agriculteurs.chocs -= 0.8 * delta; // représailles sur le soja et les produits agricoles
+      e.social.groupes.entrepreneurs.chocs -= 0.3 * delta;
+    }
   }
   // Réformes : passage devant le Parlement (sauf mesures réglementaires), puis adoption
   let defaite = null;
@@ -201,6 +235,22 @@ export function jouerTour(etat, decisions = {}, options = {}) {
       e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: validation.rejet?.raison ?? 'Rejetée' });
     }
   }
+  // Référendum (France, article 11) : la réforme est soumise directement aux électeurs
+  if (decisions.referendum && e.pays === 'france' && !options.sansPolitique) {
+    const def = trouverReforme(decisions.referendum.id);
+    const dernier = e.politique.dernierReferendum;
+    if (def && (!dernier || dernier.annee < e.trimestre.annee)) {
+      const reaction = def.reaction?.(e, decisions.referendum.option) ?? {};
+      const r = referendum(e, def, reaction, alea);
+      e.resultatsTour.referendum = { nom: def.nom, oui: r.oui, adopte: r.adopte };
+      if (r.adopte) {
+        const res = adopterReforme(e, def.id, decisions.referendum.option, alea);
+        e.resultatsTour.reformes.push({ id: def.id, option: decisions.referendum.option, erreur: res.erreur ?? null, referendum: true });
+      }
+    } else if (def) {
+      e.resultatsTour.alertes.push({ type: 'rejet', texte: 'Un seul référendum par an : celui-ci est reporté.' });
+    }
+  }
   for (const a of decisions.diplomatie ?? []) {
     e.resultatsTour.diplomatie.push(executerAction(e, a.id, a.option, alea));
   }
@@ -212,6 +262,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   // traversent exactement le même contexte international (comparaisons à contexte identique).
   const aleaMonde = creerAleatoire(e.graineMonde);
   majMonde(e, aleaMonde, {
+    macroPays: e.statique.banqueCentrale === 'fed' ? e.macro : null,
+    pressionSurLaFed: e.politiqueMonetaire?.pression ?? 0,
     frequenceEvenements: options.evenementsActifs === false ? 0.0001 : mode.frequenceEvenements,
     contributionEcartPays: e.statique.poidsZoneEuro * (e.macro.ecartProduction - (etat.historique.at(-2)?.ecart ?? e.macro.ecartProduction)) * 0.5,
   });
@@ -222,7 +274,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const effR = majReformes(e, alea);
   e.effetsCourants = { plafonnementEnergie: effR.plafonnementEnergie };
   const effT = majTempsTravail(e);
-  const effRet = majRetraites(e);
+  const effRet = majRetraites(e, effR);
   const effI = majInternational(e);
   majPolitiques(e, e.macro.historiquePrix.at(-1) / e.macro.historiquePrix.at(-2));
 
@@ -251,7 +303,9 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const is = e.impots.impotSocietes;
   const effetIS = is ? IMPOTS.impotSocietes.effetPotentielParPoint * (is.taux - is.tauxRef) : 0;
   const chocPrix = (e.macro.chocsPrixEnAttente.shift() ?? 0) + effR.chocPrix;
-  majMacro(e, { budget: impulsion, chocs: (options.chocs ?? 0) + effEv.chocPIB }, {
+  // Shutdown fédéral en cours : environ −0,15 point de PIB par trimestre (ordre de grandeur des estimations de la CBO)
+  const chocShutdown = e.politique?.shutdown ? -0.15 : 0;
+  majMacro(e, { budget: impulsion, chocs: (options.chocs ?? 0) + effEv.chocPIB + chocShutdown }, {
     offreTravail: effR.offreTravail + effT.offreTravail + effRet.offreTravail,
     actifsSupplementaires: (effRet.actifsSupplementaires ?? 0) + (effR.offreTravail / 100) * e.macro.populationActiveBase / 0.75,
     chomageStructurel: effR.chomageStructurel + effT.chomageStructurel + e.macro.effetCotisations,
@@ -283,10 +337,16 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     e.resultatsTour.alertes.push({ type: 'mobilisation', groupe: mobilisation.groupe });
   }
 
-  // --- 10. Vie politique : vote du budget (T4), coalition, censure, élections -------
-  if (e.trimestre.t === 4 && !options.sansPolitique) {
+  // Baromètre : satisfaction par thème et intentions de vote
+  if (!options.sansPolitique) majOpinion(e);
+
+  // --- 10. Vie politique : vote du budget, coalition, censure, élections -------
+  // France et Allemagne : budget voté au T4. États-Unis : exercice qui commence le 1er octobre,
+  // donc crédits votés au T3, et au premier tour (fin du financement provisoire le 11 décembre 2026).
+  const trimestreBudget = e.pays === 'etatsUnis' ? (e.trimestre.t === 3 || e.tour === 0) : e.trimestre.t === 4;
+  if (trimestreBudget && !options.sansPolitique) {
     const vb = voterBudget(e, decisions.procedureBudget ?? 'auto');
-    e.resultatsTour.budget = { adopte: vb.adopte, pour: vb.vote.pour, contre: vb.vote.contre, abstention: vb.vote.abstention, procedure: vb.procedure, censure: vb.censure ? { voix: vb.censure.voix, majorite: vb.censure.majorite, adoptee: vb.censure.adoptee } : null };
+    e.resultatsTour.budget = { adopte: vb.adopte, pour: vb.vote.pour, contre: vb.vote.contre, abstention: vb.vote.abstention, procedure: vb.procedure, senat: vb.senat?.pour ?? null, censure: vb.censure ? { voix: vb.censure.voix, majorite: vb.censure.majorite, adoptee: vb.censure.adoptee } : null };
     if (vb.censure?.adoptee) defaite = defaite ?? { cause: 'censure', texte: 'Le gouvernement a été renversé par une motion de censure sur le budget.' };
   }
   if (!options.sansPolitique) {
@@ -300,7 +360,9 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     e.finances.trimestresCrise = (e.finances.trimestresCrise ?? 0) + 1;
     e.resultatsTour.alertes.push({ type: 'marches', texte: `Écart de taux à ${Math.round(e.finances.spread)} pb : les marchés doutent de la soutenabilité de la dette.` });
     if (e.finances.trimestresCrise >= 2) {
-      defaite = defaite ?? { cause: 'crise_dette', texte: 'Crise de la dette : l\'État ne peut plus emprunter à un taux soutenable et doit demander l\'aide du Mécanisme européen de stabilité.' };
+      defaite = defaite ?? { cause: 'crise_dette', texte: e.statique.zoneEuro === false
+        ? 'Crise de la dette : les taux longs s\'envolent, le dollar chute et le Trésor doit imposer en urgence un plan d\'austérité.'
+        : 'Crise de la dette : l\'État ne peut plus emprunter à un taux soutenable et doit demander l\'aide du Mécanisme européen de stabilité.' };
     }
   } else e.finances.trimestresCrise = 0;
   if (defaite) {
@@ -327,6 +389,10 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     e.score = calculerScore(e);
   } else if (options.evenementsActifs !== false) {
     genererEvenements(e, alea, mode.frequenceEvenements);
+  }
+  if (e.statique.devise === '$') {
+    e.journal = e.journal.map((j, i) => (i >= etat.journal.length ? adapterDevise(j) : j));
+    e.evenements.enAttente = adapterDevise(e.evenements.enAttente);
   }
   e.graine = alea.etat();
   return e;

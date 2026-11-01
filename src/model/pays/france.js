@@ -128,6 +128,8 @@ export function profilFrance(d) {
       echeances: [
         { id: 'budget2027', annee: 2026, t: 4, type: 'vote_budget', nom: 'Vote du budget 2027 (PLF et PLFSS)' },
         { id: 'presidentielle2027', annee: 2027, t: 2, type: 'presidentielle', nom: 'Élection présidentielle (avril-mai 2027)' },
+        { id: 'regionales2028', annee: 2028, t: 1, type: 'regionales', nom: 'Élections régionales et départementales (mars 2028, date à vérifier)' },
+        { id: 'europeennes2029', annee: 2029, t: 2, type: 'europeennes', nom: 'Élections européennes (juin 2029, date à vérifier)' },
         { id: 'pde2029', annee: 2029, t: 4, type: 'regle_ue', nom: 'Retour visé sous 3 % de déficit (procédure européenne)' },
       ],
     },

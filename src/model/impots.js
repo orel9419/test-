@@ -89,6 +89,17 @@ export const IMPOTS = {
     multiplicateur: 0.05,
     description: 'Peu d\'effet sur l\'activité à court terme. Très impopulaires chez les retraités et les indépendants, alors qu\'ils touchent surtout les gros patrimoines.',
   },
+  droitsDouane: {
+    nom: 'Droits de douane (taux effectif moyen)',
+    levier: 'taux',
+    unite: '%',
+    base: 'importations',
+    partPilotable: 1,
+    elasticiteComportement: -0.6,  // les importations baissent et se détournent vers des pays moins taxés
+    multiplicateur: 0.4,
+    repercussionPrix: true,
+    description: 'Taxe payée à la frontière par l\'importateur, en grande partie répercutée sur les prix payés par les consommateurs américains. Elle protège certaines industries, mais provoque des représailles (le soja des agriculteurs est la première cible chinoise). En février 2026, la Cour suprême a annulé une large part des droits décidés par décret au titre de l\'IEEPA.',
+  },
   fixe: {
     nom: 'Autres prélèvements (non pilotés)',
     levier: null,

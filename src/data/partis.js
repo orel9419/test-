@@ -40,6 +40,14 @@ export const PARTIS = {
     { id: 'LINKE', nom: 'Die Linke', posture: 'opposition', couleur: '#8e24aa', axes: { social: 1, fiscal: 1, retraites: -1, travail: -0.8, ecologie: 0.6, europe: 0.2, marche: -1, securite: -0.6, rigueur: -0.8 } },
     { id: 'SSW', nom: 'SSW', posture: 'pivot', couleur: '#1e88e5', axes: { social: 0.4, fiscal: 0.2, retraites: -0.2, travail: 0, ecologie: 0.4, europe: 0.6, marche: 0, securite: 0, rigueur: 0 } },
   ],
+  // Chambre des représentants. Aux États-Unis, l'axe « europe » se lit comme l'attachement aux
+  // alliances et au multilatéralisme (OTAN, libre-échange, organisations internationales).
+  etatsUnis: [
+    { id: 'REP', nom: 'Républicains (conférence majoritaire)', posture: 'gouvernement', couleur: '#c62828', axes: { social: -0.5, fiscal: -0.9, retraites: -0.2, travail: 0.4, ecologie: -0.8, europe: -0.6, marche: 0.5, securite: 0.9, rigueur: 0.2 }, siegesEstimes: 187, estimation: true },
+    // Le Freedom Caucus ne publie pas sa liste de membres : environ 30 élus (estimation)
+    { id: 'FREEDOM', nom: 'Freedom Caucus (aile droite républicaine, effectif estimé)', posture: 'soutien', couleur: '#7f0000', axes: { social: -0.9, fiscal: -1, retraites: 0.3, travail: 0.5, ecologie: -1, europe: -0.9, marche: 0.6, securite: 0.7, rigueur: 1 }, siegesEstimes: 30, estimation: true },
+    { id: 'DEM', nom: 'Démocrates (et l\'élu indépendant apparenté)', posture: 'opposition', couleur: '#1565c0', axes: { social: 0.8, fiscal: 0.7, retraites: -0.7, travail: -0.3, ecologie: 0.8, europe: 0.7, marche: -0.3, securite: 0.2, rigueur: -0.1 }, siegesEstimes: 215 },
+  ],
 };
 
 /**
@@ -51,6 +59,9 @@ export const PARTIS = {
 export const SONDAGES_DEPART = {
   france: {
     presidentielle2ndTour: { camp: 50, rn: 50, note: 'Second tour : Odoxa (mars 2026) donnait Philippe 52 % contre Bardella 48 % ; d\'autres sondages donnent le RN gagnant. Point de départ du jeu : 50/50 (estimation).' },
+  },
+  etatsUnis: {
+    presidentielle: { camp: 50, note: 'Élection de 2028 : point de départ 50/50 (estimation), modulé par la popularité et l\'économie.' },
   },
   allemagne: {
     intentions: { CDUCSU: 19, AFD: 28, SPD: 14, GRUENE: 11, LINKE: 10, autres: 18 },

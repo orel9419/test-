@@ -37,7 +37,7 @@ function indicePrixMenage(e, m) {
  */
 export function majMenages(e, effets) {
   const imp = e.impots;
-  const tauxRefTva = imp.tva.tauxRef;
+  const tauxRefTva = imp.tva?.tauxRef ?? 0;
   for (const m of e.menages) {
     const d = [];
     const ajouter = (cause, montant) => { if (Math.abs(montant) >= 0.5) d.push({ cause, montant }); };
@@ -103,7 +103,7 @@ export function majMenages(e, effets) {
     const reel = nominal / indicePrix;
     // Décomposition du coût de la vie : énergie, TVA, reste de l'inflation
     const coutVie = nominal - reel;
-    const partTva = PARAMETRES.repercussionTVA * (imp.tva.partPilotable ?? IMPOTS.tva.partPilotable) * (imp.tva.taux - tauxRefTva) / (100 + tauxRefTva);
+    const partTva = imp.tva ? PARAMETRES.repercussionTVA * (imp.tva.partPilotable ?? IMPOTS.tva.partPilotable) * (imp.tva.taux - tauxRefTva) / (100 + tauxRefTva) : 0;
     const tva = partTva * m.partConso * m.revenuNet0;
     const hausseEnergie = e.macro.prixEnergieConso / e.reference.prixEnergieConso - 1;
     const energie = m.partEnergie * hausseEnergie * m.revenuNet0;

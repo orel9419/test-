@@ -3,6 +3,7 @@
  */
 import { profilFrance } from '../model/pays/france.js';
 import { profilAllemagne } from '../model/pays/allemagne.js';
+import { profilEtatsUnis } from '../model/pays/etatsUnis.js';
 import { MINISTERES, GROUPES } from '../model/ministeres.js';
 import { PARAMETRES } from '../model/parametres.js';
 import { etatMondeInitial, initialiserHistoriqueEnergieZE } from './monde.js';
@@ -15,7 +16,7 @@ import { initialiserSocial } from './social.js';
 import { initialiserInternational } from './international.js';
 import { libelleTrimestre } from './calendrier.js';
 
-export const PROFILS = { france: profilFrance, allemagne: profilAllemagne };
+export const PROFILS = { france: profilFrance, allemagne: profilAllemagne, etatsUnis: profilEtatsUnis };
 
 /**
  * Reconstitue les niveaux de PIB réel des quatre derniers trimestres (100 = dernier
@@ -31,9 +32,10 @@ function historiquePib(croissances = [0, 0, 0]) {
 const ENERGIE = {
   france: { partTaxes: 0.4 },
   allemagne: { partTaxes: 0.4 },
+  etatsUnis: { partTaxes: 0.15 },
 };
 /** Ouverture commerciale (part des exportations dans le PIB, estimation). */
-const OUVERTURE = { france: 0.33, allemagne: 0.45 };
+const OUVERTURE = { france: 0.33, allemagne: 0.45, etatsUnis: 0.11 };
 
 /**
  * Crée une nouvelle partie.
@@ -46,6 +48,8 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
 
   const monde = etatMondeInitial(contexte);
   initialiserHistoriqueEnergieZE(monde);
+  if (p.banqueCentrale === 'fed') monde.tauxFed = p.macro.tauxDirecteur;
+  const directeur0 = p.banqueCentrale === 'fed' ? p.macro.tauxDirecteur : monde.tauxBCE;
 
   // --- Énergie : on cale la répercussion sur la hausse sourcée des prix de l'énergie ---
   const energie = { ...ENERGIE[pays], poidsConso: p.macro.poidsEnergieConso };
@@ -87,7 +91,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
   // --- Finances ----------------------------------------------------------------
   const detteRatio = p.finances.dette / p.macro.pibNominal * 100;
   const deficitRatio = (p.finances.depenses - p.finances.recettes) / p.macro.pibNominal * 100;
-  const primeModele = primeRisqueModele(detteRatio, deficitRatio, macro.instabilitePolitique, 0);
+  const primeModele = primeRisqueModele(detteRatio, deficitRatio, macro.instabilitePolitique, 0) * (p.sensibiliteMarches ?? 1);
   const finances = {
     dette: p.finances.dette,
     tauxMoyen: p.finances.interets / p.finances.dette * 100,
@@ -105,7 +109,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
     historiqueDeficit: [deficitRatio, deficitRatio, deficitRatio, deficitRatio],
     taux10: p.macro.taux10ans,
     // Résidu de calibrage : écart entre le taux observé et le taux du modèle au départ (s'efface progressivement)
-    calibrageTaux: p.macro.taux10ans - (monde.tauxBCE + PARAMETRES.primeTerme + primeModele),
+    calibrageTaux: p.macro.taux10ans - (directeur0 + PARAMETRES.primeTerme + primeModele),
     spread: 0,
     credibilite: 0,
     trajectoireAnnoncee: {},
@@ -114,7 +118,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
     fondsSpecialInfrastructures: p.finances.fondsSpecialInfrastructures ?? null,
     cessionsRealisees: 0,
   };
-  finances.spread = (finances.taux10 - (monde.tauxBCE + PARAMETRES.primeTerme + 0.15)) * 100;
+  finances.spread = (finances.taux10 - (directeur0 + PARAMETRES.primeTerme + 0.15)) * 100;
 
   // --- Budget --------------------------------------------------------------------
   const budget = {};
@@ -157,6 +161,12 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
     poidsZoneEuro: p.poidsZoneEuro,
     pretSAFE: p.pretSAFE,
     stocksInitiaux: p.stocksInitiaux,
+    devise: p.devise ?? '€',
+    banqueCentrale: p.banqueCentrale ?? 'bce',
+    zoneEuro: p.zoneEuro,
+    sensibiliteMarches: p.sensibiliteMarches ?? 1,
+    detteIntragouvernementale: p.finances.detteIntragouvernementale ?? 0,
+    relationsInitiales: p.relationsInitiales,
   };
 
   const e = {
@@ -218,3 +228,4 @@ export function creerEtatInitial({ pays, donnees, contexte, mode = 'realiste', g
 }
 
 export { GROUPES };
+

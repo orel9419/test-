@@ -30,6 +30,12 @@ export const MESURES = {
   schuldenbremse: (e) => e.finances.depassementsSchuldenbremse ?? 0,
   afd: (e) => e.politique.intentions?.AFD ?? 0,
   // 1 si le chancelier reste en place après le scrutin (ou si une majorité sans l'AfD est possible d'après les sondages)
+  // États-Unis
+  siegesRepublicains: (e) => e.politique.groupes.filter((g) => g.id !== 'DEM').reduce((s, g) => s + g.sieges, 0),
+  trimestresShutdown: (e) => (e.politique.shutdowns ?? []).reduce((s, x) => s + x.trimestres, 0) + (e.politique.shutdown?.trimestres ?? 0),
+  pasDeDefaut: (e) => (e.issue?.cause === 'defaut' || (e.politique.plafondDette?.trimestresMesuresExceptionnelles ?? 0) >= 3 ? 0 : 1),
+  presidentielleEtatsUnis: (e) => e.politique.presidentielle?.resultat ?? projectionPresidentielleEtatsUnis(e),
+  epuisementSocialSecurity: (e) => e.retraites.fondsSS?.epuisementProjete ?? 2100,
   election2029: (e) => {
     const pol = e.politique;
     if (pol.dernierScrutin) return pol.dernierScrutin.victoire ? 1 : 0;
@@ -46,6 +52,15 @@ export function projectionPresidentielle(e) {
   const m = e.macro;
   return (e.politique.presidentielle?.partCamp ?? 50) + 0.6 * (e.social.popularite - 26) + 1.5 * (m.croissanceAnnuelle - 0.5)
     - 1.5 * (m.chomage - 8.3) - 1.0 * Math.max(0, m.inflation - 2) + 0.2 * (e.social.cohesion - 70);
+}
+
+/**
+ * Projection de la présidentielle américaine (part bipartite du candidat de
+ * votre camp) : popularité du président, croissance, chômage et inflation.
+ */
+export function projectionPresidentielleEtatsUnis(e) {
+  const m = e.macro;
+  return 50 + 0.6 * (e.social.popularite - 42) + 1.2 * (m.croissanceAnnuelle - 2) - 1.5 * (m.chomage - 4.2) - 1.0 * Math.max(0, m.inflation - 2.5);
 }
 
 /** Facteur de difficulté des cibles selon le mode. */
@@ -65,6 +80,26 @@ const REGLES = [
       nom: e.statique.regles.ue.pde ? 'Ramener le déficit sous 3 % du PIB (règles européennes)' : 'Réduire le déficit public',
       description: `Déficit de départ : ${MESURES.deficit(e).toFixed(1)} % du PIB. La procédure européenne pour déficit excessif exige un retour sous 3 %.`,
       mesure: 'deficit', sens: '<=', cible: Math.round((e.statique.regles.ue.pde ? 3 + (1 - k) : Math.max(2, MESURES.deficit(e) - 1.5 * k)) * 10) / 10,
+    }),
+  },
+  {
+    id: 'deficitFederal',
+    condition: (e) => e.statique.regles.nationale?.type === 'plafond_dette',
+    priorite: (e) => MESURES.deficit(e) - 3,
+    creer: (e, k) => ({
+      nom: 'Réduire le déficit fédéral',
+      description: `Déficit fédéral de départ : ${MESURES.deficit(e).toFixed(1)} % du PIB, avec des intérêts qui dépassent 1 000 Md$ par an, plus que le budget de la défense.`,
+      mesure: 'deficit', sens: '<=', cible: Math.round((MESURES.deficit(e) - 1.2 * k) * 10) / 10,
+    }),
+  },
+  {
+    id: 'socialSecurity',
+    condition: (e) => !!e.retraites.fondsSS,
+    priorite: () => 1.2,
+    creer: (e, k) => ({
+      nom: 'Repousser l\'épuisement du fonds de la Social Security',
+      description: `Épuisement projeté du fonds combiné : ${MESURES.epuisementSocialSecurity(e)} (2032 pour le seul fonds retraite). Ensuite, les pensions baisseraient automatiquement d'environ 20 %.`,
+      mesure: 'epuisementSocialSecurity', sens: '>=', cible: MESURES.epuisementSocialSecurity(e) + Math.round(3 * k),
     }),
   },
   {
@@ -162,6 +197,16 @@ function objectifsRegime(e) {
       reel
         ? { id: 'presidentielle', nom: 'Préparer la présidentielle d\'avril 2027', description: 'Le RN est en tête des intentions de vote. Votre bilan pèsera sur les chances de votre camp au second tour (T2 2027).', mesure: 'presidentielle', sens: '>=', cible: 50, echeanceTour: 3 }
         : { id: 'presidentielle', nom: 'Laisser à votre camp une chance de gagner la prochaine présidentielle', description: 'Projection du second tour face au RN en fin de mandat, selon votre bilan.', mesure: 'presidentielle', sens: '>=', cible: 50 },
+    ];
+  }
+  if (e.pays === 'etatsUnis') {
+    return [
+      { id: 'miMandat', nom: 'Limiter la défaite aux élections de mi-mandat', description: 'Les démocrates sont favoris (54,6 % du vote bipartite dans les sondages, 241 à 253 sièges projetés). Gardez au moins 190 sièges républicains à la Chambre pour peser dans un Congrès divisé.', mesure: 'siegesRepublicains', sens: '>=', cible: 190, echeanceTour: 1 },
+      { id: 'shutdown', nom: 'Éviter les shutdowns', description: 'Le financement provisoire expire le 11 décembre 2026, puis chaque exercice commence le 1er octobre. Il faut 60 sénateurs : les démocrates ont la main.', mesure: 'trimestresShutdown', sens: '<=', cible: 0 },
+      { id: 'defaut', nom: 'Éviter un défaut sur la dette', description: 'La dette brute approche le plafond légal de 41 100 Md$. Il faudra le relever avec le Congrès.', mesure: 'pasDeDefaut', sens: '>=', cible: 1 },
+      reel
+        ? { id: 'successeur', nom: 'Faire élire un successeur de votre camp en 2028', description: 'Le président ne peut pas se représenter (22e amendement). Votre bilan portera ou plombera le candidat républicain.', mesure: 'presidentielleEtatsUnis', sens: '>=', cible: 50, echeanceTour: 8 }
+        : { id: 'successeur', nom: 'Laisser à votre camp une chance de garder la Maison-Blanche', description: 'Projection de la présidentielle selon votre bilan.', mesure: 'presidentielleEtatsUnis', sens: '>=', cible: 50 },
     ];
   }
   return [

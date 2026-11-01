@@ -29,10 +29,19 @@ const indicePrix = (e) => e.macro.niveauPrix / 100;
 /** Masse salariale publique estimée : part « personnel » de chaque poste (Md€/an). */
 function masseSalarialePublique(e) {
   // Composition reprise du catalogue des ministères (import paresseux pour éviter un cycle)
+  const comp = compositionPersonnel(e);
   let total = 0;
-  for (const [id, l] of Object.entries(e.budget)) total += l.montant * (COMPOSITION_PERSONNEL[id] ?? 0);
+  for (const [id, l] of Object.entries(e.budget)) total += l.montant * (comp[id] ?? 0);
   return total;
 }
+/**
+ * Budget fédéral américain : Medicare, Medicaid et l'éducation sont surtout des
+ * transferts ; le personnel civil fédéral pèse environ 300 Md$ (estimation).
+ */
+const COMPOSITION_PERSONNEL_ETATS_UNIS = { defense: 0.2, interieurJustice: 0.3, affairesEtrangeres: 0.15, recherche: 0.15, economieFinances: 0.3, sante: 0.02, education: 0.02, protectionSociale: 0.03, culture: 0.4 };
+const compositionPersonnel = (e) => (e.pays === 'etatsUnis' ? COMPOSITION_PERSONNEL_ETATS_UNIS : COMPOSITION_PERSONNEL);
+/** Montant d'hypothèse selon le pays (Md€ ou Md$ par an). */
+const parPays = (e, valeurs) => valeurs[e.pays] ?? valeurs.defaut ?? 0;
 const COMPOSITION_PERSONNEL = { sante: 0.35, education: 0.8, recherche: 0.55, defense: 0.35, affairesEtrangeres: 0.25, interieurJustice: 0.7, culture: 0.4, economieFinances: 0.35, protectionSociale: 0.05, travailEmploi: 0.05 };
 const COMPOSITION_TRANSFERTS = { protectionSociale: 0.9, travailEmploi: 0.85, logement: 0.7 };
 
@@ -338,7 +347,7 @@ export const REFORMES = [
     id: 'tva_sociale',
     nom: 'TVA sociale : +2 points de TVA, baisse des cotisations patronales',
     categorie: 'fiscalite',
-    pays: 'tous',
+    pays: ['france', 'allemagne'],
     resume: 'Faire financer la protection sociale par la consommation (y compris des produits importés) plutôt que par le travail.',
     pedagogie: 'Le coût du travail baisse, ce qui favorise l\'emploi et la compétitivité. Les prix montent : les retraités et les ménages modestes, qui ne profitent pas de la baisse des cotisations, y perdent.',
     options: [{ id: 'oui', nom: '+2 points de TVA, cotisations patronales réduites d\'autant' }],
@@ -365,7 +374,8 @@ export const REFORMES = [
     delai: 3,
     appliquer(e, o, alea) {
       const tirage = alea ? alea.uniforme() : 0.5;
-      e.politiqueSociale.rendementPatrimoine = (4 + 12 * tirage) * (e.pays === 'allemagne' ? 1.3 : 1);
+      // États-Unis : impôt minimum sur les milliardaires (fourchette élargie, hypothèse de jeu)
+      e.politiqueSociale.rendementPatrimoine = (4 + 12 * tirage) * parPays(e, { allemagne: 1.3, etatsUnis: 4, defaut: 1 });
     },
     effets(e, o, age) {
       const r0 = e.politiqueSociale.rendementPatrimoine ?? 0;
@@ -373,7 +383,7 @@ export const REFORMES = [
     },
     reaction: () => ({ chocs: { entrepreneurs: -8, jeunes: 3, salaries: 3, fonctionnaires: 2 }, opinion: { jeunes: 2, salaries: 2 }, credibilite: -0.05 }),
     axes: { fiscal: 0.8, social: 0.6, marche: -0.6 },
-    chiffrage: 'Fourchette d\'hypothèses du jeu : 4 à 16 Md€ par an (France), en érosion de 3 % par trimestre (départs, optimisation).',
+    chiffrage: 'Fourchette d\'hypothèses du jeu : 4 à 16 Md€ par an (France), 16 à 64 Md$ aux États-Unis, en érosion de 3 % par trimestre (départs, optimisation).',
   },
   {
     id: 'rabot_niches',
@@ -383,10 +393,10 @@ export const REFORMES = [
     resume: 'Raboter crédits et réductions d\'impôt (emploi à domicile, investissement locatif, crédit d\'impôt recherche...).',
     options: [{ id: 'oui', nom: 'Rabot de 10 % sur les dépenses fiscales' }],
     delai: 2,
-    effets: (e, o, age) => ({ recettes: { fixe: (e.pays === 'france' ? 8 : 6) * rampe(age, 4) * indicePrix(e) }, potentielBonus: -0.01 }),
+    effets: (e, o, age) => ({ recettes: { fixe: parPays(e, { france: 8, allemagne: 6, etatsUnis: 60 }) * rampe(age, 4) * indicePrix(e) }, potentielBonus: -0.01 }),
     reaction: () => ({ chocs: { entrepreneurs: -4, salaries: -2, retraites: -1 }, credibilite: 0.08 }),
     axes: { fiscal: 0.5 },
-    chiffrage: 'Hypothèse de jeu : 8 Md€ par an en France, 6 Md€ en Allemagne.',
+    chiffrage: 'Hypothèse de jeu : 8 Md€ par an en France, 6 Md€ en Allemagne, 60 Md$ aux États-Unis.',
   },
   {
     id: 'allegements_charges',
@@ -416,7 +426,10 @@ export const REFORMES = [
     resume: 'Plus de contrôleurs et le croisement des données : un rendement réel mais progressif, souvent surestimé.',
     options: [{ id: 'oui', nom: 'Recruter des contrôleurs et croiser les fichiers' }],
     delai: 1,
-    effets: (e, o, age) => ({ recettes: { fixe: 3 * rampe(age, 8) * indicePrix(e) }, depenses: { economieFinances: 0.3 * indicePrix(e) } }),
+    effets: (e, o, age) => {
+      const k = parPays(e, { etatsUnis: 8, defaut: 1 }); // États-Unis : contrôles fiscaux de l'IRS
+      return { recettes: { fixe: 3 * k * rampe(age, 8) * indicePrix(e) }, depenses: { economieFinances: 0.3 * k * indicePrix(e) } };
+    },
     reaction: () => ({ chocs: { salaries: 1, retraites: 1, jeunes: 1 } }),
     axes: { fiscal: 0.2 },
     chiffrage: 'Hypothèse de jeu : jusqu\'à 3 Md€ par an après deux ans, pour 0,3 Md€ de coût.',
@@ -486,7 +499,7 @@ export const REFORMES = [
     resume: 'Taxer les gains exceptionnels liés à la flambée des prix pour financer l\'aide aux ménages.',
     options: [{ id: 'oui', nom: 'Contribution sur les profits exceptionnels' }],
     delai: 2,
-    effets: (e) => ({ recettes: { fixe: Math.max(0, (e.monde.energie - 130) / 100) * (e.pays === 'allemagne' ? 4 : 3) } }),
+    effets: (e) => ({ recettes: { fixe: Math.max(0, (e.monde.energie - 130) / 100) * parPays(e, { allemagne: 4, etatsUnis: 20, defaut: 3 }) } }),
     reaction: () => ({ chocs: { salaries: 2, jeunes: 2, retraites: 1, entrepreneurs: -2 } }),
     axes: { fiscal: 0.6, social: 0.4 },
     chiffrage: 'Rendement lié au prix mondial de l\'énergie : environ 2 à 4 Md€ par an au niveau actuel (hypothèse).',
@@ -602,6 +615,98 @@ export const REFORMES = [
     axes: { securite: 0.8 },
     chiffrage: 'Hypothèse de jeu : 3 Md€ par an.',
   },
+
+  // ======================================================================
+  // ÉTATS-UNIS
+  // ======================================================================
+  {
+    id: 'social_security',
+    nom: 'Sauver la Social Security',
+    categorie: 'retraites',
+    horsReconciliation: true, // la règle Byrd interdit de toucher la Social Security par réconciliation
+    pays: ['etatsUnis'],
+    resume: 'Le fonds de retraite (OASI) sera épuisé fin 2032 : sans réforme, les pensions baisseront alors automatiquement d\'environ 20 %.',
+    pedagogie: 'Selon le rapport des administrateurs de juin 2026, les réserves combinées de la Social Security sont tombées à 2 560 Md$ fin 2025 (−160 Md$ en un an) ; le fonds retraite serait épuisé au T4 2032 et le fonds combiné au T3 2034. Ensuite, les cotisations ne financent plus qu\'environ 78 à 81 % des pensions promises. Aucune réforme ne peut passer par la réconciliation : il faut 60 sénateurs, donc des voix démocrates. Les ordres de grandeur publiés : supprimer le plafond des cotisations comblerait de la moitié (CBO) aux deux tiers (actuaire en chef) du déficit à 75 ans ; passer à l\'indice des prix « chaîné » environ 17 % ; relever l\'âge du taux plein de 67 à 68 ans environ 12 %.',
+    sources: [
+      { texte: 'Rapport 2026 des administrateurs (communiqué SSA)', url: 'https://www.ssa.gov/news/en/press/releases/2026-06-09.html' },
+      { texte: 'CRS : principaux résultats du rapport 2026', url: 'https://www.everycrsreport.com/reports/IF13256.html' },
+      { texte: 'CRFB : supprimer le plafond suffit-il ?', url: 'https://www.crfb.org/blogs/can-social-securitys-shortfall-be-closed-simply-raising-taxes-or-means-testing-benefits' },
+    ],
+    options: [
+      { id: 'plafond', nom: 'Soumettre aux cotisations les salaires au-delà de 250 000 $', description: 'Plafond actuel : 184 500 $ en 2026 (192 300 $ en 2027). Réclamé par les démocrates ; refusé par la majorité des républicains.' },
+      { id: 'indexation_chainee', nom: 'Revaloriser les pensions sur l\'indice des prix « chaîné »', description: 'Environ 0,25 point de revalorisation en moins chaque année.' },
+      { id: 'age_69', nom: 'Porter l\'âge du taux plein à 69 ans (3 mois par an)', description: 'Proposé par le Republican Study Committee ; très impopulaire.' },
+      { id: 'paquet', nom: 'Paquet bipartisan : plafond relevé + indice chaîné + âge à 68 ans', description: 'Inspiré des commissions bipartisanes (Simpson-Bowles, 2010).' },
+    ],
+    delai: 2,
+    appliquer(e, o) {
+      if (o === 'indexation_chainee' || o === 'paquet') e.retraites.ecartIndexation += 0.25;
+      if (o === 'age_69') { e.retraites.ageCible = 69; e.retraites.rythme = 0.25; }
+      if (o === 'paquet') { e.retraites.ageCible = 68; e.retraites.rythme = 0.25; }
+    },
+    annuler(e, o) {
+      if (o === 'indexation_chainee' || o === 'paquet') e.retraites.ecartIndexation -= 0.25;
+      if (o === 'age_69' || o === 'paquet') { e.retraites.ageCible = 67; }
+    },
+    effets(e, o, age) {
+      if (o !== 'plafond' && o !== 'paquet') return {};
+      // 12,4 % sur les salaires au-delà de 250 000 $ (environ 1 400 Md$, estimation), moins les réactions (optimisation)
+      const montant = (o === 'plafond' ? 140 : 90) * rampe(age, 4) * indicePrix(e);
+      return { recettes: { cotisations: montant }, fondsSS: montant, potentielBonus: -0.01 };
+    },
+    reaction: (e, o) => ({
+      plafond: { chocs: { entrepreneurs: -6, salaries: 2, retraites: 3, jeunes: 2 }, credibilite: 0.05 },
+      indexation_chainee: { chocs: { retraites: -6 }, grief: { retraites: 4 }, credibilite: 0.08 },
+      age_69: { chocs: { salaries: -8, jeunes: -4, retraites: -2 }, grief: { salaries: 6, jeunes: 3 }, credibilite: 0.1 },
+      paquet: { chocs: { salaries: -3, retraites: -3, entrepreneurs: -3 }, grief: { salaries: 2, retraites: 2 }, credibilite: 0.15 },
+    }[o]),
+    axes: { retraites: 0.5, rigueur: 0.5 },
+    axesParOption: { plafond: { retraites: -0.3, fiscal: 0.8, social: 0.4, rigueur: 0.3 }, age_69: { retraites: 1, social: -0.4 }, indexation_chainee: { social: -0.3 } },
+    chiffrage: 'Plafond porté au-delà de 250 000 $ : environ 140 Md$ par an (hypothèse de jeu : 12,4 % d\'un montant estimé de salaires au-delà du seuil, moins l\'optimisation). Indice chaîné : environ 0,25 point de revalorisation en moins par an, cumulatif.',
+  },
+  {
+    id: 'aca_subventions',
+    nom: 'Rétablir les aides renforcées à l\'assurance santé (Obamacare)',
+    categorie: 'sante',
+    pays: ['etatsUnis'],
+    resume: 'Les crédits d\'impôt renforcés de l\'ACA ont expiré le 1er janvier 2026, après l\'échec de deux votes au Sénat ; la Chambre a voté en janvier 2026 une prolongation de trois ans (230 voix contre 196), sans adoption connue au Sénat (à vérifier). C\'était l\'enjeu du shutdown d\'octobre-novembre 2025.',
+    pedagogie: 'La CBO a estimé en septembre 2025 que prolonger durablement ces aides coûterait environ 350 Md$ sur 10 ans, couvrirait 3,8 millions de personnes de plus et ferait baisser de 7,6 % les primes de référence. C\'est la première demande des démocrates dans toute négociation budgétaire.',
+    sources: [
+      { texte: 'CBO, septembre 2025 (via States Newsroom)', url: 'https://floridaphoenix.com/2025/09/18/repub/permanent-extension-of-federal-health-care-subsidies-estimated-to-cost-350-billion/' },
+      { texte: 'Ballotpedia : la Chambre adopte une prolongation de trois ans (janvier 2026)', url: 'https://news.ballotpedia.org/2026/01/12/house-passes-three-year-extension-of-expanded-aca-subsidies/' },
+      { texte: 'ASTHO : évolutions législatives 2025-2026 (projet bipartisan CARE Act)', url: 'https://www.astho.org/communications/blog/2026/aca-enhanced-premium-tax-credits-legislative-developments-2025-2026/' },
+    ],
+    options: [
+      { id: 'retablir', nom: 'Rétablir durablement les aides renforcées' },
+      { id: 'temporaire', nom: 'Les rétablir pour deux ans, avec plafond de revenus et prime minimale (projet bipartisan CARE Act)' },
+    ],
+    delai: 1,
+    effets: (e, o, age) => ({ depenses: { sante: (o === 'retablir' ? 35 : 22) * indicePrix(e) * (o === 'temporaire' && age >= 8 ? 0 : 1) }, menages: Object.fromEntries(['couple', 'artisan', 'jeune'].map((id) => [id, [{ montant: o === 'retablir' ? 120 : 80, texte: 'Aide à l\'assurance santé (ACA)' }]])) }),
+    reaction: () => ({ chocs: { salaries: 4, jeunes: 4, entrepreneurs: 3, retraites: 1 }, opinion: { salaries: 2 }, credibilite: -0.05 }),
+    axes: { social: 0.8, rigueur: -0.4 },
+    chiffrage: 'CBO : environ 350 Md$ sur 10 ans pour une prolongation durable (35 Md$ par an) ; la version temporaire est une hypothèse de jeu.',
+  },
+  {
+    id: 'salaire_minimum_federal',
+    nom: 'Relever le salaire minimum fédéral (7,25 $ depuis 2009)',
+    categorie: 'travail',
+    pays: ['etatsUnis'],
+    resume: 'Inchangé depuis 2009 ; 30 États appliquent déjà un minimum plus élevé.',
+    pedagogie: 'En 2021, la CBO estimait qu\'un minimum à 15 $ en 2025 sortirait 0,9 million de personnes de la pauvreté et augmenterait les revenus de 17 millions de salariés, mais pourrait supprimer environ 1,4 million d\'emplois (fourchette de 0 à 3,7 millions). L\'effet dépend du niveau des salaires locaux : il est faible là où les salaires dépassent déjà 15 $.',
+    sources: [{ texte: 'CBO, The Budgetary Effects of the Raise the Wage Act of 2021', url: 'https://www.cbo.gov/publication/56975' }],
+    options: [
+      { id: 'quinze', nom: '15 $ de l\'heure en quatre ans' },
+      { id: 'douze', nom: '12 $ de l\'heure, puis indexé sur les salaires' },
+    ],
+    delai: 2,
+    effets: (e, o, age) => {
+      const r = rampe(age, 16);
+      return { chomageStructurel: (o === 'quinze' ? 0.4 : 0.15) * r, depenses: { protectionSociale: -(o === 'quinze' ? 12 : 5) * r * indicePrix(e) }, chocPrix: age < 16 ? (o === 'quinze' ? 0.03 : 0.01) : 0, menages: { jeune: [{ montant: (o === 'quinze' ? 180 : 60) * r, texte: 'Hausse du salaire minimum' }] } };
+    },
+    reaction: (e, o) => ({ chocs: { jeunes: o === 'quinze' ? 6 : 3, salaries: 3, entrepreneurs: o === 'quinze' ? -7 : -3, agriculteurs: -3 }, opinion: { jeunes: 2 } }),
+    axes: { social: 0.6, marche: -0.6, travail: -0.2 },
+    chiffrage: 'Ordres de grandeur CBO (2021) pour 15 $ : 0,9 M de personnes sorties de la pauvreté, environ 1,4 M d\'emplois en moins (médiane). Le jeu traduit ce dernier effet par +0,4 point de chômage structurel (hypothèse).',
+  },
 ];
 
 /** Répartit une variation de masse salariale publique sur les postes, au prorata de leur personnel. */
@@ -609,7 +714,7 @@ function repartirSurPersonnel(e, montant) {
   const total = masseSalarialePublique(e);
   const depenses = {};
   if (!total) return depenses;
-  for (const [id, part] of Object.entries(COMPOSITION_PERSONNEL)) {
+  for (const [id, part] of Object.entries(compositionPersonnel(e))) {
     if (!e.budget[id]) continue;
     depenses[id] = montant * (e.budget[id].montant * part) / total;
   }
