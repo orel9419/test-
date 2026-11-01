@@ -1,0 +1,199 @@
+/*
+ * Styles de l'application. Les couleurs sont des « jetons » (variables CSS)
+ * déclinés en thème clair et sombre. Palette des graphiques : palette
+ * catégorielle validée (ordre fixe), couleurs d'état réservées (bon,
+ * attention, grave, critique), toujours accompagnées d'un libellé.
+ */
+:root {
+  color-scheme: light;
+  --plan: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f3f2ee;
+  --surface-3: #e9e8e2;
+  --encre: #0b0b0b;
+  --encre-2: #52514e;
+  --encre-attenuee: #898781;
+  --grille: #e1e0d9;
+  --axe: #c3c2b7;
+  --bordure: rgba(11, 11, 11, 0.10);
+  --accent: #2a78d6;
+  --accent-encre: #ffffff;
+  --serie-1: #2a78d6; --serie-2: #eb6834; --serie-3: #1baf7a; --serie-4: #eda100;
+  --serie-5: #e87ba4; --serie-6: #008300; --serie-7: #6250d6; --serie-8: #e34948;
+  --bon: #0ca30c; --attention: #fab219; --grave: #ec835a; --critique: #d03b3b;
+  --texte-bon: #006300; --texte-critique: #b52b2b;
+  --divergent-neg: #e34948; --divergent-pos: #2a78d6; --divergent-milieu: #f0efec;
+  --ombre: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.05);
+  --rayon: 10px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--encre);
+  background: var(--plan);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plan: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #232321;
+  --surface-3: #2e2e2b;
+  --encre: #f0efec;
+  --encre-2: #c3c2b7;
+  --encre-attenuee: #898781;
+  --grille: #2c2c2a;
+  --axe: #383835;
+  --bordure: rgba(255, 255, 255, 0.10);
+  --accent: #3987e5;
+  --serie-1: #3987e5; --serie-2: #d95926; --serie-3: #199e70; --serie-4: #c98500;
+  --serie-5: #d55181; --serie-6: #008300; --serie-7: #9085e9; --serie-8: #e66767;
+  --texte-bon: #0ca30c; --texte-critique: #e66767;
+  --divergent-neg: #e66767; --divergent-pos: #3987e5; --divergent-milieu: #383835;
+  --ombre: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2, h3, h4 { margin: 0 0 0.5em; line-height: 1.2; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0 0 0.6em; }
+a { color: var(--accent); }
+button, input, select { font: inherit; color: inherit; }
+select { background: var(--surface); border: 1px solid var(--axe); border-radius: 6px; padding: 0.25rem 0.4rem; max-width: 100%; }
+input[type="number"] { background: var(--surface); border: 1px solid var(--axe); border-radius: 6px; padding: 0.2rem 0.35rem; }
+.muet { color: var(--encre-2); }
+.petit { font-size: 0.85rem; }
+.tres-petit { font-size: 0.78rem; }
+.chiffres { font-variant-numeric: tabular-nums; }
+.positif { color: var(--texte-bon); }
+.negatif { color: var(--texte-critique); }
+.ligne { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.espace { justify-content: space-between; }
+.pile > * + * { margin-top: 0.75rem; }
+.grille-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+.grille-tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 0.75rem; }
+
+/* --- Boutons ------------------------------------------------------------- */
+.bouton {
+  border: 1px solid var(--bordure); background: var(--surface); border-radius: 8px;
+  padding: 0.45rem 0.9rem; cursor: pointer; transition: background 0.15s;
+}
+.bouton:hover { background: var(--surface-2); }
+.bouton:focus-visible, .onglet:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bouton.principal { background: var(--accent); color: var(--accent-encre); border-color: transparent; font-weight: 600; }
+.bouton.principal:hover { filter: brightness(1.08); }
+.bouton.danger { color: var(--texte-critique); }
+.bouton:disabled { opacity: 0.5; cursor: not-allowed; }
+.bouton.grand { padding: 0.75rem 1.2rem; font-size: 1.05rem; width: 100%; }
+
+/* --- Cartes ---------------------------------------------------------------- */
+.carte { background: var(--surface); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 1rem 1.1rem; box-shadow: var(--ombre); }
+.carte.compacte { padding: 0.7rem 0.8rem; }
+.carte h3 { display: flex; align-items: center; gap: 0.4rem; }
+
+/* --- Disposition générale ---------------------------------------------------- */
+.entete {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 0.6rem 1.2rem; background: var(--surface); border-bottom: 1px solid var(--bordure);
+}
+.entete .titre { font-weight: 700; font-size: 1.1rem; }
+.entete .indicateurs { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-left: auto; }
+.entete .indicateurs div { display: flex; flex-direction: column; font-size: 0.78rem; color: var(--encre-2); }
+.entete .indicateurs strong { font-size: 1rem; color: var(--encre); font-variant-numeric: tabular-nums; }
+.mise-en-page { display: grid; grid-template-columns: 210px minmax(0, 1fr) 320px; gap: 1rem; padding: 1rem 1.2rem; align-items: start; }
+.navigation { position: sticky; top: 70px; display: flex; flex-direction: column; gap: 0.2rem; }
+.onglet {
+  text-align: left; border: none; background: transparent; padding: 0.5rem 0.7rem; border-radius: 8px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; color: var(--encre-2);
+}
+.onglet:hover { background: var(--surface-2); color: var(--encre); }
+.onglet.actif { background: var(--surface-3); color: var(--encre); font-weight: 600; }
+.pastille { background: var(--critique); color: #fff; border-radius: 999px; padding: 0 0.45rem; font-size: 0.75rem; font-weight: 700; }
+.colonne-droite { position: sticky; top: 70px; display: flex; flex-direction: column; gap: 1rem; max-height: calc(100vh - 85px); overflow: auto; }
+@media (max-width: 1180px) {
+  .mise-en-page { grid-template-columns: 190px minmax(0, 1fr); }
+  .colonne-droite { grid-column: 1 / -1; position: static; max-height: none; }
+}
+@media (max-width: 760px) {
+  .mise-en-page { grid-template-columns: 1fr; padding: 0.7rem; }
+  .navigation { position: static; flex-direction: row; overflow-x: auto; }
+  .onglet { white-space: nowrap; }
+  .entete .indicateurs { margin-left: 0; }
+}
+
+/* --- Tuiles d'indicateurs ---------------------------------------------------- */
+.tuile { background: var(--surface); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 0.7rem 0.8rem; display: flex; flex-direction: column; gap: 0.15rem; }
+.tuile .libelle { font-size: 0.8rem; color: var(--encre-2); display: flex; gap: 0.3rem; align-items: center; }
+.tuile .valeur { font-size: 1.45rem; font-weight: 650; }
+.tuile .variation { font-size: 0.8rem; }
+
+/* --- Infobulles pédagogiques ------------------------------------------------- */
+.info { position: relative; display: inline-flex; }
+.info > button {
+  width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--axe); background: transparent;
+  font-size: 0.7rem; line-height: 1; color: var(--encre-2); cursor: help; padding: 0;
+}
+.info .bulle {
+  position: absolute; z-index: 50; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  width: min(320px, 80vw); background: var(--encre); color: var(--surface); border-radius: 8px;
+  padding: 0.6rem 0.7rem; font-size: 0.82rem; font-weight: 400; line-height: 1.4; box-shadow: var(--ombre); text-align: left;
+}
+
+/* --- Badges de provenance ------------------------------------------------------ */
+.badge { display: inline-block; font-size: 0.7rem; padding: 0.05rem 0.4rem; border-radius: 999px; border: 1px solid var(--bordure); color: var(--encre-2); white-space: nowrap; }
+.badge.officiel { border-color: var(--bon); }
+.badge.estimation, .badge.introuvable, .badge.a_verifier { border-color: var(--attention); background: color-mix(in srgb, var(--attention) 15%, transparent); color: var(--encre); }
+
+/* --- Jauges --------------------------------------------------------------------- */
+.jauge { height: 8px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
+.jauge > div { height: 100%; border-radius: 999px; background: var(--accent); }
+.objectif { padding: 0.55rem 0; border-bottom: 1px solid var(--grille); }
+.objectif:last-child { border-bottom: none; }
+.statut { font-size: 0.72rem; font-weight: 600; display: inline-flex; gap: 0.25rem; align-items: center; }
+.statut.atteint, .statut.en_voie { color: var(--texte-bon); }
+.statut.echoue { color: var(--texte-critique); }
+
+/* --- Curseurs et tableaux ----------------------------------------------------- */
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--grille); vertical-align: middle; }
+th { font-size: 0.78rem; color: var(--encre-2); font-weight: 600; }
+td.nombre, th.nombre { text-align: right; font-variant-numeric: tabular-nums; }
+.barre-fond { height: 6px; background: var(--surface-3); border-radius: 3px; position: relative; }
+.barre-fond > div { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+
+/* --- Graphiques ---------------------------------------------------------------- */
+.graphique { position: relative; }
+.graphique svg { display: block; width: 100%; height: auto; overflow: visible; }
+.graphique .bulle-graphique {
+  position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--bordure); border-radius: 8px;
+  padding: 0.45rem 0.6rem; font-size: 0.8rem; box-shadow: var(--ombre); min-width: 140px; z-index: 5;
+}
+.legende { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; font-size: 0.8rem; color: var(--encre-2); margin-top: 0.3rem; }
+.legende span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.trait { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+
+/* --- Choix, cartes de réforme -------------------------------------------------- */
+.option { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.45rem 0.55rem; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+.option:hover { background: var(--surface-2); }
+.option.choisie { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
+.etiquette { font-size: 0.72rem; padding: 0.1rem 0.45rem; border-radius: 6px; background: var(--surface-3); color: var(--encre-2); }
+.alerte { border-left: 3px solid var(--grave); padding: 0.5rem 0.7rem; background: color-mix(in srgb, var(--grave) 10%, transparent); border-radius: 6px; }
+.alerte.critique { border-left-color: var(--critique); background: color-mix(in srgb, var(--critique) 10%, transparent); }
+.alerte.bonne { border-left-color: var(--bon); background: color-mix(in srgb, var(--bon) 10%, transparent); }
+
+/* --- Fenêtre modale -------------------------------------------------------------- */
+.voile { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 100; display: grid; place-items: center; padding: 1rem; }
+.modale { background: var(--surface); border-radius: 14px; max-width: 820px; width: 100%; max-height: 90vh; overflow: auto; padding: 1.3rem 1.4rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
+
+/* --- Accueil -------------------------------------------------------------------- */
+.accueil { max-width: 980px; margin: 0 auto; padding: 2rem 1.2rem; }
+.choix-pays { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+.carte-pays { cursor: pointer; text-align: left; }
+.carte-pays.choisie { outline: 2px solid var(--accent); }
+.carte-pays .drapeau { font-size: 2.2rem; }
+.journal-ligne { display: grid; grid-template-columns: 70px 1fr; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--grille); font-size: 0.9rem; }
+.hemicycle text { font-size: 11px; }
+.sr-seul { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -11,7 +11,16 @@ import { lire, provenance as prov } from '../outils.js';
 
 export function profilAllemagne(d) {
   const fp = d.finances_publiques;
-  const est = fp.depenses_par_fonction_cofog.estimation_jeu.valeurs;
+  // Ventilation par fonction : données Eurostat si `npm run update-data` les a récupérées,
+  // sinon ordres de grandeur marqués « estimation de jeu ».
+  const eurostat = fp.depenses_par_fonction_cofog_eurostat?.valeurs_pct_pib;
+  const avecEurostat = !!(eurostat?.GF01 && eurostat?.GF10 && eurostat?.GF07);
+  const est = avecEurostat
+    ? {
+      GF01_services_generaux_hors_interets: eurostat.GF01 - (eurostat.GF0107 ?? 0), GF03_ordre_securite: eurostat.GF03, GF04_affaires_economiques: eurostat.GF04,
+      GF05_environnement: eurostat.GF05, GF06_logement_equipements: eurostat.GF06, GF07_sante: eurostat.GF07, GF08_loisirs_culture_culte: eurostat.GF08, GF09_enseignement: eurostat.GF09,
+    }
+    : fp.depenses_par_fonction_cofog.estimation_jeu.valeurs;
   const bf = fp.budget_federal_2027_projet.valeurs;
 
   // --- Agrégats ------------------------------------------------------------
@@ -27,7 +36,7 @@ export function profilAllemagne(d) {
   const dette2026 = lire(fp.dette_md) + deficit2026 + 20; // 2 838 Md€ + déficit + 20 Md€ d'ajustements (estimation)
 
   // --- Dépenses par poste ----------------------------------------------------
-  const protectionSocialeTotale = (lire(fp.depenses_par_fonction_cofog.valeurs.GF10_protection_sociale) / 100) * pib2026; // 20,4 % (Eurostat)
+  const protectionSocialeTotale = ((avecEurostat ? eurostat.GF10 : lire(fp.depenses_par_fonction_cofog.valeurs.GF10_protection_sociale)) / 100) * pib2026; // 20,4 % (Eurostat)
   const retraitesDRV = lire(fp.retraites.depenses_drv) * 1.02;  // DRV (à vérifier) projeté en 2026
   const pensionsFonctionnaires = 60;                            // estimation
   const retraites2026 = retraitesDRV + pensionsFonctionnaires;
@@ -46,7 +55,9 @@ export function profilAllemagne(d) {
   const gf04 = m(partsEstimees.GF04);
   const rechercheGF01 = 20, aeGF01 = 16;                         // estimations (recherche fédérale, Affaires étrangères + coopération)
 
-  const e = (texte) => prov('estimation', `${texte} Ventilation COFOG estimée, recalée sur les dépenses primaires 2026.`);
+  const e = (texte) => (avecEurostat
+    ? prov('derive', `${texte} Ventilation Eurostat (gov_10a_exp), recalée sur les dépenses primaires 2026.`, fp.depenses_par_fonction_cofog_eurostat.url)
+    : prov('estimation', `${texte} Ventilation COFOG estimée, recalée sur les dépenses primaires 2026.`));
   const ministeres = {
     retraites: { montant: retraites2026, provenance: prov('estimation', 'Assurance retraite DRV (421,3 Md€, à vérifier) + 60 Md€ de pensions des fonctionnaires (estimation)', fp.retraites.depenses_drv.url) },
     protectionSociale: { montant: protectionSocialeTotale - retraites2026 - travailEmploi - allocationLogement, provenance: prov('derive', 'Protection sociale (20,4 % du PIB, Eurostat) moins retraites, emploi et allocation logement') },

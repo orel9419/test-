@@ -495,3 +495,39 @@ export function majPolitique(e, alea, decisions = {}) {
   }
   return { defaite };
 }
+
+/**
+ * Prévision des votes pour l'interface, sans modifier l'état : vote du budget
+ * avec les décisions en cours, vote des réformes proposées, menace de censure.
+ * @param {object} e état déjà modifié par les décisions envisagées (copie)
+ * @param {Array} reformes réformes proposées ce trimestre
+ */
+export function prevoirVotes(e, reformes = []) {
+  calculerPositions(e);
+  majSatisfactions(e);
+  const budget = voter(e, e.politique.positions, { social: 1.5, fiscal: 1.5, rigueur: 1.5 });
+  const censure = e.pays === 'france' ? motionCensure(e) : null;
+  let texte = null;
+  const legislatives = reformes.filter((r) => trouverReforme(r.id)?.vote !== false);
+  if (legislatives.length) {
+    const positions = calculerPositions(e, legislatives);
+    const saillance = saillanceReformes(legislatives);
+    texte = voter(e, positions, saillance);
+    if (e.pays === 'france') {
+      const sauvegarde = e.politique.groupes.map((g) => g.satisfaction);
+      for (const g of e.politique.groupes) g.satisfaction = satisfaction(e, g, positions, saillance);
+      texte.censureApres493 = motionCensure(e, -0.2);
+      e.politique.groupes.forEach((g, i) => { g.satisfaction = sauvegarde[i]; });
+    } else {
+      const spd = e.politique.groupes.find((g) => g.partenaire);
+      texte.accordPartenaire = e.politique.coalition.rompue || satisfaction(e, { ...spd, posture: 'pivot', concessions: 0 }, positions, saillance) > -0.4 || e.politique.coalition.satisfaction > 70;
+      texte.deuxTiers = Math.ceil(e.politique.sieges * 2 / 3);
+    }
+  }
+  return {
+    budget: resumeVote(budget),
+    censure: censure ? { voix: censure.voix, majorite: censure.majorite, adoptee: censure.adoptee } : null,
+    texte: texte ? { ...resumeVote(texte), censureApres493: texte.censureApres493 ? { voix: texte.censureApres493.voix, majorite: texte.censureApres493.majorite, adoptee: texte.censureApres493.adoptee } : null, accordPartenaire: texte.accordPartenaire, deuxTiers: texte.deuxTiers } : null,
+    satisfactions: e.politique.groupes.map((g) => ({ id: g.id, nom: g.nom, sieges: g.sieges, satisfaction: g.satisfaction, posture: g.posture, couleur: g.couleur })),
+  };
+}

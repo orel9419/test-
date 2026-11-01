@@ -30,7 +30,7 @@ import { majMacro } from './macro.js';
 import { majFinances, bilanAnnuel } from './finances.js';
 import { majMenages } from './menages.js';
 import { majSocial } from './social.js';
-import { initialiserPolitique, validerReformes, voterBudget, majPolitique, majSatisfactions, calculerPositions } from './politique.js';
+import { initialiserPolitique, validerReformes, voterBudget, majPolitique, prevoirVotes } from './politique.js';
 import { genererObjectifs, majObjectifs, cloturerObjectifs } from './objectifs.js';
 import { genererEvenements, resoudreEvenements, depensesTemporairesActives } from './evenements.js';
 import { calculerScore } from './score.js';
@@ -40,6 +40,19 @@ import { PARAMETRES, MODES } from '../model/parametres.js';
 import { borner } from '../model/outils.js';
 
 export { reformesDisponibles, actionsDisponibles, calculerScore };
+
+/**
+ * Prévision des votes avec les décisions envisagées (curseurs, taux, réformes),
+ * sans jouer le tour.
+ */
+export function previsionPolitique(etat, decisions = {}) {
+  const e = structuredClone(etat);
+  for (const [id, v] of Object.entries(decisions.budget ?? {})) if (e.budget[id]) e.budget[id].variationVolume = v;
+  appliquerTaux(e, decisions.impots ?? {});
+  // Les postes évalués par les partis sont les cibles visées, pas les montants déjà atteints
+  for (const l of Object.values(e.budget)) if (l.variationVolume !== undefined && l.montantInitial) l.montant = l.montantInitial * (e.macro.niveauPrix / 100) * (1 + (l.variationVolume ?? 0) / 100) + (l.ajustementReformes ?? 0);
+  return prevoirVotes(e, decisions.reformes ?? []);
+}
 
 export function creerPartie(options) {
   const e = creerEtatInitial(options);

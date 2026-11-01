@@ -18,6 +18,7 @@ export function initialiserMenages(e) {
     revenuReel: def.revenuNet,
     delta: 0,
     deltaTour: 0,
+    variationPct: 0,
     details: [],
   }));
 }
