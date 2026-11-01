@@ -1,5 +1,5 @@
 import React from 'react';
-import { signe, classeVariation } from '../format.js';
+import { signe, classeVariation, devise } from '../format.js';
 import { GROUPES } from '../../model/ministeres.js';
 
 /** Panneau d'impact estimé des décisions en préparation (comparaison avec / sans). */
@@ -20,7 +20,7 @@ export default function Apercu({ apercu, partie, titre = 'Impact estimé de vos 
       <table className="petit">
         <thead><tr><th></th><th className="nombre">Ce trimestre</th><th className="nombre">Dans un an</th></tr></thead>
         <tbody>
-          {ligne('Solde public (Md€/an)', i.soldeMd, u.soldeMd, 1)}
+          {ligne(`Solde public (Md${devise()}/an)`, i.soldeMd, u.soldeMd, 1)}
           {ligne('Déficit (pt de PIB)', -i.deficitPct, -u.deficitPct, 2, '', false)}
           {ligne('Dette (pt de PIB)', i.dettePct, u.dettePct, 2, '', false)}
           {ligne('PIB (%)', i.pib, u.pib, 2)}
@@ -35,7 +35,7 @@ export default function Apercu({ apercu, partie, titre = 'Impact estimé de vos 
         <table className="petit">
           <tbody>
             {Object.entries(u.groupes).map(([g, v]) => <tr key={g}><td>{GROUPES[g].nom}</td><td className={`nombre ${classeVariation(v)}`}>{signe(v, 1)} pt</td></tr>)}
-            {partie.menages.map((m) => <tr key={m.id}><td>{m.nom}</td><td className={`nombre ${classeVariation(u.menages[m.id])}`}>{signe(u.menages[m.id], 0)} €/mois</td></tr>)}
+            {partie.menages.map((m) => <tr key={m.id}><td>{m.nom}</td><td className={`nombre ${classeVariation(u.menages[m.id])}`}>{signe(u.menages[m.id], 0)} {devise()}/mois</td></tr>)}
           </tbody>
         </table>
       </details>

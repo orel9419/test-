@@ -378,7 +378,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   // --- 10. Vie politique : vote du budget, coalition, censure, élections -------
   // France et Allemagne : budget voté au T4. États-Unis : exercice qui commence le 1er octobre,
   // donc crédits votés au T3, et au premier tour (fin du financement provisoire le 11 décembre 2026).
-  const trimestreBudget = e.pays === 'etatsUnis' ? (e.trimestre.t === 3 || e.tour === 0) : e.trimestre.t === 4;
+  const trimestreBudget = e.pays === 'etatsUnis' ? (e.trimestre.t === 3 || e.tour === 1) : e.trimestre.t === 4;
   if (trimestreBudget && !options.sansPolitique) {
     const vb = voterBudget(e, decisions.procedureBudget ?? 'auto');
     e.resultatsTour.budget = { adopte: vb.adopte, pour: vb.vote.pour, contre: vb.vote.contre, abstention: vb.vote.abstention, procedure: vb.procedure, senat: vb.senat?.pour ?? null, censure: vb.censure ? { voix: vb.censure.voix, majorite: vb.censure.majorite, adoptee: vb.censure.adoptee } : null };

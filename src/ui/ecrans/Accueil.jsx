@@ -6,7 +6,7 @@ import { pct } from '../format.js';
 /** Écran d'accueil : choix du pays, du mode et du calendrier. */
 export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, theme, onTheme, message }) {
   const [pays, setPays] = useState('france');
-  const [mode, setMode] = useState('realiste');
+  const [mode, setMode] = useState('intermediaire');
   const [calendrier, setCalendrier] = useState('reel');
   const d = PAYS[pays].donnees;
   return (
@@ -35,7 +35,9 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
             <button type="button" key={id} className={`carte carte-pays ${pays === id ? 'choisie' : ''}`} onClick={() => setPays(id)} aria-pressed={pays === id}>
               <div className="ligne"><span className="drapeau">{p.donnees.meta.drapeau}</span><strong style={{ fontSize: '1.15rem' }}>{p.donnees.meta.nom}</strong></div>
               <p className="petit muet">{p.regimeLibelle} · {p.role} · mandat de {p.mandat}</p>
-              <p className="petit">Dette {pct(fp.dette_pct_pib.valeur)} du PIB · déficit {pct(fp.deficit_pct_pib.valeur)} (2025) · chômage {pct(m.chomage_bit?.valeur ?? m.chomage_national_ba?.valeur)}{m.chomage_bit?.valeur ? '' : ' (définition nationale)'}</p>
+              {id === 'etatsUnis'
+                ? <p className="petit">Dette fédérale détenue par le public {pct(fp.dette_detenue_public.valeur / m.pib_nominal.valeur * 100, 0)} du PIB · déficit fédéral {pct(fp.deficit_md.valeur / m.pib_nominal.valeur * 100)} · chômage {pct(m.chomage.valeur)}</p>
+                : <p className="petit">Dette {pct(fp.dette_pct_pib.valeur)} du PIB · déficit {pct(fp.deficit_pct_pib.valeur)} (2025) · chômage {pct(m.chomage_bit?.valeur ?? m.chomage_national_ba?.valeur)}{m.chomage_bit?.valeur ? '' : ' (définition nationale)'}</p>}
               <p className="petit muet">{p.donnees.politique.dossiers_chauds.slice(0, 2).join(' · ')}</p>
             </button>
           );
@@ -46,9 +48,15 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
       <h2>2. Mode de jeu</h2>
       <div className="choix-pays">
         {Object.entries(MODES).map(([id, m]) => (
-          <button type="button" key={id} className={`carte carte-pays ${mode === id ? 'choisie' : ''}`} onClick={() => setMode(id)} aria-pressed={mode === id}>
-            <strong>{m.nom}</strong>
+          <button type="button" key={id} className={`carte carte-pays mode-${id} ${mode === id ? 'choisie' : ''}`} onClick={() => setMode(id)} aria-pressed={mode === id}>
+            <div className="ligne"><span className="drapeau" aria-hidden="true">{{ facile: '🌱', intermediaire: '⚖️', expert: '🔥' }[id]}</span><strong style={{ fontSize: '1.1rem' }}>{m.nom}</strong></div>
             <p className="petit muet">{m.description}</p>
+            <ul className="tres-petit" style={{ margin: 0, paddingLeft: '1rem' }}>
+              <li>Conseiller : {m.conseiller ? 'oui' : 'non'}</li>
+              <li>Défaites : {m.defaitesActives ? 'actives' : 'désactivées'}</li>
+              <li>Prévisions de vote : {m.previsionsExactes ? 'exactes' : 'incertaines'}</li>
+              <li>Événements simultanés : {m.maxEvenements} au plus</li>
+            </ul>
           </button>
         ))}
       </div>
@@ -57,7 +65,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
       <div className="choix-pays">
         <button type="button" className={`carte carte-pays ${calendrier === 'reel' ? 'choisie' : ''}`} onClick={() => setCalendrier('reel')} aria-pressed={calendrier === 'reel'}>
           <strong>Calendrier réel</strong>
-          <p className="petit muet">{pays === 'france' ? 'La présidentielle a lieu en avril 2027 (3ᵉ tour). Si votre camp la perd, la partie s\'arrête.' : 'Les élections fédérales ont lieu au début de 2029.'}</p>
+          <p className="petit muet">{pays === 'france' ? 'La présidentielle a lieu en avril 2027 (3ᵉ tour). Si votre camp la perd, la partie s\'arrête.' : pays === 'etatsUnis' ? 'Mi-mandat le 3 novembre 2026, présidentielle le 7 novembre 2028 : le président sortant ne peut pas se représenter, le scrutin juge votre bilan.' : 'Les élections fédérales ont lieu au début de 2029.'}</p>
         </button>
         <button type="button" className={`carte carte-pays ${calendrier === 'mandat_complet' ? 'choisie' : ''}`} onClick={() => setCalendrier('mandat_complet')} aria-pressed={calendrier === 'mandat_complet'}>
           <strong>Mandat complet</strong>
@@ -71,7 +79,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
       </div>
 
       <div className="carte petit muet">
-        <strong>Comment jouer.</strong> Un tour = un trimestre. À chaque tour, répartissez le budget entre les ministères, fixez les impôts, proposez des réformes (avec leurs compensations), agissez à l'international et tranchez les événements, puis validez. Les données de départ sont sourcées (onglet « Données et sources ») ; les paramètres du modèle sont des hypothèses documentées.
+        <strong>Comment jouer.</strong> Un tour = un trimestre. À chaque tour, répartissez le budget entre les ministères, fixez les impôts, proposez des réformes (avec leurs compensations), pilotez les participations de l'État et les fleurons, agissez à l'international, préparez les grands rendez-vous et tranchez les événements, puis validez (Ctrl + Entrée). Les données de départ sont sourcées (onglet « Données et sources ») ; les paramètres du modèle sont des hypothèses documentées.
       </div>
     </div>
   );

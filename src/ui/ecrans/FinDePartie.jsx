@@ -2,7 +2,7 @@ import React from 'react';
 import GraphiqueLignes from '../composants/GraphiqueLignes.jsx';
 import Jauge from '../composants/Jauge.jsx';
 import { LIBELLES_COMPOSANTES } from '../../engine/score.js';
-import { nombre, pct, signe, classeVariation, euros } from '../format.js';
+import { nombre, pct, signe, classeVariation, euros, devise } from '../format.js';
 
 /** Écran de fin de partie : score pondéré, objectifs, trajectoires. */
 export default function FinDePartie({ partie, onNouvelle, onExporter }) {
@@ -24,6 +24,12 @@ export default function FinDePartie({ partie, onNouvelle, onExporter }) {
               <Jauge valeur={v / 100} libelle={LIBELLES_COMPOSANTES[k]} />
             </div>
           ))}
+        </div>
+      )}
+      {(partie.succes ?? []).length > 0 && (
+        <div className="carte">
+          <h3>Succès obtenus ({partie.succes.length})</h3>
+          <div className="ligne">{partie.succes.map((x) => <span key={x.id} className="succes-badge" title={x.description}>{x.icone} {x.nom}</span>)}</div>
         </div>
       )}
       <div className="grille-2">
@@ -53,7 +59,7 @@ export default function FinDePartie({ partie, onNouvelle, onExporter }) {
       <div className="carte">
         <h3>Ce que votre mandat a changé pour les ménages types</h3>
         <table className="petit"><tbody>{partie.menages.map((m) => (
-          <tr key={m.id}><td>{m.nom}</td><td className="nombre">{euros(m.revenuNet0)} → {euros(m.revenuReel)}</td><td className={`nombre ${classeVariation(m.delta)}`}>{signe(m.delta, 0)} €/mois</td></tr>
+          <tr key={m.id}><td>{m.nom}</td><td className="nombre">{euros(m.revenuNet0)} → {euros(m.revenuReel)}</td><td className={`nombre ${classeVariation(m.delta)}`}>{signe(m.delta, 0)} {devise()}/mois</td></tr>
         ))}</tbody></table>
       </div>
       <div className="ligne">

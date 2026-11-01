@@ -39,7 +39,7 @@ export function etatRetraitesInitial(p) {
     tauxCotisation: p.tauxCotisation ?? null,
     derniereRevalorisation: null,
     // États-Unis : fonds fiduciaire de la Social Security (réserves en Md$)
-    fondsSS: p.fondsSS ? { reserves: p.fondsSS.reservesDepart, deficitTendanciel: p.fondsSS.deficitDepart, depensesSansReforme: p.nbRetraites * p.pensionMoyenne * 12 * p.coefDepense / 1000, economiesCumulees: 0, epuisementProjete: null } : null,
+    fondsSS: p.fondsSS ? { reserves: p.fondsSS.reservesDepart, deficitTendanciel: p.fondsSS.deficitDepart, depensesSansReforme: p.nbRetraites * p.pensionMoyenne * 12 * p.coefDepense / 1000, economiesCumulees: 0, deficitAnnuel: p.fondsSS.deficitDepart, epuisementProjete: projeterEpuisement(p.fondsSS.reservesDepart, p.fondsSS.deficitDepart, p.fondsSS.hausseDeficitAnnuelle, 2026.75) } : null,
   };
 }
 
@@ -80,12 +80,15 @@ function majFondsSS(e, effetsReformes) {
   const deficit = f.deficitTendanciel - economies;
   f.economiesAnnuelles = economies;
   f.reserves = Math.max(0, f.reserves - deficit / 4);
-  // Projection de l'année d'épuisement à politique inchangée
-  let reserves = f.reserves, d = deficit, annee = e.trimestre.annee + (e.trimestre.t) / 4;
-  let n = 0;
-  while (reserves > 0 && n < 400) { d += p.fondsSS.hausseDeficitAnnuelle / 4; reserves -= d / 4; annee += 0.25; n++; }
-  f.epuisementProjete = reserves > 0 ? null : Math.floor(annee);
+  f.epuisementProjete = projeterEpuisement(f.reserves, deficit, p.fondsSS.hausseDeficitAnnuelle, e.trimestre.annee + e.trimestre.t / 4);
   f.deficitAnnuel = deficit;
+}
+
+/** Année d'épuisement du fonds à politique inchangée (null au-delà d'un siècle). */
+export function projeterEpuisement(reserves, deficit, hausseAnnuelle, depuis) {
+  let r = reserves, d = deficit, annee = depuis, n = 0;
+  while (r > 0 && n < 400) { d += hausseAnnuelle / 4; r -= d / 4; annee += 0.25; n++; }
+  return r > 0 ? null : Math.floor(annee);
 }
 
 /**

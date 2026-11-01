@@ -218,6 +218,11 @@ export function creerEtatInitial({ pays, donnees, contexte, mode: modeDemande = 
     const s = structurelSchuldenbremse(e, deficitRatio);
     nat.ajustementPerimetre = s - (nat.plafondStructurelBund + nat.plafondStructurelLaender);
   }
+  // Plafond légal de la dette (États-Unis) : marge disponible dès le départ
+  if (nat?.type === 'plafond_dette') {
+    e.finances.detteBrute = e.finances.dette + (statique.detteIntragouvernementale ?? 0);
+    e.finances.margePlafond = nat.plafond - e.finances.detteBrute;
+  }
 
   e.recherche = { effortPctPIB: p.stocksInitiaux.recherche };
   e.menages = initialiserMenages(e);

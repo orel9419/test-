@@ -2,6 +2,7 @@ import React from 'react';
 import Hemicycle from '../composants/Hemicycle.jsx';
 import Info from '../composants/Info.jsx';
 import { nombre, pct } from '../format.js';
+import { exerciceBudgetaire } from '../../engine/politique.js';
 
 const POSTURES = { gouvernement: 'Gouvernement', soutien: 'Soutien', pivot: 'Pivot', opposition: 'Opposition' };
 
@@ -17,7 +18,105 @@ function Satisfaction({ valeur }) {
   );
 }
 
-export default function Parlement({ partie, decisions, majDecisions, prevision }) {
+/** Sénat américain : 100 sièges, seuils de 51 (majorité, réconciliation) et 60 (fin de l'obstruction). */
+function Senat({ senat, pourPrevu }) {
+  const d = senat.DEM, r = senat.REP;
+  return (
+    <div>
+      <div className="senat" role="img" aria-label={`Sénat : ${d} démocrates, ${r} républicains`}>
+        <div style={{ width: `${d}%`, background: '#1565c0' }} />
+        <div style={{ width: `${r}%`, background: '#c62828' }} />
+        <span className="seuil" style={{ left: '51%' }} title="Majorité simple (réconciliation) : 51, ou 50 + le vice-président" />
+        <span className="seuil fort" style={{ left: '60%' }} title="Fin de l'obstruction : 60 voix" />
+      </div>
+      <div className="legende"><span>Démocrates {d}</span><span>Républicains {r}</span><span>│ 51 : majorité · ┃ 60 : fin de l'obstruction</span></div>
+      {pourPrevu !== null && pourPrevu !== undefined && <p className="petit">Sénateurs favorables au budget (prévision) : <strong>{pourPrevu}</strong> / 60 nécessaires.</p>}
+    </div>
+  );
+}
+
+function ParlementEtatsUnis({ partie, decisions, majDecisions, prevision }) {
+  const pol = partie.politique;
+  const f = partie.finances;
+  const tr = partie.trimestre;
+  const trimestreBudget = tr.t === 3 || partie.tour === 1;
+  const vb = prevision?.budget;
+  const incertitude = prevision?.incertitude ?? 0;
+  const fy = exerciceBudgetaire(partie);
+  const groupes = prevision?.satisfactions ?? pol.groupes;
+  return (
+    <div className="pile">
+      <h2>Congrès des États-Unis</h2>
+      <div className="grille-2">
+        <div className="carte">
+          <h3>Chambre des représentants</h3>
+          <Hemicycle pays="etatsUnis" groupes={pol.groupes} majorite={pol.majorite} />
+          <h3 style={{ marginTop: '0.6rem' }}>Sénat</h3>
+          <Senat senat={pol.senat} pourPrevu={trimestreBudget ? vb?.senat : null} />
+        </div>
+        <div className="carte pile">
+          <h3>Rapport de force <Info texte="Pour devenir loi, un texte doit passer la Chambre (majorité simple) puis le Sénat, où 60 voix sont nécessaires pour clore les débats (obstruction ou « filibuster »). Exception : la réconciliation budgétaire, à la majorité simple, une fois par exercice, pour des mesures de recettes et de dépenses (règle Byrd), jamais pour la Social Security." /></h3>
+          <p className="petit">{pol.gouvernementDivise ? <strong className="negatif">Gouvernement divisé : les démocrates contrôlent au moins une chambre.</strong> : 'Votre camp contrôle la Chambre et le Sénat.'}</p>
+          <p className="petit">Réconciliation pour l'exercice {fy} : {pol.reconciliations.includes(fy) ? <strong>déjà utilisée</strong> : <strong className="positif">disponible</strong>}.</p>
+          {pol.shutdown && <div className="alerte critique"><strong>Shutdown en cours</strong> depuis {pol.shutdown.trimestres} trimestre(s) : environ 750 000 agents fédéraux au chômage technique.</div>}
+          <div className={`alerte ${f.margePlafond < 0 ? 'critique' : f.margePlafond < 900 ? '' : 'bonne'}`}>
+            <strong>Plafond de la dette :</strong> {nombre(partie.statique.regles.nationale.plafond, 0)} Md$ ; dette brute {nombre(f.detteBrute ?? 0, 0)} Md$ ; marge {nombre(f.margePlafond ?? 0, 0)} Md$.
+            {f.margePlafond < 900 && (
+              <label className="petit" style={{ display: 'block', marginTop: 6 }}>Stratégie :
+                <select value={decisions.plafondDette ?? 'negocier'} onChange={(ev) => majDecisions({ plafondDette: ev.target.value })} style={{ display: 'block', width: '100%', marginTop: 4 }}>
+                  <option value="negocier">Négocier un relèvement bipartisan (concessions sur les dépenses)</option>
+                  <option value="reconciliation">Le relever par réconciliation, avec les seuls républicains</option>
+                  <option value="bras_de_fer">Bras de fer : refuser toute concession</option>
+                </select>
+              </label>
+            )}
+          </div>
+          {trimestreBudget && vb && (
+            <div className={`alerte ${vb.adopte && (vb.senat ?? 0) >= 60 ? 'bonne' : 'critique'}`}>
+              <strong>Crédits de l'exercice {tr.t === 3 ? fy + 1 : fy} ce trimestre</strong>{incertitude ? ' (pointage incertain, ± 25 voix)' : ''} : Chambre {incertitude ? '≈ ' : ''}{vb.pour} pour, {vb.contre} contre ; Sénat {incertitude ? '≈ ' : ''}{vb.senat} voix. {vb.adopte && (vb.senat ?? 0) >= 60 ? 'Le budget complet passerait.' : 'Le budget complet ne passerait pas : une loi de financement provisoire (CR) est plus facile à faire voter.'}
+            </div>
+          )}
+          {trimestreBudget && (
+            <label className="petit">Procédure budgétaire :
+              <select value={decisions.procedureBudget} onChange={(ev) => majDecisions({ procedureBudget: ev.target.value })} style={{ display: 'block', width: '100%', marginTop: 4 }}>
+                <option value="auto">Budget complet s'il passe, sinon financement provisoire</option>
+                <option value="complet">Budget complet uniquement (risque de shutdown)</option>
+                <option value="cr">Financement provisoire : reconduire les crédits de l'an passé</option>
+                <option value="compromis">Compromis avec les démocrates (santé, solidarités, éducation)</option>
+              </select>
+            </label>
+          )}
+        </div>
+      </div>
+      <div className="carte" style={{ overflowX: 'auto' }}>
+        <h3>Groupes à la Chambre</h3>
+        <table className="petit">
+          <thead><tr><th>Groupe</th><th className="nombre">Sièges</th><th>Position</th><th>Satisfaction</th></tr></thead>
+          <tbody>{groupes.map((g) => (
+            <tr key={g.id}>
+              <td><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: g.couleur, marginRight: 6 }} />{g.nom}</td>
+              <td className="nombre">{g.sieges}</td><td>{POSTURES[g.posture]}</td>
+              <td><div className="ligne"><Satisfaction valeur={g.satisfaction} /><span className="chiffres">{nombre(g.satisfaction, 1)}</span></div></td>
+            </tr>
+          ))}</tbody>
+        </table>
+        <p className="tres-petit muet">Le Freedom Caucus ne publie pas la liste de ses membres : environ 30 élus (estimation). Sièges de départ : House Press Gallery (mars 2026).</p>
+      </div>
+      {pol.votes.length > 0 && (
+        <div className="carte">
+          <h3>Derniers votes</h3>
+          <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>
+            {pol.votes.slice(-6).reverse().map((v, i) => <li key={i}>Tour {v.tour} · {v.texte} : {v.pour} pour, {v.contre} contre — {v.adopte ? 'adopté' : 'rejeté'}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Parlement(props) {
+  if (props.partie.pays === 'etatsUnis') return <ParlementEtatsUnis {...props} />;
+  const { partie, decisions, majDecisions, prevision } = props;
   const pol = partie.politique;
   const fr = partie.pays === 'france';
   const groupes = prevision?.satisfactions ?? pol.groupes;
@@ -49,7 +148,7 @@ export default function Parlement({ partie, decisions, majDecisions, prevision }
           )}
           {voteBudget && (
             <div className={`alerte ${voteBudget.adopte ? 'bonne' : ''}`}>
-              <strong>{t4 ? `Vote du budget ${partie.trimestre.annee + 1} ce trimestre` : 'Si le budget était voté maintenant'} :</strong> {voteBudget.pour} pour, {voteBudget.contre} contre, {voteBudget.abstention} abstentions → {voteBudget.adopte ? 'adopté' : 'rejeté'}.
+              <strong>{t4 ? `Vote du budget ${partie.trimestre.annee + 1} ce trimestre` : 'Si le budget était voté maintenant'}{prevision?.incertitude ? ' (pointage incertain, ± 25 voix)' : ''} :</strong> {prevision?.incertitude ? '≈ ' : ''}{voteBudget.pour} pour, {voteBudget.contre} contre, {voteBudget.abstention} abstentions → {voteBudget.adopte ? 'adopté' : 'rejeté'}.
             </div>
           )}
           {t4 && (

@@ -5,14 +5,15 @@
  */
 import france from '../../countries/france.json';
 import allemagne from '../../countries/allemagne.json';
+import etatsUnis from '../../countries/etats-unis.json';
 import contexte from '../../countries/_contexte-mondial.json';
 
 export const PAYS = {
   france: { donnees: france, regimeLibelle: 'Régime semi-présidentiel', mandat: '5 ans (20 trimestres)', role: 'Premier ministre' },
   allemagne: { donnees: allemagne, regimeLibelle: 'Régime parlementaire de coalition', mandat: '4 ans (16 trimestres)', role: 'Chancelier' },
+  etatsUnis: { donnees: etatsUnis, regimeLibelle: 'Régime présidentiel', mandat: 'jusqu\'à l\'élection de 2028 (9 trimestres)', role: 'Président' },
 };
 export const PAYS_A_VENIR = [
-  { nom: 'États-Unis', drapeau: '🇺🇸', regime: 'Présidentiel' },
   { nom: 'Suède', drapeau: '🇸🇪', regime: 'Minoritaire à consensus' },
   { nom: 'Danemark', drapeau: '🇩🇰', regime: 'Minoritaire à consensus' },
   { nom: 'Royaume-Uni', drapeau: '🇬🇧', regime: 'Parlementaire majoritaire' },

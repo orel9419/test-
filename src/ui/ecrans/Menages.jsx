@@ -1,6 +1,6 @@
 import React from 'react';
 import Info from '../composants/Info.jsx';
-import { euros, signe, classeVariation, nombre } from '../format.js';
+import { euros, signe, classeVariation, nombre, devise } from '../format.js';
 
 /** Ménages types : effet concret des décisions, en euros par mois. */
 export default function Menages({ partie, apercu }) {
@@ -16,16 +16,16 @@ export default function Menages({ partie, apercu }) {
               <div className="ligne espace"><strong>{m.nom}</strong>{m.note && <Info texte={m.note} />}</div>
               <div className="ligne espace petit"><span>Revenu net au départ</span><span className="chiffres">{euros(m.revenuNet0)}</span></div>
               <div className="ligne espace petit"><span>Revenu net actuel (euros courants)</span><span className="chiffres">{euros(m.revenuNominal)}</span></div>
-              <div className="ligne espace"><span>Pouvoir d'achat (euros du départ)</span><strong className={`chiffres ${classeVariation(m.delta)}`}>{euros(m.revenuReel)} ({signe(m.delta, 0)} €, {signe(m.variationPct, 1)} %)</strong></div>
-              {prevu !== undefined && Math.abs(prevu) >= 0.5 && <div className="petit">Effet estimé de vos décisions en préparation, dans un an : <strong className={classeVariation(prevu)}>{signe(prevu, 0)} €/mois</strong></div>}
+              <div className="ligne espace"><span>Pouvoir d'achat (monnaie du départ)</span><strong className={`chiffres ${classeVariation(m.delta)}`}>{euros(m.revenuReel)} ({signe(m.delta, 0)} {devise()}, {signe(m.variationPct, 1)} %)</strong></div>
+              {prevu !== undefined && Math.abs(prevu) >= 0.5 && <div className="petit">Effet estimé de vos décisions en préparation, dans un an : <strong className={classeVariation(prevu)}>{signe(prevu, 0)} {devise()}/mois</strong></div>}
               <details>
                 <summary>D'où vient la variation ?</summary>
                 <table className="petit" style={{ marginTop: '0.3rem' }}>
                   <tbody>
                     {m.details.map((d, i) => (
                       <tr key={i}>
-                        <td>{d.cause}{d.sousDetail && (Math.abs(d.sousDetail.energie) >= 1 || Math.abs(d.sousDetail.tva) >= 1) && <div className="tres-petit muet">dont énergie {signe(d.sousDetail.energie, 0)} €, TVA {signe(d.sousDetail.tva, 0)} €</div>}</td>
-                        <td className={`nombre ${classeVariation(d.montant)}`}>{signe(d.montant, 0)} €</td>
+                        <td>{d.cause}{d.sousDetail && (Math.abs(d.sousDetail.energie) >= 1 || Math.abs(d.sousDetail.tva) >= 1) && <div className="tres-petit muet">dont énergie {signe(d.sousDetail.energie, 0)} {devise()}, TVA {signe(d.sousDetail.tva, 0)} {devise()}</div>}</td>
+                        <td className={`nombre ${classeVariation(d.montant)}`}>{signe(d.montant, 0)} {devise()}</td>
                       </tr>
                     ))}
                   </tbody>

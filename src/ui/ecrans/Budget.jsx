@@ -4,7 +4,7 @@ import { inertiePoste } from '../../engine/depenses.js';
 import Badge from '../composants/Badge.jsx';
 import Info from '../composants/Info.jsx';
 import Apercu from './Apercu.jsx';
-import { md, nombre, pct, signe } from '../format.js';
+import { md, nombre, pct, signe, devise } from '../format.js';
 
 /**
  * Préréglages inspirés des projets de budget officiels. La défense allemande
@@ -41,7 +41,9 @@ export default function Budget({ partie, decisions, majDecisions, apercu }) {
         </div>
       </div>
       <p className="muet petit">
-        Vous pilotez la dépense de toutes les administrations publiques ({partie.pays === 'france' ? 'État, Sécurité sociale, collectivités' : 'Bund, Länder, communes, assurances sociales'}). Chaque curseur fixe une variation <strong>en volume</strong> (hors inflation) par rapport au niveau de départ : 0 % maintient le pouvoir d'achat du poste. Le montant rejoint la cible progressivement : on réduit plus vite un investissement qu'une masse salariale. Les retraites dépendent de règles (âge, indexation) : modifiez-les dans « Réformes ».
+        {partie.pays === 'etatsUnis'
+          ? <>Vous pilotez le budget <strong>fédéral</strong> (les États fédérés ne sont pas inclus). Social Security, Medicare et Medicaid sont des dépenses « obligatoires » ; les autres postes sont « discrétionnaires » et votés chaque année par le Congrès.</>
+          : <>Vous pilotez la dépense de toutes les administrations publiques ({partie.pays === 'france' ? 'État, Sécurité sociale, collectivités' : 'Bund, Länder, communes, assurances sociales'}).</>} Chaque curseur fixe une variation <strong>en volume</strong> (hors inflation) par rapport au niveau de départ : 0 % maintient le pouvoir d'achat du poste. Le montant rejoint la cible progressivement : on réduit plus vite un investissement qu'une masse salariale. Les retraites dépendent de règles (âge, indexation) : modifiez-les dans « Réformes ».
       </p>
 
       <div className="grille-2">
@@ -58,7 +60,7 @@ export default function Budget({ partie, decisions, majDecisions, apercu }) {
       <div className="carte" style={{ overflowX: 'auto' }}>
         <table>
           <thead>
-            <tr><th>Poste</th><th className="nombre">Montant (Md€/an)</th><th style={{ minWidth: 220 }}>Variation en volume</th><th className="nombre">Cible</th><th>Groupes sensibles</th></tr>
+            <tr><th>Poste</th><th className="nombre">Montant (Md{devise()}/an)</th><th style={{ minWidth: 220 }}>Variation en volume</th><th className="nombre">Cible</th><th>Groupes sensibles</th></tr>
           </thead>
           <tbody>
             {postes.map(([id, l]) => {

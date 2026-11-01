@@ -205,7 +205,7 @@ function objectifsRegime(e) {
       { id: 'shutdown', nom: 'Éviter les shutdowns', description: 'Le financement provisoire expire le 11 décembre 2026, puis chaque exercice commence le 1er octobre. Il faut 60 sénateurs : les démocrates ont la main.', mesure: 'trimestresShutdown', sens: '<=', cible: 0 },
       { id: 'defaut', nom: 'Éviter un défaut sur la dette', description: 'La dette brute approche le plafond légal de 41 100 Md$. Il faudra le relever avec le Congrès.', mesure: 'pasDeDefaut', sens: '>=', cible: 1 },
       reel
-        ? { id: 'successeur', nom: 'Faire élire un successeur de votre camp en 2028', description: 'Le président ne peut pas se représenter (22e amendement). Votre bilan portera ou plombera le candidat républicain.', mesure: 'presidentielleEtatsUnis', sens: '>=', cible: 50, echeanceTour: 8 }
+        ? { id: 'successeur', nom: 'Faire élire un successeur de votre camp en 2028', description: 'Le président ne peut pas se représenter (22e amendement). Votre bilan portera ou plombera le candidat républicain.', mesure: 'presidentielleEtatsUnis', sens: '>=', cible: 50, echeanceTour: 9 }
         : { id: 'successeur', nom: 'Laisser à votre camp une chance de garder la Maison-Blanche', description: 'Projection de la présidentielle selon votre bilan.', mesure: 'presidentielleEtatsUnis', sens: '>=', cible: 50 },
     ];
   }

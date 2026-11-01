@@ -1,16 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { creerPartie, jouerTour, apercuDecisions, previsionPolitique } from '../engine/index.js';
+import { creerPartie, jouerTour, apercuDecisions, previsionPolitique, conseils as calculerConseils } from '../engine/index.js';
 import { libelleTrimestre } from '../engine/calendrier.js';
+import { MODES, normaliserMode } from '../model/parametres.js';
 import { PAYS, contexte } from './donnees.js';
 import { sauvegarderLocal, chargerLocal, effacerLocal, exporterJSON, importerJSON } from './sauvegarde.js';
-import { pct, nombre } from './format.js';
+import { pct, nombre, md, definirDevise } from './format.js';
+import Nombre from './composants/Nombre.jsx';
+import Jauge from './composants/Jauge.jsx';
+import Notifications from './composants/Notifications.jsx';
+import Confettis from './composants/Confettis.jsx';
+import Conseiller from './composants/Conseiller.jsx';
+import VisiteGuidee from './composants/VisiteGuidee.jsx';
 import Accueil from './ecrans/Accueil.jsx';
 import TableauDeBord from './ecrans/TableauDeBord.jsx';
 import Budget from './ecrans/Budget.jsx';
 import Fiscalite from './ecrans/Fiscalite.jsx';
 import Reformes from './ecrans/Reformes.jsx';
 import Parlement from './ecrans/Parlement.jsx';
+import Entreprises from './ecrans/Entreprises.jsx';
+import Opinion from './ecrans/Opinion.jsx';
 import Diplomatie from './ecrans/Diplomatie.jsx';
+import GrandsRendezVous from './ecrans/GrandsRendezVous.jsx';
 import Evenements from './ecrans/Evenements.jsx';
 import Menages from './ecrans/Menages.jsx';
 import Journal from './ecrans/Journal.jsx';
@@ -20,19 +30,22 @@ import Objectifs from './ecrans/Objectifs.jsx';
 import BilanTour from './ecrans/BilanTour.jsx';
 
 const ONGLETS = [
-  { id: 'tableau', nom: 'Tableau de bord' },
-  { id: 'budget', nom: 'Budget des ministères' },
-  { id: 'fiscalite', nom: 'Impôts et dette' },
-  { id: 'reformes', nom: 'Réformes' },
-  { id: 'parlement', nom: 'Parlement' },
-  { id: 'diplomatie', nom: 'Diplomatie' },
-  { id: 'evenements', nom: 'Événements' },
-  { id: 'menages', nom: 'Ménages' },
-  { id: 'journal', nom: 'Journal' },
-  { id: 'sources', nom: 'Données et sources' },
+  { id: 'tableau', nom: 'Tableau de bord', icone: '📊' },
+  { id: 'budget', nom: 'Budget des ministères', icone: '🏛️' },
+  { id: 'fiscalite', nom: 'Impôts et dette', icone: '💶' },
+  { id: 'reformes', nom: 'Réformes', icone: '📜' },
+  { id: 'parlement', nom: 'Parlement', icone: '🗳️' },
+  { id: 'entreprises', nom: 'Entreprises et État stratège', icone: '🏭' },
+  { id: 'opinion', nom: 'Opinion et élections', icone: '📣' },
+  { id: 'diplomatie', nom: 'Diplomatie', icone: '🌍' },
+  { id: 'rendezvous', nom: 'Grands rendez-vous', icone: '🏅' },
+  { id: 'evenements', nom: 'Événements', icone: '⚡' },
+  { id: 'menages', nom: 'Ménages', icone: '👪' },
+  { id: 'journal', nom: 'Journal', icone: '🗞️' },
+  { id: 'sources', nom: 'Données et sources', icone: '🔎' },
 ];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, procedureBudget: 'auto', procedureReformes: 'vote' };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -45,6 +58,30 @@ function decisionsInitiales(partie) {
   };
 }
 
+/** Notifications à afficher après un tour : succès, élections, votes, entreprises, grands événements. */
+function notificationsDuTour(avant, apres) {
+  const n = [];
+  const r = apres.resultatsTour ?? {};
+  let fete = false;
+  for (const s of r.succes ?? []) { n.push({ type: 'succes', icone: s.icone, titre: `Succès débloqué : ${s.nom}`, texte: s.description }); fete = true; }
+  const nouvelles = (apres.elections?.historique ?? []).slice((avant.elections?.historique ?? []).length);
+  for (const el of nouvelles) {
+    n.push({ type: el.victoireCamp === false ? 'alerte' : 'election', titre: el.nom, texte: el.resume, duree: 9000 });
+    if (el.victoireCamp) fete = true;
+  }
+  if (r.budget) n.push({ type: r.budget.adopte ? 'bon' : 'alerte', titre: r.budget.adopte ? 'Budget adopté' : 'Budget rejeté', texte: `${r.budget.pour} pour, ${r.budget.contre} contre${r.budget.senat !== null && r.budget.senat !== undefined ? ` ; Sénat : ${r.budget.senat} voix` : ''}${r.budget.procedure === '49.3' ? ' (49.3)' : ''}.` });
+  for (const x of (r.reformes ?? []).filter((x) => !x.erreur)) n.push({ type: 'bon', titre: x.referendum ? 'Réforme adoptée par référendum' : 'Réforme adoptée', texte: x.id.replace(/_/g, ' ') });
+  if (r.referendum && !r.referendum.adopte) n.push({ type: 'alerte', titre: 'Référendum perdu', texte: `${r.referendum.nom} : ${nombre(100 - r.referendum.oui, 1)} % de non.` });
+  for (const x of (r.entreprises ?? []).filter((x) => x.texte)) n.push({ type: 'entreprise', titre: 'Entreprises', texte: x.texte });
+  for (const [id, g] of Object.entries(apres.grandsEvenements ?? {})) {
+    if (g.reussite !== undefined && avant.grandsEvenements?.[id]?.reussite === undefined) {
+      n.push({ type: g.reussite ? 'succes' : 'alerte', icone: g.reussite ? '🥇' : '😬', titre: g.reussite ? 'Des Jeux réussis !' : 'Des Jeux ternis', texte: g.reussite ? 'Le pays rayonne : influence et fierté nationale en hausse.' : 'Incidents et polémiques : l\'image du pays en souffre.' });
+      if (g.reussite) fete = true;
+    }
+  }
+  return { liste: n, fete };
+}
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('cdg:theme') ?? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   const [partie, setPartie] = useState(null);
@@ -54,17 +91,26 @@ export default function App() {
   const [apercu, setApercu] = useState(null);
   const [prevision, setPrevision] = useState(null);
   const [message, setMessage] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [fete, setFete] = useState(0);
+  const [precedent, setPrecedent] = useState(null);
+  const [visite, setVisite] = useState(false);
   const sauvegardeExistante = useMemo(() => chargerLocal(), []);
   const minuterie = useRef(null);
+  const compteur = useRef(0);
+  const attente = useRef([]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('cdg:theme', theme);
   }, [theme]);
 
+  // Monnaie de la partie (€ ou $) pour toutes les mises en forme
+  useEffect(() => { definirDevise(partie?.statique.devise); }, [partie]);
+
   // Aperçu en temps réel des décisions (différé pour rester fluide)
   useEffect(() => {
-    if (!partie || partie.termine) return;
+    if (!partie || partie.termine) return undefined;
     clearTimeout(minuterie.current);
     minuterie.current = setTimeout(() => {
       try {
@@ -77,31 +123,69 @@ export default function App() {
     return () => clearTimeout(minuterie.current);
   }, [partie, decisions]);
 
-  const demarrer = useCallback(({ pays, mode, calendrier }) => {
+  const mode = partie ? MODES[normaliserMode(partie.mode)] : null;
+  const conseils = useMemo(() => (partie && !partie.termine && mode?.conseiller ? calculerConseils(partie, prevision) : []), [partie, prevision, mode]);
+
+  const notifier = useCallback((liste) => {
+    setNotifications((n) => [...n, ...liste.map((x) => ({ ...x, id: ++compteur.current }))].slice(-6));
+  }, []);
+  const fermerNotification = useCallback((id) => setNotifications((n) => n.filter((x) => x.id !== id)), []);
+
+  const demarrer = useCallback(({ pays, mode: m, calendrier }) => {
     const graine = Math.floor(Math.random() * 2 ** 31);
-    const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode, graine, calendrier });
+    const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier });
     setPartie(p);
     setDecisions(decisionsInitiales(p));
     setOnglet('tableau');
+    setPrecedent(null);
     sauvegarderLocal(p, decisionsInitiales(p));
-  }, []);
+    if (p.mode === 'facile' && !localStorage.getItem('cdg:visite')) setVisite(true);
+    notifier([{ type: 'info', icone: p.statique.drapeau, titre: `Vous prenez vos fonctions : ${p.statique.chefGouvernement.titre}`, texte: `${libelleTrimestre(p.trimestre)} · mode ${MODES[p.mode].nom}. ${p.evenements.enAttente.length ? `${p.evenements.enAttente.length} dossier(s) vous attendent déjà.` : ''}` }]);
+  }, [notifier]);
 
   const reprendre = useCallback((s) => {
     setPartie(s.partie);
-    setDecisions(s.decisions ?? decisionsInitiales(s.partie));
+    setDecisions({ ...DECISIONS_VIDES, ...(s.decisions ?? decisionsInitiales(s.partie)) });
     setOnglet('tableau');
+    setPrecedent(null);
   }, []);
 
   const validerTour = useCallback(() => {
+    if (!partie || partie.termine) return;
     const avant = partie;
     const apres = jouerTour(partie, decisions);
     const suivantes = decisionsInitiales(apres);
+    if (MODES[normaliserMode(avant.mode)]?.annulerTour) setPrecedent({ partie: avant, decisions });
     setPartie(apres);
     setDecisions(suivantes);
     setBilan({ avant, apres });
     sauvegarderLocal(apres, suivantes);
-    window.scrollTo({ top: 0 });
-  }, [partie, decisions]);
+    // Les notifications s'affichent à la fermeture du bilan, pour ne pas le masquer
+    const { liste, fete: celebrer } = notificationsDuTour(avant, apres);
+    attente.current = liste;
+    if (celebrer || (apres.termine && apres.issue?.type !== 'defaite')) setFete((k) => k + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [partie, decisions, notifier]);
+
+  const annulerTour = useCallback(() => {
+    if (!precedent) return;
+    setPartie(precedent.partie);
+    setDecisions(precedent.decisions);
+    sauvegarderLocal(precedent.partie, precedent.decisions);
+    setPrecedent(null);
+    setBilan(null);
+    attente.current = [];
+    notifier([{ type: 'info', icone: '↩️', titre: 'Trimestre annulé', texte: 'Vous pouvez revoir vos décisions.' }]);
+  }, [precedent, notifier]);
+
+  // Raccourci clavier : Ctrl + Entrée (ou Cmd + Entrée) pour valider le trimestre
+  useEffect(() => {
+    const touche = (ev) => {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter' && !bilan) { ev.preventDefault(); validerTour(); }
+    };
+    window.addEventListener('keydown', touche);
+    return () => window.removeEventListener('keydown', touche);
+  }, [validerTour, bilan]);
 
   const importer = useCallback(async (ev) => {
     const f = ev.target.files?.[0];
@@ -116,44 +200,54 @@ export default function App() {
   }, [reprendre]);
 
   const majDecisions = useCallback((modif) => setDecisions((d) => ({ ...d, ...(typeof modif === 'function' ? modif(d) : modif) })), []);
+  const fermerVisite = useCallback(() => { setVisite(false); localStorage.setItem('cdg:visite', '1'); }, []);
 
   if (!partie) {
     return (
-      <Accueil
-        onDemarrer={demarrer}
-        sauvegarde={sauvegardeExistante}
-        onReprendre={() => reprendre(sauvegardeExistante)}
-        onImporter={importer}
-        theme={theme}
-        onTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-        message={message}
-      />
+      <>
+        <Accueil
+          onDemarrer={demarrer}
+          sauvegarde={sauvegardeExistante}
+          onReprendre={() => reprendre(sauvegardeExistante)}
+          onImporter={importer}
+          theme={theme}
+          onTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          message={message}
+        />
+        <Notifications liste={notifications} onFermer={fermerNotification} />
+      </>
     );
   }
 
   const s = partie.statique;
   const f = partie.finances;
+  const us = partie.pays === 'etatsUnis';
   const nbEvenements = partie.evenements.enAttente.length;
   const props = { partie, decisions, majDecisions, apercu, prevision };
+  const trimestreBudget = us ? (partie.trimestre.t === 3 || partie.tour === 1) : partie.trimestre.t === 4;
+  const nomOnglet = (o) => (o.id === 'parlement' ? (us ? 'Congrès' : partie.pays === 'allemagne' ? 'Bundestag et coalition' : 'Parlement') : o.nom);
+  const nbActionsEntreprises = (decisions.entreprises?.length ?? 0) + (decisions.programmes?.length ?? 0);
 
   return (
     <div>
       <header className="entete">
         <span className="titre">{s.drapeau} {s.nom}</span>
         <span className="muet petit">
-          {partie.termine ? 'Mandat terminé' : `${libelleTrimestre(partie.trimestre)} · tour ${partie.tour}/${partie.nbTours}`} · {s.chefGouvernement.titre} · mode {partie.mode === 'bac_a_sable' ? 'bac à sable' : partie.mode === 'difficile' ? 'difficile' : 'réaliste'}
+          {partie.termine ? 'Mandat terminé' : `${libelleTrimestre(partie.trimestre)} · tour ${partie.tour}/${partie.nbTours}`} · {s.chefGouvernement.titre} · <span className={`etiquette mode-${partie.mode}`}>mode {mode.nom}</span>
         </span>
+        <div className="progression-mandat" title={`Mandat : ${partie.tour} trimestre(s) sur ${partie.nbTours}`}><Jauge valeur={(partie.tour - 1) / partie.nbTours} libelle="Avancement du mandat" /></div>
         <div className="indicateurs" aria-label="Indicateurs clés">
-          <div>Popularité<strong>{pct(partie.social.popularite, 0)}</strong></div>
-          <div>Déficit<strong>{pct(f.deficitRatio)}</strong></div>
-          <div>Dette<strong>{pct(f.detteRatio)}</strong></div>
-          <div>Taux 10 ans<strong>{pct(f.taux10, 2)}</strong></div>
-          <div>Chômage<strong>{pct(partie.macro.chomage)}</strong></div>
+          <div>Popularité<strong><Nombre valeur={partie.social.popularite} format={(v) => pct(v, 0)} favorableSiHausse /></strong></div>
+          <div>Déficit<strong><Nombre valeur={f.deficitRatio} format={(v) => pct(v)} favorableSiHausse={false} /></strong></div>
+          <div>Dette<strong><Nombre valeur={f.detteRatio} format={(v) => pct(v)} favorableSiHausse={false} /></strong></div>
+          <div>Taux 10 ans<strong><Nombre valeur={f.taux10} format={(v) => pct(v, 2)} favorableSiHausse={false} /></strong></div>
+          <div>Chômage<strong><Nombre valeur={partie.macro.chomage} format={(v) => pct(v)} favorableSiHausse={false} /></strong></div>
         </div>
         <div className="ligne">
           <button type="button" className="bouton" onClick={() => exporterJSON(partie, decisions)} title="Télécharger la partie au format JSON">Exporter</button>
           <label className="bouton" title="Charger une partie exportée">Importer<input type="file" accept="application/json" onChange={importer} hidden /></label>
           <button type="button" className="bouton" onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))} aria-label="Changer de thème">{theme === 'dark' ? '☀︎' : '☾'}</button>
+          <button type="button" className="bouton" onClick={() => setVisite(true)} title="Visite guidée">?</button>
           <button type="button" className="bouton" onClick={() => { if (window.confirm('Quitter cette partie ? Elle reste sauvegardée sur cet appareil.')) setPartie(null); }}>Menu</button>
         </div>
       </header>
@@ -167,20 +261,25 @@ export default function App() {
           <nav className="navigation" aria-label="Sections">
             {ONGLETS.map((o) => (
               <button key={o.id} type="button" className={`onglet ${onglet === o.id ? 'actif' : ''}`} onClick={() => setOnglet(o.id)} aria-current={onglet === o.id ? 'page' : undefined}>
-                <span>{o.nom}</span>
-                {o.id === 'evenements' && nbEvenements > 0 && <span className="pastille">{nbEvenements}</span>}
+                <span><span className="onglet-icone" aria-hidden="true">{o.icone}</span>{nomOnglet(o)}</span>
+                {o.id === 'evenements' && nbEvenements > 0 && <span className="pastille pulse">{nbEvenements}</span>}
                 {o.id === 'reformes' && decisions.reformes.length > 0 && <span className="etiquette">{decisions.reformes.length}</span>}
                 {o.id === 'diplomatie' && decisions.diplomatie.length > 0 && <span className="etiquette">{decisions.diplomatie.length}</span>}
+                {o.id === 'entreprises' && nbActionsEntreprises > 0 && <span className="etiquette">{nbActionsEntreprises}</span>}
+                {o.id === 'parlement' && trimestreBudget && <span className="etiquette" title="Vote du budget ce trimestre">budget</span>}
               </button>
             ))}
           </nav>
-          <main>
-            {onglet === 'tableau' && <TableauDeBord {...props} allerA={setOnglet} />}
+          <main key={onglet} className="apparition">
+            {onglet === 'tableau' && <TableauDeBord {...props} allerA={setOnglet} conseils={conseils} />}
             {onglet === 'budget' && <Budget {...props} />}
             {onglet === 'fiscalite' && <Fiscalite {...props} />}
             {onglet === 'reformes' && <Reformes {...props} />}
             {onglet === 'parlement' && <Parlement {...props} />}
+            {onglet === 'entreprises' && <Entreprises {...props} allerA={setOnglet} />}
+            {onglet === 'opinion' && <Opinion {...props} />}
             {onglet === 'diplomatie' && <Diplomatie {...props} />}
+            {onglet === 'rendezvous' && <GrandsRendezVous partie={partie} allerA={setOnglet} />}
             {onglet === 'evenements' && <Evenements {...props} />}
             {onglet === 'menages' && <Menages {...props} />}
             {onglet === 'journal' && <Journal partie={partie} />}
@@ -190,21 +289,27 @@ export default function App() {
             <div className="carte">
               <h3>Ce trimestre</h3>
               <ul className="petit" style={{ margin: '0 0 0.7rem', paddingLeft: '1.1rem' }}>
-                <li>{decisions.reformes.length} réforme(s) proposée(s)</li>
+                <li>{decisions.reformes.length} réforme(s) proposée(s){decisions.referendum ? ' + 1 référendum' : ''}</li>
                 <li>{decisions.diplomatie.length} action(s) diplomatique(s) · capital : {partie.international.capitalDiplomatique} point(s)</li>
+                <li>{nbActionsEntreprises} décision(s) sur les entreprises</li>
                 <li>{nbEvenements} événement(s) à trancher</li>
-                {partie.trimestre.t === 4 && <li><strong>Vote du budget {partie.trimestre.annee + 1}</strong> ce trimestre</li>}
+                {trimestreBudget && <li><strong>{us ? 'Vote des crédits fédéraux' : `Vote du budget ${partie.trimestre.annee + 1}`}</strong> ce trimestre</li>}
               </ul>
               {apercu && (
-                <p className="petit muet">Effet estimé de vos décisions à un an : solde {apercu.unAn.soldeMd >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.soldeMd), 1)} Md€, croissance {apercu.unAn.croissance >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.croissance), 2)} pt, popularité {apercu.unAn.popularite >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.popularite), 1)} pt.</p>
+                <p className="petit muet">Effet estimé de vos décisions à un an : solde {apercu.unAn.soldeMd >= 0 ? '+' : '−'}{md(Math.abs(apercu.unAn.soldeMd), 1)}, croissance {apercu.unAn.croissance >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.croissance), 2)} pt, popularité {apercu.unAn.popularite >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.popularite), 1)} pt.</p>
               )}
-              <button type="button" className="bouton principal grand" onClick={validerTour}>Valider le trimestre</button>
+              <button type="button" className="bouton principal grand bouton-valider" onClick={validerTour} title="Raccourci : Ctrl + Entrée">Valider le trimestre</button>
+              {precedent && <button type="button" className="bouton" style={{ width: '100%', marginTop: '0.5rem' }} onClick={annulerTour}>↩ Annuler le dernier trimestre</button>}
             </div>
+            {mode.conseiller && onglet !== 'tableau' && <Conseiller conseils={conseils} allerA={setOnglet} compact />}
             <Objectifs partie={partie} />
           </aside>
         </div>
       )}
-      {bilan && <BilanTour avant={bilan.avant} apres={bilan.apres} onFermer={() => setBilan(null)} />}
+      {bilan && <BilanTour avant={bilan.avant} apres={bilan.apres} onFermer={() => { setBilan(null); notifier(attente.current); attente.current = []; }} onAnnuler={precedent ? annulerTour : null} />}
+      {visite && !partie.termine && <VisiteGuidee onFermer={fermerVisite} allerA={setOnglet} />}
+      <Notifications liste={notifications} onFermer={fermerNotification} />
+      <Confettis declencheur={fete} />
     </div>
   );
 }

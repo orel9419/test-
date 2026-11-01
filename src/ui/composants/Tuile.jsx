@@ -1,5 +1,6 @@
 import React from 'react';
 import Info from './Info.jsx';
+import Nombre from './Nombre.jsx';
 
 /** Petite courbe sans axes pour une tuile d'indicateur. */
 function Mini({ valeurs }) {
@@ -14,12 +15,15 @@ function Mini({ valeurs }) {
   );
 }
 
-/** Tuile d'indicateur : valeur, variation depuis le trimestre précédent, mini-courbe. */
-export default function Tuile({ libelle, valeur, variation, classe = '', info, serie, alerte }) {
+/**
+ * Tuile d'indicateur : valeur (animée si « nombre » et « format » sont
+ * fournis), variation depuis le trimestre précédent, mini-courbe.
+ */
+export default function Tuile({ libelle, valeur, nombre: n, format, favorableSiHausse = null, variation, classe = '', info, serie, alerte }) {
   return (
-    <div className="tuile" style={alerte ? { borderColor: 'var(--critique)' } : undefined}>
+    <div className={`tuile ${alerte ? 'tuile-alerte' : ''}`}>
       <span className="libelle">{libelle}<Info texte={info} /></span>
-      <span className="valeur chiffres">{valeur}</span>
+      <span className="valeur chiffres">{n !== undefined && format ? <Nombre valeur={n} format={format} favorableSiHausse={favorableSiHausse} /> : valeur}</span>
       {variation !== undefined && <span className={`variation ${classe}`}>{variation}</span>}
       <Mini valeurs={serie} />
     </div>

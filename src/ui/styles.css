@@ -159,7 +159,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 table { border-collapse: collapse; width: 100%; }
 th, td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--grille); vertical-align: middle; }
 th { font-size: 0.78rem; color: var(--encre-2); font-weight: 600; }
-td.nombre, th.nombre { text-align: right; font-variant-numeric: tabular-nums; }
+td.nombre, th.nombre { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .barre-fond { height: 6px; background: var(--surface-3); border-radius: 3px; position: relative; }
 .barre-fond > div { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
 
@@ -197,3 +197,102 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 .journal-ligne { display: grid; grid-template-columns: 70px 1fr; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--grille); font-size: 0.9rem; }
 .hemicycle text { font-size: 11px; }
 .sr-seul { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* --- Effets et animations ------------------------------------------------------
+ * Tous les effets sont désactivés si le système demande de réduire les animations. */
+@keyframes apparition { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes entree-modale { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes glisse-gauche { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@keyframes flash-bon { 0% { background: color-mix(in srgb, var(--bon) 35%, transparent); } 100% { background: transparent; } }
+@keyframes flash-mauvais { 0% { background: color-mix(in srgb, var(--critique) 35%, transparent); } 100% { background: transparent; } }
+@keyframes bascule { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes respire { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent); } }
+
+.apparition { animation: apparition 0.25s ease-out; }
+.entree-modale { animation: entree-modale 0.3s ease-out; }
+.pulse { animation: pulse 1.6s ease-in-out infinite; }
+.nombre-anime { border-radius: 4px; padding: 0 2px; }
+.nombre-anime.flash-bon { animation: flash-bon 1.4s ease-out; }
+.nombre-anime.flash-mauvais { animation: flash-mauvais 1.4s ease-out; }
+.bouton-valider { animation: respire 2.8s ease-in-out infinite; }
+.bouton-valider:hover { animation: none; }
+.bouton { transition: background 0.15s, transform 0.1s; }
+.bouton:active:not(:disabled) { transform: scale(0.97); }
+.tuile { transition: transform 0.15s, box-shadow 0.15s; }
+.tuile:hover { transform: translateY(-2px); box-shadow: var(--ombre); }
+.tuile-alerte { border-color: var(--critique); }
+.onglet-icone { display: inline-block; width: 1.5em; }
+
+/* Notifications (toasts) */
+.notifications { position: fixed; right: 1rem; bottom: 1rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; max-width: min(380px, calc(100vw - 2rem)); }
+.notification {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem; align-items: start; background: var(--surface); color: var(--encre);
+  border: 1px solid var(--bordure); border-left: 4px solid var(--accent); border-radius: 10px; padding: 0.6rem 0.7rem; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  animation: glisse-gauche 0.3s ease-out;
+}
+.notification.succes { border-left-color: var(--attention); }
+.notification.bon, .notification.election { border-left-color: var(--bon); }
+.notification.alerte { border-left-color: var(--critique); }
+.notification-icone { font-size: 1.4rem; line-height: 1; }
+.fermer { border: none; background: transparent; cursor: pointer; font-size: 1.2rem; line-height: 1; color: var(--encre-2); padding: 0 0.2rem; }
+.confettis { position: fixed; inset: 0; pointer-events: none; z-index: 300; }
+
+/* Conseiller, visite guidée */
+.conseiller { border-top: 3px solid var(--accent); }
+.conseiller .alerte { animation: apparition 0.3s ease-out both; }
+.visite {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); z-index: 150; width: min(520px, calc(100vw - 2rem));
+  background: var(--surface); border: 1px solid var(--bordure); border-top: 4px solid var(--accent); border-radius: 14px; padding: 1rem 1.1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25); animation: entree-modale 0.3s ease-out;
+}
+.visite .points { display: flex; gap: 0.35rem; margin: 0.3rem 0 0.7rem; }
+.visite .points span { width: 8px; height: 8px; border-radius: 50%; background: var(--surface-3); transition: background 0.2s, transform 0.2s; }
+.visite .points span.actif { background: var(--accent); transform: scale(1.3); }
+
+/* Bilan du trimestre */
+.calendrier-transition { display: flex; align-items: center; justify-content: center; gap: 0.8rem; font-weight: 700; perspective: 400px; }
+.calendrier-transition span { padding: 0.35rem 0.8rem; border-radius: 8px; background: var(--surface-2); }
+.calendrier-transition .ancien { opacity: 0.55; }
+.calendrier-transition .nouveau { background: var(--accent); color: var(--accent-encre); animation: bascule 0.6s ease-out 0.15s both; }
+.succes-badge { display: inline-flex; gap: 0.3rem; align-items: center; padding: 0.25rem 0.6rem; border-radius: 999px; background: color-mix(in srgb, var(--attention) 22%, transparent); font-weight: 600; font-size: 0.85rem; animation: entree-modale 0.4s ease-out both; }
+
+/* En-tête : modes et avancement du mandat */
+.progression-mandat { width: 110px; }
+.etiquette.mode-facile { background: color-mix(in srgb, var(--bon) 18%, transparent); color: var(--encre); }
+.etiquette.mode-intermediaire { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--encre); }
+.etiquette.mode-expert { background: color-mix(in srgb, var(--critique) 18%, transparent); color: var(--encre); }
+.carte-pays { transition: transform 0.15s, box-shadow 0.15s; }
+.carte-pays:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+
+/* Sénat américain */
+.senat { position: relative; display: flex; height: 18px; border-radius: 6px; overflow: visible; margin: 0.4rem 0; }
+.senat > div { height: 100%; }
+.senat > div:first-child { border-radius: 6px 0 0 6px; }
+.senat > div:nth-child(2) { border-radius: 0 6px 6px 0; }
+.senat .seuil { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--encre); opacity: 0.6; }
+.senat .seuil.fort { width: 3px; opacity: 0.9; }
+
+/* Baromètre */
+.barometre-ligne { display: grid; grid-template-columns: 170px 1fr 70px; gap: 0.6rem; align-items: center; }
+@media (max-width: 760px) { .barometre-ligne { grid-template-columns: 1fr; gap: 0.15rem; } }
+
+/* Entreprises */
+.programme-actif { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+
+/* Grands rendez-vous : chronologie */
+.chronologie { list-style: none; margin: 0; padding: 0 0 0 1.2rem; border-left: 2px solid var(--grille); }
+.chronologie-point { position: relative; padding: 0.55rem 0.8rem; margin: 0 0 0.6rem; background: var(--surface); border: 1px solid var(--bordure); border-radius: var(--rayon); }
+.chronologie-point::before { content: ''; position: absolute; left: -1.62rem; top: 0.9rem; width: 12px; height: 12px; border-radius: 50%; background: var(--surface-3); border: 2px solid var(--axe); }
+.chronologie-point.passe { opacity: 0.7; }
+.chronologie-point.present { border-color: var(--accent); box-shadow: var(--ombre); }
+.chronologie-point.present::before { background: var(--accent); border-color: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+.etiquette.hote { background: color-mix(in srgb, var(--attention) 25%, transparent); color: var(--encre); }
+.grille-succes { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.5rem; }
+.succes { display: flex; gap: 0.5rem; align-items: center; padding: 0.45rem 0.55rem; border-radius: 8px; border: 1px dashed var(--axe); opacity: 0.65; }
+.succes.obtenu { opacity: 1; border-style: solid; border-color: var(--attention); background: color-mix(in srgb, var(--attention) 10%, transparent); }
+.succes-icone { font-size: 1.4rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { reformesDisponibles, chiffrerReforme } from '../../engine/index.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Apercu from './Apercu.jsx';
-import { nombre, signe, classeVariation } from '../format.js';
+import { nombre, signe, classeVariation, devise } from '../format.js';
 
 const CATEGORIES = {
-  retraites: 'Retraites', travail: 'Travail et emploi', fiscalite: 'Fiscalité', fonction_publique: 'Fonction publique',
+  retraites: 'Retraites', travail: 'Travail et emploi', fiscalite: 'Fiscalité et entreprises', fonction_publique: 'Fonction publique', sante: 'Santé',
   protection_sociale: 'Protection sociale', energie: 'Énergie', dette: 'Dette et patrimoine public', regles: 'Règles budgétaires', defense: 'Défense',
 };
 
@@ -16,7 +16,7 @@ function Chiffrage({ resultat, partie }) {
     <div className="carte compacte" style={{ background: 'var(--surface-2)' }}>
       <div className="petit"><strong>Effet après 3 ans</strong> (simulation avec et sans la réforme, effets économiques seuls) :</div>
       <div className="grille-2 petit" style={{ gap: '0.3rem 1rem', marginTop: '0.3rem' }}>
-        <span>Solde public : <strong className={classeVariation(f.soldeMd)}>{signe(f.soldeMd, 1)} Md€/an</strong></span>
+        <span>Solde public : <strong className={classeVariation(f.soldeMd)}>{signe(f.soldeMd, 1)} Md{devise()}/an</strong></span>
         <span>Dette : <strong className={classeVariation(f.dettePct, false)}>{signe(f.dettePct, 2)} pt de PIB</strong></span>
         <span>PIB : <strong className={classeVariation(f.pib)}>{signe(f.pib, 2)} %</strong></span>
         <span>Chômage : <strong className={classeVariation(f.chomage, false)}>{signe(f.chomage, 2)} pt</strong></span>
@@ -25,7 +25,7 @@ function Chiffrage({ resultat, partie }) {
         Popularité : {Object.entries(f.groupes).map(([g, v]) => <span key={g} className={classeVariation(v)} style={{ marginRight: 8 }}>{GROUPES[g].nom.split(' ')[0]} {signe(v, 1)}</span>)}
       </div>
       <div className="tres-petit" style={{ marginTop: '0.2rem' }}>
-        Ménages : {partie.menages.map((m) => <span key={m.id} className={classeVariation(f.menages[m.id])} style={{ marginRight: 8 }}>{m.nom.split(',')[0]} {signe(f.menages[m.id], 0)} €</span>)}
+        Ménages : {partie.menages.map((m) => <span key={m.id} className={classeVariation(f.menages[m.id])} style={{ marginRight: 8 }}>{m.nom.split(',')[0]} {signe(f.menages[m.id], 0)} {devise()}</span>)}
       </div>
     </div>
   );
@@ -38,6 +38,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
   const [enCours, setEnCours] = useState(null);
   const proposees = decisions.reformes;
   const fr = partie.pays === 'france';
+  const us = partie.pays === 'etatsUnis';
 
   const proposer = (r) => {
     const option = options[r.id] ?? r.options[0].id;
@@ -78,8 +79,18 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
             <div className={`alerte ${pt.adopte ? 'bonne' : ''}`}>
               <strong>Prévision du vote :</strong> {pt.pour} pour, {pt.contre} contre, {pt.abstention} abstentions → {pt.adopte ? 'adoption probable' : 'rejet probable'}.
               {fr && !pt.adopte && pt.censureApres493 && <> Avec le 49.3, la motion de censure réunirait <strong>{pt.censureApres493.voix}</strong> voix sur {pt.censureApres493.majorite} : {pt.censureApres493.adoptee ? <strong className="negatif">le gouvernement tomberait.</strong> : 'elle échouerait.'}</>}
-              {!fr && pt.accordPartenaire === false && <> <strong className="negatif">Le SPD bloquerait le texte au comité de coalition.</strong></>}
+              {partie.pays === 'allemagne' && pt.accordPartenaire === false && <> <strong className="negatif">Le SPD bloquerait le texte au comité de coalition.</strong></>}
+              {us && pt.senat && <> Sénat : <strong>{pt.senat.pour}</strong> voix pour {pt.senat.obstruction} nécessaires{pt.senat.pour < 60 ? ' (obstruction)' : ''}.{pt.senatReconciliation !== null && pt.senatReconciliation !== undefined && <> Par réconciliation (mesures budgétaires seulement) : {pt.senatReconciliation} voix pour 50 + le vice-président{pt.reconciliationDisponible ? '' : ', mais elle a déjà servi cet exercice'}.</>}</>}
+              {prevision?.incertitude ? <span className="muet"> Pointage incertain (± 25 voix) en mode Expert.</span> : null}
             </div>
+          )}
+          {us && (
+            <label className="petit">Procédure :
+              <select value={decisions.procedureReformes} onChange={(ev) => majDecisions({ procedureReformes: ev.target.value })} style={{ marginLeft: 6 }}>
+                <option value="vote">Procédure ordinaire (60 voix au Sénat)</option>
+                <option value="reconciliation">Réconciliation budgétaire (51 voix, une fois par exercice)</option>
+              </select>
+            </label>
           )}
           {fr && (
             <label className="petit">Procédure :
@@ -143,6 +154,11 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                   {r.disponible
                     ? <button type="button" className="bouton principal" onClick={() => proposer(r)}>{proposee ? 'Mettre à jour la proposition' : 'Ajouter au programme du trimestre'}</button>
                     : <span className="petit muet">Mesure déjà réalisée.</span>}
+                  {fr && r.disponible && (
+                    decisions.referendum?.id === r.id
+                      ? <span className="etiquette">soumise au référendum ce trimestre</span>
+                      : <button type="button" className="bouton" title="Article 11 : la réforme est soumise directement aux électeurs (un référendum par an)" onClick={() => majDecisions({ referendum: { id: r.id, option } })}>Soumettre au référendum</button>
+                  )}
                 </div>
               </div>
             );

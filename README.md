@@ -1,6 +1,6 @@
 # 🏛️ Chef de gouvernement
 
-Jeu de simulation en français : vous dirigez le gouvernement d'un pays réel (France, Allemagne pour l'instant) à partir de sa **situation réelle au 1er novembre 2026**. Vous gérez le budget ministère par ministère, la fiscalité, la dette, les réformes structurelles et leurs compensations, le Parlement, l'Europe et la diplomatie. Les effets sur la population sont visibles en euros par mois pour des ménages types.
+Jeu de simulation en français : vous dirigez le gouvernement d'un pays réel (France, Allemagne, États-Unis) à partir de sa **situation réelle au 1er novembre 2026**. Vous gérez le budget ministère par ministère, la fiscalité, la dette, les réformes structurelles et leurs compensations, le Parlement ou le Congrès, les entreprises et les participations de l'État, l'opinion et les élections, l'Europe, la diplomatie et les grands rendez-vous internationaux (sommets, Jeux olympiques). Les effets sur la population sont visibles en euros (ou en dollars) par mois pour des ménages types.
 
 Application 100 % front-end (React + Vite), sans serveur. Sauvegarde automatique dans le navigateur, export et import en JSON, thème clair et sombre.
 
@@ -23,11 +23,12 @@ npm run simuler -- france statu_quo
 npm run simuler -- france 39h_exo2 --sans-politique
 npm run simuler -- france retraites_65_compensees --mandat-complet
 npm run simuler -- allemagne rigueur
+npm run simuler -- etatsUnis statu_quo --mode=expert
 ```
 
 ## Comment jouer
 
-Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France, 16 pour l'Allemagne. À chaque tour, vous pouvez :
+Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France, 16 pour l'Allemagne, 9 pour les États-Unis (jusqu'à la présidentielle de novembre 2028). À chaque tour, vous pouvez :
 
 1. **Consulter le tableau de bord** : PIB, croissance, inflation, chômage, dette, déficit, charge d'intérêts, taux à 10 ans et écart avec l'Allemagne, popularité, rapport de force parlementaire, cohésion sociale, émissions, effort de R&D, influence. Chaque indicateur a une infobulle explicative.
 2. **Répartir le budget** entre 15 postes, avec des curseurs en volume (hors inflation). Le panneau d'impact estime en temps réel l'effet sur le solde, la croissance, le chômage, la popularité par groupe et le revenu de chaque ménage type. Une **inertie** réaliste s'applique : on réduit plus vite un investissement qu'une masse salariale.
@@ -43,25 +44,57 @@ Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France,
    - contrats de gaz, achats groupés ;
    - prêts européens SAFE, clause dérogatoire défense, emprunt commun européen ;
    - budget de l'UE 2028-2034, Mercosur, aide à l'Ukraine, droits de douane américains, projets franco-allemands.
-6. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
-7. **Valider le trimestre** et lire le bilan chiffré.
+6. **Piloter les entreprises et l'État stratège** (onglet « Entreprises et État stratège ») :
+   - suivre l'indice boursier (CAC 40, DAX, S&P 500), le climat des affaires et la souveraineté économique ;
+   - agir sur les fleurons nationaux : recevoir la direction, prendre 10 % du capital, nationaliser (il faut une loi), céder une participation, instituer une action spécifique ;
+   - lancer des programmes d'investissement stratégique (nouveau nucléaire, défense, semi-conducteurs, batteries, IA, médicaments, hydrogène, terres rares) ;
+   - faire contribuer les grandes entreprises (surtaxe d'impôt sur les sociétés, conditionnalité des aides, taxe sur les rachats d'actions) ;
+   - trancher des dossiers : ArcelorMittal à Dunkerque, financement des EPR2, UniCredit et Commerzbank, Thyssenkrupp, vente d'Uniper, Intel, puces Nvidia vers la Chine…
 
-Modes : **bac à sable** (aucune défaite, pas d'inertie), **réaliste**, **difficile** (marchés nerveux, plus d'événements). Calendrier : **réel** (présidentielle française en avril 2027, élections allemandes début 2029) ou **mandat complet** (l'élection est jugée en fin de mandat).
+   Une prise de participation augmente la dette sans creuser le déficit (opération financière) ; les dividendes s'ajoutent aux recettes.
+7. **Suivre l'opinion et les élections** (onglet « Opinion et élections ») : baromètre de satisfaction sur dix thèmes, intentions de vote, projection « si l'élection avait lieu aujourd'hui », résultats. Les élections intermédiaires (régionales, Länder, européennes, mi-mandat américain) et nationales découlent de vos décisions. Vous pouvez déclencher un **référendum** (France, article 11), une **dissolution** (France) ou une **question de confiance** (Allemagne).
+8. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
+9. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
+10. **Valider le trimestre** (bouton ou **Ctrl + Entrée**) et lire le bilan chiffré.
+
+### Trois modes de jeu
+
+| | Facile | Intermédiaire | Expert |
+|---|---|---|---|
+| Pour qui | découvrir le jeu | jouer avec le réalisme des données | se confronter à l'incertitude |
+| Défaites (censure, crise de la dette, élections) | désactivées (la partie continue avec un avertissement) | actives | actives |
+| Effet des décisions budgétaires | rapide | inertie réaliste | inertie renforcée |
+| Marchés, événements | indulgents, 2 événements au plus par trimestre | calibrés, 3 au plus | nerveux, plus fréquents, 4 au plus |
+| Conseiller | oui | oui | non |
+| Prévisions de vote | exactes | exactes | incertaines (± 25 voix) |
+| Annuler le dernier trimestre | oui | non | non |
+| Score | × 0,8 | × 1 | × 1,15 |
+
+Calendrier : **réel** (présidentielle française en avril 2027, élections allemandes début 2029, présidentielle américaine en novembre 2028) ou **mandat complet** (l'élection est jugée en fin de mandat).
+
+### Pour rendre le jeu agréable
+
+- un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
+- une **visite guidée** en sept étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
+- des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
+- un **bilan de trimestre** animé, des **notifications** (votes, élections, réformes, entreprises) et des **confettis** quand vous gagnez une élection, réussissez des Jeux ou débloquez un succès ;
+- 16 **succès** à débloquer (premier budget, sous les 3 %, la dette recule, le peuple a tranché, des Jeux réussis…) ;
+- les animations respectent le réglage système « réduire les animations ».
 
 ### Régimes politiques modélisés
 
-| | France (semi-présidentiel) | Allemagne (coalition) |
-|---|---|---|
-| Vote du budget | Chaque T4 ; vote, puis 49.3, compromis avec le PS, ordonnances (art. 47) ou loi spéciale | Chaque T4 ; vote de la coalition (défections possibles) |
-| Survie | Motion de censure (majorité absolue de 289) après un 49.3 ou spontanée | Satisfaction du SPD ; rupture de la coalition, puis élections |
-| Autres règles | 49.3 limité à un texte hors budget par session ; dissolution ; présidentielle suivie de législatives | Bundesrat pour les lois fiscales ; deux tiers pour réviser la Constitution ; accord de coalition suivi point par point |
-| Règles budgétaires | Procédure européenne pour déficit excessif, clause dérogatoire défense | Frein à l'endettement (défense au-delà de 1 % du PIB et fonds spécial exclus) |
+| | France (semi-présidentiel) | Allemagne (coalition) | États-Unis (présidentiel) |
+|---|---|---|---|
+| Vote du budget | Chaque T4 ; vote, puis 49.3, compromis avec le PS, ordonnances (art. 47) ou loi spéciale | Chaque T4 ; vote de la coalition (défections possibles) | Crédits votés avant le 1er octobre (T3) et au premier tour (fin du financement provisoire le 11/12/2026) : Chambre puis 60 voix au Sénat ; budget complet, financement provisoire (CR) ou compromis ; sinon **shutdown** |
+| Survie | Motion de censure (majorité absolue de 289) après un 49.3 ou spontanée | Satisfaction du SPD ; rupture de la coalition, puis élections | Le président ne peut pas être renversé ; défaite en cas de **défaut** (plafond de la dette non relevé) |
+| Autres règles | 49.3 limité à un texte hors budget par session ; dissolution ; référendum ; présidentielle suivie de législatives | Bundesrat pour les lois fiscales ; deux tiers pour réviser la Constitution ; question de confiance ; accord de coalition suivi point par point | Obstruction au Sénat (60 voix) ; réconciliation budgétaire à 51 voix une fois par exercice, hors Social Security (règle Byrd) ; mi-mandat en novembre 2026 ; présidentielle 2028 sans le président sortant |
+| Règles budgétaires | Procédure européenne pour déficit excessif, clause dérogatoire défense | Frein à l'endettement (défense au-delà de 1 % du PIB et fonds spécial exclus) | Plafond légal de la dette brute (41 100 Md$) ; fonds de la Social Security (épuisement projeté en 2034, 2032 pour le seul fonds retraite) |
 
 Les **objectifs** sont générés automatiquement à partir de la situation de départ : 3 à 5 principaux et des secondaires, avec une jauge de progression. Le **score final** pondère soutenabilité, bien-être social, transition écologique, innovation, stabilité politique, influence et objectifs, avec des poids qui dépendent du régime.
 
 ## Données : sources, statuts et mise à jour
 
-Les données de chaque pays sont dans `countries/<pays>.json` ; le contexte commun (énergie, BCE, OTAN) est dans `countries/_contexte-mondial.json`. Chaque valeur est stockée avec sa source, son URL, sa date et un **statut** :
+Les données de chaque pays sont dans `countries/<pays>.json` (dont `etats-unis.json`, périmètre fédéral, en Md$) ; le contexte commun (énergie, BCE, OTAN) est dans `countries/_contexte-mondial.json` et les grands rendez-vous internationaux dans `countries/_grands-evenements.json`. Chaque valeur est stockée avec sa source, son URL, sa date et un **statut** :
 
 | Statut | Signification |
 |---|---|
@@ -117,11 +150,17 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   social.js             popularité par groupe, griefs, risque de mouvement social
   reformes.js           adoption et effets des réformes
   international.js      relations, influence, accords
-  politique.js          partis, votes, 49.3, censure, coalition, élections
+  politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
+  opinion.js            baromètre de satisfaction et intentions de vote
+  elections.js          élections du calendrier, législatives, Länder, mi-mandat, référendum
+  entreprises.js        Bourse, climat des affaires, souveraineté, fleurons, État stratège
   objectifs.js          génération et suivi des objectifs
-  evenements.js         tirage et résolution des événements
+  evenements.js         tirage et résolution des événements (dont grands rendez-vous)
+  conseiller.js         conseils du trimestre
+  succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes, actions diplomatiques, événements, partis
+src/data/               catalogues : réformes, actions diplomatiques, événements, partis,
+                        entreprises et programmes, grands rendez-vous
 src/ui/                 interface React (écrans, composants, sauvegarde)
 tests/                  tests unitaires (Vitest)
 ```
@@ -144,7 +183,10 @@ tests/                  tests unitaires (Vitest)
 2. Créer `src/model/pays/<pays>.js` sur le modèle de `france.js`. Il construit l'état de départ : montants des 15 postes, rendements des prélèvements, paramètres des retraites, ménages types, groupes sociaux, calendrier (échéances, nombre de tours), règles budgétaires, partenaires.
 3. L'enregistrer dans `PROFILS` (`src/engine/etatInitial.js`) et dans `PAYS` (`src/ui/donnees.js`).
 4. Ajouter ses partis dans `src/data/partis.js` (positions sur les 9 axes, posture, seuil de censure) et, si le régime est nouveau (présidentiel, minoritaire), ses règles dans `src/engine/politique.js` et ses pondérations dans `src/engine/score.js`.
-5. Ajouter le pays à `scripts/update-data.mjs` (codes Eurostat et ISO), puis lancer `npm test`.
+5. Ajouter ses fleurons et programmes dans `src/data/entreprises.js`, ses familles politiques et thèmes de départ dans `src/engine/opinion.js`, ses grands rendez-vous dans `countries/_grands-evenements.json` et `src/data/grandsEvenements.js`.
+6. Ajouter le pays à `scripts/update-data.mjs` (codes Eurostat et ISO), puis lancer `npm test`.
+
+Les États-Unis montrent comment ajouter un régime présidentiel : devise et banque centrale propres (`devise: '$'`, `banqueCentrale: 'fed'`), Congrès bicaméral et règles budgétaires nationales (`plafond_dette`).
 
 ### Ajouter un événement
 
@@ -188,4 +230,8 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
   - France : sous-ventilation des affaires économiques, intérêts de 2024, maturité de la dette ;
   - revenus des ménages types autres que le salaire minimum et la pension moyenne.
 - En France, la répartition des 50 sièges non ventilés (LIOT, UDR, non-inscrits) est estimée. La composition du Bundesrat n'a pas été collectée.
-- Pour l'instant, seuls la France et l'Allemagne sont jouables. Les États-Unis, la Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.
+- États-Unis : seul le budget fédéral est modélisé (pas les États fédérés) ; la ventilation des dépenses hors Social Security, santé et défense est estimée ; l'effectif du Freedom Caucus est estimé.
+- Entreprises : capitalisations et emplois des fleurons sont des ordres de grandeur ; plusieurs parts de l'État sont « à vérifier ». Les niveaux du CAC 40 et du S&P 500 n'ayant pas été collectés, ces indices partent de la base 100.
+- Baromètre : les niveaux de départ des dix thèmes sont des estimations de jeu ; la clé sièges-voix des législatives françaises et les décalages régionaux des Länder sont des hypothèses.
+- Grands rendez-vous : les dates du G7 2027 et de l'OTAN 2027 sont à préciser, le G7 2029 en Allemagne est déduit de la rotation, et le « dialogue ciblé » du CIO avec Munich est un scénario de jeu.
+- Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

@@ -26,7 +26,7 @@ export function conseils(e, prevision = null) {
   const tr = e.trimestre;
 
   // --- Budget à voter ce trimestre ----------------------------------------------------
-  const trimestreBudget = e.pays === 'etatsUnis' ? (tr.t === 3 || e.tour === 0) : tr.t === 4;
+  const trimestreBudget = e.pays === 'etatsUnis' ? (tr.t === 3 || e.tour === 1) : tr.t === 4;
   if (trimestreBudget && prevision?.budget) {
     const b = prevision.budget;
     const passe = e.pays === 'etatsUnis' ? b.adopte && (b.senat ?? 0) >= 60 : b.adopte;

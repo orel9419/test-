@@ -3,7 +3,8 @@ import Jauge from '../composants/Jauge.jsx';
 import { nombre } from '../format.js';
 
 const STATUT = { atteint: '✓ Atteint', en_voie: '✓ En bonne voie', en_cours: 'En cours', echoue: '✗ Échoué' };
-const UNITE = { deficit: ' % PIB', dette: ' % PIB', spread: ' pb', defense: ' % PIB', emissions: ' Mt', chomage: ' %', effortRD: ' % PIB', cohesion: '/100', pouvoirAchatModestes: ' %', presidentielle: ' %', coalition: '/100', afd: ' %' };
+const UNITE = { deficit: ' % PIB', dette: ' % PIB', spread: ' pb', defense: ' % PIB', emissions: ' Mt', chomage: ' %', effortRD: ' % PIB', cohesion: '/100', pouvoirAchatModestes: ' %', presidentielle: ' %', coalition: '/100', afd: ' %', siegesRepublicains: ' sièges', trimestresShutdown: ' trim.', presidentielleEtatsUnis: ' %', epuisementSocialSecurity: '' };
+const SANS_VALEUR = ['survie', 'budget2027', 'election2029', 'pasDeDefaut'];
 
 /** Liste permanente des objectifs du mandat, avec jauge de progression. */
 export default function Objectifs({ partie }) {
@@ -15,7 +16,9 @@ export default function Objectifs({ partie }) {
         <div key={type}>
           <div className="tres-petit muet" style={{ marginTop: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{titre}</div>
           {partie.objectifs.filter((o) => o.type === type).map((o) => {
-            const valeurLisible = ['survie', 'budget2027', 'election2029'].includes(o.mesure) ? null : `${nombre(o.valeur, o.mesure === 'effortRD' ? 2 : 1)}${UNITE[o.mesure] ?? ''} → cible ${o.sens === '<=' ? '≤' : '≥'} ${nombre(o.cible, o.mesure === 'effortRD' ? 2 : 1)}${UNITE[o.mesure] ?? ''}`;
+            const dec = o.mesure === 'effortRD' ? 2 : ['siegesRepublicains', 'trimestresShutdown', 'epuisementSocialSecurity'].includes(o.mesure) ? 0 : 1;
+            const fmt = (x) => (o.mesure === 'epuisementSocialSecurity' ? String(Math.round(x)) : nombre(x, dec));
+            const valeurLisible = SANS_VALEUR.includes(o.mesure) ? null : `${fmt(o.valeur)}${UNITE[o.mesure] ?? ''} → cible ${o.sens === '<=' ? '≤' : '≥'} ${fmt(o.cible)}${UNITE[o.mesure] ?? ''}`;
             const couleur = o.statut === 'echoue' ? 'var(--critique)' : o.statut === 'atteint' || o.statut === 'en_voie' ? 'var(--bon)' : 'var(--accent)';
             return (
               <div className="objectif" key={o.id} title={o.description}>

@@ -7,8 +7,13 @@ export function nombre(x, decimales = 1) {
   return cache[decimales].format(x);
 }
 export const pct = (x, d = 1) => `${nombre(x, d)} %`;
-export const md = (x, d = 1) => `${nombre(x, d)} Md€`;
-export const euros = (x) => `${nombre(x, 0)} €`;
+
+/** Monnaie de la partie en cours (€ ou $), fixée au chargement d'une partie. */
+let deviseCourante = '€';
+export function definirDevise(d) { deviseCourante = d ?? '€'; }
+export const devise = () => deviseCourante;
+export const md = (x, d = 1) => `${nombre(x, d)} Md${deviseCourante}`;
+export const euros = (x) => `${nombre(x, 0)} ${deviseCourante}`;
 /** Variation signée (+1,2 / −0,4). */
 export function signe(x, d = 1, suffixe = '') {
   if (x === null || x === undefined || Number.isNaN(x)) return '—';

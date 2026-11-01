@@ -25,7 +25,7 @@ import { calculerPositions, voter, voteSenat } from './politique.js';
 const RENDEMENT_DIVIDENDE = { etatsUnis: 0.013, defaut: 0.035 };
 const rendement = (e) => RENDEMENT_DIVIDENDE[e.pays] ?? RENDEMENT_DIVIDENDE.defaut;
 /** « Md€ » ou « Md$ » selon le pays. */
-const md = (e, x) => `${x.toFixed(1)} Md${e.statique.devise ?? '€'}`;
+const md = (e, x) => `${x.toFixed(1).replace('.', ',')} Md${e.statique.devise ?? '€'}`;
 /** Prime payée aux actionnaires en cas de nationalisation (estimation de jeu, ordre de grandeur des offres publiques). */
 const PRIME_NATIONALISATION = 0.3;
 /** Nombre d'actions sur les entreprises par trimestre (hors rencontres). */

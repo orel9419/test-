@@ -75,6 +75,9 @@ export default function Fiscalite({ partie, decisions, majDecisions, apercu }) {
       <div className="carte pile">
         <h3>Règles budgétaires</h3>
         {regles.ue?.pde && <p className="petit">Procédure européenne pour déficit excessif : objectifs de déficit {Object.entries(regles.ue.cibleDeficit).map(([a, v]) => `${a} : ${nombre(v, 1)} %`).join(' · ')}{regles.ue.clauseDerogatoireDefense ? ' (clause dérogatoire défense activée)' : ''}.</p>}
+        {regles.nationale?.type === 'plafond_dette' && (
+          <p className="petit">Plafond légal de la dette brute : <strong>{md(regles.nationale.plafond, 0)}</strong> ; dette brute {md(f.detteBrute ?? 0, 0)} (dette détenue par le public + dette intragouvernementale), marge {md(f.margePlafond ?? 0, 0)}. Fonds de la Social Security : réserves {md(partie.retraites.fondsSS?.reserves ?? 0, 0)}, épuisement projeté en {partie.retraites.fondsSS?.epuisementProjete ?? 'au-delà de 2100'}.</p>
+        )}
         {regles.nationale?.type === 'schuldenbremse' && (
           <p className="petit">Frein à l'endettement : déficit structurel estimé à <strong>{pct(structurelSchuldenbremse(partie, f.deficitRatio), 2)}</strong> du PIB pour un plafond de {pct(regles.nationale.plafondStructurelBund + regles.nationale.plafondStructurelLaender, 2)} (défense au-delà de 1 % du PIB et fonds spécial exclus). <span className="muet">{regles.nationale.note}</span></p>
         )}

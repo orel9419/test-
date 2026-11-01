@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { actionsDisponibles } from '../../engine/index.js';
 import { PARTENAIRES } from '../../data/diplomatie.js';
 import Info from '../composants/Info.jsx';
-import { nombre } from '../format.js';
+import { nombre, md } from '../format.js';
 
 /** Barre de relation divergente (−100 à +100). */
 function Relation({ valeur }) {
@@ -41,9 +41,9 @@ export default function Diplomatie({ partie, decisions, majDecisions }) {
         <div className="carte pile">
           <h3>Influence internationale : {nombre(i.influence, 0)}/100</h3>
           <p className="petit">Capital diplomatique disponible ce trimestre : <strong>{i.capitalDiplomatique}</strong> point(s), dont <strong>{Math.max(0, restant)}</strong> non engagé(s). Vous en regagnez 2 par trimestre (3 si l'influence dépasse 70).</p>
-          {i.safe > 0 && <p className="petit">Dette de défense financée par les prêts européens SAFE : {nombre(i.safe, 1)} Md€.</p>}
+          {i.safe > 0 && <p className="petit">Dette de défense financée par les prêts européens SAFE : {md(i.safe, 1)}.</p>}
           {i.facteurEnergie < 1 && <p className="petit">Accords énergétiques : prix de l'énergie importée réduit de {nombre((1 - i.facteurEnergie) * 100, 1)} %.</p>}
-          {i.recettesExterieures !== 0 && <p className="petit">Effet net des accords européens sur le budget : {nombre(i.recettesExterieures, 1)} Md€ par an.</p>}
+          {i.recettesExterieures !== 0 && <p className="petit">Effet net des accords européens sur le budget : {md(i.recettesExterieures, 1)} par an.</p>}
           <h3 style={{ marginTop: '0.6rem' }}>Actions réalisées</h3>
           {i.actionsRealisees.length === 0 ? <p className="petit muet">Aucune pour l'instant.</p> : (
             <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>

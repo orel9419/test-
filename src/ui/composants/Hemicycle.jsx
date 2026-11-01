@@ -4,10 +4,12 @@ import React, { useMemo, useState } from 'react';
 const ORDRE = {
   france: ['LFI', 'GDR', 'ECOS', 'SOC', 'LIOT', 'DEM', 'EPR', 'HOR', 'DR', 'UDR', 'RN'],
   allemagne: ['LINKE', 'SPD', 'GRUENE', 'SSW', 'CDUCSU', 'AFD'],
+  etatsUnis: ['DEM', 'REP', 'FREEDOM'],
 };
 
 /** Noms courts lisibles pour la légende. */
 const NOMS_COURTS = { CDUCSU: 'CDU/CSU', GRUENE: 'Verts', AFD: 'AfD', LINKE: 'Die Linke', ECOS: 'Écologistes', SOC: 'PS', DEM: 'MoDem', HOR: 'Horizons', DR: 'LR (DR)' };
+const NOMS_COURTS_PAYS = { etatsUnis: { DEM: 'Démocrates', REP: 'Républicains', FREEDOM: 'Freedom Caucus' } };
 
 /** Positions des sièges sur des arcs concentriques, triées de gauche à droite. */
 function positionsSieges(total) {
@@ -56,7 +58,7 @@ export default function Hemicycle({ pays, groupes, majorite }) {
         {tries.map((g) => (
           <span key={g.id} onPointerEnter={() => setSurvol(g.id)} onPointerLeave={() => setSurvol(null)} style={{ fontWeight: survol === g.id ? 600 : 400 }}>
             <span style={{ width: 10, height: 10, borderRadius: 3, background: g.couleur, display: 'inline-block' }} />
-            {NOMS_COURTS[g.id] ?? g.id} {g.sieges}
+            {NOMS_COURTS_PAYS[pays]?.[g.id] ?? NOMS_COURTS[g.id] ?? g.id} {g.sieges}
           </span>
         ))}
       </div>
