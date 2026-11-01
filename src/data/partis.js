@@ -58,7 +58,7 @@ export const PARTIS = {
  */
 export const SONDAGES_DEPART = {
   france: {
-    presidentielle2ndTour: { camp: 50, rn: 50, note: 'Second tour : Odoxa (mars 2026) donnait Philippe 52 % contre Bardella 48 % ; d\'autres sondages donnent le RN gagnant. Point de départ du jeu : 50/50 (estimation).' },
+    presidentielle2ndTour: { camp: 48, rn: 52, note: 'Second tour : Odoxa (mars 2026) donnait Philippe 52 % contre Bardella 48 %, mais d\'autres sondages donnent Jordan Bardella gagnant quel que soit son adversaire (Public Sénat). Départ du jeu : 48/52, RN légèrement favori (estimation).' },
   },
   etatsUnis: {
     presidentielle: { camp: 50, note: 'Élection de 2028 : point de départ 50/50 (estimation), modulé par la popularité et l\'économie.' },

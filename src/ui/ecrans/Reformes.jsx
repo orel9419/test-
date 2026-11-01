@@ -1,12 +1,23 @@
 import React, { useMemo, useState } from 'react';
-import { reformesDisponibles, chiffrerReforme } from '../../engine/index.js';
+import { reformesDisponibles, chiffrerReforme, voterTexte } from '../../engine/index.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Apercu from './Apercu.jsx';
-import { nombre, signe, classeVariation, devise } from '../format.js';
+import Capitalisation from './Capitalisation.jsx';
+import Info from '../composants/Info.jsx';
+import { signe, classeVariation, devise } from '../format.js';
 
-const CATEGORIES = {
-  retraites: 'Retraites', travail: 'Travail et emploi', fiscalite: 'Fiscalité et entreprises', fonction_publique: 'Fonction publique', sante: 'Santé',
-  protection_sociale: 'Protection sociale', energie: 'Énergie', dette: 'Dette et patrimoine public', regles: 'Règles budgétaires', defense: 'Défense',
+/** Thèmes, dans l'ordre d'affichage. */
+const THEMES = {
+  retraites: 'Retraites', capitalisation: 'Retraites : capitalisation', travail: 'Travail et emploi', depenses: 'Baisse des dépenses',
+  fiscalite: 'Fiscalité et entreprises', sante: 'Santé', protection_sociale: 'Protection sociale', fonction_publique: 'Fonction publique',
+  energie: 'Énergie et climat', education: 'Éducation', securite: 'Sécurité et justice', immigration: 'Immigration', logement: 'Logement',
+  agriculture: 'Agriculture', outre_mer: 'Outre-mer', institutions: 'Institutions', dette: 'Dette et patrimoine public', regles: 'Règles budgétaires', defense: 'Défense',
+};
+const VEHICULES = {
+  PLF: { nom: 'Loi de finances', aide: 'Projet de loi de finances : le 49.3 y est utilisable sans limite, au risque d\'une motion de censure.' },
+  PLFSS: { nom: 'Financement de la Sécu', aide: 'Projet de loi de financement de la Sécurité sociale : le 49.3 y est utilisable sans limite.' },
+  loi: { nom: 'Loi ordinaire', aide: 'Loi ordinaire : il faut une majorité ; un seul 49.3 par session pour les textes non financiers.' },
+  'décret': { nom: 'Décret', aide: 'Décret ou mesure réglementaire : pas de vote au Parlement, application rapide.' },
 };
 
 /** Résultat d'un chiffrage par simulation. */
@@ -31,11 +42,24 @@ function Chiffrage({ resultat, partie }) {
   );
 }
 
+/** Pronostic de vote d'une réforme seule (France : le texte est jugé sur son contenu). */
+function pronostic(partie, r, option) {
+  if (!r.vote) return { classe: 'bon', texte: 'Pas de vote' };
+  if (partie.pays !== 'france') return null;
+  const v = voterTexte(partie, [{ id: r.id, option }]);
+  const financier = ['PLF', 'PLFSS'].includes(r.vehicule);
+  if (v.adopte) return { classe: 'bon', texte: `Majorité probable (${v.pour} pour, ${v.contre} contre)`, vote: v };
+  return { classe: financier ? 'moyen' : 'mauvais', texte: `${financier ? '49.3 nécessaire' : 'Rejet probable'} (${v.pour} pour, ${v.contre} contre)`, vote: v };
+}
+
 export default function Reformes({ partie, decisions, majDecisions, apercu, prevision }) {
   const liste = useMemo(() => reformesDisponibles(partie), [partie]);
   const [options, setOptions] = useState({});
   const [chiffrages, setChiffrages] = useState({});
   const [enCours, setEnCours] = useState(null);
+  const [theme, setTheme] = useState('tous');
+  const [recherche, setRecherche] = useState('');
+  const [majoritaires, setMajoritaires] = useState(false);
   const proposees = decisions.reformes;
   const fr = partie.pays === 'france';
   const us = partie.pays === 'etatsUnis';
@@ -54,14 +78,22 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
     }, 20);
   };
 
-  const parCategorie = {};
-  for (const r of liste) (parCategorie[r.categorie] ??= []).push(r);
+  const themesPresents = Object.keys(THEMES).filter((t) => liste.some((r) => r.categorie === t));
+  const filtre = recherche.trim().toLowerCase();
+  const visibles = liste.filter((r) => {
+    if (theme !== 'tous' && r.categorie !== theme) return false;
+    if (filtre && !`${r.nom} ${r.resume}`.toLowerCase().includes(filtre)) return false;
+    if (majoritaires) { const p = pronostic(partie, r, options[r.id] ?? r.options[0].id); if (p && p.classe === 'mauvais') return false; }
+    return true;
+  });
+  const parTheme = {};
+  for (const r of visibles) (parTheme[r.categorie] ??= []).push(r);
   const pt = prevision?.texte;
 
   return (
     <div className="pile">
-      <h2>Réformes structurelles</h2>
-      <p className="petit muet">Chaque réforme agit sur le budget, l'économie et l'opinion. Les plus conflictuelles créent un <strong>grief</strong> dans certains groupes, que des <strong>compensations</strong> peuvent réduire : par exemple, un recul de l'âge de la retraite accompagné de mesures sur la pénibilité et les carrières longues. Les réformes législatives passent devant le Parlement à la fin du trimestre.</p>
+      <h2>Réformes <span className="muet petit">({liste.length} disponibles)</span></h2>
+      <p className="petit muet">Chaque réforme agit sur le budget, l'économie et l'opinion. Les plus conflictuelles créent un <strong>grief</strong> que des <strong>compensations</strong> peuvent réduire. Le badge de vote indique si une majorité se dégage à l'Assemblée : les députés jugent d'abord le contenu du texte, ce qui permet des majorités différentes d'une réforme à l'autre.</p>
 
       {proposees.length > 0 && (
         <div className="carte pile">
@@ -70,19 +102,26 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
             const r = liste.find((x) => x.id === p.id);
             return (
               <div key={p.id} className="ligne espace petit">
-                <span><strong>{r?.nom}</strong> — {r?.options.find((o) => o.id === p.option)?.nom}</span>
+                <span><strong>{r?.nom}</strong> — {r?.options.find((o) => o.id === p.option)?.nom} {r && <span className="etiquette">{VEHICULES[r.vehicule]?.nom ?? r.vehicule}</span>}</span>
                 <button type="button" className="bouton petit danger" onClick={() => retirer(p.id)}>Retirer</button>
               </div>
             );
           })}
           {pt && (
             <div className={`alerte ${pt.adopte ? 'bonne' : ''}`}>
-              <strong>Prévision du vote :</strong> {pt.pour} pour, {pt.contre} contre, {pt.abstention} abstentions → {pt.adopte ? 'adoption probable' : 'rejet probable'}.
+              <strong>Prévision du vote{prevision?.incertitude ? ' (± 25 voix)' : ''} :</strong> {pt.pour} pour, {pt.contre} contre, {pt.abstention} abstentions → {pt.adopte ? 'adoption probable' : 'rejet probable'}.
               {fr && !pt.adopte && pt.censureApres493 && <> Avec le 49.3, la motion de censure réunirait <strong>{pt.censureApres493.voix}</strong> voix sur {pt.censureApres493.majorite} : {pt.censureApres493.adoptee ? <strong className="negatif">le gouvernement tomberait.</strong> : 'elle échouerait.'}</>}
               {partie.pays === 'allemagne' && pt.accordPartenaire === false && <> <strong className="negatif">Le SPD bloquerait le texte au comité de coalition.</strong></>}
               {us && pt.senat && <> Sénat : <strong>{pt.senat.pour}</strong> voix pour {pt.senat.obstruction} nécessaires{pt.senat.pour < 60 ? ' (obstruction)' : ''}.{pt.senatReconciliation !== null && pt.senatReconciliation !== undefined && <> Par réconciliation (mesures budgétaires seulement) : {pt.senatReconciliation} voix pour 50 + le vice-président{pt.reconciliationDisponible ? '' : ', mais elle a déjà servi cet exercice'}.</>}</>}
-              {prevision?.incertitude ? <span className="muet"> Pointage incertain (± 25 voix) en mode Expert.</span> : null}
             </div>
+          )}
+          {fr && (
+            <label className="petit">Procédure :
+              <select value={decisions.procedureReformes} onChange={(ev) => majDecisions({ procedureReformes: ev.target.value })} style={{ marginLeft: 6 }}>
+                <option value="vote">Vote ordinaire</option>
+                <option value="49.3">49.3 en cas de rejet (illimité pour les textes financiers, une fois par session sinon)</option>
+              </select>
+            </label>
           )}
           {us && (
             <label className="petit">Procédure :
@@ -92,50 +131,73 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
               </select>
             </label>
           )}
-          {fr && (
-            <label className="petit">Procédure :
-              <select value={decisions.procedureReformes} onChange={(ev) => majDecisions({ procedureReformes: ev.target.value })} style={{ marginLeft: 6 }}>
-                <option value="vote">Vote ordinaire</option>
-                <option value="49.3">49.3 en cas de rejet (une fois par session hors budget)</option>
-              </select>
-            </label>
-          )}
           <Apercu apercu={apercu} partie={partie} titre="Impact estimé du programme et de vos curseurs" />
         </div>
       )}
 
       {partie.reformes.actives.filter((r) => !r.diplomatique).length > 0 && (
-        <div className="carte">
-          <h3>Réformes en vigueur ou votées</h3>
-          <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>
+        <details className="carte">
+          <summary>Réformes en vigueur ou votées ({partie.reformes.actives.filter((r) => !r.diplomatique && r.id !== 'evenement').length})</summary>
+          <ul className="petit" style={{ margin: '0.5rem 0 0', paddingLeft: '1.1rem' }}>
             {partie.reformes.actives.filter((r) => !r.diplomatique).map((r) => (
               <li key={r.id}>{r.nom} — {r.libelleOption} {r.appliquee ? <span className="etiquette">en vigueur</span> : <span className="etiquette">entrée en vigueur au tour {r.tourApplication}</span>}</li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
 
-      {Object.entries(parCategorie).map(([cat, rs]) => (
+      <div className="carte pile filtres-reformes">
+        <div className="ligne">
+          <input type="search" placeholder="Rechercher une réforme…" value={recherche} onChange={(ev) => setRecherche(ev.target.value)} aria-label="Rechercher une réforme" className="champ-recherche" />
+          {fr && <label className="petit"><input type="checkbox" checked={majoritaires} onChange={(ev) => setMajoritaires(ev.target.checked)} /> Seulement celles qui peuvent passer</label>}
+        </div>
+        <div className="puces" role="tablist" aria-label="Thèmes">
+          <button type="button" role="tab" aria-selected={theme === 'tous'} className={`puce ${theme === 'tous' ? 'active' : ''}`} onClick={() => setTheme('tous')}>Tous ({liste.length})</button>
+          {themesPresents.map((t) => (
+            <button key={t} type="button" role="tab" aria-selected={theme === t} className={`puce ${theme === t ? 'active' : ''}`} onClick={() => setTheme(t)}>{THEMES[t]} ({liste.filter((r) => r.categorie === t).length})</button>
+          ))}
+        </div>
+      </div>
+
+      {fr && (theme === 'tous' || theme === 'capitalisation' || theme === 'retraites') && !filtre && <Capitalisation partie={partie} decisions={decisions} majDecisions={majDecisions} />}
+
+      {visibles.length === 0 && <div className="carte petit muet">Aucune réforme ne correspond à ces filtres.</div>}
+      {Object.keys(THEMES).filter((t) => parTheme[t]).map((cat) => (
         <section key={cat} className="pile">
-          <h3>{CATEGORIES[cat] ?? cat}</h3>
-          {rs.map((r) => {
+          <h3>{THEMES[cat]}</h3>
+          {parTheme[cat].map((r) => {
             const option = options[r.id] ?? r.options[0].id;
             const cle = `${r.id}:${option}`;
             const proposee = proposees.find((p) => p.id === r.id);
+            const pr = pronostic(partie, r, option);
+            const v = VEHICULES[r.vehicule];
             return (
-              <div key={r.id} className="carte pile">
+              <div key={r.id} className={`carte pile ${proposee ? 'reforme-proposee' : ''}`}>
                 <div className="ligne espace">
                   <strong>{r.nom}</strong>
                   <span className="ligne">
+                    {v && <span className="etiquette" title={v.aide}>{v.nom}</span>}
+                    {pr && <span className={`pronostic ${pr.classe}`} title="Pronostic du vote à l'Assemblée pour cette réforme seule, avec l'option choisie">{pr.texte}</span>}
                     {r.compensation && <span className="etiquette">compensation</span>}
                     {r.majoriteRenforcee && <span className="etiquette">majorité des deux tiers</span>}
                     {r.active && <span className="etiquette">en vigueur : {r.options.find((o) => o.id === r.active)?.nom}</span>}
                   </span>
                 </div>
                 <p className="petit">{r.resume}</p>
-                {r.pedagogie && (
+                {(r.pedagogie || r.pour.length > 0) && (
                   <details><summary>Comprendre les enjeux</summary>
-                    <p className="petit" style={{ marginTop: '0.4rem' }}>{r.pedagogie}</p>
+                    {r.pedagogie && <p className="petit" style={{ marginTop: '0.4rem' }}>{r.pedagogie}</p>}
+                    {(r.pour.length > 0 || r.contre.length > 0) && (
+                      <div className="grille-2 petit">
+                        <div><strong className="positif">Arguments des partisans</strong><ul>{r.pour.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
+                        <div><strong className="negatif">Arguments des opposants</strong><ul>{r.contre.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
+                      </div>
+                    )}
+                    {r.exemples.length > 0 && <p className="petit"><strong>Ailleurs :</strong> {r.exemples.join(' ; ')}.</p>}
+                    {pr?.vote && (
+                      <p className="tres-petit">Votes prévus par groupe : {pr.vote.detail.map((d) => <span key={d.id} className={d.vote === 'pour' ? 'positif' : d.vote === 'contre' ? 'negatif' : 'muet'} style={{ marginRight: 8 }}>{d.id} {d.vote === 'pour' ? 'pour' : d.vote === 'contre' ? 'contre' : 'abst.'}</span>)}
+                        <Info texte="Positions estimées à partir des programmes et des votes connus des groupes (hypothèses de jeu quand elles ne sont pas documentées)." /></p>
+                    )}
                     {r.sources.length > 0 && <p className="tres-petit">Sources : {r.sources.map((s, i) => <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ marginRight: 8 }}>{s.texte}</a>)}</p>}
                   </details>
                 )}
@@ -154,7 +216,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                   {r.disponible
                     ? <button type="button" className="bouton principal" onClick={() => proposer(r)}>{proposee ? 'Mettre à jour la proposition' : 'Ajouter au programme du trimestre'}</button>
                     : <span className="petit muet">Mesure déjà réalisée.</span>}
-                  {fr && r.disponible && (
+                  {fr && r.disponible && r.vote && (
                     decisions.referendum?.id === r.id
                       ? <span className="etiquette">soumise au référendum ce trimestre</span>
                       : <button type="button" className="bouton" title="Article 11 : la réforme est soumise directement aux électeurs (un référendum par an)" onClick={() => majDecisions({ referendum: { id: r.id, option } })}>Soumettre au référendum</button>
@@ -165,7 +227,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
           })}
         </section>
       ))}
-      <p className="tres-petit muet">Les chiffrages par simulation ne tiennent pas compte des votes ni des élections.</p>
+      <p className="tres-petit muet">Les chiffrages par simulation ne tiennent pas compte des votes ni des élections. Montants sans source : hypothèses de jeu.</p>
     </div>
   );
 }

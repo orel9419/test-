@@ -37,9 +37,12 @@ export function siegesLegislativesFrance(e, intentions) {
     RN: i.RN ?? 0, centre: i.centre ?? 0, LR: i.LR ?? 0,
     gauche: (i.gauche ?? 0) + (i.LFI ?? 0) + (i.ecolos ?? 0), autres: i.autres ?? 0,
   };
-  // Second tour : le bloc central bénéficie des reports (« front républicain »), le RN en pâtit (hypothèse calée sur 2022 et 2024)
-  const reports = { centre: 1.6, RN: 0.85 };
-  const poids = Object.fromEntries(Object.entries(blocs).map(([k, v]) => [k, (reports[k] ?? 1) * Math.pow(Math.max(0.1, v), 1.6)]));
+  // Second tour : le bloc central bénéficie des reports (« front républicain »), le RN en pâtit (hypothèse calée sur 2022 et 2024).
+  // Proportionnelle intégrale : sièges proportionnels aux voix (seuil de 5 %) ; système mixte : entre les deux.
+  const prop = e.politique?.proportionnelle;
+  const reports = prop === 'integrale' ? {} : { centre: 1.6, RN: 0.85 };
+  const puissance = prop === 'integrale' ? 1 : prop === 'mixte' ? 1.4 : 1.6;
+  const poids = Object.fromEntries(Object.entries(blocs).map(([k, v]) => [k, prop === 'integrale' && v < 5 ? 0 : (reports[k] ?? 1) * Math.pow(Math.max(0.1, v), puissance)]));
   const total = Object.values(poids).reduce((s, x) => s + x, 0);
   const sieges = Object.fromEntries(Object.entries(poids).map(([k, v]) => [k, Math.round(577 * v / total)]));
   const gaucheTotal = (i.gauche ?? 0) + (i.LFI ?? 0) + (i.ecolos ?? 0) || 1;

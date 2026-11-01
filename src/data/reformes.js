@@ -23,6 +23,8 @@
  * Les montants non sourcés sont des hypothèses de jeu, signalées comme telles.
  */
 
+import { REFORMES_FRANCE } from './reformesFrance.js';
+
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const indicePrix = (e) => e.macro.niveauPrix / 100;
 
@@ -45,7 +47,7 @@ const parPays = (e, valeurs) => valeurs[e.pays] ?? valeurs.defaut ?? 0;
 const COMPOSITION_PERSONNEL = { sante: 0.35, education: 0.8, recherche: 0.55, defense: 0.35, affairesEtrangeres: 0.25, interieurJustice: 0.7, culture: 0.4, economieFinances: 0.35, protectionSociale: 0.05, travailEmploi: 0.05 };
 const COMPOSITION_TRANSFERTS = { protectionSociale: 0.9, travailEmploi: 0.85, logement: 0.7 };
 
-export const REFORMES = [
+const REFORMES_COMMUNES = [
   // ======================================================================
   // RETRAITES (France)
   // ======================================================================
@@ -117,7 +119,7 @@ export const REFORMES = [
       }[o];
     },
     axes: { social: -0.5, retraites: 0.4 },
-    axesParOption: { pleine_inflation: { social: 0.5 } },
+    axesParOption: { pleine_inflation: { social: 0.5, retraites: 0 } },
     chiffrage: 'Environ 4 Md€ par point de sous-indexation la première année, montant qui se cumule ensuite. Une année blanche avec 2 % d\'inflation : environ 8,5 Md€.',
   },
   {
@@ -798,3 +800,18 @@ function repartirSurPersonnel(e, montant) {
   }
   return depenses;
 }
+
+/**
+ * Véhicule législatif des réformes communes (France). Les textes financiers
+ * (PLF, PLFSS) peuvent passer par le 49.3 sans limite ; un décret n'est pas voté.
+ */
+const VEHICULES = {
+  retraites_age: 'PLFSS', retraites_indexation: 'PLFSS', retraites_penibilite: 'PLFSS', retraites_minimum: 'PLFSS', retraites_carrieres_longues: 'PLFSS',
+  temps_travail: 'loi', fonction_publique_temps: 'loi', gel_point_indice: 'décret', gel_prestations: 'PLFSS', gel_bareme: 'PLF',
+  non_remplacement: 'décret', assurance_chomage: 'décret', tva_sociale: 'PLFSS', taxe_hauts_patrimoines: 'PLF', rabot_niches: 'PLF',
+  allegements_charges: 'PLFSS', plan_antifraude: 'décret', privatisations: 'décret', bouclier_energie: 'décret', taxe_superprofits: 'PLF',
+  surtaxe_grandes_entreprises: 'PLF', aides_entreprises: 'PLF', rachats_actions: 'PLF',
+};
+for (const r of REFORMES_COMMUNES) if (!r.vehicule && VEHICULES[r.id]) r.vehicule = VEHICULES[r.id];
+
+export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE];

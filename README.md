@@ -39,7 +39,21 @@ Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France,
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   Chaque réforme peut être **chiffrée sur 3 ans par simulation**. Elle passe ensuite devant le Parlement, et une prévision du vote est affichée.
+   En France, **58 réformes** couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
+   - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
+   - les arguments des partisans et des opposants, et des exemples étrangers.
+
+   Les filtres par thème, la recherche et l'option « seulement celles qui peuvent passer » aident à s'y retrouver. Chaque réforme peut être **chiffrée sur 3 ans par simulation** avant d'être soumise au Parlement (ou à référendum).
+
+   Les députés jugent d'abord le **contenu** de chaque texte, ce qui permet des majorités d'idées différentes d'un texte à l'autre. Le 49.3 est illimité pour les textes financiers et limité à un par session pour les autres.
+
+   **Retraite par capitalisation** : quatre dispositifs combinables (PER renforcé, deuxième pilier obligatoire avec parts employeur et salarié, fonds souverain, transition partielle de la répartition). Le panneau dédié montre :
+   - la double charge de transition ;
+   - l'allocation des fonds et sa volatilité ;
+   - le risque de krach ;
+   - une projection sur 30 ans (scénarios défavorable, médian et favorable) et le supplément de pension d'un salarié au SMIC et d'un cadre ;
+   - la part des gains captée par les ménages aisés.
 5. **Agir à l'international** avec un capital diplomatique limité :
    - contrats de gaz, achats groupés ;
    - prêts européens SAFE, clause dérogatoire défense, emprunt commun européen ;
@@ -153,14 +167,15 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
   opinion.js            baromètre de satisfaction et intentions de vote
   elections.js          élections du calendrier, législatives, Länder, mi-mandat, référendum
-  entreprises.js        Bourse, climat des affaires, souveraineté, fleurons, État stratège
+  entreprises.js        Bourse (krachs compris), climat des affaires, souveraineté, fleurons, État stratège
+  capitalisation.js     retraite par capitalisation : fonds, rendements, double charge, projection sur 30 ans
   objectifs.js          génération et suivi des objectifs
   evenements.js         tirage et résolution des événements (dont grands rendez-vous)
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes, actions diplomatiques, événements, partis,
-                        entreprises et programmes, grands rendez-vous
+src/data/               catalogues : réformes (dont reformesFrance.js), actions diplomatiques,
+                        événements, partis, entreprises et programmes, grands rendez-vous
 src/ui/                 interface React (écrans, composants, sauvegarde)
 tests/                  tests unitaires (Vitest)
 ```

@@ -43,6 +43,7 @@ import { genererEvenements, resoudreEvenements, depensesTemporairesActives } fro
 import { calculerScore } from './score.js';
 import { initialiserOpinion, majOpinion } from './opinion.js';
 import { majSucces, SUCCES } from './succes.js';
+import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './capitalisation.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
 import { referendum } from './elections.js';
@@ -55,6 +56,8 @@ import { borner } from '../model/outils.js';
 export { reformesDisponibles, actionsDisponibles, calculerScore, conseils, SUCCES };
 export { programmesDisponibles, valeurPortefeuille, fleuron } from './entreprises.js';
 export { siegesLegislativesFrance } from './elections.js';
+export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains } from './capitalisation.js';
+export { voterTexte, texteFinancier } from './politique.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 
 /**
@@ -90,8 +93,13 @@ export function creerPartie(options) {
   e.graineMonde = (e.graine * 2654435761) >>> 0;
   initialiserPolitique(e, options.donnees);
   initialiserEntreprises(e);
+  e.capitalisation = etatCapitalisationInitial();
   e.elections = { historique: [] };
   initialiserOpinion(e);
+  // Référence de la projection présidentielle (France) : la situation de départ
+  if (e.politique.presidentielle && e.pays === 'france') {
+    e.politique.presidentielle.reference = { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion };
+  }
   e.objectifs = genererObjectifs(e);
   e.historique.push({ ...instantane(e), trimestre: 'Départ' });
   // Rendez-vous déjà fixés au premier trimestre (COP31, G20...) : tirage séparé, sans toucher à l'aléa de la partie
@@ -285,6 +293,10 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     operationsCapital += (r.cession ?? 0) - (r.acquisition ?? 0);
     e.resultatsTour.entreprises.push({ ...a, texte: r.texte, erreur: r.erreur ?? null });
   }
+  if (decisions.allocationCapitalisation && ALLOCATIONS[decisions.allocationCapitalisation]) {
+    e.capitalisation ??= etatCapitalisationInitial();
+    e.capitalisation.allocation = decisions.allocationCapitalisation;
+  }
   if (decisions.partCourtTerme !== undefined) e.finances.partCourtTerme = borner(decisions.partCourtTerme, 0.05, 0.5);
   if (decisions.trajectoire) e.finances.trajectoireAnnoncee = { ...e.finances.trajectoireAnnoncee, ...decisions.trajectoire };
 
@@ -338,7 +350,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   const chocPrix = (e.macro.chocsPrixEnAttente.shift() ?? 0) + effR.chocPrix;
   // Shutdown fédéral en cours : environ −0,15 point de PIB par trimestre (ordre de grandeur des estimations de la CBO)
   const chocShutdown = e.politique?.shutdown ? -0.15 : 0;
-  majMacro(e, { budget: impulsion, chocs: (options.chocs ?? 0) + effEv.chocPIB + chocShutdown }, {
+  majMacro(e, { budget: impulsion, chocs: (options.chocs ?? 0) + effEv.chocPIB + chocShutdown + (effR.chocDemande ?? 0) }, {
     offreTravail: effR.offreTravail + effT.offreTravail + effRet.offreTravail,
     actifsSupplementaires: (effRet.actifsSupplementaires ?? 0) + (effR.offreTravail / 100) * e.macro.populationActiveBase / 0.75,
     chomageStructurel: effR.chomageStructurel + effT.chomageStructurel + e.macro.effetCotisations,
@@ -355,6 +367,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   // --- 8. Finances publiques ----------------------------------------------------
   majFinances(e, recettes, totalDepensesPrimaires(e), { cessions: effR.cessions + operationsCapital + (effEv.cessions ?? 0), economieInterets: effI.economieInterets, depensesExceptionnelles: effEv.depensesExceptionnelles });
   majEntreprises(e, etat);
+  majCapitalisation(e);
   const bilan = bilanAnnuel(e);
   if (bilan) {
     const regles = bilan.regles.map((r) => `${r.nom} : ${r.realise.toFixed(1)} % pour un objectif de ${r.cible.toFixed(1)} % (${r.respect ? 'respectée' : 'NON respectée'})`).join(' ; ');

@@ -47,11 +47,18 @@ export const MESURES = {
   },
 };
 
-/** Projection du second tour de la présidentielle (France), avant le scrutin. */
+/**
+ * Projection du second tour de la présidentielle (France), avant le scrutin.
+ * Elle part du point de départ sourcé (50/50 : Odoxa donnait 52-48 pour le
+ * bloc central en mars 2026, d'autres instituts le RN gagnant) et bouge avec
+ * l'ÉVOLUTION de la popularité, de la croissance, du chômage, de l'inflation
+ * et de la cohésion depuis le début de la partie.
+ */
 export function projectionPresidentielle(e) {
   const m = e.macro;
-  return (e.politique.presidentielle?.partCamp ?? 50) + 0.6 * (e.social.popularite - 26) + 1.5 * (m.croissanceAnnuelle - 0.5)
-    - 1.5 * (m.chomage - 8.3) - 1.0 * Math.max(0, m.inflation - 2) + 0.2 * (e.social.cohesion - 70);
+  const r = e.politique.presidentielle?.reference ?? { popularite: 26, croissance: 0.5, chomage: 8.3, inflation: 2, cohesion: 70 };
+  return (e.politique.presidentielle?.partCamp ?? 50) + 0.6 * (e.social.popularite - r.popularite) + 1.5 * (m.croissanceAnnuelle - r.croissance)
+    - 1.5 * (m.chomage - r.chomage) - 1.0 * (Math.max(0, m.inflation - 2) - Math.max(0, r.inflation - 2)) + 0.2 * (e.social.cohesion - r.cohesion);
 }
 
 /**

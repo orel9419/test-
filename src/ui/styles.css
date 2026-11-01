@@ -298,3 +298,17 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 }
 
 .zone-sauvegarde { width: 100%; font-family: ui-monospace, monospace; font-size: 0.75rem; background: var(--surface-2); color: var(--encre); border: 1px solid var(--axe); border-radius: 8px; padding: 0.5rem; resize: vertical; }
+
+/* --- Réformes : filtres, pronostics, capitalisation ------------------------------ */
+.puces { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.puce { border: 1px solid var(--bordure); background: var(--surface); border-radius: 999px; padding: 0.25rem 0.7rem; font-size: 0.82rem; cursor: pointer; color: var(--encre-2); }
+.puce:hover { background: var(--surface-2); color: var(--encre); }
+.puce.active { background: var(--accent); border-color: var(--accent); color: var(--accent-encre); font-weight: 600; }
+.champ-recherche { flex: 1 1 240px; min-width: 0; background: var(--surface); border: 1px solid var(--axe); border-radius: 8px; padding: 0.4rem 0.6rem; }
+.pronostic { font-size: 0.72rem; padding: 0.1rem 0.5rem; border-radius: 6px; font-weight: 600; }
+.pronostic.bon { background: color-mix(in srgb, var(--bon) 16%, transparent); color: var(--texte-bon); }
+.pronostic.moyen { background: color-mix(in srgb, var(--attention) 22%, transparent); color: var(--encre); }
+.pronostic.mauvais { background: color-mix(in srgb, var(--critique) 14%, transparent); color: var(--texte-critique); }
+.reforme-proposee { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.capitalisation { border-top: 3px solid var(--serie-3); }
+details ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }

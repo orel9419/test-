@@ -33,7 +33,8 @@ export function calculerScore(e) {
   const depart = e.historique[0];
   const f = e.finances, m = e.macro;
   const c = {};
-  c.soutenabilite = borner(55 + 4 * (depart.dette - f.detteRatio) + 6 * (depart.deficit - f.deficitRatio) - (f.crise || e.issue?.cause === 'crise_dette' ? 50 : 0) + 8 * f.credibilite, 0, 100);
+  // Une partie de la hausse de la dette est déjà « dans les tuyaux » au départ : elle pèse moins que l'évolution du déficit
+  c.soutenabilite = borner(55 + 2.5 * (depart.dette - f.detteRatio) + 6 * (depart.deficit - f.deficitRatio) - (f.crise || e.issue?.cause === 'crise_dette' ? 50 : 0) + 8 * f.credibilite, 0, 100);
   const pa = e.menages.reduce((s, x) => s + (x.variationPct ?? 0), 0) / e.menages.length;
   c.bienEtre = borner(50 + 4 * pa - 6 * (m.chomage - depart.chomage) + 0.8 * (e.social.cohesion - depart.cohesion), 0, 100);
   const baisseEmissions = (e.climat.emissions0 - e.climat.emissions) / e.climat.emissions0 * 100;

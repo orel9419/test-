@@ -19,6 +19,8 @@ export function reformesDisponibles(e) {
     return {
       id: r.id, nom: r.nom, categorie: r.categorie, resume: r.resume, pedagogie: r.pedagogie, sources: r.sources ?? [],
       options: r.options, chiffrage: r.chiffrage, compensation: !!r.compensation, majoriteRenforcee: !!r.majoriteRenforcee,
+      vehicule: r.vote === false ? (r.vehicule ?? 'décret') : (r.vehicule ?? 'loi'), vote: r.vote !== false,
+      pour: r.pour ?? [], contre: r.contre ?? [], exemples: r.exemples ?? [],
       active: active ? active.option : null, disponible: !dejaUnique,
     };
   });
@@ -79,7 +81,7 @@ function appliquerSiEcheance(e, entree, alea) {
  * @returns {object} effets agrégés
  */
 export function majReformes(e, alea) {
-  const effets = { depenses: {}, recettes: {}, offreTravail: 0, chomageStructurel: 0, potentielBonus: 0, chocPrix: 0, plafonnementEnergie: 0, menages: {}, cessions: 0, fondsSS: 0 };
+  const effets = { depenses: {}, recettes: {}, offreTravail: 0, chomageStructurel: 0, potentielBonus: 0, chocPrix: 0, plafonnementEnergie: 0, menages: {}, cessions: 0, fondsSS: 0, chocDemande: 0 };
   for (const entree of e.reformes.actives) {
     if (entree.diplomatique) continue;
     appliquerSiEcheance(e, entree, alea);
@@ -89,7 +91,7 @@ export function majReformes(e, alea) {
     const r = def.effets?.(e, entree.option, age) ?? {};
     for (const [poste, v] of Object.entries(r.depenses ?? {})) effets.depenses[poste] = (effets.depenses[poste] ?? 0) + v;
     for (const [cle, v] of Object.entries(r.recettes ?? {})) effets.recettes[cle] = (effets.recettes[cle] ?? 0) + v;
-    for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS']) effets[cle] += r[cle] ?? 0;
+    for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS', 'chocDemande']) effets[cle] += r[cle] ?? 0;
     effets.plafonnementEnergie = Math.max(effets.plafonnementEnergie, r.plafonnementEnergie ?? 0);
     for (const [id, liste] of Object.entries(r.menages ?? {})) effets.menages[id] = [...(effets.menages[id] ?? []), ...liste];
   }

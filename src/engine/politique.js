@@ -25,6 +25,8 @@ import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
 import { legislativesFrance, electionsDuTrimestre } from './elections.js';
+import { MODES, normaliserMode } from '../model/parametres.js';
+import { projectionPresidentielle } from './objectifs.js';
 
 const AXES = ['social', 'fiscal', 'retraites', 'travail', 'ecologie', 'europe', 'marche', 'securite', 'rigueur'];
 const POSTURE = { gouvernement: 1.5, soutien: 0.5, pivot: -0.3, opposition: -1.5 };
@@ -200,6 +202,63 @@ export function voter(e, positions, saillance = {}) {
   return { adopte: pour > contre && (e.pays !== 'allemagne' || pour >= pol.majorite || pour > contre), pour, contre, abstention, detail };
 }
 
+/** Contenu politique d'un texte : somme des positions (−1 à +1) des réformes qu'il contient. */
+export function contenuTexte(reformes) {
+  const t = {};
+  for (const r of reformes) {
+    const def = trouverReforme(r.id);
+    const axes = { ...(def?.axes ?? {}), ...(def?.axesParOption?.[r.option] ?? {}) };
+    for (const [a, v] of Object.entries(axes)) t[a] = (t[a] ?? 0) + v;
+    for (const [id, v] of Object.entries(def?.positionsGroupes ?? {})) (t.groupes ??= {})[id] = (t.groupes[id] ?? 0) + v;
+  }
+  return t;
+}
+
+/** Vrai si tous les textes sont financiers (PLF, PLFSS) : le 49.3 y est utilisable sans limite. */
+export function texteFinancier(reformes) {
+  return reformes.length > 0 && reformes.every((r) => ['PLF', 'PLFSS', 'PLFR'].includes(trouverReforme(r.id)?.vehicule));
+}
+
+/**
+ * France : accueil d'un texte par un groupe. Un député juge d'abord le
+ * CONTENU du texte (proximité avec ses positions), puis, plus faiblement, son
+ * appartenance à la majorité ou à l'opposition et la politique générale du
+ * gouvernement. C'est ce qui permet des majorités d'idées texte par texte,
+ * comme dans l'Assemblée élue en 2024 (hypothèse de modélisation).
+ */
+export function satisfactionTexte(e, g, contenu) {
+  const mode = MODES[normaliserMode(e.mode)];
+  const durete = g.posture === 'opposition' ? (mode?.exigencePartenaires ?? 1) : 1;
+  let s = 0.3 * (POSTURE[g.posture] ?? 0) * durete;
+  let accord = 0;
+  for (const [a, v] of Object.entries(contenu)) if (a !== 'groupes') accord += (g.axes[a] ?? 0) * v;
+  s += 1.2 * accord;
+  // Positions propres à ce texte, quand elles s'écartent des positions générales du groupe
+  s += contenu.groupes?.[g.id] ?? 0;
+  let general = 0;
+  for (const a of AXES) general += (g.axes[a] ?? 0) * (e.politique.positions[a] ?? 0);
+  s += 0.15 * general;
+  const pop = e.social?.popularite ?? 25;
+  const ref = POPULARITE_REFERENCE[e.pays] ?? 26;
+  if (g.posture === 'pivot' || g.posture === 'soutien') s += 0.02 * (pop - ref);
+  if (g.posture === 'opposition' && trimestresAvantElection(e) <= 3) s -= 0.15;
+  return s + 0.5 * (g.concessions ?? 0);
+}
+
+/** France : vote d'un texte de réformes (pour au-delà de +0,25, contre en deçà de −0,25). */
+export function voterTexte(e, reformes) {
+  const contenu = contenuTexte(reformes);
+  let pour = 0, contre = 0, abstention = 0;
+  const detail = [];
+  for (const g of e.politique.groupes) {
+    const sat = satisfactionTexte(e, g, contenu);
+    const vote = sat > 0.25 ? 'pour' : sat < -0.25 ? 'contre' : 'abstention';
+    if (vote === 'pour') pour += g.sieges; else if (vote === 'contre') contre += g.sieges; else abstention += g.sieges;
+    detail.push({ id: g.id, nom: g.nom, sieges: g.sieges, vote, satisfaction: sat });
+  }
+  return { adopte: pour > contre, pour, contre, abstention, detail };
+}
+
 /** Motion de censure (France). */
 export function motionCensure(e, decalage = 0) {
   const pol = e.politique;
@@ -275,16 +334,18 @@ export function validerReformes(e, reformes, procedure = 'vote') {
 
   if (e.pays === 'etatsUnis') return validerReformesEtatsUnis(e, legislatives, directes, positions, saillance, procedure);
 
-  // France
-  const vote = voter(e, positions, saillance);
+  // France : le texte est jugé sur son contenu
+  const vote = voterTexte(e, legislatives);
   pol.votes.push({ tour: e.tour, texte: 'Projet de loi de réformes', ...resumeVote(vote) });
   if (vote.adopte) return { acceptees: reformes, rejet: null, vote };
   if (procedure === '49.3') {
     const s = session(e);
-    if ((pol.utilisations493[s] ?? 0) >= 1) {
-      return { acceptees: directes, rejet: { raison: 'Le 49.3 a déjà été utilisé pour un texte hors budget lors de cette session.', vote } };
+    // Le 49.3 est illimité pour les lois de finances et de financement de la Sécurité sociale (article 49, alinéa 3)
+    const financier = texteFinancier(legislatives);
+    if (!financier && (pol.utilisations493[s] ?? 0) >= 1) {
+      return { acceptees: directes, rejet: { raison: 'Le 49.3 a déjà été utilisé pour un texte hors budget lors de cette session (il reste illimité pour les textes financiers : PLF, PLFSS).', vote } };
     }
-    pol.utilisations493[s] = (pol.utilisations493[s] ?? 0) + 1;
+    if (!financier) pol.utilisations493[s] = (pol.utilisations493[s] ?? 0) + 1;
     pol.chocInstabilite = (pol.chocInstabilite ?? 0) + 0.08;
     for (const g of pol.groupes) g.satisfaction = satisfaction(e, g, positions, saillance);
     const censure = motionCensure(e, -0.2);
@@ -624,14 +685,7 @@ function majIntentions(e) {
 /** Élection présidentielle française (au T2 2027). */
 function presidentielle(e, alea) {
   const pol = e.politique;
-  const m = e.macro;
-  const part = pol.presidentielle.partCamp
-    + 0.6 * (e.social.popularite - 26)
-    + 1.5 * (m.croissanceAnnuelle - 0.5)
-    - 1.5 * (m.chomage - 8.3)
-    - 1.0 * Math.max(0, m.inflation - 2)
-    + 0.2 * (e.social.cohesion - 70)
-    + alea.normale(0, 2);
+  const part = projectionPresidentielle(e) + alea.normale(0, 2);
   pol.presidentielle = { ...pol.presidentielle, tenue: true, resultat: part };
   const victoire = part >= 50;
   const lib = libelleTrimestre(e.trimestre);
@@ -766,7 +820,7 @@ export function prevoirVotes(e, reformes = []) {
   if (legislatives.length) {
     const positions = calculerPositions(e, legislatives);
     const saillance = saillanceReformes(legislatives);
-    texte = voter(e, positions, saillance);
+    texte = e.pays === 'france' ? voterTexte(e, legislatives) : voter(e, positions, saillance);
     if (e.pays === 'france') {
       const sauvegarde = e.politique.groupes.map((g) => g.satisfaction);
       for (const g of e.politique.groupes) g.satisfaction = satisfaction(e, g, positions, saillance);

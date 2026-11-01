@@ -270,7 +270,10 @@ export function majEntreprises(e, prev) {
   const energieAvant = prev?.monde.energie ?? e.monde.energie;
   const varEnergie = (e.monde.energie - energieAvant) / energieAvant;
   const tendance = (m.croissanceAnnuelle + m.inflation) / 4 + 0.5; // croissance nominale des profits + prime de risque (hypothèse)
-  const rIndice = tendance + 2 * dEcart - 4 * dTaux + 0.15 * (x.climatAffaires - climatAvant) + alea.normale(0, 3);
+  // Krach boursier : environ 1,5 % de risque par trimestre, soit un tous les 15 à 20 ans (hypothèse de jeu)
+  const krach = alea.tirage(0.015) ? -20 : 0;
+  if (krach) e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'alerte', texte: `Krach boursier : le ${x.indice.nom} perd environ 20 %. Les fonds de retraite investis en actions sont touchés.` });
+  const rIndice = tendance + 2 * dEcart - 4 * dTaux + 0.15 * (x.climatAffaires - climatAvant) + alea.normale(0, 3) + krach;
   x.indice.valeur *= 1 + rIndice / 100;
   x.indice.variation = rIndice;
   for (const fl of x.fleurons) {
