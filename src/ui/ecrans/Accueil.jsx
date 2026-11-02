@@ -8,7 +8,7 @@ import { pct } from '../format.js';
 export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, onColler, theme, onTheme, message }) {
   const [pays, setPays] = useState('france');
   const [mode, setMode] = useState('intermediaire');
-  const [calendrier, setCalendrier] = useState('reel');
+  const [calendrier, setCalendrier] = useState('horizon2050');
   const d = PAYS[pays].donnees;
   return (
     <div className="accueil pile">
@@ -63,14 +63,18 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
         ))}
       </div>
 
-      <h2>3. Calendrier</h2>
+      <h2>3. Durée et calendrier</h2>
       <div className="choix-pays">
+        <button type="button" className={`carte carte-pays ${calendrier === 'horizon2050' ? 'choisie' : ''}`} onClick={() => setCalendrier('horizon2050')} aria-pressed={calendrier === 'horizon2050'}>
+          <strong>Jusqu'en 2050</strong>
+          <p className="petit muet">97 trimestres. Toutes les élections ont lieu à leur date ({pays === 'france' ? 'présidentielles 2027, 2032, 2037, 2042 et 2047' : pays === 'etatsUnis' ? 'présidentielles tous les 4 ans, mi-mandat entre deux' : 'Bundestag tous les 4 ans à partir de 2029'}) : perdre le pouvoir arrête la partie, mais vous pourrez continuer en bac à sable.{pays === 'france' ? ' Un gouvernement renversé est remplacé par un autre de votre camp.' : ''} Objectifs de long terme : dette, climat, retraites. C'est là que les réformes lentes (âge de départ, capitalisation, transition) montrent leurs effets.</p>
+        </button>
         <button type="button" className={`carte carte-pays ${calendrier === 'reel' ? 'choisie' : ''}`} onClick={() => setCalendrier('reel')} aria-pressed={calendrier === 'reel'}>
-          <strong>Calendrier réel</strong>
+          <strong>Un mandat, calendrier réel</strong>
           <p className="petit muet">{pays === 'france' ? 'La présidentielle a lieu en avril 2027 (3ᵉ tour). Si votre camp la perd, la partie s\'arrête.' : pays === 'etatsUnis' ? 'Mi-mandat le 3 novembre 2026, présidentielle le 7 novembre 2028 : le président sortant ne peut pas se représenter, le scrutin juge votre bilan.' : 'Les élections fédérales ont lieu au début de 2029.'}</p>
         </button>
         <button type="button" className={`carte carte-pays ${calendrier === 'mandat_complet' ? 'choisie' : ''}`} onClick={() => setCalendrier('mandat_complet')} aria-pressed={calendrier === 'mandat_complet'}>
-          <strong>Mandat complet</strong>
+          <strong>Un mandat complet</strong>
           <p className="petit muet">On suppose que votre camp conserve le pouvoir : l'élection est jugée en fin de mandat sur votre bilan.</p>
         </button>
       </div>

@@ -110,6 +110,10 @@ export function profilEtatsUnis(d) {
     ministeres,
     impots,
 
+    // Medicare et Medicaid : hausse des besoins liée au vieillissement et aux coûts médicaux, en volume (hypothèse de jeu ;
+    // le CBO projette Medicare de 3,1 % du PIB en 2025 à environ 5,5 % au milieu des années 2050)
+    vieillissement: { besoinsSanteParAn: 3.2 },
+
     retraites: {
       ageLegal: 66.83,                // âge du taux plein : 67 ans pour les générations nées à partir de 1960
       calendrierLegal: 'fra_67',
@@ -117,7 +121,9 @@ export function profilEtatsUnis(d) {
       pensionMoyenne: pension,
       coefDepense: retraites / (nbRetraites * pension * 12 / 1000),
       croissanceDemographique: 0.022, // estimation : départs des baby-boomers
-      effetNoria: 0.004,
+      // Les derniers baby-boomers (nés en 1964) atteignent 65 ans vers 2030, puis la hausse ralentit (estimation)
+      profilDemographique: [{ jusqua: 2030, taux: 0.022 }, { jusqua: 2040, taux: 0.011 }, { jusqua: 2100, taux: 0.006 }],
+      effetNoria: 0.009,             // estimation : droits calculés sur les salaires indexés (wage indexing), la pension moyenne progresse plus vite que les prix
       cohorteAnnuelle: 4.0,           // estimation
       partContrainteParAge: 0.3,      // départ possible dès 62 ans avec décote : l'âge du taux plein contraint moins
       tauxEmploiSeniors: 0.65,

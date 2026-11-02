@@ -24,6 +24,8 @@ export const MESURES = {
     return m.reduce((s, x) => s + (x.variationPct ?? 0), 0) / m.length;
   },
   survie: (e) => (e.issue?.cause && e.issue.type === 'defaite' ? 0 : 1),
+  censures: (e) => e.politique.gouvernementsRenverses ?? 0,
+  retraitesPib: (e) => e.retraites.depenses / e.macro.pibNominal * 100,
   budget2027: (e) => (e.politique.budgetsAdoptes.includes(2027) ? 1 : 0),
   presidentielle: (e) => e.politique.presidentielle?.resultat ?? projectionPresidentielle(e),
   coalition: (e) => (e.politique.coalition && !e.politique.coalition.rompue ? e.politique.coalition.satisfaction : 0),
@@ -67,7 +69,9 @@ export function projectionPresidentielle(e) {
  */
 export function projectionPresidentielleEtatsUnis(e) {
   const m = e.macro;
-  return 50 + 0.6 * (e.social.popularite - 42) + 1.2 * (m.croissanceAnnuelle - 2) - 1.5 * (m.chomage - 4.2) - 1.0 * Math.max(0, m.inflation - 2.5);
+  // Usure du pouvoir : un camp qui brigue un troisième mandat consécutif est pénalisé (modèle « time for change » d'Alan Abramowitz)
+  const usure = (e.politique.presidentielle?.mandatsConsecutifs ?? 1) >= 2 ? 3 : 0;
+  return 50 + 0.6 * (e.social.popularite - 42) + 1.2 * (m.croissanceAnnuelle - 2) - 1.5 * (m.chomage - 4.2) - 1.0 * Math.max(0, m.inflation - 2.5) - usure;
 }
 
 /** Facteur de difficulté des cibles selon le mode. */
@@ -199,7 +203,9 @@ function objectifsRegime(e) {
   const reel = e.calendrierChoisi !== 'mandat_complet';
   if (e.pays === 'france') {
     return [
-      { id: 'survie', nom: 'Gouverner sans être renversé', description: 'Sans majorité, le gouvernement peut tomber sur une motion de censure (289 voix). Le PS (69 sièges) est le groupe pivot.', mesure: 'survie', sens: '>=', cible: 1 },
+      e.horizon
+        ? { id: 'censures', nom: 'Limiter les gouvernements renversés (2 au plus d\'ici 2050)', description: 'Sans majorité, le gouvernement peut tomber sur une motion de censure (289 voix). En partie longue, un gouvernement renversé est remplacé par un autre de votre camp, au prix de la crédibilité et de la stabilité.', mesure: 'censures', sens: '<=', cible: 2 }
+        : { id: 'survie', nom: 'Gouverner sans être renversé', description: 'Sans majorité, le gouvernement peut tomber sur une motion de censure (289 voix). Le PS (69 sièges) est le groupe pivot.', mesure: 'survie', sens: '>=', cible: 1 },
       { id: 'budget2027', nom: 'Faire adopter le budget 2027', description: 'Le PLF 2027 est en séance ; la commission des finances a rejeté sa partie recettes, le PS menace de censure.', mesure: 'budget2027', sens: '>=', cible: 1, echeanceTour: 1 },
       reel
         ? { id: 'presidentielle', nom: 'Préparer la présidentielle d\'avril 2027', description: 'Le RN est en tête des intentions de vote. Votre bilan pèsera sur les chances de votre camp au second tour (T2 2027).', mesure: 'presidentielle', sens: '>=', cible: 50, echeanceTour: 3 }
@@ -223,6 +229,35 @@ function objectifsRegime(e) {
   ];
 }
 
+/** Repères de dette pour 2050, selon le pays (cible du mode intermédiaire). */
+const DETTE_2050 = {
+  france: { cible: 100, texte: 'Sans changement de politique, le jeu la projette vers 150 % du PIB en 2050, avec des taux qui montent.' },
+  allemagne: { cible: 60, texte: 'Le critère de Maastricht est de 60 % du PIB ; les fonds spéciaux pour la défense et les infrastructures la font remonter.' },
+  etatsUnis: { cible: 100, texte: 'En mars 2025, le CBO projetait une dette détenue par le public de 156 % du PIB en 2055 à politique inchangée.' },
+};
+
+/** Objectifs de long terme d'une partie jusqu'en 2050 (évalués au dernier trimestre). */
+function objectifsLongTerme(e, k) {
+  const fin = e.nbTours;
+  const l = [];
+  const d = DETTE_2050[e.pays];
+  if (d) {
+    const cible = Math.round(d.cible + 15 * (1 - k) / 0.3);
+    l.push({ id: 'dette2050', nom: `Ramener la dette sous ${cible} % du PIB d'ici ${e.horizon}`, description: `Dette de départ : ${MESURES.dette(e).toFixed(0)} % du PIB. ${d.texte}`, mesure: 'dette', sens: '<=', cible, echeanceTour: fin });
+  }
+  const obj = e.climat.objectifLongTerme ?? e.statique.climat?.objectifLongTerme;
+  if (obj) {
+    const cible = Math.round(obj.cible * (2 - k));
+    l.push({ id: 'climat2050', nom: `Réduire les émissions à ${cible} Mt d'ici ${e.horizon}`, description: `${obj.nom}. Émissions de départ : ${Math.round(MESURES.emissions(e))} MtCO2e. Les investissements verts et le prix du carbone mettent des années à produire leurs effets.`, mesure: 'emissions', sens: '<=', cible, echeanceTour: fin });
+  }
+  if (e.pays !== 'etatsUnis') {
+    const depart = MESURES.retraitesPib(e);
+    const cible = Math.round((depart + 0.5 * (1 - k) / 0.3) * 10) / 10;
+    l.push({ id: 'retraites2050', nom: `Contenir les dépenses de retraite sous ${cible.toFixed(1).replace('.', ',')} % du PIB en ${e.horizon}`, description: `Départ : ${depart.toFixed(1).replace('.', ',')} % du PIB. Le nombre de retraités augmente jusqu'au départ des dernières générations du baby-boom : sans réforme, la part des retraites dans le PIB monte.`, mesure: 'retraitesPib', sens: '<=', cible, echeanceTour: fin });
+  }
+  return l.map((o) => ({ ...o, type: 'principal', categorie: 'long_terme' }));
+}
+
 /** Génère les objectifs de départ (3 à 5 principaux, le reste secondaires). */
 export function genererObjectifs(e) {
   const k = EXIGENCE[e.mode] ?? 1;
@@ -230,12 +265,18 @@ export function genererObjectifs(e) {
   const candidats = REGLES.filter((r) => r.condition(e))
     .map((r) => ({ regle: r, priorite: r.priorite(e) }))
     .sort((a, b) => b.priorite - a.priorite);
-  const nbPrincipauxEco = Math.max(1, 5 - regime.length + 1); // 2 à 3 objectifs économiques principaux
+  const nbPrincipauxEco = e.horizon ? 1 : Math.max(1, 5 - regime.length + 1); // 2 à 3 objectifs économiques principaux
   const objectifs = [...regime];
   candidats.forEach((c, i) => {
     const o = c.regle.creer(e, k);
     objectifs.push({ id: c.regle.id, ...o, type: i < nbPrincipauxEco ? 'principal' : 'secondaire', categorie: 'politique_publique' });
   });
+  if (e.horizon) {
+    // Partie longue : les objectifs du mandat en cours sont jugés à sa fin, puis viennent ceux de 2050
+    const finMandat = e.nbToursMandat ?? e.nbTours;
+    for (const o of objectifs) if (!o.echeanceTour && !['survie', 'censures', 'defaut'].includes(o.id)) o.echeanceTour = finMandat;
+    objectifs.push(...objectifsLongTerme(e, k));
+  }
   for (const o of objectifs) {
     o.depart = MESURES[o.mesure](e);
     o.valeur = o.depart;

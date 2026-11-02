@@ -146,6 +146,9 @@ export function profilAllemagne(d) {
     ministeres,
     impots,
 
+    // Hausse des besoins de santé et de dépendance liée au vieillissement, en volume (hypothèse de jeu)
+    vieillissement: { besoinsSanteParAn: 0.9 },
+
     retraites: {
       ageLegal: 66.33,              // 66 ans et 4 mois (génération 1960), 67 ans en 2031
       calendrierLegal: 'hausse_67_2031',
@@ -153,6 +156,8 @@ export function profilAllemagne(d) {
       pensionMoyenne,
       coefDepense: retraites2026 / retraitesDRV,
       croissanceDemographique: 0.012, // estimation : départs des générations nombreuses
+      // Les générations du baby-boom allemand (nées jusqu'à la fin des années 1960) partent jusqu'au milieu des années 2030 (estimation)
+      profilDemographique: [{ jusqua: 2036, taux: 0.012 }, { jusqua: 2100, taux: 0.002 }],
       effetNoria: 0.002,
       cohorteAnnuelle: 1.3,
       partContrainteParAge: 0.5,
@@ -198,6 +203,8 @@ export function profilAllemagne(d) {
     climat: {
       emissions: lire(d.recherche_climat.emissions_ges),   // 648,9 MtCO2e (UBA)
       objectif2030: Math.round((lire(d.recherche_climat.emissions_ges) / 0.52) * 0.35), // dérivé : -48 % en 2025, objectif -65 %
+      // Loi climat : −88 % par rapport à 1990 en 2040, neutralité en 2045 (cible du jeu : l'étape de 2040)
+      objectifLongTerme: { annee: 2045, cible: Math.round((lire(d.recherche_climat.emissions_ges) / 0.52) * 0.12), nom: 'Loi climat : −88 % par rapport à 1990 en 2040, puis neutralité en 2045' },
       tendanceAnnuelle: -0.02,
       partRenouvelablesElectricite: 55.1,
     },

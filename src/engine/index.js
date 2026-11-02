@@ -37,13 +37,14 @@ import { majMacro } from './macro.js';
 import { majFinances, bilanAnnuel } from './finances.js';
 import { majMenages } from './menages.js';
 import { majSocial } from './social.js';
-import { initialiserPolitique, validerReformes, voterBudget, majPolitique, prevoirVotes } from './politique.js';
+import { initialiserPolitique, validerReformes, voterBudget, majPolitique, prevoirVotes, remaniement } from './politique.js';
 import { genererObjectifs, majObjectifs, cloturerObjectifs } from './objectifs.js';
 import { genererEvenements, resoudreEvenements, depensesTemporairesActives } from './evenements.js';
 import { calculerScore } from './score.js';
 import { initialiserOpinion, majOpinion } from './opinion.js';
 import { majSucces, SUCCES } from './succes.js';
 import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './capitalisation.js';
+import { ANNEE_FIN, calendrierJusqua2050, nbToursJusqua } from './horizon.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
 import { referendum } from './elections.js';
@@ -69,7 +70,7 @@ export function previsionPolitique(etat, decisions = {}) {
   for (const [id, v] of Object.entries(decisions.budget ?? {})) if (e.budget[id]) e.budget[id].variationVolume = v;
   appliquerTaux(e, decisions.impots ?? {});
   // Les postes évalués par les partis sont les cibles visées, pas les montants déjà atteints
-  for (const l of Object.values(e.budget)) if (l.variationVolume !== undefined && l.montantInitial) l.montant = l.montantInitial * (e.macro.niveauPrix / 100) * (1 + (l.variationVolume ?? 0) / 100) + (l.ajustementReformes ?? 0);
+  for (const l of Object.values(e.budget)) if (l.variationVolume !== undefined && l.montantInitial) l.montant = l.montantInitial * (l.facteurBesoins ?? 1) * (e.macro.niveauPrix / 100) * (1 + (l.variationVolume ?? 0) / 100) + (l.ajustementReformes ?? 0);
   const p = prevoirVotes(e, decisions.reformes ?? []);
   // Mode expert : les pointages sont incertains (± 25 voix), comme dans la réalité des négociations
   p.incertitude = MODES[normaliserMode(e.mode)].previsionsExactes ? 0 : 25;
@@ -82,6 +83,13 @@ export function creerPartie(options) {
   e.calendrierChoisi = options.calendrier ?? 'reel';
   if (e.calendrierChoisi === 'mandat_complet') {
     e.statique.calendrier = { ...e.statique.calendrier, echeances: e.statique.calendrier.echeances.filter((x) => !['presidentielle', 'legislatives'].includes(x.type)) };
+  }
+  // Partie longue : jusqu'en 2050, avec les scrutins prolongés selon leur périodicité légale
+  if (e.calendrierChoisi === 'horizon2050') {
+    e.horizon = ANNEE_FIN;
+    e.nbToursMandat = e.nbTours;
+    e.statique.calendrier = calendrierJusqua2050(e.statique.calendrier, e.pays);
+    e.nbTours = nbToursJusqua(e.trimestre, ANNEE_FIN);
   }
   e.politiqueSociale = { indicePrestations: 1, gel: null, surplusBaremeGele: 0, rendementPatrimoine: 0, bloquerCotisation2028: false };
   e.politiqueSalariale = { indicePoint: 1, gel: null, indiceSmic: 1 };
@@ -413,8 +421,14 @@ export function jouerTour(etat, decisions = {}, options = {}) {
         : 'Crise de la dette : l\'État ne peut plus emprunter à un taux soutenable et doit demander l\'aide du Mécanisme européen de stabilité.' };
     }
   } else e.finances.trimestresCrise = 0;
+  // Partie longue (France) : une censure provoque un remaniement, pas la fin de la partie
+  if (defaite?.cause === 'censure' && e.horizon) {
+    const texte = remaniement(e, { budget: !!e.resultatsTour.budget?.censure?.adoptee });
+    e.resultatsTour.alertes.push({ type: 'remaniement', texte });
+    defaite = null;
+  }
   if (defaite) {
-    if (mode.defaitesActives) {
+    if (mode.defaitesActives && !e.bacASable) {
       e.termine = true;
       e.issue = { type: 'defaite', ...defaite };
     } else {
@@ -431,7 +445,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   e.trimestre = trimestreSuivant(e.trimestre);
   if (!e.termine && e.tour > e.nbTours) {
     e.termine = true;
-    e.issue = { type: 'fin_mandat', texte: 'Vous avez mené votre mandat à son terme.' };
+    e.issue = { type: 'fin_mandat', texte: e.horizon ? `Vous avez gouverné jusqu'à la fin de ${e.horizon}.` : 'Vous avez mené votre mandat à son terme.' };
   }
   if (e.termine) {
     cloturerObjectifs(e);
@@ -444,6 +458,26 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     e.evenements.enAttente = adapterDevise(e.evenements.enAttente);
   }
   e.graine = alea.etat();
+  return e;
+}
+
+/**
+ * Après une défaite, poursuivre la partie en mode bac à sable : utile en
+ * partie longue pour voir jusqu'en 2050 les effets des réformes engagées.
+ * La défaite reste inscrite (score figé à la date de la défaite) ; les
+ * défaites suivantes sont notées au journal sans arrêter la partie.
+ */
+export function continuerPartie(etat) {
+  if (!etat.termine || etat.issue?.type !== 'defaite' || etat.tour > etat.nbTours) return etat;
+  const e = structuredClone(etat);
+  e.defaites = [...(e.defaites ?? []), { ...e.issue, tour: e.tour - 1, score: e.score?.total ?? null }];
+  e.bacASable = true;
+  e.termine = false;
+  e.issue = null;
+  e.score = null;
+  // Les objectifs non échus redeviennent en cours
+  for (const o of e.objectifs) if (!o.echeanceTour || o.echeanceTour >= e.tour) o.statut = 'en_cours';
+  e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'alerte', texte: 'Vous poursuivez la partie en mode bac à sable : les défaites suivantes seront notées sans arrêter la partie.' });
   return e;
 }
 

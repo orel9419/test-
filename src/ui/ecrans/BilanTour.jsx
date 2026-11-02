@@ -33,7 +33,7 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
         <div className="calendrier-transition" aria-hidden="true">
           <span className="ancien">{h0.trimestre === 'Départ' ? 'Départ' : h0.trimestre}</span>
           <span className="fleche">→</span>
-          <span className="nouveau">{apres.termine ? 'Fin du mandat' : `${h1.trimestre} terminé`}</span>
+          <span className="nouveau">{apres.termine ? (apres.horizon ? 'Fin de la partie' : 'Fin du mandat') : `${h1.trimestre} terminé`}</span>
         </div>
         <h2 id="titre-bilan">Bilan du trimestre {h1.trimestre}</h2>
         {(r.succes ?? []).length > 0 && (

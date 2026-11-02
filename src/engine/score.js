@@ -39,14 +39,18 @@ export function calculerScore(e) {
   c.bienEtre = borner(50 + 4 * pa - 6 * (m.chomage - depart.chomage) + 0.8 * (e.social.cohesion - depart.cohesion), 0, 100);
   const baisseEmissions = (e.climat.emissions0 - e.climat.emissions) / e.climat.emissions0 * 100;
   // Sans objectif national (États-Unis), la référence est une baisse de 5 % sur le mandat (hypothèse de jeu)
-  const baisseVisee = e.climat.objectif2030 ? (e.climat.emissions0 - e.climat.objectif2030) / e.climat.emissions0 * 100 : 5;
+  // Partie longue : la référence est l'objectif de long terme (neutralité), ou une baisse de 25 % sans objectif national
+  const objLong = e.horizon ? e.statique.climat?.objectifLongTerme : null;
+  const baisseVisee = objLong ? (e.climat.emissions0 - objLong.cible) / e.climat.emissions0 * 100
+    : e.climat.objectif2030 ? (e.climat.emissions0 - e.climat.objectif2030) / e.climat.emissions0 * 100 : e.horizon ? 25 : 5;
   c.transition = borner(100 * baisseEmissions / Math.max(1, baisseVisee), 0, 100);
   const rd0 = e.statique.stocksInitiaux.recherche;
   const potentielGagne = (m.pibPotentiel / (e.historique.length > 1 ? 100 / (1 + depart.ecart / 100) : m.pibPotentiel) - 1) * 100;
   c.innovation = borner(50 + 60 * ((e.recherche?.effortPctPIB ?? rd0) - rd0) + 4 * (potentielGagne - (e.tour - 1) / 4 * m.croissancePotentielleBase), 0, 100);
   const duree = Math.min(1, (e.tour - 1) / e.nbTours);
   const instabiliteMoyenne = m.instabilitePolitique;
-  c.stabilite = borner(100 * duree - 30 * instabiliteMoyenne - (e.issue?.type === 'defaite' ? 25 : 0), 0, 100);
+  const defaites = (e.issue?.type === 'defaite' ? 1 : 0) + (e.defaites?.length ?? 0);
+  c.stabilite = borner(100 * duree - 30 * instabiliteMoyenne - 25 * defaites - 6 * (e.politique.gouvernementsRenverses ?? 0), 0, 100);
   c.influence = borner(50 + 2.5 * (e.international.influence - e.international.influenceInitiale), 0, 100);
   const objs = e.objectifs ?? [];
   const poids = objs.reduce((s, o) => s + (o.type === 'principal' ? 2 : 1), 0) || 1;

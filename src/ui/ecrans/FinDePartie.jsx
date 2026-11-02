@@ -5,15 +5,22 @@ import { LIBELLES_COMPOSANTES } from '../../engine/score.js';
 import { nombre, pct, signe, classeVariation, euros, devise } from '../format.js';
 
 /** Écran de fin de partie : score pondéré, objectifs, trajectoires. */
-export default function FinDePartie({ partie, onNouvelle, onExporter }) {
+export default function FinDePartie({ partie, onNouvelle, onExporter, onContinuer }) {
   const sc = partie.score;
   const h = partie.historique;
   const etiquettes = h.map((x) => x.trimestre);
   const d0 = h[0], d1 = h.at(-1);
   return (
     <div className="accueil pile">
-      <h1>{partie.issue?.type === 'defaite' ? 'Fin prématurée du mandat' : 'Fin du mandat'}</h1>
+      <h1>{partie.issue?.type === 'defaite' ? (partie.horizon ? 'Fin prématurée de la partie' : 'Fin prématurée du mandat') : partie.horizon ? `Fin de la partie (${partie.horizon})` : 'Fin du mandat'}</h1>
       <div className={`alerte ${partie.issue?.type === 'defaite' ? 'critique' : 'bonne'}`}>{partie.issue?.texte}</div>
+      {onContinuer && partie.issue?.type === 'defaite' && partie.tour <= partie.nbTours && (
+        <div className="carte ligne espace">
+          <p className="petit" style={{ margin: 0 }}>Votre score est arrêté à cette date. Vous pouvez néanmoins poursuivre jusqu'en {partie.horizon ?? 'fin de partie'} en mode bac à sable, pour voir où mènent vos choix : retraites, capitalisation, dette, climat.</p>
+          <button type="button" className="bouton principal" onClick={onContinuer}>Continuer en bac à sable</button>
+        </div>
+      )}
+      {(partie.defaites ?? []).length > 0 && <p className="petit muet">Défaites précédentes : {partie.defaites.map((d) => `${d.texte} (score à ce moment : ${d.score ?? '—'}/100)`).join(' ; ')}</p>}
       {sc && (
         <div className="carte pile">
           <div className="ligne espace"><h2>Score : {sc.total}/100</h2><strong>{sc.mention}</strong></div>

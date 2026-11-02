@@ -161,6 +161,10 @@ export function profilFrance(d) {
     ministeres,
     impots,
 
+    // Hausse des besoins de santé et d'autonomie liée au vieillissement, en volume (hypothèse de jeu ; l'OCDE projette
+    // +2 % par an pour les dépenses publiques de soins de longue durée en France jusqu'en 2050)
+    vieillissement: { besoinsSanteParAn: 0.8 },
+
     retraites: {
       ageLegal: 62.75,              // 62 ans et 9 mois (génération 1964, réforme suspendue)
       calendrierLegal: 'suspendu_reprise_2028', // LFSS 2026 : reprise du relèvement en 2028
@@ -169,6 +173,9 @@ export function profilFrance(d) {
       pensionMoyenne: pensionMoyenne2026,
       coefDepense: depRetraites2026 / (retraites2026 * pensionMoyenne2026 * 12 / 1000), // réversions, minimum vieillesse...
       croissanceDemographique: 0.012, // estimation : hausse annuelle du nombre de retraités à âge constant
+      // Profil (estimation calée sur l'ordre de grandeur du COR : environ 17 millions de retraités en 2020, 23 millions en 2070) :
+      // la hausse ralentit quand les générations du baby-boom ont fini de partir
+      profilDemographique: [{ jusqua: 2035, taux: 0.012 }, { jusqua: 2045, taux: 0.007 }, { jusqua: 2100, taux: 0.003 }],
       effetNoria: 0.004,            // estimation : les nouveaux retraités ont des pensions plus élevées
       cohorteAnnuelle: 0.8,         // estimation : millions de personnes atteignant l'âge de départ chaque année
       partContrainteParAge: 0.5,    // estimation : part dont le départ dépend de l'âge légal
@@ -204,6 +211,7 @@ export function profilFrance(d) {
     climat: {
       emissions: lire(d.recherche_climat.emissions_ges),   // 364 MtCO2e (2025, Citepa)
       objectif2030: 279,            // SNBC 3 (à vérifier)
+      objectifLongTerme: { annee: 2050, cible: 80, nom: 'Neutralité carbone en 2050 (SNBC) : environ 80 Mt d\'émissions brutes compensées par les puits de carbone (à vérifier)' },
       tendanceAnnuelle: -0.015,     // estimation : baisse spontanée (efficacité, électrification)
       partBasCarbone: 95.2,
     },

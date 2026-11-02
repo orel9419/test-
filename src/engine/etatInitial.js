@@ -155,6 +155,7 @@ export function creerEtatInitial({ pays, donnees, contexte, mode: modeDemande = 
     menages: p.menages,
     groupes: p.groupes,
     climat: p.climat,
+    vieillissement: p.vieillissement ?? null,
     regles: structuredClone(p.regles),
     partenaires: p.partenaires,
     energie,

@@ -95,6 +95,25 @@ function regionalesFrance(e, alea) {
   });
 }
 
+/**
+ * Élections municipales (partie longue) : scrutin local où les maires
+ * sortants, souvent LR ou de gauche, résistent ; le RN y reste plus faible
+ * qu'aux scrutins nationaux (hypothèses de jeu).
+ */
+function municipalesFrance(e, alea) {
+  const i = intentionsCourantes(e);
+  const loc = { ...i, LR: (i.LR ?? 0) + 6, gauche: (i.gauche ?? 0) + 5, ecolos: (i.ecolos ?? 0) + 2, RN: (i.RN ?? 0) - 6 };
+  for (const k of Object.keys(loc)) loc[k] = Math.max(0, loc[k] + alea.normale(0, 1.5));
+  const centre = loc.centre ?? 0;
+  appliquerChocs(e, centre < 12 ? { salaries: -1, retraites: -2 } : { retraites: 1 });
+  return enregistrer(e, {
+    type: 'municipales', nom: 'Élections municipales',
+    resultats: Object.entries(loc).map(([k, v]) => ({ nom: FAMILLES.france[k]?.nom ?? k, part: v })),
+    victoireCamp: centre >= 15,
+    resume: `Les maires sortants résistent : droite ${loc.LR.toFixed(0)} %, gauche ${(loc.gauche + (loc.ecolos ?? 0)).toFixed(0)} %, RN ${loc.RN.toFixed(0)} %, votre camp ${centre.toFixed(0)} %.${centre < 12 ? ' Revers pour le camp gouvernemental, faute d\'implantation locale.' : ''}`,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Allemagne
 // ---------------------------------------------------------------------------
@@ -163,7 +182,7 @@ function europeennes(e, alea) {
  * ≈ 47 + 1,4 × (part − 51). Calibrage : avec 54,6 % au vote générique, on
  * retrouve les projections publiées (environ 243 sièges et 52 sénateurs).
  */
-function miMandat(e, alea) {
+function miMandat(e, alea, nom = 'Élections de mi-mandat') {
   const pol = e.politique;
   const partD = e.opinion.intentions.DEM + alea.normale(0, 1.5);
   const dem = borner(Math.round(214 + 7 * (partD - 50.5)), 150, 290);
@@ -182,7 +201,7 @@ function miMandat(e, alea) {
   const chambreDem = dem >= 218, senatDem = senatD >= 51;
   pol.gouvernementDivise = chambreDem || senatDem;
   return enregistrer(e, {
-    type: 'mi_mandat', nom: 'Élections de mi-mandat',
+    type: 'mi_mandat', nom,
     resultats: [{ nom: 'Démocrates', part: partD, sieges: dem }, { nom: 'Républicains', part: 100 - partD, sieges: rep }],
     victoireCamp: !chambreDem,
     resume: `Chambre : ${dem} démocrates, ${rep} républicains ; Sénat : ${senatD} démocrates, ${100 - senatD} républicains. ${chambreDem ? 'Les démocrates prennent la Chambre' : 'Les républicains gardent la Chambre'}${senatDem ? ' et le Sénat.' : '.'} ${pol.gouvernementDivise ? 'Gouvernement divisé : vos textes devront obtenir l\'accord des démocrates.' : ''}`,
@@ -192,13 +211,18 @@ function miMandat(e, alea) {
 function presidentielleEtatsUnis(e, alea) {
   const part = projectionPresidentielleEtatsUnis(e) + alea.normale(0, 2);
   const victoire = part >= 50;
-  e.politique.presidentielle = { ...e.politique.presidentielle, tenue: true, resultat: part };
+  const p = e.politique.presidentielle ?? {};
+  // Mandats consécutifs du camp à la Maison-Blanche (usure du pouvoir, modèle « time for change »)
+  const mandats = victoire ? (p.mandatsConsecutifs ?? 1) + 1 : 0;
+  e.politique.presidentielle = { ...p, tenue: true, resultat: part, mandatsConsecutifs: mandats };
   enregistrer(e, {
     type: 'presidentielle', nom: 'Élection présidentielle',
     resultats: [{ nom: 'Candidat républicain (votre camp)', part }, { nom: 'Candidat démocrate', part: 100 - part }],
     victoireCamp: victoire,
-    resume: `${victoire ? 'Le candidat de votre camp l\'emporte' : 'Le candidat démocrate l\'emporte'} avec ${Math.max(part, 100 - part).toFixed(1)} % du vote bipartite.`,
+    resume: `${victoire ? 'Le candidat de votre camp l\'emporte' : 'Le candidat démocrate l\'emporte'} avec ${Math.max(part, 100 - part).toFixed(1)} % du vote bipartite.${victoire && e.horizon ? ' Vous incarnez la nouvelle administration, qui prend ses fonctions le 20 janvier.' : ''}`,
   });
+  // Toute la Chambre et un tiers du Sénat sont renouvelés le même jour
+  miMandat(e, alea, 'Élections au Congrès (en même temps que la présidentielle)');
   return { victoire, part };
 }
 
@@ -216,11 +240,16 @@ export function electionsDuTrimestre(e, alea) {
   for (const ech of (e.statique.calendrier.echeances || [])) {
     if (ech.annee !== e.trimestre.annee || ech.t !== e.trimestre.t) continue;
     if (ech.type === 'regionales') regionalesFrance(e, alea);
+    if (ech.type === 'municipales') municipalesFrance(e, alea);
     if (ech.type === 'landtag') landtag(e, ech, alea);
     if (ech.type === 'europeennes') europeennes(e, alea);
     if (ech.type === 'mi_mandat') miMandat(e, alea);
-    // Le président sortant ne se représente pas : le scrutin juge son bilan (objectif), sans « défaite » en cours de mandat
-    if (ech.type === 'presidentielle' && e.pays === 'etatsUnis') presidentielleEtatsUnis(e, alea);
+    // Le président sortant ne se représente pas : le scrutin juge son bilan (objectif), sans « défaite » en cours de mandat.
+    // En partie longue, perdre la Maison-Blanche met fin à la partie.
+    if (ech.type === 'presidentielle' && e.pays === 'etatsUnis') {
+      const r = presidentielleEtatsUnis(e, alea);
+      if (!r.victoire && e.horizon) defaite = { cause: 'presidentielle', texte: 'Le candidat démocrate a remporté la présidentielle : votre camp quitte la Maison-Blanche.' };
+    }
   }
   return defaite;
 }

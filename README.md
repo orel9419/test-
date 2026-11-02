@@ -40,7 +40,7 @@ Sur mobile, la navigation passe dans une barre en bas de l'écran, avec un bouto
 
 ## Comment jouer
 
-Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France, 16 pour l'Allemagne, 9 pour les États-Unis (jusqu'à la présidentielle de novembre 2028). À chaque tour, vous pouvez :
+Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimestres, du T4 2026 au T4 2050). Vous pouvez aussi jouer un seul mandat : 20 trimestres pour la France, 16 pour l'Allemagne, 9 pour les États-Unis (jusqu'à la présidentielle de novembre 2028). À chaque tour, vous pouvez :
 
 1. **Consulter le tableau de bord** : PIB, croissance, inflation, chômage, dette, déficit, charge d'intérêts, taux à 10 ans et écart avec l'Allemagne, popularité, rapport de force parlementaire, cohésion sociale, émissions, effort de R&D, influence. Chaque indicateur a une infobulle explicative.
 2. **Répartir le budget** entre 15 postes, avec des curseurs en volume (hors inflation). Le panneau d'impact estime en temps réel l'effet sur le solde, la croissance, le chômage, la popularité par groupe et le revenu de chaque ménage type. Une **inertie** réaliste s'applique : on réduit plus vite un investissement qu'une masse salariale.
@@ -96,7 +96,26 @@ Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France,
 | Annuler le dernier trimestre | oui | non | non |
 | Score | × 0,8 | × 1 | × 1,15 |
 
-Calendrier : **réel** (présidentielle française en avril 2027, élections allemandes début 2029, présidentielle américaine en novembre 2028) ou **mandat complet** (l'élection est jugée en fin de mandat).
+Durée et calendrier :
+- **jusqu'en 2050** (par défaut) : voir ci-dessous ;
+- **un mandat, calendrier réel** : présidentielle française en avril 2027, élections allemandes début 2029, présidentielle américaine en novembre 2028 ;
+- **un mandat complet** : l'élection est jugée en fin de mandat.
+
+### Jouer jusqu'en 2050
+
+- **Élections à leur date** (théorique au-delà du mandat en cours) :
+  - France : présidentielles 2027, 2032, 2037, 2042 et 2047, suivies des législatives ; régionales, municipales et européennes ;
+  - Allemagne : Bundestag tous les 4 ans, recalé après une élection anticipée ; Länder ; européennes ;
+  - États-Unis : présidentielle tous les 4 ans avec renouvellement du Congrès, mi-mandat entre deux.
+- **Perdre le pouvoir arrête la partie**, mais l'écran de fin propose de continuer en **bac à sable** (score arrêté à la date de la défaite) pour voir où mènent vos choix.
+- **France** : un gouvernement renversé par une censure est remplacé par un autre de votre camp (comme après les chutes de Michel Barnier puis de François Bayrou). Cela coûte de la crédibilité et de la stabilité ; un budget censuré est remplacé par une loi spéciale.
+- **Usure du pouvoir** : chaque nouvelle présidentielle française repart d'un duel serré (48/52) ; aux États-Unis, un camp qui brigue un troisième mandat consécutif perd 3 points (modèle « time for change » d'Alan Abramowitz).
+- **Long terme** :
+  - la hausse du nombre de retraités ralentit après le départ des générations du baby-boom ;
+  - à 0 %, la dépense de santé suit les besoins liés au vieillissement (+0,8 % par an en volume en France, +0,9 % en Allemagne, +3,2 % pour Medicare et Medicaid) ;
+  - aux États-Unis, l'épuisement du fonds de la Social Security (vers 2034) entraîne la baisse automatique des pensions prévue par la loi.
+- **Objectifs** : ceux du mandat en cours sont jugés à sa fin, puis viennent les objectifs 2050 (dette, émissions, dépenses de retraite).
+- **Ordres de grandeur, France, à politique inchangée** : la dette dépasse 140 % du PIB et l'écart de taux franchit 300 points vers 2036, ce qui déclenche une crise de la dette. Les réformes lentes montrent ici leurs effets : avec la retraite à 68 ans, la dette repasse sous 100 % avant 2050, surtout grâce à des intérêts plus faibles (effet « boule de neige » inversé).
 
 ### Pour rendre le jeu agréable
 
@@ -178,7 +197,8 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   international.js      relations, influence, accords
   politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
   opinion.js            baromètre de satisfaction et intentions de vote
-  elections.js          élections du calendrier, législatives, Länder, mi-mandat, référendum
+  elections.js          élections du calendrier, législatives, municipales, Länder, mi-mandat, Congrès, référendum
+  horizon.js            partie jusqu'en 2050 : scrutins récurrents, recalage après une élection anticipée
   entreprises.js        Bourse (krachs compris), climat des affaires, souveraineté, fleurons, État stratège
   capitalisation.js     retraite par capitalisation : fonds, rendements, double charge, projection sur 30 ans
   objectifs.js          génération et suivi des objectifs
@@ -262,4 +282,9 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
 - Entreprises : capitalisations et emplois des fleurons sont des ordres de grandeur ; plusieurs parts de l'État sont « à vérifier ». Les niveaux du CAC 40 et du S&P 500 n'ayant pas été collectés, ces indices partent de la base 100.
 - Baromètre : les niveaux de départ des dix thèmes sont des estimations de jeu ; la clé sièges-voix des législatives françaises et les décalages régionaux des Länder sont des hypothèses.
 - Grands rendez-vous : les dates du G7 2027 et de l'OTAN 2027 sont à préciser, le G7 2029 en Allemagne est déduit de la rotation, et le « dialogue ciblé » du CIO avec Munich est un scénario de jeu.
+- Partie jusqu'en 2050 :
+  - les dates des scrutins au-delà du mandat en cours sont théoriques ;
+  - la croissance potentielle est constante ;
+  - les dépenses autres que les retraites, la santé et les intérêts sont constantes en volume à politique inchangée, ce qui les fait baisser en part du PIB plus vite que dans les projections officielles (CBO, COR) ;
+  - le profil démographique des retraités et les besoins de santé liés au vieillissement sont des hypothèses de jeu calées sur des ordres de grandeur.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

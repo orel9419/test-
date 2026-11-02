@@ -27,6 +27,7 @@ import { libelleTrimestre } from './calendrier.js';
 import { legislativesFrance, electionsDuTrimestre } from './elections.js';
 import { MODES, normaliserMode } from '../model/parametres.js';
 import { projectionPresidentielle } from './objectifs.js';
+import { replanifier } from './horizon.js';
 
 const AXES = ['social', 'fiscal', 'retraites', 'travail', 'ecologie', 'europe', 'marche', 'securite', 'rigueur'];
 const POSTURE = { gouvernement: 1.5, soutien: 0.5, pivot: -0.3, opposition: -1.5 };
@@ -87,7 +88,7 @@ export function initialiserPolitique(e, donnees) {
 /** Variation en volume moyenne (%) d'une liste de postes. */
 function variationPostes(e, postes) {
   const prix = e.macro.niveauPrix / 100;
-  const v = postes.filter((p) => e.budget[p]).map((p) => (e.budget[p].montant / (e.budget[p].montantInitial * prix) - 1) * 100);
+  const v = postes.filter((p) => e.budget[p]).map((p) => (e.budget[p].montant / (e.budget[p].montantInitial * (e.budget[p].facteurBesoins ?? 1) * prix) - 1) * 100);
   return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0;
 }
 
@@ -705,6 +706,7 @@ function presidentielle(e, alea) {
   pol.presidentielle = { ...pol.presidentielle, tenue: true, resultat: part };
   const victoire = part >= 50;
   const lib = libelleTrimestre(e.trimestre);
+  pol.presidentielles = [...(pol.presidentielles ?? []), { annee: e.trimestre.annee, part, victoire }];
   if (victoire) {
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : la candidate ou le candidat de votre camp l'emporte avec ${part.toFixed(1)} % au second tour.` });
     // Législatives qui suivent : le « fait majoritaire » donne un élan au camp présidentiel (hypothèse : 8 points + l'avance du second tour)
@@ -713,6 +715,11 @@ function presidentielle(e, alea) {
   } else {
     pol.cohabitation = true;
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : le Rassemblement national l'emporte (${(100 - part).toFixed(1)} % au second tour). Votre camp perd l'Élysée.` });
+  }
+  // Partie longue : la présidentielle suivante repart d'un duel serré (48/52, usure du pouvoir),
+  // puis bouge avec l'évolution de la situation pendant le nouveau quinquennat
+  if (e.horizon) {
+    pol.presidentielle = { ...pol.presidentielle, partCamp: 48, tenue: false, reference: { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion } };
   }
   return { victoire, part };
 }
@@ -762,13 +769,15 @@ export function majPolitique(e, alea, decisions = {}) {
     if (r?.rupture) {
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: 'Rupture de la coalition : le SPD quitte le gouvernement. Vous posez la question de confiance, qui ouvre la voie à des élections anticipées.' });
       const el = electionFederale(e, alea);
+      if (e.horizon) replanifier(e, 'legislatives', 4);
       if (!el.victoire) defaite = { cause: 'coalition', texte: 'La coalition s\'est rompue et les élections anticipées vous ont fait perdre la chancellerie.' };
     }
   } else {
     // Motion de censure spontanée (article 49.2) : il faut une hostilité nettement plus forte
     // qu'en réponse à un 49.3, car l'opposition doit en prendre l'initiative et s'unir.
     const censure = motionCensure(e, 0.4);
-    if (censure.adoptee && alea.tirage(0.5)) {
+    const grace = (pol.graceJusqua ?? 0) >= e.tour;
+    if (censure.adoptee && !grace && alea.tirage(0.5)) {
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Motion de censure spontanée adoptée (${censure.voix} voix) : le gouvernement est renversé.` });
       defaite = { cause: 'censure', texte: 'Une motion de censure a renversé votre gouvernement.' };
     }
@@ -795,6 +804,7 @@ export function majPolitique(e, alea, decisions = {}) {
     } else {
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: 'Question de confiance perdue : le président fédéral dissout le Bundestag (comme en décembre 2024). Élections anticipées.' });
       const el = electionFederale(e, alea);
+      if (e.horizon) replanifier(e, 'legislatives', 4);
       if (!el.victoire) defaite = { cause: 'election', texte: 'Les élections anticipées après la question de confiance vous ont fait perdre la chancellerie.' };
     }
   }
@@ -817,6 +827,31 @@ export function majPolitique(e, alea, decisions = {}) {
     }
   }
   return { defaite };
+}
+
+/**
+ * Partie longue (France) : un gouvernement renversé n'arrête pas la partie.
+ * Le président de la République nomme un nouveau Premier ministre issu du
+ * même camp, que le joueur incarne (Michel Barnier, renversé en décembre
+ * 2024, a été remplacé par François Bayrou ; Sébastien Lecornu a été
+ * reconduit en octobre 2025 quelques jours après sa démission). Coût :
+ * crédibilité, instabilité, concessions à renégocier ; un budget censuré
+ * est remplacé par une loi spéciale. Deux trimestres de répit suivent.
+ */
+export function remaniement(e, { budget = false } = {}) {
+  const pol = e.politique;
+  pol.gouvernementsRenverses = (pol.gouvernementsRenverses ?? 0) + 1;
+  if (budget) {
+    for (const [id, v] of Object.entries(pol.variationsDebutAnnee)) if (e.budget[id]) e.budget[id].variationVolume = v;
+    for (const [id, t] of Object.entries(pol.tauxDebutAnnee)) if (e.impots[id] && t !== null && t !== undefined) e.impots[id].taux = t;
+  }
+  pol.chocInstabilite = (pol.chocInstabilite ?? 0) + 0.1;
+  e.finances.credibilite = borner(e.finances.credibilite - 0.08, -1, 1);
+  for (const g of pol.groupes) g.concessions = 0;
+  pol.graceJusqua = e.tour + 2;
+  const texte = `Le gouvernement est renversé (${pol.gouvernementsRenverses}${pol.gouvernementsRenverses === 1 ? 'er' : 'e'} depuis le début de la partie). Le président de la République nomme un nouveau Premier ministre issu de votre camp : vous en reprenez la direction.${budget ? ' Une loi spéciale reconduit le budget de l\'année précédente.' : ''}`;
+  e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'politique', texte });
+  return texte;
 }
 
 /**

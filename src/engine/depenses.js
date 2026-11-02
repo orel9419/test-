@@ -43,11 +43,14 @@ export function depensesPondereesMultiplicateur(budget) {
 export function majDepenses(e, effets) {
   const indicePrix = e.macro.niveauPrix / e.reference.niveauPrix;
   const chomageRelatif = e.macro.chomage / e.reference.chomage;
+  // Santé : à politique inchangée, la dépense suit les besoins liés au vieillissement
+  const besoins = e.statique.vieillissement?.besoinsSanteParAn ?? 0;
+  if (e.budget.sante) e.budget.sante.facteurBesoins = Math.pow(1 + besoins / 100, Math.max(0, e.tour - 1) / 4);
   for (const [id, ligne] of Object.entries(e.budget)) {
     const def = MINISTERES[id];
     if (def.pilotage === 'regles') continue; // retraites : sous-modèle dédié
-    // Cible nominale = niveau de départ × prix × (1 + variation en volume)
-    ligne.cible = ligne.montantInitial * indicePrix * (1 + (ligne.variationVolume ?? 0) / 100);
+    // Cible nominale = niveau de départ × besoins × prix × (1 + variation en volume)
+    ligne.cible = ligne.montantInitial * (ligne.facteurBesoins ?? 1) * indicePrix * (1 + (ligne.variationVolume ?? 0) / 100);
     const pas = inertiePoste(id, e.mode) * ligne.base;
     const ecart = ligne.cible - ligne.base;
     ligne.base += Math.max(-pas, Math.min(pas, ecart));
@@ -61,6 +64,16 @@ export function majDepenses(e, effets) {
   const r = e.budget.retraites;
   r.ajustementReformes = effets.depenses?.retraites ?? 0;
   r.montant = e.retraites.depenses + r.ajustementReformes;
+}
+
+/**
+ * Montant de référence d'un poste « à politique inchangée » : niveau de
+ * départ, en prix courants, augmenté des besoins liés au vieillissement
+ * (santé). Les variations « en volume » se mesurent par rapport à lui.
+ */
+export function referencePoste(e, id) {
+  const l = e.budget[id];
+  return l ? l.montantInitial * (l.facteurBesoins ?? 1) * e.macro.niveauPrix / 100 : 0;
 }
 
 /** Total des dépenses primaires (hors intérêts), Md€/an. */

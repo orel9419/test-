@@ -96,7 +96,7 @@ export function majSocial(e, alea) {
     for (const [poste, ligne] of Object.entries(e.budget)) {
       const sens = MINISTERES[poste].groupes?.[id];
       if (!sens) continue;
-      const variation = (ligne.montant / (ligne.montantInitial * indicePrix) - 1) * 100;
+      const variation = (ligne.montant / (ligne.montantInitial * (ligne.facteurBesoins ?? 1) * indicePrix) - 1) * 100;
       budget += sens * borner(perceptionDepense(variation), -10, 6);
     }
     // Fiscalité symbolique (au-delà de l'effet sur le pouvoir d'achat)

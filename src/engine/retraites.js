@@ -17,7 +17,7 @@
  *   prestations (chômage, invalidité, minima sociaux) : l'économie nette est
  *   plus faible que l'économie brute sur les pensions.
  */
-import { contientMois } from './calendrier.js';
+import { contientMois, libelleTrimestre } from './calendrier.js';
 
 /** Prestation mensuelle moyenne versée aux seniors maintenus hors emploi (€/mois, estimation). */
 const PRESTATION_SENIORS_HORS_EMPLOI = 900;
@@ -73,13 +73,28 @@ function majFondsSS(e, effetsReformes) {
   const f = r.fondsSS;
   if (!f) return;
   // Dépense « sans réforme » : même démographie et même revalorisation, mais âge et indexation inchangés
-  f.depensesSansReforme *= 1 + (p.croissanceDemographique + p.effetNoria) / 4;
+  f.depensesSansReforme *= 1 + (tauxDemographique(p, e.trimestre.annee) + p.effetNoria) / 4;
   if (contientMois(e.trimestre, p.moisRevalorisation)) f.depensesSansReforme *= 1 + e.macro.inflation / 100;
   const economies = Math.max(-500, f.depensesSansReforme - r.depenses) + (effetsReformes?.fondsSS ?? 0);
-  f.deficitTendanciel += p.fondsSS.hausseDeficitAnnuelle / 4;
+  // Le déficit se creuse moins vite une fois les baby-boomers partis
+  f.deficitTendanciel += p.fondsSS.hausseDeficitAnnuelle * tauxDemographique(p, e.trimestre.annee) / p.croissanceDemographique / 4;
   const deficit = f.deficitTendanciel - economies;
   f.economiesAnnuelles = economies;
   f.reserves = Math.max(0, f.reserves - deficit / 4);
+  // Fonds épuisé : la loi ne permet de verser que ce que rapportent les cotisations. Les pensions baissent
+  // automatiquement (environ −20 % selon les administrateurs du fonds), puis s'ajustent chaque trimestre.
+  if (f.reserves <= 0 && deficit > 0) {
+    const coupe = Math.min(0.3, deficit / Math.max(1, r.depenses));
+    r.pensionMoyenne *= 1 - coupe;
+    r.depenses *= 1 - coupe;
+    f.depensesSansReforme *= 1 - coupe;
+    f.deficitTendanciel -= coupe * r.depenses / (1 - coupe);
+    if (!f.epuise) {
+      f.epuise = e.trimestre.annee;
+      e.social.groupes.retraites.chocs -= 12;
+      e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'alerte', texte: `Le fonds de la Social Security est épuisé : comme le prévoit la loi, les pensions baissent automatiquement de ${Math.round(coupe * 100)} % pour égaler les recettes.` });
+    }
+  }
   f.epuisementProjete = projeterEpuisement(f.reserves, deficit, p.fondsSS.hausseDeficitAnnuelle, e.trimestre.annee + e.trimestre.t / 4);
   f.deficitAnnuel = deficit;
 }
@@ -89,6 +104,18 @@ export function projeterEpuisement(reserves, deficit, hausseAnnuelle, depuis) {
   let r = reserves, d = deficit, annee = depuis, n = 0;
   while (r > 0 && n < 400) { d += hausseAnnuelle / 4; r -= d / 4; annee += 0.25; n++; }
   return r > 0 ? null : Math.floor(annee);
+}
+
+/**
+ * Croissance annuelle du nombre de retraités à âge légal constant. Elle
+ * ralentit quand les générations du baby-boom ont fini de partir (profil
+ * par périodes, hypothèse de jeu calée sur l'ordre de grandeur des
+ * projections : COR, CBO).
+ */
+export function tauxDemographique(p, annee) {
+  const profil = p.profilDemographique;
+  if (!profil) return p.croissanceDemographique;
+  return (profil.find((x) => annee <= x.jusqua) ?? profil.at(-1)).taux;
 }
 
 /**
@@ -109,7 +136,7 @@ export function majRetraites(e, effetsReformes = null) {
   const dAge = r.ageLegal - avant;
 
   // 2. Effectifs : démographie, puis effet de l'âge légal sur les départs
-  r.nbRetraites *= 1 + p.croissanceDemographique / 4;
+  r.nbRetraites *= 1 + tauxDemographique(p, trimestre.annee) / 4;
   const departsDecales = dAge * p.cohorteAnnuelle * p.partContrainteParAge; // millions
   r.nbRetraites -= departsDecales;
   r.seniorsMaintenus += departsDecales;

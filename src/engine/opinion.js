@@ -73,7 +73,7 @@ export function intentions(e) {
 /** Variation en volume (%) d'un poste de dépense depuis le départ. */
 function varPoste(e, id) {
   const l = e.budget[id];
-  return l ? (l.montant / (l.montantInitial * e.macro.niveauPrix / 100) - 1) * 100 : 0;
+  return l ? (l.montant / (l.montantInitial * (l.facteurBesoins ?? 1) * e.macro.niveauPrix / 100) - 1) * 100 : 0;
 }
 
 /** Met à jour le baromètre pour le trimestre. */

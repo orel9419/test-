@@ -9,7 +9,7 @@ import { nombre, pct, signe, classeVariation } from '../format.js';
 
 const NOMS_DE = { CDUCSU: 'CDU/CSU', AFD: 'AfD', SPD: 'SPD', GRUENE: 'Verts', LINKE: 'Die Linke', autres: 'Autres' };
 const nomParti = (pays, k) => (pays === 'allemagne' ? NOMS_DE[k] : FAMILLES[pays]?.[k]?.nom) ?? k;
-const TYPES_ELECTION = ['presidentielle', 'legislatives', 'mi_mandat', 'regionales', 'landtag', 'europeennes'];
+const TYPES_ELECTION = ['presidentielle', 'legislatives', 'mi_mandat', 'regionales', 'municipales', 'landtag', 'europeennes'];
 
 /** Barre horizontale 0-100 pour un thème du baromètre, avec variation depuis le départ. */
 function BarreTheme({ nom, description, valeur, depart }) {
@@ -51,7 +51,8 @@ export default function Opinion({ partie, decisions, majDecisions }) {
   const themes = Object.entries(THEMES).map(([id, t]) => ({ id, ...t, valeur: o.themes[id], depart: o.themes0[id] })).sort((a, b) => a.valeur - b.valeur);
   const etiquettes = o.historique.map((_, k) => (k === 0 ? 'Départ' : partie.historique[k]?.trimestre ?? ''));
   const partis = Object.keys(o.historique.at(-1)?.intentions ?? intentions).filter((k) => k !== 'autres').slice(0, 7);
-  const prochaines = (partie.statique.calendrier.echeances ?? []).filter((x) => TYPES_ELECTION.includes(x.type) && (x.annee > partie.trimestre.annee || (x.annee === partie.trimestre.annee && x.t >= partie.trimestre.t)));
+  const toutesProchaines = (partie.statique.calendrier.echeances ?? []).filter((x) => TYPES_ELECTION.includes(x.type) && (x.annee > partie.trimestre.annee || (x.annee === partie.trimestre.annee && x.t >= partie.trimestre.t)));
+  const prochaines = toutesProchaines.slice(0, 6);
   const passees = partie.elections?.historique ?? [];
   const derniereRef = pol.dernierReferendum;
   const refPossible = pays === 'france' && (!derniereRef || derniereRef.annee < partie.trimestre.annee);
@@ -86,7 +87,8 @@ export default function Opinion({ partie, decisions, majDecisions }) {
 
       <div className="carte">
         <h3>Prochaines élections</h3>
-        {prochaines.length === 0 && <p className="petit muet">Aucune élection prévue d'ici la fin du mandat.</p>}
+        {prochaines.length === 0 && <p className="petit muet">Aucune élection prévue d'ici la fin de la partie.</p>}
+        {toutesProchaines.length > prochaines.length && <p className="tres-petit muet">Les {prochaines.length} prochaines sur {toutesProchaines.length} scrutins prévus d'ici {partie.horizon ?? 'la fin de la partie'} (dates théoriques au-delà du mandat en cours).</p>}
         <table className="petit">
           <tbody>
             {prochaines.map((ech) => (

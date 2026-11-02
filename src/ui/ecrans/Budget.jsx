@@ -66,13 +66,16 @@ export default function Budget({ partie, decisions, majDecisions, apercu }) {
             {postes.map(([id, l]) => {
               const def = MINISTERES[id];
               const v = decisions.budget[id] ?? l.variationVolume ?? 0;
-              const cible = l.montantInitial * prix * (1 + v / 100);
+              const cible = l.montantInitial * (l.facteurBesoins ?? 1) * prix * (1 + v / 100);
               const vitesse = inertiePoste(id, partie.mode) * 100;
               const groupes = Object.entries(def.groupes ?? {}).filter(([, x]) => x >= 0.4).map(([g]) => GROUPES[g].nom.split(' ')[0]).join(', ');
               return (
                 <tr key={id}>
                   <td>
                     <div className="ligne" style={{ gap: '0.35rem' }}><strong className="petit">{def.nom}</strong><Info texte={def.description} /></div>
+                    {id === 'sante' && partie.statique.vieillissement?.besoinsSanteParAn > 0 && (
+                      <div className="tres-petit muet">À 0 %, la dépense suit les besoins liés au vieillissement (+{nombre(partie.statique.vieillissement.besoinsSanteParAn, 1)} % par an en volume{(l.facteurBesoins ?? 1) > 1.001 ? `, soit +${nombre(((l.facteurBesoins ?? 1) - 1) * 100, 1)} % depuis le départ` : ''}).</div>
+                    )}
                     <Badge provenance={partie.statique.ministeres[id]?.provenance} />
                   </td>
                   <td className="nombre">{nombre(l.montant, 1)}<div className="tres-petit muet">{pct(l.montant / total * 100)} du total</div></td>

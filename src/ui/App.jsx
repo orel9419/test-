@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { creerPartie, jouerTour, apercuDecisions, previsionPolitique, conseils as calculerConseils } from '../engine/index.js';
+import { creerPartie, jouerTour, apercuDecisions, previsionPolitique, conseils as calculerConseils, continuerPartie } from '../engine/index.js';
 import { libelleTrimestre } from '../engine/calendrier.js';
 import { MODES, normaliserMode } from '../model/parametres.js';
 import { PAYS, contexte } from './donnees.js';
@@ -239,9 +239,9 @@ export default function App() {
       <header className="entete">
         <span className="titre">{s.drapeau} {s.nom}</span>
         <span className="muet petit">
-          {partie.termine ? 'Mandat terminé' : `${libelleTrimestre(partie.trimestre)} · tour ${partie.tour}/${partie.nbTours}`} · {s.chefGouvernement.titre} · <span className={`etiquette mode-${partie.mode}`}>mode {mode.nom}</span>
+          {partie.termine ? (partie.horizon ? 'Partie terminée' : 'Mandat terminé') : `${libelleTrimestre(partie.trimestre)} · tour ${partie.tour}/${partie.nbTours}`} · {s.chefGouvernement.titre} · <span className={`etiquette mode-${partie.mode}`}>mode {mode.nom}</span>{partie.bacASable && <> <span className="etiquette">bac à sable</span></>}
         </span>
-        <div className="progression-mandat" title={`Mandat : ${partie.tour} trimestre(s) sur ${partie.nbTours}`}><Jauge valeur={(partie.tour - 1) / partie.nbTours} libelle="Avancement du mandat" /></div>
+        <div className="progression-mandat" title={partie.horizon ? `Partie jusqu'en ${partie.horizon} : ${partie.tour} trimestre(s) sur ${partie.nbTours}` : `Mandat : ${partie.tour} trimestre(s) sur ${partie.nbTours}`}><Jauge valeur={(partie.tour - 1) / partie.nbTours} libelle={partie.horizon ? `Avancement jusqu'en ${partie.horizon}` : 'Avancement du mandat'} /></div>
         <div className="indicateurs" aria-label="Indicateurs clés">
           <div>Popularité<strong><Nombre valeur={partie.social.popularite} format={(v) => pct(v, 0)} favorableSiHausse /></strong></div>
           <div>Déficit<strong><Nombre valeur={f.deficitRatio} format={(v) => pct(v)} favorableSiHausse={false} /></strong></div>
@@ -261,7 +261,7 @@ export default function App() {
       {message && <div className="alerte bonne" style={{ margin: '0.6rem 1.2rem' }} role="status">{message} <button type="button" className="bouton petit" onClick={() => setMessage(null)}>OK</button></div>}
 
       {partie.termine ? (
-        <FinDePartie partie={partie} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => setSauvegarde('export')} />
+        <FinDePartie partie={partie} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => setSauvegarde('export')} onContinuer={partie.horizon ? () => setPartie(continuerPartie(partie)) : null} />
       ) : (
         <div className="mise-en-page">
           <nav className="navigation" aria-label="Sections">
