@@ -134,6 +134,18 @@ Le tableau de bord affiche l'**impact de vos réformes** : solde public, populat
 - peut dissoudre l'Assemblée et convoquer un référendum ;
 - ne peut pas se représenter en 2027 (deux mandats consécutifs au plus) : c'est le candidat de son camp qui affronte le RN.
 
+### Négocier au G7
+
+Chaque année au deuxième trimestre, le G7 se réunit chez le pays qui le préside (rotation réelle : États-Unis en 2027, Royaume-Uni en 2028, Allemagne en 2029, Japon en 2030, Italie en 2031, Canada en 2032, France en 2033, 2040 et 2047). Dans l'onglet « Diplomatie » :
+- l'**agenda** compte quatre dossiers choisis par la présidence : commerce et droits de douane, Ukraine et avoirs russes gelés, énergie et détroit d'Ormuz, taxation des multinationales, minerais critiques, intelligence artificielle, climat, Afrique, Chine. Quand vous présidez, vous le fixez ;
+- un tableau montre la **position de chaque membre** (favorable, réservé, opposé) ;
+- vous choisissez **deux priorités** et, pour chacune, un **compromis** ou un **accord ambitieux** ;
+- vous pouvez mettre des **concessions** sur la table (GNL et armes américains, taxe sur les services numériques, aide à l'Ukraine, fermeté face à la Chine, quotas agricoles) et tenir deux **bilatérales** (1 point de capital diplomatique chacune) ;
+- les trimestres précédents, vous pouvez **mobiliser vos sherpas** pour préparer le sommet ;
+- une **prévision** donne les chances d'accord ambitieux, de compromis ou d'échec (qualitative en mode Expert).
+
+Le G7 décide par **consensus** : un accord exige un soutien moyen suffisant et aucun membre franchement hostile. Les effets touchent les exportations, le prix de l'énergie, les recettes, la souveraineté, l'influence et les relations. En France, la politique étrangère relève du domaine réservé : seul le **président de la République** négocie ; un Premier ministre voit le sommet se dérouler avec les priorités de l'Élysée. Le chancelier allemand et le président américain négocient eux-mêmes.
+
 ### Classements internationaux
 
 L'onglet « Classements » montre :
@@ -243,6 +255,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   elections.js          élections du calendrier, législatives, municipales, Länder, mi-mandat, Congrès, référendum
   horizon.js            partie jusqu'en 2050 : scrutins récurrents, recalage après une élection anticipée
   classements.js        classements internationaux : PIB mondial, zone euro, dette et déficit des pays de l'euro
+  g7.js                 sommets du G7 : agenda, positions, consensus, concessions, bilatérales, effets
   entreprises.js        Bourse (krachs compris), climat des affaires, souveraineté, fleurons, État stratège
   capitalisation.js     retraite par capitalisation : fonds, rendements, double charge, projection sur 30 ans
   objectifs.js          génération et suivi des objectifs
@@ -331,5 +344,6 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
   - la croissance potentielle est constante ;
   - les dépenses autres que les retraites, la santé et les intérêts sont constantes en volume à politique inchangée, ce qui les fait baisser en part du PIB plus vite que dans les projections officielles (CBO, COR) ;
   - le profil démographique des retraités et les besoins de santé liés au vieillissement sont des hypothèses de jeu calées sur des ordres de grandeur.
+- G7 : les positions des membres sur chaque dossier sont des hypothèses de jeu fondées sur leurs positions publiques (sommets de Kananaskis en 2025 et d'Évian en 2026) ; le lieu et la date du sommet américain de 2027 n'étaient pas connus à la collecte.
 - Classements : taux de change constants ; plusieurs données de départ (PIB hors top 11, dette et déficit de certains pays de l'euro) sont des estimations signalées comme telles dans `countries/_contexte-mondial.json`.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { actionsDisponibles } from '../../engine/index.js';
 import { PARTENAIRES } from '../../data/diplomatie.js';
 import Info from '../composants/Info.jsx';
+import G7 from './G7.jsx';
 import { nombre, md } from '../format.js';
 
 /** Barre de relation divergente (−100 à +100). */
@@ -20,7 +21,9 @@ export default function Diplomatie({ partie, decisions, majDecisions }) {
   const actions = useMemo(() => actionsDisponibles(partie), [partie]);
   const [options, setOptions] = useState({});
   const coutEngage = decisions.diplomatie.reduce((s, a) => s + (actions.find((x) => x.id === a.id)?.cout ?? 0), 0);
-  const restant = i.capitalDiplomatique - coutEngage;
+  // Le sommet du G7 (bilatérales, préparation) passe avant les autres initiatives
+  const coutG7 = (decisions.g7?.bilaterales?.length ?? 0) + (decisions.g7Preparation ? 1 : 0);
+  const restant = i.capitalDiplomatique - coutEngage - coutG7;
   const basculer = (a) => {
     const deja = decisions.diplomatie.find((x) => x.id === a.id);
     if (deja) majDecisions((d) => ({ diplomatie: d.diplomatie.filter((x) => x.id !== a.id) }));
@@ -29,6 +32,7 @@ export default function Diplomatie({ partie, decisions, majDecisions }) {
   return (
     <div className="pile">
       <h2>Diplomatie et coopération</h2>
+      {partie.g7 && <G7 partie={partie} decisions={decisions} majDecisions={majDecisions} capitalRestant={i.capitalDiplomatique - coutEngage} />}
       <div className="grille-2">
         <div className="carte">
           <h3>Relations <Info texte="De −100 (hostile) à +100 (allié proche). Elles évoluent selon vos initiatives et votre politique budgétaire (les partenaires européens surveillent votre déficit), puis reviennent lentement vers leur niveau de départ." /></h3>

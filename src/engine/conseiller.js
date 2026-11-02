@@ -6,6 +6,7 @@
  */
 import { libelleTrimestre } from './calendrier.js';
 import { projectionPresidentielle, projectionPresidentielleEtatsUnis } from './objectifs.js';
+import { prochainSommet, peutNegocier } from './g7.js';
 import { GROUPES } from '../model/ministeres.js';
 
 const NIVEAUX = { alerte: 3, attention: 2, idee: 1 };
@@ -75,6 +76,12 @@ export function conseils(e, prevision = null) {
   }
   // --- Entreprises --------------------------------------------------------------------
   const x = e.entreprises;
+  // Sommet du G7 : préparer, puis négocier
+  if (e.g7 && peutNegocier(e)) {
+    const s = prochainSommet(e);
+    if (s.ceTrimestre) c.push({ niveau: 'idee', titre: `Sommet du G7 ce trimestre${s.presidence ? ' : vous présidez' : ` (${s.hoteNom})`}`, texte: 'Choisissez deux priorités et votre niveau d\'ambition. Face à un membre hostile, une bilatérale ou une concession peut débloquer le consensus.', onglet: 'diplomatie' });
+    else if (s.trimestresAvant <= 2 && (e.g7.preparation ?? 0) < 3) c.push({ niveau: 'idee', titre: `G7 ${s.annee} dans ${s.trimestresAvant} trimestre(s)`, texte: 'Mobiliser vos sherpas (1 point de capital diplomatique) facilitera vos priorités au sommet.', onglet: 'diplomatie' });
+  }
   if (x && x.climatAffaires < 93) c.push({ niveau: 'attention', titre: 'Les entreprises hésitent à investir', texte: `Climat des affaires : ${x.climatAffaires.toFixed(0)} (100 = moyenne). Stabilité fiscale, rencontres avec les dirigeants et programmes industriels peuvent l'améliorer.`, onglet: 'entreprises' });
   const fragile = x?.fleurons.filter((fl) => fl.sante < 35);
   if (fragile?.length) c.push({ niveau: 'attention', titre: 'Un fleuron national en difficulté', texte: `Santé financière basse : ${fragile.map((fl) => fl.id).join(', ')}. Une prise de participation ou une action spécifique peut le protéger d'un rachat.`, onglet: 'entreprises' });

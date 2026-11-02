@@ -46,6 +46,7 @@ import { majSucces, SUCCES } from './succes.js';
 import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './capitalisation.js';
 import { ANNEE_FIN, calendrierJusqua2050, nbToursJusqua } from './horizon.js';
 import { initialiserClassements, majClassements } from './classements.js';
+import { initialiserG7, tenirSommet, preparerSommet } from './g7.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
 import { referendum } from './elections.js';
@@ -62,6 +63,7 @@ export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, paramet
 export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politique.js';
 export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
 export { bilanReformes } from './reformes.js';
+export { previsionG7, prochainSommet, peutNegocier, membreG7 } from './g7.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 
 /**
@@ -117,6 +119,7 @@ export function creerPartie(options) {
   e.elections = { historique: [] };
   initialiserOpinion(e);
   initialiserClassements(e, options.contexte?.classements);
+  initialiserG7(e);
   // Référence de la projection présidentielle (France) : la situation de départ
   if (e.politique.presidentielle && e.pays === 'france') {
     e.politique.presidentielle.reference = { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion };
@@ -302,6 +305,12 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     } else if (def) {
       e.resultatsTour.alertes.push({ type: 'rejet', texte: 'Un seul référendum par an : celui-ci est reporté.' });
     }
+  }
+  // G7 : préparation par les sherpas, puis sommet au deuxième trimestre
+  if (e.g7 && !options.sansPolitique) {
+    if (decisions.g7Preparation) preparerSommet(e);
+    const sommet = tenirSommet(e, decisions.g7, alea);
+    if (sommet) e.resultatsTour.g7 = sommet;
   }
   for (const a of decisions.diplomatie ?? []) {
     e.resultatsTour.diplomatie.push(executerAction(e, a.id, a.option, alea));

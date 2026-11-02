@@ -107,6 +107,7 @@ export function majInternational(e) {
     if (m.type === 'potentiel') i.potentielBonus += m.valeur;
     if (m.type === 'effetPAC') i.effetPAC += m.valeur;
     if (m.type === 'depense') i.depenses[m.poste] = (i.depenses[m.poste] ?? 0) + m.valeur;
+    if (m.type === 'exportDurable') i.chocExport += m.valeur; // accord commercial : impulsion sur les exportations à chaque trimestre
   }
 
   // Prêts SAFE : intérêts économisés = montant × (taux souverain − taux européen)

@@ -17,6 +17,7 @@ import { appliquerEffetsEntreprise } from './entreprises.js';
 export function genererEvenements(e, alea, frequence = 1, options = {}) {
   const deja = new Set(e.evenements.historique.map((h) => h.id));
   const candidats = EVENEMENTS.filter((ev) => (ev.pays === 'tous' || ev.pays.includes(e.pays)) && !(ev.unique && deja.has(ev.id))
+    && !(e.g7 && ev.id.startsWith('g7_')) // les sommets du G7 relèvent du module de négociation
     && (!options.calendrierSeulement || ev.calendrier));
   const tires = [];
   for (const ev of candidats) {

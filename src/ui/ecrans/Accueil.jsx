@@ -103,7 +103,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
             </button>
             <button type="button" className={`carte carte-pays ${role === 'president' ? 'choisie' : ''}`} onClick={() => setRole('president')} aria-pressed={role === 'president'}>
               <strong>Président de la République (Élysée)</strong>
-              <p className="petit muet">Vous nommez le Premier ministre (de votre camp, de droite, de gauche ou un technicien), ce qui change les majorités à l'Assemblée. Une censure renverse le gouvernement, pas vous. Vous pouvez dissoudre l'Assemblée et convoquer un référendum. En 2027, vous ne pouvez pas vous représenter (deux mandats consécutifs au plus) : votre camp présente un candidat.</p>
+              <p className="petit muet">Vous nommez le Premier ministre (de votre camp, de droite, de gauche ou un technicien), ce qui change les majorités à l'Assemblée. Une censure renverse le gouvernement, pas vous. Vous pouvez dissoudre l'Assemblée, convoquer un référendum et négocier au G7 (domaine réservé). En 2027, vous ne pouvez pas vous représenter (deux mandats consécutifs au plus) : votre camp présente un candidat.</p>
             </button>
           </div>
         </>

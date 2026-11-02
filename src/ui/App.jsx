@@ -48,7 +48,7 @@ const ONGLETS = [
   { id: 'sources', nom: 'Données et sources', court: 'Sources', icone: '🔎' },
 ];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
