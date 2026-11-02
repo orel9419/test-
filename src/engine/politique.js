@@ -52,7 +52,7 @@ export function initialiserPolitique(e, donnees) {
     regime: e.statique.regime,
     sieges: total,
     majorite: Math.floor(total / 2) + 1,
-    groupes: groupes.map((g) => ({ ...g, satisfaction: 0, concessions: 0 })),
+    groupes: groupes.map((g) => ({ ...g, postureInitiale: g.posture, satisfaction: 0, concessions: 0 })),
     positions: Object.fromEntries(AXES.map((a) => [a, 0])),
     utilisations493: {},
     derniereDissolution: { annee: 2024, t: 2 },
@@ -210,7 +210,8 @@ export function contenuTexte(reformes) {
     const def = trouverReforme(r.id);
     const axes = { ...(def?.axes ?? {}), ...(def?.axesParOption?.[r.option] ?? {}) };
     for (const [a, v] of Object.entries(axes)) t[a] = (t[a] ?? 0) + v;
-    for (const [id, v] of Object.entries(def?.positionsGroupes ?? {})) (t.groupes ??= {})[id] = (t.groupes[id] ?? 0) + v;
+    const positions = { ...(def?.positionsGroupes ?? {}), ...(def?.positionsGroupesParOption?.[r.option] ?? {}) };
+    for (const [id, v] of Object.entries(positions)) (t.groupes ??= {})[id] = (t.groupes[id] ?? 0) + v;
   }
   return t;
 }
@@ -708,7 +709,7 @@ function presidentielle(e, alea) {
   const lib = libelleTrimestre(e.trimestre);
   pol.presidentielles = [...(pol.presidentielles ?? []), { annee: e.trimestre.annee, part, victoire }];
   if (victoire) {
-    e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : la candidate ou le candidat de votre camp l'emporte avec ${part.toFixed(1)} % au second tour.` });
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : la candidate ou le candidat de votre camp l'emporte avec ${part.toFixed(1)} % au second tour.${e.role === 'president' ? ' Vous incarnez désormais le nouveau président, issu de votre camp.' : ''}` });
     // Législatives qui suivent : le « fait majoritaire » donne un élan au camp présidentiel (hypothèse : 8 points + l'avance du second tour)
     legislativesFrance(e, alea, 8 + 0.8 * (part - 50));
     if (e.opinion) e.opinion.intentions.centre += 3; // état de grâce
@@ -819,7 +820,7 @@ export function majPolitique(e, alea, decisions = {}) {
     if (ech.annee !== e.trimestre.annee || ech.t !== e.trimestre.t) continue;
     if (ech.type === 'presidentielle' && e.pays === 'france') {
       const r = presidentielle(e, alea);
-      if (!r.victoire) defaite = { cause: 'presidentielle', texte: 'Votre camp a perdu l\'élection présidentielle : un nouveau Premier ministre est nommé.' };
+      if (!r.victoire) defaite = { cause: 'presidentielle', texte: e.role === 'president' ? 'Le candidat de votre camp a perdu l\'élection présidentielle : vous quittez l\'Élysée.' : 'Votre camp a perdu l\'élection présidentielle : un nouveau Premier ministre est nommé.' };
     }
     if (ech.type === 'legislatives' && e.pays === 'allemagne') {
       const r = electionFederale(e, alea);
@@ -827,6 +828,45 @@ export function majPolitique(e, alea, decisions = {}) {
     }
   }
   return { defaite };
+}
+
+/**
+ * Président de la République (France) : profils de Premier ministre qu'il peut
+ * nommer. Le profil change la position des groupes à l'Assemblée : un Premier
+ * ministre de droite fait entrer LR au gouvernement et passer le PS dans
+ * l'opposition ; un Premier ministre socialiste fait l'inverse (hypothèses de jeu).
+ */
+export const PROFILS_PREMIER_MINISTRE = {
+  camp: { nom: 'Issu de votre camp (bloc central)', description: 'Statu quo : le bloc central gouverne, LR soutient au cas par cas, le PS est le groupe pivot.', postures: {} },
+  droite: { nom: 'Issu de la droite (LR)', description: 'LR entre au gouvernement ; le PS passe dans l\'opposition. Les réformes de droite passent plus facilement, la censure de gauche menace davantage.', postures: { DR: 'gouvernement', SOC: 'opposition', LIOT: 'pivot' } },
+  gauche: { nom: 'Issu du Parti socialiste', description: 'Le PS entre au gouvernement, les écologistes deviennent le groupe pivot ; LR passe dans l\'opposition. Les réformes sociales passent plus facilement.', postures: { SOC: 'gouvernement', ECOS: 'pivot', DR: 'opposition', HOR: 'soutien' } },
+  technocrate: { nom: 'Technicien sans étiquette', description: 'Haut fonctionnaire ou personnalité de la société civile : aucun groupe ne change de camp, mais les pivots acceptent plus volontiers des compromis.', postures: {}, concessions: 0.15 },
+};
+
+/**
+ * Le président nomme un nouveau Premier ministre : les groupes reprennent leur
+ * position de départ, puis celle qu'implique le profil choisi. Un nouveau
+ * gouvernement bénéficie de deux trimestres de répit, mais chaque changement
+ * ajoute de l'instabilité.
+ */
+export function nommerPremierMinistre(e, profil) {
+  const def = PROFILS_PREMIER_MINISTRE[profil];
+  const pol = e.politique;
+  if (!def || e.pays !== 'france') return { erreur: 'Profil inconnu.' };
+  if (pol.premierMinistre?.profil === profil) return { erreur: 'Ce profil est déjà à Matignon.' };
+  for (const g of pol.groupes) {
+    g.posture = def.postures[g.id] ?? g.postureInitiale ?? g.posture;
+    g.concessions = def.concessions && ['pivot', 'soutien'].includes(g.posture) ? def.concessions : 0;
+  }
+  pol.premierMinistre = { profil, depuis: e.tour };
+  pol.nominations = (pol.nominations ?? 0) + 1;
+  pol.graceJusqua = e.tour + 1;
+  pol.chocInstabilite = (pol.chocInstabilite ?? 0) + 0.03;
+  for (const g of Object.values(e.social.groupes)) g.chocs += 1; // nouveau gouvernement : brève embellie
+  e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'politique', texte: `Vous nommez un nouveau Premier ministre : ${def.nom.toLowerCase()}. ${def.description}` });
+  calculerPositions(e);
+  majSatisfactions(e);
+  return { ok: true };
 }
 
 /**
@@ -849,7 +889,10 @@ export function remaniement(e, { budget = false } = {}) {
   e.finances.credibilite = borner(e.finances.credibilite - 0.08, -1, 1);
   for (const g of pol.groupes) g.concessions = 0;
   pol.graceJusqua = e.tour + 2;
-  const texte = `Le gouvernement est renversé (${pol.gouvernementsRenverses}${pol.gouvernementsRenverses === 1 ? 'er' : 'e'} depuis le début de la partie). Le président de la République nomme un nouveau Premier ministre issu de votre camp : vous en reprenez la direction.${budget ? ' Une loi spéciale reconduit le budget de l\'année précédente.' : ''}`;
+  const suite = e.role === 'president'
+    ? 'Vous nommez un nouveau Premier ministre, du même profil.'
+    : 'Le président de la République nomme un nouveau Premier ministre issu de votre camp : vous en reprenez la direction.';
+  const texte = `Le gouvernement est renversé (${pol.gouvernementsRenverses}${pol.gouvernementsRenverses === 1 ? 'er' : 'e'} depuis le début de la partie). ${suite}${budget ? ' Une loi spéciale reconduit le budget de l\'année précédente.' : ''}`;
   e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'politique', texte });
   return texte;
 }

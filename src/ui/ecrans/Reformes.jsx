@@ -11,7 +11,7 @@ const THEMES = {
   retraites: 'Retraites', capitalisation: 'Retraites : capitalisation', travail: 'Travail et emploi', depenses: 'Baisse des dépenses',
   fiscalite: 'Fiscalité et entreprises', sante: 'Santé', protection_sociale: 'Protection sociale', fonction_publique: 'Fonction publique',
   energie: 'Énergie et climat', education: 'Éducation', securite: 'Sécurité et justice', immigration: 'Immigration', logement: 'Logement',
-  agriculture: 'Agriculture', outre_mer: 'Outre-mer', institutions: 'Institutions', dette: 'Dette et patrimoine public', regles: 'Règles budgétaires', defense: 'Défense',
+  agriculture: 'Agriculture', outre_mer: 'Outre-mer', institutions: 'Institutions', dette: 'Dette et patrimoine public', regles: 'Règles budgétaires', defense: 'Défense', infrastructures: 'Infrastructures et transports',
 };
 const VEHICULES = {
   PLF: { nom: 'Loi de finances', aide: 'Projet de loi de finances : le 49.3 y est utilisable sans limite, au risque d\'une motion de censure.' },

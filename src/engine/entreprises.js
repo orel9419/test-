@@ -287,7 +287,7 @@ export function majEntreprises(e, prev) {
   }
 
   // --- Souveraineté --------------------------------------------------------------
-  let cibleSouv = x.souverainete0 + x.bonusSouverainete;
+  let cibleSouv = x.souverainete0 + x.bonusSouverainete + (e.effetsDurables?.souverainete ?? 0);
   for (const fl of x.fleurons) {
     const def = definition(e, fl.id);
     cibleSouv += 10 * def.strategique * (fl.partEtat - fl.partEtat0) / 100;

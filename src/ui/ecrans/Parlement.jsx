@@ -2,7 +2,7 @@ import React from 'react';
 import Hemicycle from '../composants/Hemicycle.jsx';
 import Info from '../composants/Info.jsx';
 import { nombre, pct } from '../format.js';
-import { exerciceBudgetaire } from '../../engine/politique.js';
+import { exerciceBudgetaire, PROFILS_PREMIER_MINISTRE } from '../../engine/politique.js';
 
 const POSTURES = { gouvernement: 'Gouvernement', soutien: 'Soutien', pivot: 'Pivot', opposition: 'Opposition' };
 
@@ -161,9 +161,20 @@ export default function Parlement(props) {
               </select>
             </label>
           )}
+          {fr && partie.role === 'president' && (
+            <div className="carte pile" style={{ background: 'var(--surface-2)' }}>
+              <strong className="petit">Matignon : nommer le Premier ministre <Info texte="Prérogative du président (article 8 de la Constitution). Le profil du Premier ministre change la position des groupes : un Premier ministre de droite fait entrer LR au gouvernement, un socialiste y fait entrer le PS. Chaque changement ajoute de l'instabilité ; le nouveau gouvernement a un trimestre de répit avant une censure." /></strong>
+              <span className="tres-petit muet">Actuellement : {PROFILS_PREMIER_MINISTRE[partie.politique.premierMinistre?.profil ?? 'camp']?.nom}{partie.politique.nominations ? ` · ${partie.politique.nominations} nomination(s) depuis le début` : ''}{partie.politique.gouvernementsRenverses ? ` · ${partie.politique.gouvernementsRenverses} gouvernement(s) renversé(s)` : ''}</span>
+              <select value={decisions.nominationPM ?? ''} onChange={(ev) => majDecisions({ nominationPM: ev.target.value || null })} aria-label="Profil du prochain Premier ministre">
+                <option value="">Garder le Premier ministre actuel</option>
+                {Object.entries(PROFILS_PREMIER_MINISTRE).filter(([id]) => id !== (partie.politique.premierMinistre?.profil ?? 'camp')).map(([id, p]) => <option key={id} value={id}>Nommer un Premier ministre {p.nom.charAt(0).toLowerCase() + p.nom.slice(1)}</option>)}
+              </select>
+              {decisions.nominationPM && <span className="tres-petit">{PROFILS_PREMIER_MINISTRE[decisions.nominationPM].description}</span>}
+            </div>
+          )}
           {fr && (
             <label className="petit" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}><input type="checkbox" checked={!!decisions.dissolution} onChange={(ev) => majDecisions({ dissolution: ev.target.checked })} />
-              <span>Demander au président de dissoudre l'Assemblée (législatives anticipées, possible un an après la précédente dissolution)</span>
+              <span>{partie.role === 'president' ? 'Dissoudre l\'Assemblée (article 12)' : 'Demander au président de dissoudre l\'Assemblée'} (législatives anticipées, possible un an après la précédente dissolution)</span>
             </label>
           )}
         </div>

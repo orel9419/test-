@@ -203,8 +203,8 @@ function objectifsRegime(e) {
   const reel = e.calendrierChoisi !== 'mandat_complet';
   if (e.pays === 'france') {
     return [
-      e.horizon
-        ? { id: 'censures', nom: 'Limiter les gouvernements renversés (2 au plus d\'ici 2050)', description: 'Sans majorité, le gouvernement peut tomber sur une motion de censure (289 voix). En partie longue, un gouvernement renversé est remplacé par un autre de votre camp, au prix de la crédibilité et de la stabilité.', mesure: 'censures', sens: '<=', cible: 2 }
+      e.horizon || e.role === 'president'
+        ? { id: 'censures', nom: `Limiter les gouvernements renversés (2 au plus d'ici ${e.horizon ?? 'la fin du mandat'})`, description: 'Sans majorité, le gouvernement peut tomber sur une motion de censure (289 voix). Un gouvernement renversé est remplacé par un autre, au prix de la crédibilité et de la stabilité.', mesure: 'censures', sens: '<=', cible: 2 }
         : { id: 'survie', nom: 'Gouverner sans être renversé', description: 'Sans majorité, le gouvernement peut tomber sur une motion de censure (289 voix). Le PS (69 sièges) est le groupe pivot.', mesure: 'survie', sens: '>=', cible: 1 },
       { id: 'budget2027', nom: 'Faire adopter le budget 2027', description: 'Le PLF 2027 est en séance ; la commission des finances a rejeté sa partie recettes, le PS menace de censure.', mesure: 'budget2027', sens: '>=', cible: 1, echeanceTour: 1 },
       reel

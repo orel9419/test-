@@ -45,5 +45,1087 @@
     "deficit_federal_fy2026": { "valeur": 2.0, "unite": "milliers de Md$", "source": "CBO, Monthly Budget Review (08/10/2026)", "url": "https://www.cbo.gov/publication/61985", "statut": "officiel" },
     "dette_detenue_par_le_public": { "valeur": 32.4, "unite": "milliers de Md$", "source": "CBO", "url": "https://www.cbo.gov/publication/61985", "statut": "officiel" },
     "elections_mi_mandat": { "valeur": "03/11/2026", "statut": "officiel", "note": "Prévisions non collectées." }
+  },
+  "classements": {
+    "description": "Classements internationaux : PIB nominal des grandes économies (Md$ courants, 2025) et finances publiques des 21 pays de la zone euro (2025, la Bulgarie ayant adopté l'euro le 1er janvier 2026). Les pays non joués évoluent ensuite selon des trajectoires de croissance et de solde public (hypothèses de jeu), avec les chocs mondiaux de la partie.",
+    "taux_change": {
+      "valeur": "constants (moyenne 2025)",
+      "statut": "estimation",
+      "note": "Les classements en dollars supposent des taux de change constants : les variations de change, importantes en réalité (roupie, yen, livre), ne sont pas simulées."
+    },
+    "pib_monde": [
+      {
+        "id": "US",
+        "nom": "États-Unis",
+        "drapeau": "🇺🇸",
+        "pib_2025": {
+          "valeur": 30770,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 4.2,
+          "long_terme": 3.8,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      },
+      {
+        "id": "CN",
+        "nom": "Chine",
+        "drapeau": "🇨🇳",
+        "pib_2025": {
+          "valeur": 19630,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 4.5,
+          "long_terme": 3.2,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.5
+      },
+      {
+        "id": "DE",
+        "nom": "Allemagne",
+        "drapeau": "🇩🇪",
+        "pib_2025": {
+          "valeur": 5050,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.0,
+          "long_terme": 2.6,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      },
+      {
+        "id": "JP",
+        "nom": "Japon",
+        "drapeau": "🇯🇵",
+        "pib_2025": {
+          "valeur": 4440,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 2.4,
+          "long_terme": 2.0,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.5
+      },
+      {
+        "id": "GB",
+        "nom": "Royaume-Uni",
+        "drapeau": "🇬🇧",
+        "pib_2025": {
+          "valeur": 4000,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.6,
+          "long_terme": 3.3,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.2
+      },
+      {
+        "id": "IN",
+        "nom": "Inde",
+        "drapeau": "🇮🇳",
+        "pib_2025": {
+          "valeur": 3920,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire",
+          "note": "4 125 Md$ dans l'édition d'octobre 2025 du FMI : l'écart vient surtout du taux de change de la roupie."
+        },
+        "croissance_nominale_dollars": {
+          "depart": 9.5,
+          "long_terme": 7.0,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 2.0
+      },
+      {
+        "id": "FR",
+        "nom": "France",
+        "drapeau": "🇫🇷",
+        "pib_2025": {
+          "valeur": 3370,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.0,
+          "long_terme": 2.8,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      },
+      {
+        "id": "RU",
+        "nom": "Russie",
+        "drapeau": "🇷🇺",
+        "pib_2025": {
+          "valeur": 2590,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.0,
+          "long_terme": 2.5,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 3.0
+      },
+      {
+        "id": "IT",
+        "nom": "Italie",
+        "drapeau": "🇮🇹",
+        "pib_2025": {
+          "valeur": 2550,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 2.6,
+          "long_terme": 2.3,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      },
+      {
+        "id": "CA",
+        "nom": "Canada",
+        "drapeau": "🇨🇦",
+        "pib_2025": {
+          "valeur": 2320,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.7,
+          "long_terme": 3.4,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.2
+      },
+      {
+        "id": "BR",
+        "nom": "Brésil",
+        "drapeau": "🇧🇷",
+        "pib_2025": {
+          "valeur": 2280,
+          "source": "FMI, Perspectives de l'économie mondiale (avril 2026), via statranker.org",
+          "url": "https://statranker.org/economy/top-100-largest-economies-by-nominal-gdp-2025/",
+          "statut": "secondaire"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 4.8,
+          "long_terme": 4.2,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 3.0
+      },
+      {
+        "id": "ES",
+        "nom": "Espagne",
+        "drapeau": "🇪🇸",
+        "pib_2025": {
+          "valeur": 1890,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.8,
+          "long_terme": 3.0,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      },
+      {
+        "id": "AU",
+        "nom": "Australie",
+        "drapeau": "🇦🇺",
+        "pib_2025": {
+          "valeur": 1830,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 4.2,
+          "long_terme": 3.8,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.5
+      },
+      {
+        "id": "MX",
+        "nom": "Mexique",
+        "drapeau": "🇲🇽",
+        "pib_2025": {
+          "valeur": 1860,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 4.3,
+          "long_terme": 3.8,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 2.5
+      },
+      {
+        "id": "KR",
+        "nom": "Corée du Sud",
+        "drapeau": "🇰🇷",
+        "pib_2025": {
+          "valeur": 1790,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.2,
+          "long_terme": 2.4,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.5
+      },
+      {
+        "id": "ID",
+        "nom": "Indonésie",
+        "drapeau": "🇮🇩",
+        "pib_2025": {
+          "valeur": 1440,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 7.5,
+          "long_terme": 6.0,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 2.0
+      },
+      {
+        "id": "TR",
+        "nom": "Turquie",
+        "drapeau": "🇹🇷",
+        "pib_2025": {
+          "valeur": 1440,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 6.0,
+          "long_terme": 4.5,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 4.0
+      },
+      {
+        "id": "NL",
+        "nom": "Pays-Bas",
+        "drapeau": "🇳🇱",
+        "pib_2025": {
+          "valeur": 1320,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.3,
+          "long_terme": 2.8,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      },
+      {
+        "id": "SA",
+        "nom": "Arabie saoudite",
+        "drapeau": "🇸🇦",
+        "pib_2025": {
+          "valeur": 1080,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 4.0,
+          "long_terme": 3.5,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 3.0
+      },
+      {
+        "id": "CH",
+        "nom": "Suisse",
+        "drapeau": "🇨🇭",
+        "pib_2025": {
+          "valeur": 1000,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale_dollars": {
+          "depart": 3.0,
+          "long_terme": 2.6,
+          "unite": "% par an",
+          "statut": "estimation",
+          "note": "Hypothèse de jeu calée sur l'ordre de grandeur des projections du FMI à cinq ans, avec une convergence progressive à long terme."
+        },
+        "volatilite": 1.0
+      }
+    ],
+    "zone_euro": [
+      {
+        "id": "DE",
+        "nom": "Allemagne",
+        "drapeau": "🇩🇪",
+        "pib_2025": {
+          "valeur": 4450,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 63.5,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -2.5,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 2.8,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -3.0,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "FR",
+        "nom": "France",
+        "drapeau": "🇫🇷",
+        "pib_2025": {
+          "valeur": 2950,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 115.7,
+          "source": "Eurostat (octobre 2026), via Pluralia",
+          "url": "https://pluralia.com/en/news/eurostat-public-debt-in-five-eu-countries-exceeds-gdp/",
+          "statut": "secondaire"
+        },
+        "solde_2025": {
+          "valeur": -5.1,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "croissance_nominale": {
+          "valeur": 2.8,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -4.0,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "IT",
+        "nom": "Italie",
+        "drapeau": "🇮🇹",
+        "pib_2025": {
+          "valeur": 2250,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 136.7,
+          "source": "Eurostat (octobre 2026), via Pluralia",
+          "url": "https://pluralia.com/en/news/eurostat-public-debt-in-five-eu-countries-exceeds-gdp/",
+          "statut": "secondaire"
+        },
+        "solde_2025": {
+          "valeur": -3.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 2.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.8,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "ES",
+        "nom": "Espagne",
+        "drapeau": "🇪🇸",
+        "pib_2025": {
+          "valeur": 1640,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 100.5,
+          "source": "Eurostat (octobre 2026), via Pluralia",
+          "url": "https://pluralia.com/en/news/eurostat-public-debt-in-five-eu-countries-exceeds-gdp/",
+          "statut": "secondaire"
+        },
+        "solde_2025": {
+          "valeur": -2.5,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 3.8,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.3,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "NL",
+        "nom": "Pays-Bas",
+        "drapeau": "🇳🇱",
+        "pib_2025": {
+          "valeur": 1170,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 44.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -1.5,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 3.2,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.2,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "BE",
+        "nom": "Belgique",
+        "drapeau": "🇧🇪",
+        "pib_2025": {
+          "valeur": 630,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 108.1,
+          "source": "Eurostat (octobre 2026), via Pluralia",
+          "url": "https://pluralia.com/en/news/eurostat-public-debt-in-five-eu-countries-exceeds-gdp/",
+          "statut": "secondaire"
+        },
+        "solde_2025": {
+          "valeur": -5.2,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "croissance_nominale": {
+          "valeur": 3.0,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -4.8,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "IE",
+        "nom": "Irlande",
+        "drapeau": "🇮🇪",
+        "pib_2025": {
+          "valeur": 600,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 34.8,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "solde_2025": {
+          "valeur": 1.8,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "croissance_nominale": {
+          "valeur": 4.0,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": 0.8,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "AT",
+        "nom": "Autriche",
+        "drapeau": "🇦🇹",
+        "pib_2025": {
+          "valeur": 500,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 81.5,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -4.4,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 3.0,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -3.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "FI",
+        "nom": "Finlande",
+        "drapeau": "🇫🇮",
+        "pib_2025": {
+          "valeur": 285,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 84.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -4.2,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 2.8,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -3.0,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "PT",
+        "nom": "Portugal",
+        "drapeau": "🇵🇹",
+        "pib_2025": {
+          "valeur": 295,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 90.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": 0.7,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "croissance_nominale": {
+          "valeur": 3.8,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -0.2,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "GR",
+        "nom": "Grèce",
+        "drapeau": "🇬🇷",
+        "pib_2025": {
+          "valeur": 245,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 145.4,
+          "source": "Eurostat (octobre 2026), via Pluralia",
+          "url": "https://pluralia.com/en/news/eurostat-public-debt-in-five-eu-countries-exceeds-gdp/",
+          "statut": "secondaire"
+        },
+        "solde_2025": {
+          "valeur": 2.0,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "croissance_nominale": {
+          "valeur": 3.3,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -0.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "SK",
+        "nom": "Slovaquie",
+        "drapeau": "🇸🇰",
+        "pib_2025": {
+          "valeur": 140,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 61.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -5.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 4.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -3.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "BG",
+        "nom": "Bulgarie",
+        "drapeau": "🇧🇬",
+        "pib_2025": {
+          "valeur": 110,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 29.9,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "solde_2025": {
+          "valeur": -3.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 6.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -3.0,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "HR",
+        "nom": "Croatie",
+        "drapeau": "🇭🇷",
+        "pib_2025": {
+          "valeur": 95,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 57.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -3.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 5.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "LU",
+        "nom": "Luxembourg",
+        "drapeau": "🇱🇺",
+        "pib_2025": {
+          "valeur": 85,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 26.0,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "solde_2025": {
+          "valeur": -1.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 4.0,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -0.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "LT",
+        "nom": "Lituanie",
+        "drapeau": "🇱🇹",
+        "pib_2025": {
+          "valeur": 82,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 39.3,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "solde_2025": {
+          "valeur": -2.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 5.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.2,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "SI",
+        "nom": "Slovénie",
+        "drapeau": "🇸🇮",
+        "pib_2025": {
+          "valeur": 70,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 66.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -2.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 4.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.0,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "LV",
+        "nom": "Lettonie",
+        "drapeau": "🇱🇻",
+        "pib_2025": {
+          "valeur": 42,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 48.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -3.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 4.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "EE",
+        "nom": "Estonie",
+        "drapeau": "🇪🇪",
+        "pib_2025": {
+          "valeur": 41,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 24.0,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "solde_2025": {
+          "valeur": -1.6,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 4.5,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.0,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "CY",
+        "nom": "Chypre",
+        "drapeau": "🇨🇾",
+        "pib_2025": {
+          "valeur": 37,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 60.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": 3.6,
+          "source": "Eurostat, notification d'octobre 2026 (dette et déficit 2025)",
+          "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-21102026-ap",
+          "statut": "officiel"
+        },
+        "croissance_nominale": {
+          "valeur": 5.0,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": 1.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      },
+      {
+        "id": "MT",
+        "nom": "Malte",
+        "drapeau": "🇲🇹",
+        "pib_2025": {
+          "valeur": 24,
+          "unite": "Md€",
+          "statut": "estimation",
+          "note": "Ordre de grandeur (Eurostat), à vérifier."
+        },
+        "dette_2025": {
+          "valeur": 47.0,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "solde_2025": {
+          "valeur": -3.3,
+          "source": "Estimation de jeu (ordre de grandeur des prévisions du FMI et de la Commission), à vérifier",
+          "statut": "estimation"
+        },
+        "croissance_nominale": {
+          "valeur": 6.0,
+          "unite": "% par an",
+          "statut": "estimation"
+        },
+        "solde_vise": {
+          "valeur": -2.5,
+          "unite": "% du PIB",
+          "statut": "estimation",
+          "note": "Solde vers lequel le pays converge à moyen terme (hypothèse de jeu inspirée des plans budgétaires et des règles européennes)."
+        }
+      }
+    ],
+    "sources_complementaires": [
+      {
+        "texte": "Eurostat, notification d'avril 2026 (dette et déficit 2025)",
+        "url": "https://ec.europa.eu/eurostat/web/products-euro-indicators/w/2-22042026-ap"
+      },
+      {
+        "texte": "FMI, Perspectives de l'économie mondiale (octobre 2025), via Visual Capitalist",
+        "url": "https://www.visualcapitalist.com/charted-how-global-economic-power-shifted-1980-2025/"
+      }
+    ]
   }
 }

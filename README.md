@@ -51,10 +51,17 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **89 réformes** (dont 31 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   En France, **112 réformes** (dont 31 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.
+
+   Parmi elles, des **grands programmes et mesures régaliennes** :
+   - énergie : nouveaux réacteurs EPR2 (6 ou 14, prêt de l'État, mises en service à partir de 2038), petits réacteurs modulaires, éolien en mer ou moratoire, leasing social, rénovation des logements ;
+   - défense : successeur du Rafale (SCAF européen ou programme national confié à Dassault Aviation), trajectoire vers 3 ou 3,5 % du PIB, porte-avions de nouvelle génération, service militaire volontaire ou obligatoire, renseignement et cyberdéfense ;
+   - sécurité et justice : prisons, narcotrafic (offensive ou légalisation du cannabis), peines planchers, exécution des OQTF, polices municipales ;
+   - infrastructures : autoroutes (rachat immédiat, régie publique à la fin des concessions en 2031-2036, gratuité ou remise en concurrence), plan ferroviaire ;
+   - organisation de l'État, inspirée de Jean-Louis Borloo : « une compétence, un seul niveau », suppression des agences qui doublonnent avec les préfets et les collectivités, fusion des régions et des départements en provinces (révision constitutionnelle), réduction du nombre de parlementaires.
 
    Les filtres par thème, la recherche et l'option « seulement celles qui peuvent passer » aident à s'y retrouver. Chaque réforme peut être **chiffrée sur 3 ans par simulation** avant d'être soumise au Parlement (ou à référendum).
 
@@ -100,6 +107,23 @@ Durée et calendrier :
 - **jusqu'en 2050** (par défaut) : voir ci-dessous ;
 - **un mandat, calendrier réel** : présidentielle française en avril 2027, élections allemandes début 2029, présidentielle américaine en novembre 2028 ;
 - **un mandat complet** : l'élection est jugée en fin de mandat.
+
+### Jouer le président de la République (France)
+
+À l'accueil, choisissez votre rôle : Premier ministre (Matignon) ou président de la République (Élysée). Le président :
+- nomme le Premier ministre : de son camp, de droite (LR entre au gouvernement, le PS passe dans l'opposition), de gauche (l'inverse) ou un technicien. Chaque profil change les majorités à l'Assemblée ;
+- n'est pas renversé par une censure : le gouvernement tombe et un nouveau Premier ministre est nommé ;
+- peut dissoudre l'Assemblée et convoquer un référendum ;
+- ne peut pas se représenter en 2027 (deux mandats consécutifs au plus) : c'est le candidat de son camp qui affronte le RN.
+
+### Classements internationaux
+
+L'onglet « Classements » montre :
+- les 10 premières économies mondiales (PIB en dollars, FMI) ;
+- le PIB des pays de la zone euro ;
+- la dette et le solde public des 21 pays de l'euro (Eurostat 2025, Bulgarie comprise depuis janvier 2026).
+
+Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de croissance et de solde public (hypothèses calées sur le FMI et la Commission), avec les chocs mondiaux de la partie et leurs propres aléas. À politique inchangée, la France reste 2e de la zone euro mais glisse vers la 9e place mondiale en 2050, dépassée par le Brésil et l'Indonésie (taux de change constants).
 
 ### Jouer jusqu'en 2050
 
@@ -199,6 +223,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   opinion.js            baromètre de satisfaction et intentions de vote
   elections.js          élections du calendrier, législatives, municipales, Länder, mi-mandat, Congrès, référendum
   horizon.js            partie jusqu'en 2050 : scrutins récurrents, recalage après une élection anticipée
+  classements.js        classements internationaux : PIB mondial, zone euro, dette et déficit des pays de l'euro
   entreprises.js        Bourse (krachs compris), climat des affaires, souveraineté, fleurons, État stratège
   capitalisation.js     retraite par capitalisation : fonds, rendements, double charge, projection sur 30 ans
   objectifs.js          génération et suivi des objectifs
@@ -287,4 +312,5 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
   - la croissance potentielle est constante ;
   - les dépenses autres que les retraites, la santé et les intérêts sont constantes en volume à politique inchangée, ce qui les fait baisser en part du PIB plus vite que dans les projections officielles (CBO, COR) ;
   - le profil démographique des retraités et les besoins de santé liés au vieillissement sont des hypothèses de jeu calées sur des ordres de grandeur.
+- Classements : taux de change constants ; plusieurs données de départ (PIB hors top 11, dette et déficit de certains pays de l'euro) sont des estimations signalées comme telles dans `countries/_contexte-mondial.json`.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

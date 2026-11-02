@@ -9,6 +9,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
   const [pays, setPays] = useState('france');
   const [mode, setMode] = useState('intermediaire');
   const [calendrier, setCalendrier] = useState('horizon2050');
+  const [role, setRole] = useState('chef_gouvernement');
   const d = PAYS[pays].donnees;
   return (
     <div className="accueil pile">
@@ -79,8 +80,24 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
         </button>
       </div>
 
+      {pays === 'france' && (
+        <>
+          <h2>4. Votre rôle</h2>
+          <div className="choix-pays">
+            <button type="button" className={`carte carte-pays ${role === 'chef_gouvernement' ? 'choisie' : ''}`} onClick={() => setRole('chef_gouvernement')} aria-pressed={role === 'chef_gouvernement'}>
+              <strong>Premier ministre (Matignon)</strong>
+              <p className="petit muet">Vous dirigez le gouvernement et faites voter vos textes. Une motion de censure peut vous renverser{calendrier === 'horizon2050' ? ' (vous êtes alors remplacé par un autre Premier ministre de votre camp)' : ' et mettre fin à la partie'}.</p>
+            </button>
+            <button type="button" className={`carte carte-pays ${role === 'president' ? 'choisie' : ''}`} onClick={() => setRole('president')} aria-pressed={role === 'president'}>
+              <strong>Président de la République (Élysée)</strong>
+              <p className="petit muet">Vous nommez le Premier ministre (de votre camp, de droite, de gauche ou un technicien), ce qui change les majorités à l'Assemblée. Une censure renverse le gouvernement, pas vous. Vous pouvez dissoudre l'Assemblée et convoquer un référendum. En 2027, vous ne pouvez pas vous représenter (deux mandats consécutifs au plus) : votre camp présente un candidat.</p>
+            </button>
+          </div>
+        </>
+      )}
+
       <div className="ligne">
-        <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier })}>Prendre ses fonctions</button>
+        <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier, role: pays === 'france' ? role : 'chef_gouvernement' })}>Prendre ses fonctions</button>
         <label className="bouton">Importer une partie (JSON)<input type="file" accept="application/json" onChange={onImporter} hidden /></label>
         {onColler && <button type="button" className="bouton" onClick={onColler}>Coller une sauvegarde</button>}
       </div>

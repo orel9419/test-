@@ -129,7 +129,7 @@ export function majInternational(e) {
   const moyenneRelations = Object.values(i.relations).reduce((s, v) => s + v, 0) / Object.keys(i.relations).length;
   const moyenneInitiale = Object.values(i.relationsInitiales).reduce((s, v) => s + v, 0) / Object.keys(i.relationsInitiales).length;
   const cibleInfluence = i.influenceInitiale + 5 * (defensePct - i.defense0) + 8 * variationAE + 0.15 * (moyenneRelations - moyenneInitiale)
-    + 4 * e.finances.credibilite + 0.5 * (e.macro.croissanceAnnuelle - 1) - (e.finances.crise ? 10 : 0);
+    + 4 * e.finances.credibilite + 0.5 * (e.macro.croissanceAnnuelle - 1) - (e.finances.crise ? 10 : 0) + (e.effetsDurables?.influence ?? 0);
   i.bonusInfluence *= 0.97;
   i.influence = borner(i.influence + 0.25 * (cibleInfluence + i.bonusInfluence - i.influence), 0, 100);
 

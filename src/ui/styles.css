@@ -358,3 +358,12 @@ body { background: var(--plan); }
 @media (display-mode: standalone) {
   .entete { padding-top: max(0.8rem, env(safe-area-inset-top)); }
 }
+
+/* Classements internationaux */
+.classement td { padding: 0.22rem 0.35rem; vertical-align: middle; }
+.classement tr.pays-joue { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.classement tr.separe td { border-top: 1px dashed var(--axe); }
+.barre-classement { position: relative; height: 10px; background: var(--surface-2); border-radius: 4px; }
+.barre-classement > div { position: absolute; top: 0; height: 100%; border-radius: 4px; transition: width 0.6s ease, left 0.6s ease; }
+.barre-classement > .axe-zero { width: 1px; background: var(--encre-2); border-radius: 0; }
+.barre-classement > .reference { top: -3px; height: 16px; width: 2px; background: var(--encre-2); border-radius: 0; opacity: 0.7; }

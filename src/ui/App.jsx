@@ -29,6 +29,7 @@ import Sources from './ecrans/Sources.jsx';
 import FinDePartie from './ecrans/FinDePartie.jsx';
 import Objectifs from './ecrans/Objectifs.jsx';
 import BilanTour from './ecrans/BilanTour.jsx';
+import Classements from './ecrans/Classements.jsx';
 
 const ONGLETS = [
   { id: 'tableau', nom: 'Tableau de bord', court: 'Accueil', icone: '📊' },
@@ -40,13 +41,14 @@ const ONGLETS = [
   { id: 'entreprises', nom: 'Entreprises et État stratège', court: 'Entreprises', icone: '🏭' },
   { id: 'opinion', nom: 'Opinion et élections', court: 'Opinion', icone: '📣' },
   { id: 'diplomatie', nom: 'Diplomatie', court: 'Monde', icone: '🌍' },
+  { id: 'classements', nom: 'Classements', court: 'Rangs', icone: '🏆' },
   { id: 'rendezvous', nom: 'Grands rendez-vous', court: 'Sommets', icone: '🏅' },
   { id: 'menages', nom: 'Ménages', court: 'Ménages', icone: '👪' },
   { id: 'journal', nom: 'Journal', court: 'Journal', icone: '🗞️' },
   { id: 'sources', nom: 'Données et sources', court: 'Sources', icone: '🔎' },
 ];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -134,9 +136,9 @@ export default function App() {
   }, []);
   const fermerNotification = useCallback((id) => setNotifications((n) => n.filter((x) => x.id !== id)), []);
 
-  const demarrer = useCallback(({ pays, mode: m, calendrier }) => {
+  const demarrer = useCallback(({ pays, mode: m, calendrier, role }) => {
     const graine = Math.floor(Math.random() * 2 ** 31);
-    const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier });
+    const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier, role });
     setPartie(p);
     setDecisions(decisionsInitiales(p));
     setOnglet('tableau');
@@ -285,6 +287,7 @@ export default function App() {
             {onglet === 'entreprises' && <Entreprises {...props} allerA={setOnglet} />}
             {onglet === 'opinion' && <Opinion {...props} />}
             {onglet === 'diplomatie' && <Diplomatie {...props} />}
+            {onglet === 'classements' && <Classements partie={partie} />}
             {onglet === 'rendezvous' && <GrandsRendezVous partie={partie} allerA={setOnglet} />}
             {onglet === 'evenements' && <Evenements {...props} />}
             {onglet === 'menages' && <Menages {...props} />}

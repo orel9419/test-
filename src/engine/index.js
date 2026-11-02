@@ -37,7 +37,7 @@ import { majMacro } from './macro.js';
 import { majFinances, bilanAnnuel } from './finances.js';
 import { majMenages } from './menages.js';
 import { majSocial } from './social.js';
-import { initialiserPolitique, validerReformes, voterBudget, majPolitique, prevoirVotes, remaniement } from './politique.js';
+import { initialiserPolitique, validerReformes, voterBudget, majPolitique, prevoirVotes, remaniement, nommerPremierMinistre } from './politique.js';
 import { genererObjectifs, majObjectifs, cloturerObjectifs } from './objectifs.js';
 import { genererEvenements, resoudreEvenements, depensesTemporairesActives } from './evenements.js';
 import { calculerScore } from './score.js';
@@ -45,6 +45,7 @@ import { initialiserOpinion, majOpinion } from './opinion.js';
 import { majSucces, SUCCES } from './succes.js';
 import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './capitalisation.js';
 import { ANNEE_FIN, calendrierJusqua2050, nbToursJusqua } from './horizon.js';
+import { initialiserClassements, majClassements } from './classements.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
 import { referendum } from './elections.js';
@@ -58,7 +59,8 @@ export { reformesDisponibles, actionsDisponibles, calculerScore, conseils, SUCCE
 export { programmesDisponibles, valeurPortefeuille, fleuron } from './entreprises.js';
 export { siegesLegislativesFrance } from './elections.js';
 export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains, CIBLE_MIXTE, SCENARIOS_MIXTE } from './capitalisation.js';
-export { voterTexte, texteFinancier } from './politique.js';
+export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politique.js';
+export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 
 /**
@@ -67,6 +69,7 @@ export { intentions as intentionsDeVote, THEMES } from './opinion.js';
  */
 export function previsionPolitique(etat, decisions = {}) {
   const e = structuredClone(etat);
+  if (decisions.nominationPM && e.role === 'president') nommerPremierMinistre(e, decisions.nominationPM);
   for (const [id, v] of Object.entries(decisions.budget ?? {})) if (e.budget[id]) e.budget[id].variationVolume = v;
   appliquerTaux(e, decisions.impots ?? {});
   // Les postes évalués par les partis sont les cibles visées, pas les montants déjà atteints
@@ -100,10 +103,17 @@ export function creerPartie(options) {
   e.grandsEvenements = {};
   e.graineMonde = (e.graine * 2654435761) >>> 0;
   initialiserPolitique(e, options.donnees);
+  // France : jouer le président de la République plutôt que le Premier ministre
+  e.role = options.role === 'president' && e.pays === 'france' ? 'president' : 'chef_gouvernement';
+  if (e.role === 'president') {
+    e.statique.chefGouvernement = { titre: 'Président de la République', nomActuel: 'Emmanuel Macron (mandat jusqu\'en mai 2027)' };
+    e.politique.premierMinistre = { profil: 'camp', depuis: 1 };
+  }
   initialiserEntreprises(e);
   e.capitalisation = etatCapitalisationInitial();
   e.elections = { historique: [] };
   initialiserOpinion(e);
+  initialiserClassements(e, options.contexte?.classements);
   // Référence de la projection présidentielle (France) : la situation de départ
   if (e.politique.presidentielle && e.pays === 'france') {
     e.politique.presidentielle.reference = { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion };
@@ -172,6 +182,7 @@ function majClimat(e) {
     * Math.max(0.3, 1 - 0.5 * (vert - 1))
     * Math.pow(e.macro.prixEnergieConso / e.reference.prixEnergieConso, -0.08)
     * taxe;
+  c.emissions = Math.max(0.05 * c.emissions0, c.emissions - (e.effetsDurables?.emissionsEvitees ?? 0));
 }
 
 /**
@@ -248,6 +259,11 @@ export function jouerTour(etat, decisions = {}, options = {}) {
       e.social.groupes.entrepreneurs.chocs -= 0.3 * delta;
     }
   }
+  // Président : nomination d'un nouveau Premier ministre (avant les votes du trimestre)
+  if (decisions.nominationPM && e.role === 'president' && !options.sansPolitique) {
+    const n = nommerPremierMinistre(e, decisions.nominationPM);
+    e.resultatsTour.nomination = n.erreur ? { erreur: n.erreur } : { profil: decisions.nominationPM };
+  }
   // Réformes : passage devant le Parlement (sauf mesures réglementaires), puis adoption
   let defaite = null;
   if ((decisions.reformes ?? []).length) {
@@ -323,6 +339,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
 
   // --- 3. Réformes et sous-modèles ----------------------------------------------
   const effR = majReformes(e, alea);
+  // Effets durables des réformes : influence, souveraineté économique, émissions évitées (Mt par an)
+  e.effetsDurables = { influence: effR.influence, souverainete: effR.souverainete, emissionsEvitees: effR.emissionsEvitees };
   e.effetsCourants = { plafonnementEnergie: effR.plafonnementEnergie };
   const effT = majTempsTravail(e);
   const effRet = majRetraites(e, effR);
@@ -422,7 +440,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     }
   } else e.finances.trimestresCrise = 0;
   // Partie longue (France) : une censure provoque un remaniement, pas la fin de la partie
-  if (defaite?.cause === 'censure' && e.horizon) {
+  if (defaite?.cause === 'censure' && (e.horizon || e.role === 'president')) {
     const texte = remaniement(e, { budget: !!e.resultatsTour.budget?.censure?.adoptee });
     e.resultatsTour.alertes.push({ type: 'remaniement', texte });
     defaite = null;
@@ -440,6 +458,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   e.resultatsTour.succes = options.sansPolitique ? [] : majSucces(e);
 
   // --- 12. Historique et passage au trimestre suivant ------------------------------
+  majClassements(e);
   e.historique.push(instantane(e));
   e.tour += 1;
   e.trimestre = trimestreSuivant(e.trimestre);
