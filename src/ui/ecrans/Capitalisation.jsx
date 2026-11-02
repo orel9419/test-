@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import GraphiqueLignes from '../composants/GraphiqueLignes.jsx';
 import Info from '../composants/Info.jsx';
-import { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains } from '../../engine/index.js';
+import { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains, CIBLE_MIXTE, SCENARIOS_MIXTE } from '../../engine/index.js';
 import { md, nombre, pct } from '../format.js';
 
 /** Paramètres des réformes de capitalisation (mêmes valeurs que le catalogue). */
@@ -12,6 +12,11 @@ const NOMS = { per: 'PER renforcé', pilier: 'Deuxième pilier obligatoire', sou
  * État « en vigueur + proposé ce trimestre » de la capitalisation, pour la
  * projection : on montre au joueur l'effet des réformes qu'il envisage.
  */
+/** Année où la bascule vers le système mixte serait achevée. */
+function anneeFinBascule(partie, t) {
+  return Math.round(partie.trimestre.annee + Math.max(0, t.cible - t.points) / (t.rythme ?? 1));
+}
+
 function etatEnvisage(partie, decisions) {
   const c = { ...(partie.capitalisation ?? {}) };
   for (const r of decisions.reformes ?? []) {
@@ -19,6 +24,7 @@ function etatEnvisage(partie, decisions) {
     if (r.id === 'capi_pilier') c.pilier = PILIERS[r.option];
     if (r.id === 'capi_fonds_souverain') c.souverain = r.option;
     if (r.id === 'capi_transition') c.transition = { points: 2, financement: r.option };
+    if (r.id === 'capi_mixte') { const sc = SCENARIOS_MIXTE[r.option]; c.transition = { points: 0, cible: CIBLE_MIXTE, rythme: sc.rythme, financement: sc.financement }; }
   }
   if (decisions.allocationCapitalisation) c.allocation = decisions.allocationCapitalisation;
   return { ...partie, capitalisation: c };
@@ -41,7 +47,9 @@ export default function Capitalisation({ partie, decisions, majDecisions }) {
   const allocation = ALLOCATIONS[c.allocation] ?? ALLOCATIONS.equilibree;
   const projection = useMemo(() => projeterCapitalisation(parametresProjection(e, { volatilite: volatilite ?? allocation.volatilite, probaKrach: krach / 100 })), [e, volatilite, krach, allocation.volatilite]);
   const encours = Object.values(partie.capitalisation?.encours ?? {}).reduce((s, x) => s + x, 0);
-  const actifs = Object.entries(NOMS).filter(([k]) => c[k]);
+  const actifs = Object.entries(NOMS).filter(([k]) => c[k]).map(([k, n]) => [k, k === 'transition' && c.transition?.cible ? `Système mixte (${c.transition.points > 0 ? `${nombre(c.transition.points, 1)} point(s) sur ${c.transition.cible}` : `bascule vers ${c.transition.cible} points`})` : n]);
+  // Système mixte : double charge une fois la bascule achevée (euros d'aujourd'hui)
+  const mixte = c.transition?.cible ? { ...c.transition, chargeFinale: c.transition.cible / 100 * 0.25 * e.macro.pibNominal / (e.macro.niveauPrix / 100), fin: anneeFinBascule(partie, c.transition) } : null;
   const annee0 = partie.trimestre.annee;
 
   return (
@@ -52,7 +60,7 @@ export default function Capitalisation({ partie, decisions, majDecisions }) {
       <div className="grille-tuiles">
         <div className="tuile"><span className="libelle">Dispositifs</span><span className="valeur" style={{ fontSize: '1rem' }}>{actifs.length ? actifs.map(([, n]) => n).join(', ') : 'Aucun'}</span></div>
         <div className="tuile"><span className="libelle">Versements dans les fonds<Info texte="Ce qui est versé chaque année dans les fonds de capitalisation : cotisations du deuxième pilier, cotisations détournées de la répartition, dotations du fonds souverain, épargne retraite encouragée." /></span><span className="valeur chiffres">{md(fluxTotal, 1)}</span><span className="variation">par an</span></div>
-        <div className="tuile"><span className="libelle">Double charge<Info texte="Effort supplémentaire des actifs pendant la transition : ils financent les pensions actuelles par répartition ET leur propre épargne (ou l'État s'endette pour combler les cotisations détournées)." /></span><span className="valeur chiffres">{md(charge, 1)}</span><span className="variation">par an</span></div>
+        <div className="tuile"><span className="libelle">Double charge<Info texte="Effort supplémentaire des actifs pendant la transition : ils financent les pensions actuelles par répartition ET leur propre épargne (ou l'État s'endette pour combler les cotisations détournées)." /></span><span className="valeur chiffres">{md(charge, 1)}</span><span className="variation">{mixte ? `par an, environ ${md(mixte.chargeFinale, 0)} vers ${mixte.fin}` : 'par an'}</span></div>
         <div className="tuile"><span className="libelle">Fonds accumulés</span><span className="valeur chiffres">{md(encours, 1)}</span><span className={`variation ${(partie.capitalisation?.dernierRendement ?? 0) < 0 ? 'negatif' : 'positif'}`}>rendement du trimestre {nombre(partie.capitalisation?.dernierRendement ?? 0, 1)} %</span></div>
       </div>
 
@@ -72,7 +80,15 @@ export default function Capitalisation({ partie, decisions, majDecisions }) {
         </div>
       </div>
 
-      {fluxTotal > 0 ? (
+      {mixte && (
+        <p className="petit">
+          <strong>Système mixte :</strong> {nombre(mixte.rythme, 1)} point de cotisation par an bascule vers la capitalisation, jusqu'à {mixte.cible} points vers {mixte.fin}.
+          {' '}Financement de la double charge : {{ dette: 'la dette', csg: 'la CSG', pensions: 'une baisse des pensions', panache: 'un tiers dette, un tiers CSG, un tiers pensions' }[mixte.financement]}.
+          {' '}La projection tient compte de cette montée progressive.
+        </p>
+      )}
+
+      {fluxTotal > 0 || mixte ? (
         <>
           <GraphiqueLignes titre="Projection des fonds de capitalisation sur 30 ans" unite="Md€ d'aujourd'hui" decimales={0}
             series={[

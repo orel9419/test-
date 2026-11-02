@@ -203,6 +203,9 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                   </span>
                 </div>
                 <p className="petit">{r.resume}</p>
+                {r.remplace.map((id) => liste.find((x) => x.id === id && x.active)).filter(Boolean).map((x) => (
+                  <p key={x.id} className="petit alerte">Adopter cette réforme remplace « {x.nom} », en vigueur.</p>
+                ))}
                 {(r.pedagogie || r.pour.length > 0) && (
                   <details><summary>Comprendre les enjeux</summary>
                     {r.pedagogie && <p className="petit" style={{ marginTop: '0.4rem' }}>{r.pedagogie}</p>}

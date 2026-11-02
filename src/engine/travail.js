@@ -8,7 +8,7 @@
  * les heures sont majorées de 25 %.
  *
  * Le joueur choisit :
- * - la durée de référence (35, 37 ou 39 h) ;
+ * - la durée de référence (35, 37, 39 ou 40 h) ;
  * - le traitement des heures situées entre 35 h et la nouvelle durée :
  *     'normal'   payées au taux normal, imposées normalement ;
  *     'exonere'  payées au taux normal, exonérées d'impôt sur le revenu et

@@ -46,12 +46,12 @@ Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France,
 2. **Répartir le budget** entre 15 postes, avec des curseurs en volume (hors inflation). Le panneau d'impact estime en temps réel l'effet sur le solde, la croissance, le chômage, la popularité par groupe et le revenu de chaque ménage type. Une **inertie** réaliste s'applique : on réduit plus vite un investissement qu'une masse salariale.
 3. **Fixer les impôts** (TVA, impôt sur le revenu, impôt sur les sociétés, CSG, cotisations, taxes sur l'énergie, successions), la part de dette émise à court terme, et annoncer une **trajectoire de déficit** (la tenir renforce la crédibilité, la manquer coûte cher).
 4. **Proposer des réformes**, par exemple :
-   - retraites : âge, indexation, compensations sur la pénibilité, le minimum de pension, les carrières longues ;
-   - temps de travail : 35, 37 ou 39 h, heures payées, exonérées ou non payées ;
+   - retraites : âge (de 62 à 68 ans, à deux rythmes possibles pour 68 ans), indexation, compensations sur la pénibilité, le minimum de pension, les carrières longues ;
+   - temps de travail : 35, 37, 39 ou 40 h, heures payées, exonérées ou non payées ;
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **88 réformes** (dont 30 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   En France, **89 réformes** (dont 31 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.
@@ -60,7 +60,7 @@ Un tour = un trimestre. La partie dure un mandat : 20 trimestres pour la France,
 
    Les députés jugent d'abord le **contenu** de chaque texte, ce qui permet des majorités d'idées différentes d'un texte à l'autre. Le 49.3 est illimité pour les textes financiers et limité à un par session pour les autres.
 
-   **Retraite par capitalisation** : quatre dispositifs combinables (PER renforcé, deuxième pilier obligatoire avec parts employeur et salarié, fonds souverain, transition partielle de la répartition). Le panneau dédié montre :
+   **Retraite par capitalisation** : quatre dispositifs combinables (PER renforcé, deuxième pilier obligatoire avec parts employeur et salarié, fonds souverain, transition partielle de la répartition), et un **système mixte mi-capitalisation, mi-répartition** : 14 points de cotisation sur environ 28 basculent progressivement (0,5 ou 1 point par an), avec une double charge d'environ 100 Md€ par an à terme, financée par la dette, la CSG, une baisse des pensions ou un panachage. Le système mixte remplace la transition partielle (les deux ne se cumulent pas). Le panneau dédié montre :
    - la double charge de transition ;
    - l'allocation des fonds et sa volatilité ;
    - le risque de krach ;

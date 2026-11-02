@@ -119,3 +119,74 @@ describe('Retraite par capitalisation', () => {
     expect(dynamique.pensionSmic.p50).toBeLessThan(dynamique.pensionCadre.p50);
   });
 });
+
+describe('Retraite à 68 ans, semaine de 40 h, système mixte', () => {
+  it('68 ans : l\'âge légal monte de 6 mois par an et la dépense de pensions baisse plus qu\'avec 65 ans', () => {
+    const suivre = (option) => {
+      let e = jouerTour(nouvelle(), { reformes: [{ id: 'retraites_age', option }] }, SANS);
+      for (let k = 0; k < 15; k++) e = jouerTour(e, {}, SANS);
+      return e;
+    };
+    const a65 = suivre('age_65');
+    const a68 = suivre('age_68');
+    const rapide = suivre('age_68_rapide');
+    expect(a68.retraites.ageCible).toBe(68);
+    expect(a68.retraites.ageLegal).toBeGreaterThanOrEqual(64.5);
+    expect(a68.retraites.ageLegal).toBeLessThan(68);
+    // À 6 mois par an, 65 et 68 ans coïncident pendant le quinquennat ; à 9 mois par an, l'effet est visible
+    expect(a68.retraites.ageLegal).toBeCloseTo(a65.retraites.ageLegal, 5);
+    expect(rapide.retraites.ageLegal).toBeGreaterThan(a65.retraites.ageLegal + 0.5);
+    expect(rapide.retraites.depenses).toBeLessThan(a65.retraites.depenses - 5);
+    // Plus clivant que 65 ans : rejeté à l'Assemblée sans 49.3
+    expect(voterTexte(nouvelle(), [{ id: 'retraites_age', option: 'age_68' }]).adopte).toBe(false);
+  });
+  it('40 h : plus d\'heures qu\'à 39 h, et des exonérations plus coûteuses', () => {
+    const suivre = (option) => {
+      let e = jouerTour(nouvelle(), { reformes: [{ id: 'temps_travail', option }] }, SANS);
+      for (let k = 0; k < 8; k++) e = jouerTour(e, {}, SANS);
+      return e.travail;
+    };
+    const h39 = suivre('39h_normal'), h40 = suivre('40h_normal');
+    expect(h40.dureeReference).toBe(40);
+    expect(h40.deltaHeures).toBeGreaterThan(h39.deltaHeures);
+    expect(suivre('40h_exo5').coutBudgetaire).toBeGreaterThan(suivre('39h_exo4').coutBudgetaire);
+    expect(suivre('40h_non_payees').chomageStructurel).toBeLessThan(suivre('39h_non_payees').chomageStructurel);
+  });
+  it('système mixte : bascule progressive vers 14 points, double charge selon le financement', () => {
+    const suivre = (option, n = 16) => {
+      let e = jouerTour(nouvelle(), { reformes: [{ id: 'capi_mixte', option }] }, SANS);
+      for (let k = 0; k < n; k++) e = jouerTour(e, {}, SANS);
+      return e;
+    };
+    const dette = suivre('dette');
+    const t = dette.capitalisation.transition;
+    expect(t.cible).toBe(14);
+    expect(t.points).toBeGreaterThan(2);
+    expect(t.points).toBeLessThan(14);
+    expect(fluxAnnuels(dette).transition).toBeGreaterThan(20);
+    expect(doubleCharge(dette)).toBeGreaterThan(20);
+    // Financée par la dette, la bascule creuse le déficit ; financée par les pensions, non
+    const pensions = suivre('pensions');
+    expect(dette.finances.deficit - pensions.finances.deficit).toBeGreaterThan(15);
+    // La bascule lente avance deux fois moins vite
+    expect(suivre('etale').capitalisation.transition.points).toBeCloseTo(t.points / 2, 5);
+  });
+  it('le système mixte remplace la transition partielle à 2 points', () => {
+    let e = jouerTour(nouvelle(), { reformes: [{ id: 'capi_transition', option: 'dette' }] }, SANS);
+    for (let k = 0; k < 4; k++) e = jouerTour(e, {}, SANS);
+    expect(e.capitalisation.transition.points).toBe(2);
+    e = jouerTour(e, { reformes: [{ id: 'capi_mixte', option: 'impots' }] }, SANS);
+    const ids = e.reformes.actives.map((a) => a.id);
+    expect(ids).toContain('capi_mixte');
+    expect(ids).not.toContain('capi_transition');
+    expect(e.capitalisation.transition).toBeNull();
+  });
+  it('la projection tient compte de la montée progressive des versements', () => {
+    const base = { fluxAnnuel: 0, encours: 0, tauxIndividuel: 0, allocation: 'equilibree', annees: 30 };
+    const sans = projeterCapitalisation(base);
+    const avec = projeterCapitalisation({ ...base, montee: { flux: 100, taux: 14, annees: 14 } });
+    expect(sans.pensionSmic.p50).toBe(0);
+    expect(avec.pensionSmic.p50).toBeGreaterThan(100);
+    expect(avec.parAn.at(-1).p50).toBeGreaterThan(1000);
+  });
+});

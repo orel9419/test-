@@ -36,6 +36,24 @@ export const ALLOCATIONS = {
 /** Masse salariale du secteur privé : environ 25 % du PIB (estimation de jeu, environ 760 Md€ en 2026). */
 export const masseSalarialePrivee = (e) => 0.25 * e.macro.pibNominal;
 
+/**
+ * Système mixte « mi-capitalisation, mi-répartition » : environ 28 % du salaire
+ * brut sont cotisés pour la retraite dans le privé (base et complémentaire,
+ * parts salariale et patronale, ordre de grandeur sous le plafond de la
+ * Sécurité sociale). La moitié, 14 points, bascule progressivement vers des
+ * comptes de capitalisation.
+ */
+export const CIBLE_MIXTE = 14;
+/** Scénarios de bascule : rythme (points par an) et financement de la double charge. */
+export const SCENARIOS_MIXTE = {
+  etale: { rythme: 0.5, financement: 'panache' },
+  dette: { rythme: 1, financement: 'dette' },
+  impots: { rythme: 1, financement: 'csg' },
+  pensions: { rythme: 1, financement: 'pensions' },
+};
+/** Répartition de la double charge entre dette, impôt (CSG) et baisse des pensions. */
+export const PARTS_FINANCEMENT = { dette: [1, 0, 0], csg: [0, 1, 0], pensions: [0, 0, 1], panache: [1 / 3, 1 / 3, 1 / 3] };
+
 /** Part des gains futurs captée par les 20 % de ménages les plus aisés, par dispositif (hypothèses de jeu). */
 export const CONCENTRATION_GAINS = { per: 0.75, pilier: 0.3, souverain: 0.2, transition: 0.3 };
 
@@ -45,7 +63,7 @@ export function etatCapitalisationInitial() {
     per: null,          // 'plafond' | 'per_pour_tous'
     pilier: null,       // { employeur: %, salarie: % }
     souverain: null,    // 'dividendes' | 'csg' | 'emprunt'
-    transition: null,   // { points, financement: 'dette' | 'csg' | 'pensions' }
+    transition: null,   // { points, financement: 'dette' | 'csg' | 'pensions' | 'panache', cible?, rythme? (points par an) }
     encours: { per: 0, pilier: 0, souverain: 0, transition: 0 },
     flux: { per: 0, pilier: 0, souverain: 0, transition: 0 },
     rendementCumule: 1,
@@ -83,6 +101,9 @@ export function doubleCharge(e) {
 export function majCapitalisation(e) {
   const c = e.capitalisation;
   if (!c) return;
+  // Bascule progressive (système mixte) : les points de cotisation versés en capitalisation montent vers la cible
+  const t = c.transition;
+  if (t?.cible && t.points < t.cible) t.points = Math.min(t.cible, t.points + (t.rythme ?? 1) / 4);
   const f = fluxAnnuels(e);
   c.flux = f;
   const a = ALLOCATIONS[c.allocation] ?? ALLOCATIONS.equilibree;
@@ -100,7 +121,8 @@ export function majCapitalisation(e) {
  * encours total des fonds (percentiles 10, 50, 90) et supplément de pension
  * mensuel, à l'horizon, pour un salarié au SMIC et un cadre qui entrent
  * aujourd'hui dans le dispositif. Rente : 4 % du capital par an.
- * @param {object} p { fluxAnnuel (Md€), encours (Md€), tauxIndividuel (% du salaire), allocation, volatilite (% optionnel), probaKrach (par an), annees }
+ * @param {object} p { fluxAnnuel (Md€), encours (Md€), tauxIndividuel (% du salaire), allocation, volatilite (% optionnel), probaKrach (par an), annees,
+ *   montee? { flux (Md€), taux (points), annees } : hausse progressive des versements (bascule vers un système mixte) }
  */
 export function projeterCapitalisation(p) {
   const a = ALLOCATIONS[p.allocation] ?? ALLOCATIONS.equilibree;
@@ -120,9 +142,11 @@ export function projeterCapitalisation(p) {
       let r = mu + sigma * alea.normale(0, 1);
       if (alea.tirage(krach)) r -= 0.3 * a.actions / 0.85; // krach : −30 % sur un portefeuille très exposé
       r = Math.max(-0.6, r);
-      total = total * (1 + r) + (p.fluxAnnuel ?? 0);
-      smic = smic * (1 + r) + salaireSmic * (p.tauxIndividuel ?? 0) / 100;
-      cadre = cadre * (1 + r) + salaireCadre * (p.tauxIndividuel ?? 0) / 100;
+      const m = p.montee ? Math.min(1, (k + 1) / Math.max(1, p.montee.annees)) : 0;
+      const taux = (p.tauxIndividuel ?? 0) + m * (p.montee?.taux ?? 0);
+      total = total * (1 + r) + (p.fluxAnnuel ?? 0) + m * (p.montee?.flux ?? 0);
+      smic = smic * (1 + r) + salaireSmic * taux / 100;
+      cadre = cadre * (1 + r) + salaireCadre * taux / 100;
       t.push(total);
     }
     trajectoires.push(t);
@@ -148,10 +172,13 @@ export function parametresProjection(e, surcharge = {}) {
   const c = e.capitalisation;
   const f = fluxAnnuels(e);
   const tauxIndividuel = (c.pilier ? c.pilier.employeur + c.pilier.salarie : 0) + (c.transition?.points ?? 0);
+  const t = c.transition;
+  const reste = t?.cible ? Math.max(0, t.cible - t.points) : 0;
   return {
     fluxAnnuel: Object.values(f).reduce((s, x) => s + x, 0) / (e.macro.niveauPrix / 100),
-    encours: Object.values(c.encours).reduce((s, x) => s + x, 0),
+    encours: Object.values(c.encours ?? {}).reduce((s, x) => s + x, 0),
     tauxIndividuel,
+    montee: reste > 0 ? { flux: reste / 100 * masseSalarialePrivee(e) / (e.macro.niveauPrix / 100), taux: reste, annees: reste / (t.rythme ?? 1) } : null,
     allocation: c.allocation,
     annees: 30,
     ...surcharge,

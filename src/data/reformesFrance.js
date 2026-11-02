@@ -13,7 +13,7 @@
  *
  * Les montants sans source sont des hypothèses de jeu, signalées comme telles.
  */
-import { masseSalarialePrivee } from '../engine/capitalisation.js';
+import { masseSalarialePrivee, CIBLE_MIXTE, SCENARIOS_MIXTE, PARTS_FINANCEMENT } from '../engine/capitalisation.js';
 
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const prix = (e) => e.macro.niveauPrix / 100;
@@ -200,6 +200,79 @@ export const REFORMES_FRANCE = [
     axesParOption: { dette: { retraites: 0.6, marche: 0.7, social: -0.2, rigueur: -0.8 } },
     positionsGroupes: { LFI: -1, GDR: -1, ECOS: -0.6, SOC: -0.6, RN: -0.5, LIOT: -0.2, DR: 0.3, HOR: 0.4, EPR: 0.2 },
     chiffrage: '2 points de cotisation : environ 15 Md€ par an retirés aux régimes par répartition (masse salariale privée estimée à 25 % du PIB).',
+    remplace: ['capi_mixte'],
+  },
+  {
+    id: 'capi_mixte',
+    nom: 'Système mixte : mi-capitalisation, mi-répartition',
+    categorie: 'capitalisation', pays: FR, vehicule: 'loi',
+    resume: 'Basculer progressivement la moitié des cotisations retraite (14 points sur environ 28) vers des comptes de capitalisation. À terme, chaque retraité toucherait une pension par répartition et une rente par capitalisation de poids comparables.',
+    pedagogie: 'Les salariés du privé cotisent environ 28 % de leur salaire brut pour la retraite (base et complémentaire, parts salariale et patronale, ordre de grandeur). En verser la moitié sur des comptes de capitalisation, c\'est retirer environ 100 Md€ par an aux pensions actuelles une fois la bascule achevée, soit plus de 3 points de PIB : c\'est la double charge, portée par les générations de la transition. Il faut la financer par la dette, par l\'impôt (environ 6 points de CSG) ou par une baisse des pensions (environ un quart). Les économies côté répartition n\'arrivent que très lentement : les nouveaux retraités ont moins de droits par répartition, mais il faut 40 à 60 ans pour que tous les retraités soient concernés. Une transition financée par la dette n\'augmente presque pas l\'épargne nationale : l\'État s\'endette d\'un côté ce que les ménages épargnent de l\'autre.',
+    pour: ['Diversifier les risques : démographie pour la répartition, marchés pour la capitalisation', 'Des droits individuels, propriété de chaque salarié', 'Une épargne longue de plusieurs centaines de milliards pour financer les entreprises', 'Moins de dépendance à la démographie : 2,5 personnes d\'âge actif pour une personne de 65 ans et plus aujourd\'hui, 1,6 en 2070 selon le COR'],
+    contre: ['Double charge de l\'ordre de 100 Md€ par an pendant des décennies', 'Pensions dépendantes des marchés : un krach à la veille du départ peut amputer la rente', 'Rejet syndical et politique quasi unanime, de la gauche au RN', 'Frais de gestion et inégalités : les gains de marché profitent davantage aux carrières longues et bien payées'],
+    exemples: ['Suède (1998) : 18,5 % du salaire, dont 16 points en répartition par comptes notionnels et 2,5 points en capitalisation', 'Suisse : AVS par répartition et prévoyance professionnelle (LPP) par capitalisation, deux piliers obligatoires de poids comparable', 'Pays-Bas : pension de base par répartition et fonds de pension professionnels, parmi les plus capitalisés au monde', 'Chili : capitalisation intégrale en 1981, puis pilier solidaire (2008) et réforme de 2025 qui réintroduit une cotisation patronale et une part de solidarité'],
+    sources: [
+      { texte: 'COR, rapport annuel 2026', url: 'https://www.cor-retraites.fr/sites/default/files/2026-06/RA_2026_def.pdf' },
+      { texte: 'AFG : livre blanc sur la capitalisation (juin 2026)', url: 'https://www.afg.asso.fr/app/uploads/2026/06/AFG_CP-Livre-blanc-Capitalisation_17062026.pdf' },
+      { texte: 'Meilleurtaux : la capitalisation s\'invite dans la présidentielle (sept. 2026)', url: 'https://placement.meilleurtaux.com/retraite/actualites/2026-septembre/presidentielle-2027-la-retraite-par-capitalisation-sinvite-dans-le-debat.html' },
+    ],
+    options: [
+      { id: 'etale', nom: 'Bascule lente (0,5 point par an, 28 ans), double charge partagée : un tiers dette, un tiers CSG, un tiers pensions', description: 'Le scénario le moins brutal : chacun porte une part de l\'effort, étalé sur une génération.' },
+      { id: 'dette', nom: 'Bascule en 14 ans (1 point par an), financée par la dette', description: 'Indolore au début pour les ménages ; le déficit se creuse de 7 Md€ de plus chaque année et les marchés s\'inquiètent.' },
+      { id: 'impots', nom: 'Bascule en 14 ans, financée par la CSG (jusqu\'à environ 6 points)', description: 'Les actifs et les retraités paient deux fois : leurs cotisations et l\'impôt de transition.' },
+      { id: 'pensions', nom: 'Bascule en 14 ans, financée par une baisse des pensions (jusqu\'à environ un quart)', description: 'Les retraités actuels financent la transition : rejet massif de l\'électorat le plus mobilisé.' },
+    ],
+    delai: 4,
+    appliquer(e, o) {
+      const s = SCENARIOS_MIXTE[o] ?? SCENARIOS_MIXTE.etale;
+      capi(e).transition = { points: 0, cible: CIBLE_MIXTE, rythme: s.rythme, financement: s.financement };
+    },
+    annuler(e) { capi(e).transition = null; },
+    effets(e, o, age) {
+      const t = capi(e).transition;
+      const points = t?.cible ? t.points : 0;
+      const montant = points / 100 * masseSalarialePrivee(e);
+      const [pDette, pCsg, pPensions] = PARTS_FINANCEMENT[t?.financement] ?? PARTS_FINANCEMENT.dette;
+      // Économie lente sur la répartition : les nouveaux retraités ont moins de droits (plein effet après environ 60 ans)
+      const economie = montant * Math.min(1, Math.max(0, age) / 4 / 60) ** 1.5;
+      const md = montant / prix(e); // Md€ d'aujourd'hui
+      const eff = {
+        recettes: { cotisations: -montant },
+        depenses: { retraites: -economie },
+        // Seule la part financée par l'impôt ou les pensions crée une épargne nationale nouvelle
+        potentielBonus: points * (0.0005 + 0.0025 * (1 - pDette)),
+        menages: {},
+      };
+      if (pCsg) {
+        eff.recettes.csg = pCsg * montant;
+        const k = pCsg * md / 15;
+        eff.menages.smic = [{ montant: -14 * k, texte: 'CSG de transition vers le système mixte' }];
+        eff.menages.couple = [{ montant: -45 * k, texte: 'CSG de transition vers le système mixte' }];
+        eff.menages.retraite = [{ montant: -12 * k, texte: 'CSG de transition vers le système mixte' }];
+      }
+      if (pPensions) {
+        eff.depenses.retraites -= pPensions * Math.max(0, montant - economie);
+        eff.menages.retraite = [...(eff.menages.retraite ?? []), { montant: -55 * pPensions * md / 15, texte: 'Baisse des pensions pour financer le système mixte' }];
+      }
+      return eff;
+    },
+    reaction(e, o) {
+      return {
+        etale: { chocs: { salaries: -5, fonctionnaires: -6, retraites: -5, entrepreneurs: 3 }, grief: { salaries: 6, fonctionnaires: 6, retraites: 5 }, credibilite: 0, instabilite: 0.06 },
+        dette: { chocs: { salaries: -4, fonctionnaires: -6, retraites: -3, entrepreneurs: 3, jeunes: 1 }, grief: { salaries: 5, fonctionnaires: 6, retraites: 2 }, credibilite: -0.25, instabilite: 0.08 },
+        impots: { chocs: { salaries: -9, fonctionnaires: -8, retraites: -7, entrepreneurs: 2, jeunes: -3 }, grief: { salaries: 9, fonctionnaires: 8, retraites: 6 }, credibilite: 0.05, instabilite: 0.08 },
+        pensions: { chocs: { salaries: -5, fonctionnaires: -7, retraites: -16, entrepreneurs: 3 }, grief: { salaries: 5, fonctionnaires: 6, retraites: 16 }, credibilite: 0.08, instabilite: 0.1 },
+      }[o];
+    },
+    axes: { retraites: 0.9, marche: 1, social: -0.6 },
+    axesParOption: {
+      dette: { retraites: 0.9, marche: 1, social: -0.3, rigueur: -1 },
+      impots: { retraites: 0.9, marche: 0.8, social: -0.4, fiscal: 0.6 },
+      pensions: { retraites: 1, marche: 1, social: -1 },
+    },
+    positionsGroupes: { LFI: -1, GDR: -1, ECOS: -0.8, SOC: -0.8, RN: -0.7, LIOT: -0.4, DEM: -0.2, HOR: 0.3, DR: 0.2, UDR: 0.4 },
+    chiffrage: '14 points de cotisation : environ 106 Md€ par an une fois la bascule achevée (masse salariale privée estimée à 25 % du PIB, environ 760 Md€ en 2026), soit 7,6 Md€ de plus chaque année au rythme d\'un point par an. Les économies sur la répartition ne représentent que quelques pour cent de ce montant au bout de 10 ans (hypothèses de jeu).',
+    remplace: ['capi_transition'],
   },
 
   // ======================================================================

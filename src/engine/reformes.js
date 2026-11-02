@@ -21,6 +21,7 @@ export function reformesDisponibles(e) {
       options: r.options, chiffrage: r.chiffrage, compensation: !!r.compensation, majoriteRenforcee: !!r.majoriteRenforcee,
       vehicule: r.vote === false ? (r.vehicule ?? 'décret') : (r.vehicule ?? 'loi'), vote: r.vote !== false,
       pour: r.pour ?? [], contre: r.contre ?? [], exemples: r.exemples ?? [], orientation: r.orientation ?? null,
+      remplace: r.remplace ?? [],
       active: active ? active.option : null, disponible: !dejaUnique,
     };
   });
@@ -37,6 +38,16 @@ export function adopterReforme(e, id, option, alea) {
   if (!(def.pays === 'tous' || def.pays.includes(e.pays))) return { erreur: 'Réforme non disponible dans ce pays.' };
   if (!def.options.some((o) => o.id === option)) option = def.options[0].id;
   if (def.unique && e.reformes.historique.some((h) => h.id === id)) return { erreur: 'Mesure déjà réalisée.' };
+
+  // Réformes incompatibles (ex. deux scénarios de transition vers la capitalisation) : la nouvelle remplace l'ancienne
+  for (const autre of def.remplace ?? []) {
+    const i = e.reformes.actives.findIndex((a) => a.id === autre);
+    if (i < 0) continue;
+    const ancienne = e.reformes.actives[i];
+    if (ancienne.appliquee) trouverReforme(autre)?.annuler?.(e, ancienne.option);
+    e.reformes.actives.splice(i, 1);
+    e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'reforme', texte: `${ancienne.nom} est remplacée par : ${def.nom}.` });
+  }
 
   const existante = e.reformes.actives.findIndex((a) => a.id === id);
   if (existante >= 0) {

@@ -56,7 +56,7 @@ import { borner } from '../model/outils.js';
 export { reformesDisponibles, actionsDisponibles, calculerScore, conseils, SUCCES };
 export { programmesDisponibles, valeurPortefeuille, fleuron } from './entreprises.js';
 export { siegesLegislativesFrance } from './elections.js';
-export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains } from './capitalisation.js';
+export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains, CIBLE_MIXTE, SCENARIOS_MIXTE } from './capitalisation.js';
 export { voterTexte, texteFinancier } from './politique.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 

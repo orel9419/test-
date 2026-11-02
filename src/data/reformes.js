@@ -58,23 +58,26 @@ const REFORMES_COMMUNES = [
     categorie: 'retraites',
     pays: ['france'],
     resume: 'Le levier le plus puissant sur la dépense de retraite, et le plus conflictuel.',
-    pedagogie: 'Les retraites représentent 422 Md€ en 2025, soit 14,1 % du PIB et près d\'un quart des dépenses publiques (COR). Il y a 2,5 personnes d\'âge actif pour une personne de 65 ans et plus, et ce ratio tomberait à 1,6 en 2070. Reculer l\'âge réduit le nombre de retraités et augmente le nombre d\'actifs, mais une partie des seniors maintenus ne sont pas en emploi et touchent d\'autres prestations. La réforme de 2023 (64 ans) est suspendue jusqu\'au 01/01/2028 par la LFSS 2026 ; sans nouvelle décision, le relèvement reprend en 2028.',
+    pedagogie: 'Les retraites représentent 422 Md€ en 2025, soit 14,1 % du PIB et près d\'un quart des dépenses publiques (COR). Il y a 2,5 personnes d\'âge actif pour une personne de 65 ans et plus, et ce ratio tomberait à 1,6 en 2070. Reculer l\'âge réduit le nombre de retraités et augmente le nombre d\'actifs, mais une partie des seniors maintenus ne sont pas en emploi et touchent d\'autres prestations. La réforme de 2023 (64 ans) est suspendue jusqu\'au 01/01/2028 par la LFSS 2026 ; sans nouvelle décision, le relèvement reprend en 2028. Aller jusqu\'à 68 ans : l\'âge du taux plein automatique est déjà de 67 ans en France, et plusieurs pays européens lient l\'âge à l\'espérance de vie (Danemark : 68 ans en 2030, 70 ans en 2040, loi votée en mai 2025). Mais l\'espérance de vie sans incapacité à 65 ans reste d\'environ 10 à 12 ans, et les écarts entre ouvriers et cadres sont importants : sans compensation (pénibilité, carrières longues), le rejet est massif.',
     sources: [
       { texte: 'COR, rapport annuel 2026', url: 'https://www.cor-retraites.fr/sites/default/files/2026-06/RA_2026_def.pdf' },
       { texte: 'Coût de la suspension (franceinfo)', url: 'https://www.franceinfo.fr/economie/retraite/reforme-des-retraites/la-suspension-de-la-reforme-des-retraites-coutera-1-4-milliard-d-euros-en-2027-les-complementaires-sante-et-les-retraites-mis-a-contribution_7570171.html' },
+      { texte: 'Danemark : retraite à 70 ans en 2040 (The Local, mai 2025)', url: 'https://www.thelocal.dk/20250522/denmark-formally-raises-retirement-age-to-70-in-2040' },
     ],
     options: [
       { id: 'abrogation_62', nom: 'Abroger la réforme : retour à 62 ans', description: 'Demande de la gauche et, en partie, du RN. Coût élevé et durable.' },
       { id: 'suspension', nom: 'Prolonger la suspension (62 ans et 9 mois)', description: 'Geler l\'âge au niveau actuel au-delà de 2028.' },
       { id: 'acceleration_64', nom: 'Lever la suspension dès 2027 et accélérer : 64 ans en 2029', description: 'Lever la suspension un an plus tôt que prévu, au rythme de 6 mois par an.' },
       { id: 'age_65', nom: 'Aller vers 65 ans (6 mois par an, 65 ans en 2031)', description: 'Position de la droite (LR) et d\'une partie du centre.' },
+      { id: 'age_68', nom: 'Aller vers 68 ans (6 mois par an, 68 ans vers 2037)', description: 'Rupture forte : l\'âge légal rejoindrait l\'âge actuel du taux plein automatique (67 ans) puis le dépasserait. Le Danemark vise 68 ans en 2030 et 70 ans en 2040. Jusqu\'en 2031, l\'effet budgétaire est le même qu\'avec 65 ans : la différence vient après, mais les marchés la prennent en compte dès le vote.' },
+      { id: 'age_68_rapide', nom: 'Aller vite vers 68 ans (9 mois par an, 68 ans en 2034)', description: 'Rythme trois fois plus rapide que la réforme de 2023 (3 mois par génération) : économies visibles dès ce quinquennat, rejet maximal.' },
     ],
     delai: 2,
     appliquer(e, o) {
       const r = e.retraites;
       r.calendrier = 'libre';
       // [âge cible, rythme en années d'âge par an]
-      const cibles = { abrogation_62: [62, 0.25], suspension: [62.75, 0], acceleration_64: [64, 0.5], age_65: [65, 0.5] };
+      const cibles = { abrogation_62: [62, 0.25], suspension: [62.75, 0], acceleration_64: [64, 0.5], age_65: [65, 0.5], age_68: [68, 0.5], age_68_rapide: [68, 0.75] };
       [r.ageCible, r.rythme] = cibles[o];
     },
     effets: () => ({}),
@@ -84,11 +87,13 @@ const REFORMES_COMMUNES = [
         suspension: { chocs: { salaries: 3, fonctionnaires: 3, entrepreneurs: -2 }, opinion: { salaries: 1 }, credibilite: -0.12 },
         acceleration_64: { chocs: { salaries: -6, fonctionnaires: -6, jeunes: -3, entrepreneurs: 2 }, grief: { salaries: 10, fonctionnaires: 10, jeunes: 4 }, credibilite: 0.12 },
         age_65: { chocs: { salaries: -10, fonctionnaires: -10, jeunes: -5, retraites: 1, entrepreneurs: 3 }, grief: { salaries: 16, fonctionnaires: 16, jeunes: 7 }, credibilite: 0.25 },
+        age_68: { chocs: { salaries: -16, fonctionnaires: -16, jeunes: -9, retraites: 1, entrepreneurs: 4 }, grief: { salaries: 26, fonctionnaires: 26, jeunes: 12 }, credibilite: 0.35, instabilite: 0.08 },
+        age_68_rapide: { chocs: { salaries: -20, fonctionnaires: -20, jeunes: -11, retraites: 1, entrepreneurs: 4 }, grief: { salaries: 32, fonctionnaires: 32, jeunes: 14 }, credibilite: 0.4, instabilite: 0.12 },
       }[o];
     },
     axes: { retraites: 1 },
-    axesParOption: { abrogation_62: { retraites: -1, social: 0.5 }, suspension: { retraites: -0.4 }, acceleration_64: { retraites: 0.6 }, age_65: { retraites: 1 } },
-    chiffrage: 'Dans le modèle, chaque année d\'âge légal en plus réduit à terme la dépense de pensions d\'environ 10 Md€ par an (environ 400 000 retraités de moins), avant les prestations versées aux seniors sans emploi. Le gouvernement chiffrait la réforme de 2023 à 17,7 Md€ en 2030, avant 4,8 Md€ de mesures d\'accompagnement. La suspension actuelle coûte 0,1 Md€ en 2026 et 1,4 Md€ en 2027.',
+    axesParOption: { abrogation_62: { retraites: -1, social: 0.5 }, suspension: { retraites: -0.4 }, acceleration_64: { retraites: 0.6 }, age_65: { retraites: 1 }, age_68: { retraites: 1.6, social: -0.4 }, age_68_rapide: { retraites: 1.8, social: -0.6 } },
+    chiffrage: 'Dans le modèle, chaque année d\'âge légal en plus réduit à terme la dépense de pensions d\'environ 10 Md€ par an (environ 400 000 retraités de moins), avant les prestations versées aux seniors sans emploi. Le gouvernement chiffrait la réforme de 2023 à 17,7 Md€ en 2030, avant 4,8 Md€ de mesures d\'accompagnement. La suspension actuelle coûte 0,1 Md€ en 2026 et 1,4 Md€ en 2027. 68 ans : environ 5 ans de plus qu\'aujourd\'hui, soit de l\'ordre de 50 Md€ par an à l\'horizon 2037 dans le modèle, avant les prestations versées aux seniors sans emploi (hypothèse de jeu).',
   },
   {
     id: 'retraites_indexation',
@@ -176,7 +181,7 @@ const REFORMES_COMMUNES = [
     categorie: 'travail',
     pays: ['france'],
     resume: 'Travailler plus pour produire plus, mais qui paie les heures en plus, et qui y perd ?',
-    pedagogie: 'Selon l\'Insee, les salariés à temps complet travaillent déjà 38,8 h par semaine en moyenne (cadres 42 h, employés 37,3 h). Passer à 39 h change donc surtout le seuil des heures majorées de 25 %. Les salariés à 35 h gagnent à travailler plus si les heures sont payées ; ceux qui faisaient déjà des heures supplémentaires peuvent y perdre (fin de la majoration). Exonérer les heures en plus d\'impôt et de cotisations augmente le pouvoir d\'achat, mais coûte au budget.',
+    pedagogie: 'Selon l\'Insee, les salariés à temps complet travaillent déjà 38,8 h par semaine en moyenne (cadres 42 h, employés 37,3 h). Passer à 39 h change donc surtout le seuil des heures majorées de 25 %. Les salariés à 35 h gagnent à travailler plus si les heures sont payées ; ceux qui faisaient déjà des heures supplémentaires peuvent y perdre (fin de la majoration). Exonérer les heures en plus d\'impôt et de cotisations augmente le pouvoir d\'achat, mais coûte au budget. À 40 h, la France rejoindrait la norme légale de l\'Espagne (où le Parlement a rejeté en septembre 2025 un passage à 37,5 h), de l\'Italie ou du Portugal ; la directive européenne plafonne de son côté la durée à 48 h en moyenne.',
     sources: [
       { texte: 'Insee, durée du travail (2024)', url: 'https://www.insee.fr/fr/statistiques/8733071' },
       { texte: 'Coût des heures supplémentaires défiscalisées (franceinfo)', url: 'https://www.franceinfo.fr/replay-radio/le-decryptage-eco/budget-2026-heures-supplementaires-et-primes-defiscalisees-ou-desocialisees-le-retour-des-vieilles-recettes_7500832.html' },
@@ -188,6 +193,9 @@ const REFORMES_COMMUNES = [
       { id: '39h_exo2', nom: '39 h payées 39, dont 2 h exonérées d\'impôt et de cotisations' },
       { id: '39h_exo4', nom: '39 h payées 39, les 4 h en plus exonérées' },
       { id: '39h_non_payees', nom: '39 h payées 35 (travailler plus sans gagner plus)' },
+      { id: '40h_normal', nom: '40 h payées 40, heures imposées normalement', description: 'La norme légale de l\'Espagne, de l\'Italie ou du Portugal. Les heures majorées ne commencent qu\'à la 41e heure.' },
+      { id: '40h_exo5', nom: '40 h payées 40, les 5 h en plus exonérées d\'impôt et de cotisations', description: 'Plus attractif pour les salariés, mais coûteux pour le budget.' },
+      { id: '40h_non_payees', nom: '40 h payées 35 (5 h de plus sans hausse de salaire)', description: 'Pour un salarié à 35 h, le salaire horaire baisse de 12,5 % : choc de compétitivité, mais perte de pouvoir d\'achat horaire.' },
     ],
     delai: 2,
     appliquer(e, o) {
@@ -198,6 +206,7 @@ const REFORMES_COMMUNES = [
       const conf = {
         '37h_normal': [37, 'normal', 0], '39h_normal': [39, 'normal', 0], '39h_exo2': [39, 'exonere', 2],
         '39h_exo4': [39, 'exonere', 4], '39h_non_payees': [39, 'non_paye', 0],
+        '40h_normal': [40, 'normal', 0], '40h_exo5': [40, 'exonere', 5], '40h_non_payees': [40, 'non_paye', 0],
       }[o];
       [t.dureeReference, t.traitement, t.heuresExonerees] = conf;
     },
@@ -211,11 +220,14 @@ const REFORMES_COMMUNES = [
         '39h_exo2': { chocs: { salaries: -3, fonctionnaires: -2, entrepreneurs: 5 }, grief: { salaries: 5 }, credibilite: 0.03 },
         '39h_exo4': { chocs: { salaries: -2, fonctionnaires: -2, entrepreneurs: 5 }, grief: { salaries: 4 } },
         '39h_non_payees': { chocs: { salaries: -14, fonctionnaires: -5, jeunes: -5, entrepreneurs: 8 }, grief: { salaries: 18, jeunes: 6 }, credibilite: 0.08 },
+        '40h_normal': { chocs: { salaries: -9, fonctionnaires: -4, jeunes: -3, entrepreneurs: 7 }, grief: { salaries: 12, jeunes: 3 }, credibilite: 0.06 },
+        '40h_exo5': { chocs: { salaries: -3, fonctionnaires: -3, entrepreneurs: 6 }, grief: { salaries: 6 }, credibilite: -0.02 },
+        '40h_non_payees': { chocs: { salaries: -18, fonctionnaires: -6, jeunes: -7, entrepreneurs: 10 }, grief: { salaries: 24, jeunes: 8 }, credibilite: 0.1, instabilite: 0.05 },
       }[o];
     },
     axes: { travail: 1 },
-    axesParOption: { heures_sup_libres: { travail: 0.4, fiscal: -0.3 }, '39h_non_payees': { travail: 1, social: -0.7 }, '39h_exo2': { travail: 0.8, fiscal: -0.3 }, '39h_exo4': { travail: 0.8, fiscal: -0.5 } },
-    chiffrage: 'Modèle : 39 h ferait gagner de l\'ordre de 0,5 à 0,8 % de PIB potentiel à terme, selon l\'adhésion. Les exonérations coûtent environ 1 à 3 Md€ par an. Les heures supplémentaires défiscalisées actuelles coûtent environ 2 Md€ par an (franceinfo).',
+    axesParOption: { heures_sup_libres: { travail: 0.4, fiscal: -0.3 }, '39h_non_payees': { travail: 1, social: -0.7 }, '39h_exo2': { travail: 0.8, fiscal: -0.3 }, '39h_exo4': { travail: 0.8, fiscal: -0.5 }, '40h_normal': { travail: 1.2 }, '40h_exo5': { travail: 1, fiscal: -0.7 }, '40h_non_payees': { travail: 1.3, social: -1 } },
+    chiffrage: 'Modèle : 39 h ferait gagner de l\'ordre de 0,5 à 0,8 % de PIB potentiel à terme, selon l\'adhésion. Les exonérations coûtent environ 1 à 3 Md€ par an. Les heures supplémentaires défiscalisées actuelles coûtent environ 2 Md€ par an (franceinfo). 40 h : un peu plus d\'heures que 39 h pour les salariés à 35-37 h, rien ne change pour les cadres déjà à 42 h ; 5 h exonérées coûtent de l\'ordre de 6 à 7 Md€ par an (calcul du modèle). Paradoxe instructif : 40 h payées 35 baissent le coût du travail et le chômage, mais améliorent moins le déficit que 40 h payées 40, car la masse salariale (donc les cotisations et l\'impôt) baisse.',
   },
   {
     id: 'fonction_publique_temps',
@@ -821,7 +833,7 @@ for (const r of REFORMES_COMMUNES) if (!r.vehicule && VEHICULES[r.id]) r.vehicul
  * celles dont l'inspiration est nette sont classées.
  */
 const ORIENTATIONS = {
-  liberale: ['annualisation', 'plafond_aides_smic', 'travail_dimanche', 'non_remplacement', 'privatisations', 'tva_sociale', 'cvae', 'capi_per', 'capi_pilier', 'capi_transition', 'jour_ferie', 'agences_operateurs', 'fonction_publique_temps', 'ir_classes_moyennes', 'cumul_emploi_retraite'],
+  liberale: ['annualisation', 'plafond_aides_smic', 'travail_dimanche', 'non_remplacement', 'privatisations', 'tva_sociale', 'cvae', 'capi_per', 'capi_pilier', 'capi_transition', 'capi_mixte', 'jour_ferie', 'agences_operateurs', 'fonction_publique_temps', 'ir_classes_moyennes', 'cumul_emploi_retraite'],
   sociale: ['retraites_penibilite', 'retraites_minimum', 'retraites_carrieres_longues', 'taxe_hauts_patrimoines', 'surtaxe_grandes_entreprises', 'rachats_actions', 'cdhr', 'taxe_holdings', 'prime_activite', 'deserts_medicaux', 'plan_hopital', 'enseignants', 'bouclier_energie', 'taxe_superprofits', 'vie_chere_outremer'],
 };
 for (const [orientation, ids] of Object.entries(ORIENTATIONS)) for (const r of [...REFORMES_COMMUNES, ...REFORMES_FRANCE]) if (ids.includes(r.id)) r.orientation = orientation;
