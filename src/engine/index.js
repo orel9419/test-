@@ -61,6 +61,7 @@ export { siegesLegislativesFrance } from './elections.js';
 export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains, CIBLE_MIXTE, SCENARIOS_MIXTE } from './capitalisation.js';
 export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politique.js';
 export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
+export { bilanReformes } from './reformes.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 
 /**
@@ -103,6 +104,8 @@ export function creerPartie(options) {
   e.grandsEvenements = {};
   e.graineMonde = (e.graine * 2654435761) >>> 0;
   initialiserPolitique(e, options.donnees);
+  // Intensité des effets des réformes : « réaliste » (calibrage des études) ou « accentuée » (effets plus visibles)
+  e.intensiteReformes = options.intensite === 'accentuee' ? 2 : 1;
   // France : jouer le président de la République plutôt que le Premier ministre
   e.role = options.role === 'president' && e.pays === 'france' ? 'president' : 'chef_gouvernement';
   if (e.role === 'president') {
@@ -343,6 +346,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   e.effetsDurables = { influence: effR.influence, souverainete: effR.souverainete, emissionsEvitees: effR.emissionsEvitees };
   e.effetsCourants = { plafonnementEnergie: effR.plafonnementEnergie };
   const effT = majTempsTravail(e);
+  const kReformes = e.intensiteReformes ?? 1; // effets accentués : le temps de travail est une réforme
   const effRet = majRetraites(e, effR);
   const effI = majInternational(e);
   const effEnt = effetsEntreprises(e);
@@ -377,9 +381,9 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   // Shutdown fédéral en cours : environ −0,15 point de PIB par trimestre (ordre de grandeur des estimations de la CBO)
   const chocShutdown = e.politique?.shutdown ? -0.15 : 0;
   majMacro(e, { budget: impulsion, chocs: (options.chocs ?? 0) + effEv.chocPIB + chocShutdown + (effR.chocDemande ?? 0) }, {
-    offreTravail: effR.offreTravail + effT.offreTravail + effRet.offreTravail,
+    offreTravail: effR.offreTravail + kReformes * effT.offreTravail + effRet.offreTravail,
     actifsSupplementaires: (effRet.actifsSupplementaires ?? 0) + (effR.offreTravail / 100) * e.macro.populationActiveBase / 0.75,
-    chomageStructurel: effR.chomageStructurel + effT.chomageStructurel + e.macro.effetCotisations,
+    chomageStructurel: effR.chomageStructurel + kReformes * effT.chomageStructurel + e.macro.effetCotisations,
     potentielBonus: effR.potentielBonus + effI.potentielBonus + effetIS + effEnt.potentielBonus,
     chocPrix,
   });

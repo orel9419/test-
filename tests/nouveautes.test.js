@@ -111,3 +111,40 @@ describe('Réformes concrètes', () => {
     expect(reformesDisponibles(e).find((r) => r.id === 'agences_operateurs').options.map((o) => o.id)).toContain('doublons');
   });
 });
+
+describe('Budgets militaires, intensité des réformes, programmes', () => {
+  it('classement militaire (SIPRI 2025) : France 9e, remonte avec la trajectoire OTAN', () => {
+    const base = nouvelle('france', { calendrier: 'horizon2050', mode: 'facile' });
+    expect(base.classements.depart.defense).toBe(9);
+    expect(classementsTries(base).defense[0].id).toBe('US');
+    const otan = jusqua(base, 2040, { reformes: [{ id: 'effort_defense', option: 'otan' }] });
+    expect(otan.classements.dernier.defense).toBeLessThan(9);
+  });
+  it('effets accentués : effets structurels doublés, budget inchangé', async () => {
+    const { bilanReformes } = await import('../src/engine/index.js');
+    const run = (intensite) => jusqua(nouvelle('france', { intensite, mode: 'facile' }), 2029, { reformes: [{ id: 'contrat_travail', option: reformesDisponibles(nouvelle()).find((r) => r.id === 'contrat_travail').options[0].id }, { id: 'nucleaire_epr2', option: 'six' }] });
+    const r = bilanReformes(run('realiste')), a = bilanReformes(run('accentuee'));
+    const ligne = (b, id) => b.find((l) => l.id === id);
+    expect(ligne(a, 'contrat_travail').chomage / ligne(r, 'contrat_travail').chomage).toBeCloseTo(2, 5);
+    expect(ligne(a, 'nucleaire_epr2').croissance / ligne(r, 'nucleaire_epr2').croissance).toBeCloseTo(2, 5);
+    expect(ligne(a, 'nucleaire_epr2').depenses).toBeCloseTo(ligne(r, 'nucleaire_epr2').depenses, 1);
+  });
+  it('programmes : chaque mesure renvoie à une réforme et une option du catalogue, avec une source', async () => {
+    const { PROGRAMMES } = await import('../src/data/programmes.js');
+    const liste = reformesDisponibles(nouvelle());
+    expect(PROGRAMMES.map((p) => p.id)).toEqual(expect.arrayContaining(['melenchon', 'le_pen', 'retailleau', 'lisnard', 'glucksmann']));
+    for (const p of PROGRAMMES) {
+      expect(p.sources.length).toBeGreaterThan(0);
+      for (const m of p.mesures) expect(liste.find((r) => r.id === m.reforme)?.options.some((o) => o.id === m.option), `${p.id} ${m.reforme}:${m.option}`).toBe(true);
+    }
+  });
+  it('choc de dépenses (Lisnard) : récession à court terme, dette plus basse à dix ans', () => {
+    const base = nouvelle('france', { calendrier: 'horizon2050', mode: 'facile' });
+    const avec2 = jusqua(base, 2028, { reformes: [{ id: 'choc_depenses', option: 'quinquennat' }] });
+    const sans2 = jusqua(base, 2028);
+    expect(avec2.macro.pibReel).toBeLessThan(sans2.macro.pibReel);
+    const avec10 = jusqua(base, 2036, { reformes: [{ id: 'choc_depenses', option: 'quinquennat' }] });
+    const sans10 = jusqua(base, 2036);
+    expect(avec10.finances.detteRatio).toBeLessThan(sans10.finances.detteRatio);
+  });
+});

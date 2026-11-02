@@ -1126,6 +1126,375 @@
         "texte": "FMI, Perspectives de l'économie mondiale (octobre 2025), via Visual Capitalist",
         "url": "https://www.visualcapitalist.com/charted-how-global-economic-power-shifted-1980-2025/"
       }
-    ]
+    ],
+    "defense": [
+      {
+        "id": "US",
+        "nom": "États-Unis",
+        "drapeau": "🇺🇸",
+        "depense_2025": {
+          "valeur": 954,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2030,
+            "part": 3.0
+          },
+          {
+            "annee": 2050,
+            "part": 2.9
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "note": "Baisse de 7,5 % en 2025 selon le SIPRI."
+      },
+      {
+        "id": "CN",
+        "nom": "Chine",
+        "drapeau": "🇨🇳",
+        "depense_2025": {
+          "valeur": 336,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "estimation",
+          "note": "Estimation du SIPRI (le budget officiel chinois est plus bas)."
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2035,
+            "part": 1.8
+          },
+          {
+            "annee": 2050,
+            "part": 1.9
+          }
+        ],
+        "trajectoire_statut": "estimation"
+      },
+      {
+        "id": "RU",
+        "nom": "Russie",
+        "drapeau": "🇷🇺",
+        "depense_2025": {
+          "valeur": 190,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2030,
+            "part": 5.5
+          },
+          {
+            "annee": 2040,
+            "part": 4.5
+          },
+          {
+            "annee": 2050,
+            "part": 4.0
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "note": "7,5 % du PIB en 2025 (SIPRI). Hypothèse de jeu : décrue progressive."
+      },
+      {
+        "id": "DE",
+        "nom": "Allemagne",
+        "drapeau": "🇩🇪",
+        "depense_2025": {
+          "valeur": 114,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2029,
+            "part": 3.5
+          },
+          {
+            "annee": 2035,
+            "part": 3.5
+          },
+          {
+            "annee": 2050,
+            "part": 3.3
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "note": "Objectif allemand : 3,5 % du PIB en 2029 (hypothèse de jeu calée sur les annonces de 2025)."
+      },
+      {
+        "id": "IN",
+        "nom": "Inde",
+        "drapeau": "🇮🇳",
+        "depense_2025": {
+          "valeur": 92.1,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2035,
+            "part": 2.4
+          },
+          {
+            "annee": 2050,
+            "part": 2.5
+          }
+        ],
+        "trajectoire_statut": "estimation"
+      },
+      {
+        "id": "GB",
+        "nom": "Royaume-Uni",
+        "drapeau": "🇬🇧",
+        "depense_2025": {
+          "valeur": 89.0,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2027,
+            "part": 2.6
+          },
+          {
+            "annee": 2035,
+            "part": 3.5
+          },
+          {
+            "annee": 2050,
+            "part": 3.3
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "note": "Engagement de l'OTAN : 3,5 % en 2035 (hypothèse de trajectoire)."
+      },
+      {
+        "id": "UA",
+        "nom": "Ukraine",
+        "drapeau": "🇺🇦",
+        "depense_2025": {
+          "valeur": 84.1,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2028,
+            "part": 25
+          },
+          {
+            "annee": 2032,
+            "part": 10
+          },
+          {
+            "annee": 2050,
+            "part": 6
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "pib_2025": {
+          "valeur": 210,
+          "unite": "Md$",
+          "statut": "estimation",
+          "note": "PIB hors liste des grandes économies : ordre de grandeur pour calculer la part du PIB."
+        },
+        "note": "40 % du PIB en 2025 (SIPRI). Hypothèse de jeu : décrue après la guerre, qui reste incertaine."
+      },
+      {
+        "id": "SA",
+        "nom": "Arabie saoudite",
+        "drapeau": "🇸🇦",
+        "depense_2025": {
+          "valeur": 83.2,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2050,
+            "part": 6.5
+          }
+        ],
+        "trajectoire_statut": "estimation"
+      },
+      {
+        "id": "FR",
+        "nom": "France",
+        "drapeau": "🇫🇷",
+        "depense_2025": {
+          "valeur": 68.0,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2030,
+            "part": 2.6
+          },
+          {
+            "annee": 2035,
+            "part": 3.0
+          },
+          {
+            "annee": 2050,
+            "part": 3.0
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "note": "Trajectoire suivie quand la France n'est pas jouée (hypothèse de jeu)."
+      },
+      {
+        "id": "JP",
+        "nom": "Japon",
+        "drapeau": "🇯🇵",
+        "depense_2025": {
+          "valeur": 62.2,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2028,
+            "part": 2.0
+          },
+          {
+            "annee": 2050,
+            "part": 2.2
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "note": "Objectif japonais : 2 % du PIB vers 2027 (hypothèse de trajectoire)."
+      },
+      {
+        "id": "IL",
+        "nom": "Israël",
+        "drapeau": "🇮🇱",
+        "depense_2025": {
+          "valeur": 48.3,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2030,
+            "part": 5.5
+          },
+          {
+            "annee": 2050,
+            "part": 4.5
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "pib_2025": {
+          "valeur": 620,
+          "unite": "Md$",
+          "statut": "estimation",
+          "note": "PIB hors liste des grandes économies : ordre de grandeur pour calculer la part du PIB."
+        },
+        "note": "7,8 % du PIB en 2025 (SIPRI)."
+      },
+      {
+        "id": "IT",
+        "nom": "Italie",
+        "drapeau": "🇮🇹",
+        "depense_2025": {
+          "valeur": 48.1,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2030,
+            "part": 2.5
+          },
+          {
+            "annee": 2035,
+            "part": 3.5
+          },
+          {
+            "annee": 2050,
+            "part": 3.3
+          }
+        ],
+        "trajectoire_statut": "estimation"
+      },
+      {
+        "id": "KR",
+        "nom": "Corée du Sud",
+        "drapeau": "🇰🇷",
+        "depense_2025": {
+          "valeur": 47.8,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2050,
+            "part": 2.8
+          }
+        ],
+        "trajectoire_statut": "estimation"
+      },
+      {
+        "id": "PL",
+        "nom": "Pologne",
+        "drapeau": "🇵🇱",
+        "depense_2025": {
+          "valeur": 46.8,
+          "unite": "Md$",
+          "source": "SIPRI, dépenses militaires mondiales 2025 (fiche d'avril 2026)",
+          "url": "https://www.sipri.org/publications/2026/sipri-fact-sheets/trends-world-military-expenditure-2025",
+          "statut": "officiel"
+        },
+        "trajectoire_part_pib": [
+          {
+            "annee": 2030,
+            "part": 5.0
+          },
+          {
+            "annee": 2050,
+            "part": 4.5
+          }
+        ],
+        "trajectoire_statut": "estimation",
+        "pib_2025": {
+          "valeur": 980,
+          "unite": "Md$",
+          "statut": "estimation",
+          "note": "PIB hors liste des grandes économies : ordre de grandeur pour calculer la part du PIB."
+        },
+        "note": "Plus de 4 % du PIB, record de l'OTAN en proportion."
+      }
+    ],
+    "defense_note": "Dépenses militaires au sens du SIPRI (en dollars courants) : la définition est plus large que le budget du ministère des Armées. Le pays joué suit vos décisions : sa dépense varie comme son budget de la défense dans le jeu. Les trajectoires des autres pays sont des hypothèses de jeu inspirées de leurs annonces (OTAN : 3,5 % du PIB en 2035)."
   }
 }

@@ -10,6 +10,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
   const [mode, setMode] = useState('intermediaire');
   const [calendrier, setCalendrier] = useState('horizon2050');
   const [role, setRole] = useState('chef_gouvernement');
+  const [intensite, setIntensite] = useState('accentuee');
   const d = PAYS[pays].donnees;
   return (
     <div className="accueil pile">
@@ -80,9 +81,21 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
         </button>
       </div>
 
+      <h2>4. Effets des réformes</h2>
+      <div className="choix-pays">
+        <button type="button" className={`carte carte-pays ${intensite === 'accentuee' ? 'choisie' : ''}`} onClick={() => setIntensite('accentuee')} aria-pressed={intensite === 'accentuee'}>
+          <strong>Accentués</strong>
+          <p className="petit muet">Effets des réformes doublés sur l'emploi, la croissance, les émissions et l'influence ; réactions de l'opinion amplifiées de 40 %. Le coût budgétaire reste réaliste. Idéal pour voir où mènent vos choix.</p>
+        </button>
+        <button type="button" className={`carte carte-pays ${intensite === 'realiste' ? 'choisie' : ''}`} onClick={() => setIntensite('realiste')} aria-pressed={intensite === 'realiste'}>
+          <strong>Réalistes</strong>
+          <p className="petit muet">Calibrage prudent, proche des études économiques : les réformes structurelles produisent des effets modestes et lents.</p>
+        </button>
+      </div>
+
       {pays === 'france' && (
         <>
-          <h2>4. Votre rôle</h2>
+          <h2>5. Votre rôle</h2>
           <div className="choix-pays">
             <button type="button" className={`carte carte-pays ${role === 'chef_gouvernement' ? 'choisie' : ''}`} onClick={() => setRole('chef_gouvernement')} aria-pressed={role === 'chef_gouvernement'}>
               <strong>Premier ministre (Matignon)</strong>
@@ -97,7 +110,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
       )}
 
       <div className="ligne">
-        <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier, role: pays === 'france' ? role : 'chef_gouvernement' })}>Prendre ses fonctions</button>
+        <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier, intensite, role: pays === 'france' ? role : 'chef_gouvernement' })}>Prendre ses fonctions</button>
         <label className="bouton">Importer une partie (JSON)<input type="file" accept="application/json" onChange={onImporter} hidden /></label>
         {onColler && <button type="button" className="bouton" onClick={onColler}>Coller une sauvegarde</button>}
       </div>

@@ -4,6 +4,7 @@ import GraphiqueLignes from '../composants/GraphiqueLignes.jsx';
 import { nombre, pct, md, signe, classeVariation } from '../format.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Conseiller from '../composants/Conseiller.jsx';
+import ImpactReformes from '../composants/ImpactReformes.jsx';
 
 /** Explications pédagogiques des indicateurs. */
 export const EXPLICATIONS = {
@@ -86,6 +87,8 @@ export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
         {partie.entreprises && <Tuile libelle="Souveraineté économique" nombre={partie.entreprises.souverainete} format={(v) => `${nombre(v, 0)}/100`} favorableSiHausse info="Contrôle public des actifs stratégiques, actions spécifiques et programmes de l'État stratège (estimation de jeu)." serie={partie.entreprises.historique.map((x) => x.souverainete)} />}
         <Tuile libelle="Influence" nombre={partie.international.influence} format={(v) => `${nombre(v, 0)}/100`} favorableSiHausse info={EXPLICATIONS.influence} serie={serie('influence')} />
       </div>
+
+      <ImpactReformes partie={partie} allerA={allerA} />
 
       <div className="carte petit">
         <strong>Contexte mondial :</strong> énergie à l'indice {nombre(monde.energie, 0)} (100 = avant la guerre en Iran, {conflit}) · {us ? <>taux directeur de la Fed {pct(monde.tauxFed, 3)}</> : <>taux de la BCE {pct(monde.tauxBCE, 2)} · inflation de la zone euro {pct(monde.inflationZE)}</>}.

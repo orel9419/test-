@@ -3,6 +3,7 @@ import { reformesDisponibles, chiffrerReforme, voterTexte } from '../../engine/i
 import { GROUPES } from '../../model/ministeres.js';
 import Apercu from './Apercu.jsx';
 import Capitalisation from './Capitalisation.jsx';
+import Programmes from './Programmes.jsx';
 import Info from '../composants/Info.jsx';
 import { signe, classeVariation, devise } from '../format.js';
 
@@ -176,6 +177,8 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
           ))}
         </div>
       </div>
+
+      {fr && <Programmes partie={partie} liste={liste} decisions={decisions} majDecisions={majDecisions} />}
 
       {fr && (theme === 'tous' || theme === 'capitalisation' || theme === 'retraites') && !filtre && <Capitalisation partie={partie} decisions={decisions} majDecisions={majDecisions} />}
 

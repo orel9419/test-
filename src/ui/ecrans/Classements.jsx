@@ -31,7 +31,8 @@ function Barres({ liste, joue, valeur, format, rangsDepart, etendue, reference, 
       <tbody>
         {lignes.map(({ p, rang, separe }) => {
           const v = valeur(p);
-          const g = Math.min(x(v), zero), l = Math.abs(x(v) - zero);
+          const xv = Math.min(100, Math.max(0, x(v))); // valeurs hors échelle (pays en guerre) : barre pleine
+          const g = Math.min(xv, zero), l = Math.abs(xv - zero);
           const estJoue = p.id === joue;
           return (
             <tr key={p.id} className={`${estJoue ? 'pays-joue' : ''} ${separe ? 'separe' : ''}`}>
@@ -85,6 +86,7 @@ export default function Classements({ partie }) {
         {dansEuro && <div className="tuile"><span className="libelle">PIB de la zone euro</span><span className="valeur chiffres">{rangTexte(r.pibEuro)}</span><span className="variation">au départ : {rangTexte(d.pibEuro)}</span></div>}
         {dansEuro && <div className="tuile"><span className="libelle">Dette (1er = la plus forte)</span><span className="valeur chiffres">{rangTexte(r.dette)} sur 21</span><span className="variation">au départ : {rangTexte(d.dette)}</span></div>}
         {dansEuro && <div className="tuile"><span className="libelle">Déficit (1er = le plus lourd)</span><span className="valeur chiffres">{rangTexte(r.deficit)} sur 21</span><span className="variation">au départ : {rangTexte(d.deficit)}</span></div>}
+        {r.defense && <div className="tuile"><span className="libelle">Budget militaire</span><span className="valeur chiffres">{rangTexte(r.defense)}</span><span className="variation">au départ : {rangTexte(d.defense)}</span></div>}
       </div>
 
       <div className="grille-2">
@@ -110,6 +112,21 @@ export default function Classements({ partie }) {
           <Barres liste={t.deficit} joue={joue} valeur={(p) => p.solde} format={(v) => `${v > 0 ? '+' : ''}${nombre(v, 1)} %`} rangsDepart={departs.deficit} etendue={[Math.min(-6, ...soldes), Math.max(4, ...soldes)]} reference={-3} />
         </div>
       </div>
+
+      {t.defense?.length > 0 && (
+        <div className="grille-2">
+          <div className="carte">
+            <h3>Budgets militaires : les 10 premiers <Info texte="Dépenses militaires au sens du SIPRI (2025), en dollars courants : la définition est plus large que le budget du ministère des Armées. Votre pays suit votre budget de la défense ; les autres suivent une trajectoire inspirée de leurs annonces (OTAN : 3,5 % du PIB en 2035)." /></h3>
+            <p className="tres-petit muet">En milliards de dollars courants.</p>
+            <Barres liste={t.defense} joue={joue} valeur={(p) => p.montant} format={(v) => `${nombre(v, 0)} Md$`} rangsDepart={departs.defense} etendue={[0, t.defense[0].montant]} limite={10} />
+          </div>
+          <div className="carte">
+            <h3>Effort de défense, en % du PIB <Info texte="Le trait vertical marque 3,5 % du PIB, l'objectif fixé par l'OTAN au sommet de La Haye (juin 2025) pour 2035. Ukraine, Israël et Russie, en guerre, dépassent largement l'échelle." /></h3>
+            <p className="tres-petit muet">Mêmes pays, classés par effort.</p>
+            <Barres liste={[...t.defense].sort((a, b) => b.part - a.part)} joue={joue} valeur={(p) => p.part} format={(v) => `${nombre(v, 1)} %`} etendue={[0, 8]} reference={3.5} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

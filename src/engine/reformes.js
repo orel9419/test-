@@ -27,6 +27,44 @@ export function reformesDisponibles(e) {
   });
 }
 
+/** Clés d'effets « structurels » amplifiées en mode « effets accentués » (pas les montants budgétaires). */
+const CLES_STRUCTURELLES = ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocDemande', 'emissionsEvitees', 'influence', 'souverainete'];
+
+/** Réaction amplifiée : chocs d'opinion, griefs, compensations, crédibilité et instabilité. */
+function accentuer(reaction, k) {
+  if (k === 1) return reaction;
+  const fois = (o) => (o ? Object.fromEntries(Object.entries(o).map(([g, v]) => [g, v * k])) : o);
+  return { ...reaction, chocs: fois(reaction.chocs), opinion: fois(reaction.opinion), grief: fois(reaction.grief), compensation: fois(reaction.compensation), credibilite: reaction.credibilite !== undefined ? reaction.credibilite * k : undefined, instabilite: reaction.instabilite !== undefined ? reaction.instabilite * k : undefined };
+}
+
+/**
+ * Bilan, au trimestre courant, de l'effet de chaque réforme en vigueur :
+ * budget (Md€ par an), emploi, croissance potentielle, émissions, influence.
+ * Sert au tableau de bord (« Impact de vos réformes »).
+ */
+export function bilanReformes(e) {
+  const k = e.intensiteReformes ?? 1;
+  const somme = (o) => Object.values(o ?? {}).reduce((s, x) => s + x, 0);
+  return e.reformes.actives.filter((a) => !a.diplomatique).map((a) => {
+    const def = trouverReforme(a.id);
+    let r = {};
+    if (a.appliquee) {
+      try { r = def?.effets?.(e, a.option, e.tour - a.tourEffet) ?? {}; } catch { r = {}; }
+    }
+    const ligne = {
+      id: a.id, nom: def?.nom ?? a.nom, option: a.libelleOption, appliquee: a.appliquee, tourApplication: a.tourApplication,
+      depenses: somme(r.depenses), recettes: somme(r.recettes), pret: -(r.cessions ?? 0) * 4,
+      emploi: (r.offreTravail ?? 0) * k, chomage: (r.chomageStructurel ?? 0) * k, croissance: (r.potentielBonus ?? 0) * k,
+      emissions: (r.emissionsEvitees ?? 0) * k, influence: (r.influence ?? 0) * k, souverainete: (r.souverainete ?? 0) * k,
+    };
+    // Réformes pilotées par un sous-modèle : temps de travail et âge de départ
+    if (a.id === 'temps_travail' && a.appliquee) { ligne.emploi = e.travail.offreTravail * k; ligne.chomage = e.travail.chomageStructurel * k; ligne.recettes = -e.travail.coutBudgetaire; }
+    if (a.id === 'retraites_age') ligne.note = `âge légal ${e.retraites.ageLegal.toFixed(2).replace('.', ',')} ans, cible ${String(e.retraites.ageCible).replace('.', ',')}`;
+    ligne.solde = ligne.recettes - ligne.depenses;
+    return ligne;
+  });
+}
+
 /**
  * Adopte une réforme (après validation politique, gérée par le module politique).
  * Si la même réforme est déjà active avec une autre option, elle est remplacée.
@@ -57,7 +95,8 @@ export function adopterReforme(e, id, option, alea) {
     e.reformes.actives.splice(existante, 1);
   }
 
-  const reaction = def.reaction?.(e, option) ?? {};
+  // Effets accentués : les réactions de l'opinion sont amplifiées moins fortement que l'économie (racine du facteur)
+  const reaction = accentuer(def.reaction?.(e, option) ?? {}, Math.sqrt(e.intensiteReformes ?? 1));
   appliquerChocs(e, reaction.chocs);
   if (reaction.credibilite) e.finances.credibilite = borner(e.finances.credibilite + reaction.credibilite, -1, 1);
   if (reaction.instabilite) e.macro.instabilitePolitique = borner(e.macro.instabilitePolitique + reaction.instabilite, 0, 1);
@@ -102,7 +141,7 @@ export function majReformes(e, alea) {
     const r = def.effets?.(e, entree.option, age) ?? {};
     for (const [poste, v] of Object.entries(r.depenses ?? {})) effets.depenses[poste] = (effets.depenses[poste] ?? 0) + v;
     for (const [cle, v] of Object.entries(r.recettes ?? {})) effets.recettes[cle] = (effets.recettes[cle] ?? 0) + v;
-    for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS', 'chocDemande', 'influence', 'souverainete', 'emissionsEvitees']) effets[cle] += r[cle] ?? 0;
+    for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS', 'chocDemande', 'influence', 'souverainete', 'emissionsEvitees']) effets[cle] += (r[cle] ?? 0) * (CLES_STRUCTURELLES.includes(cle) ? (e.intensiteReformes ?? 1) : 1);
     effets.plafonnementEnergie = Math.max(effets.plafonnementEnergie, r.plafonnementEnergie ?? 0);
     for (const [id, liste] of Object.entries(r.menages ?? {})) effets.menages[id] = [...(effets.menages[id] ?? []), ...liste];
   }

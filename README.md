@@ -51,7 +51,7 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **112 réformes** (dont 31 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   En France, **121 réformes** (dont 31 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.
@@ -108,6 +108,24 @@ Durée et calendrier :
 - **un mandat, calendrier réel** : présidentielle française en avril 2027, élections allemandes début 2029, présidentielle américaine en novembre 2028 ;
 - **un mandat complet** : l'élection est jugée en fin de mandat.
 
+### Programmes des personnalités (France)
+
+Dans l'onglet « Réformes », le panneau « Programmes des personnalités » relie aux réformes du jeu les mesures emblématiques de Jean-Luc Mélenchon, Marine Le Pen, Bruno Retailleau, David Lisnard et Raphaël Glucksmann (retraite à 60 ans, SMIC, blocage des prix, VIe République ; TVA à 5,5 % sur l'énergie, priorité nationale ; référendum élargi, AME, DPE ; 200 Md€ d'économies ; taxe sur les très hauts patrimoines…). Pour chaque programme :
+- les sources et le statut de chaque mesure (programme publié, proposition publique, à vérifier) ;
+- le pronostic de vote à l'Assemblée du programme entier ;
+- un chiffrage par simulation sur deux ans (solde public, dette, PIB, chômage, popularité) ;
+- un bouton pour proposer tout le programme ce trimestre.
+
+Les programmes 2027 étant en cours d'écriture, le jeu les simplifie et ne reprend aucune citation.
+
+### Effets des réformes : réalistes ou accentués
+
+À l'accueil, choisissez l'intensité des effets :
+- **accentués** (par défaut) : effets doublés sur l'emploi, la croissance, les émissions et l'influence, réactions de l'opinion amplifiées de 40 % ; le coût budgétaire reste réaliste ;
+- **réalistes** : calibrage prudent, proche des études économiques.
+
+Le tableau de bord affiche l'**impact de vos réformes** : solde public, population active, chômage structurel, croissance potentielle et émissions, réforme par réforme et au total.
+
 ### Jouer le président de la République (France)
 
 À l'accueil, choisissez votre rôle : Premier ministre (Matignon) ou président de la République (Élysée). Le président :
@@ -121,7 +139,8 @@ Durée et calendrier :
 L'onglet « Classements » montre :
 - les 10 premières économies mondiales (PIB en dollars, FMI) ;
 - le PIB des pays de la zone euro ;
-- la dette et le solde public des 21 pays de l'euro (Eurostat 2025, Bulgarie comprise depuis janvier 2026).
+- la dette et le solde public des 21 pays de l'euro (Eurostat 2025, Bulgarie comprise depuis janvier 2026) ;
+- les budgets militaires (SIPRI 2025 : États-Unis, Chine, Russie, Allemagne… France 9e avec 68 Md$) et l'effort de défense en % du PIB, avec la cible de 3,5 % de l'OTAN.
 
 Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de croissance et de solde public (hypothèses calées sur le FMI et la Commission), avec les chocs mondiaux de la partie et leurs propres aléas. À politique inchangée, la France reste 2e de la zone euro mais glisse vers la 9e place mondiale en 2050, dépassée par le Brésil et l'Indonésie (taux de change constants).
 

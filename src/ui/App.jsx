@@ -136,9 +136,9 @@ export default function App() {
   }, []);
   const fermerNotification = useCallback((id) => setNotifications((n) => n.filter((x) => x.id !== id)), []);
 
-  const demarrer = useCallback(({ pays, mode: m, calendrier, role }) => {
+  const demarrer = useCallback(({ pays, mode: m, calendrier, role, intensite }) => {
     const graine = Math.floor(Math.random() * 2 ** 31);
-    const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier, role });
+    const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier, role, intensite });
     setPartie(p);
     setDecisions(decisionsInitiales(p));
     setOnglet('tableau');

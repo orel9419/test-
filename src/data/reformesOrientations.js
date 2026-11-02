@@ -79,13 +79,17 @@ export const REFORMES_LIBERALES = [
     options: [
       { id: 'supprimer', nom: 'Supprimer l\'IFI' },
       { id: 'improductive', nom: 'Le remplacer par un impôt sur la fortune improductive' },
+      { id: 'isf', nom: 'Rétablir un impôt de solidarité sur la fortune (ISF), avec un volet climatique', description: 'Proposition de La France insoumise. L\'ISF rapportait environ 5 Md€ avant 2018 (ordre de grandeur).' },
     ],
     delai: 1,
-    effets: (e, o) => ({ recettes: { fixe: (o === 'supprimer' ? -2.2 : 0.4) * prix(e) }, potentielBonus: o === 'supprimer' ? 0.003 : 0.002 }),
-    reaction: (e, o) => (o === 'supprimer' ? { chocs: { entrepreneurs: 3, retraites: 1, salaries: -3, jeunes: -2 }, credibilite: -0.03 } : { chocs: { entrepreneurs: 1 } }),
+    effets: (e, o) => (o === 'isf'
+      ? { recettes: { fixe: 3 * prix(e) }, potentielBonus: -0.004 }
+      : { recettes: { fixe: (o === 'supprimer' ? -2.2 : 0.4) * prix(e) }, potentielBonus: o === 'supprimer' ? 0.003 : 0.002 }),
+    reaction: (e, o) => ({ supprimer: { chocs: { entrepreneurs: 3, retraites: 1, salaries: -3, jeunes: -2 }, credibilite: -0.03 }, improductive: { chocs: { entrepreneurs: 1 } }, isf: { chocs: { entrepreneurs: -4, salaries: 2, jeunes: 1 }, credibilite: -0.02 } }[o]),
     axes: { fiscal: -0.7, marche: 0.5 },
-    axesParOption: { improductive: { fiscal: 0.1, marche: 0.4 } },
+    axesParOption: { improductive: { fiscal: 0.1, marche: 0.4 }, isf: { fiscal: 0.9, marche: -0.5, social: 0.4 } },
     positionsGroupes: { DEM: 0.3 },
+    positionsGroupesParOption: { isf: { LFI: 1, GDR: 1, ECOS: 0.8, SOC: 0.6, RN: -0.2, DR: -1, HOR: -1, EPR: -0.8, DEM: -0.3 } },
     chiffrage: 'IFI : environ 2,2 Md€ par an (ordre de grandeur) ; impôt sur la fortune improductive : +0,4 Md€ (hypothèse de jeu).',
   },
   {

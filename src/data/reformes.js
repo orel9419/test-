@@ -26,6 +26,7 @@
 import { REFORMES_FRANCE } from './reformesFrance.js';
 import { REFORMES_LIBERALES, REFORMES_SOCIALES } from './reformesOrientations.js';
 import { REFORMES_CONCRETES } from './reformesConcretes.js';
+import { REFORMES_PROGRAMMES } from './reformesProgrammes.js';
 
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const indicePrix = (e) => e.macro.niveauPrix / 100;
@@ -72,13 +73,14 @@ const REFORMES_COMMUNES = [
       { id: 'age_65', nom: 'Aller vers 65 ans (6 mois par an, 65 ans en 2031)', description: 'Position de la droite (LR) et d\'une partie du centre.' },
       { id: 'age_68', nom: 'Aller vers 68 ans (6 mois par an, 68 ans vers 2037)', description: 'Rupture forte : l\'âge légal rejoindrait l\'âge actuel du taux plein automatique (67 ans) puis le dépasserait. Le Danemark vise 68 ans en 2030 et 70 ans en 2040. Jusqu\'en 2031, l\'effet budgétaire est le même qu\'avec 65 ans : la différence vient après, mais les marchés la prennent en compte dès le vote.' },
       { id: 'age_68_rapide', nom: 'Aller vite vers 68 ans (9 mois par an, 68 ans en 2034)', description: 'Rythme trois fois plus rapide que la réforme de 2023 (3 mois par génération) : économies visibles dès ce quinquennat, rejet maximal.' },
+      { id: 'age_60', nom: 'Revenir à 60 ans (avec 40 annuités pour le taux plein)', description: 'Proposition de La France insoumise (L\'Avenir en commun). Selon l\'IFRAP, une mesure comparable coûterait de l\'ordre de 50 Md€ par an à terme (chiffrage contesté).' },
     ],
     delai: 2,
     appliquer(e, o) {
       const r = e.retraites;
       r.calendrier = 'libre';
       // [âge cible, rythme en années d'âge par an]
-      const cibles = { abrogation_62: [62, 0.25], suspension: [62.75, 0], acceleration_64: [64, 0.5], age_65: [65, 0.5], age_68: [68, 0.5], age_68_rapide: [68, 0.75] };
+      const cibles = { abrogation_62: [62, 0.25], suspension: [62.75, 0], acceleration_64: [64, 0.5], age_65: [65, 0.5], age_68: [68, 0.5], age_68_rapide: [68, 0.75], age_60: [60, 0.5] };
       [r.ageCible, r.rythme] = cibles[o];
     },
     effets: () => ({}),
@@ -90,10 +92,11 @@ const REFORMES_COMMUNES = [
         age_65: { chocs: { salaries: -10, fonctionnaires: -10, jeunes: -5, retraites: 1, entrepreneurs: 3 }, grief: { salaries: 16, fonctionnaires: 16, jeunes: 7 }, credibilite: 0.25 },
         age_68: { chocs: { salaries: -16, fonctionnaires: -16, jeunes: -9, retraites: 1, entrepreneurs: 4 }, grief: { salaries: 26, fonctionnaires: 26, jeunes: 12 }, credibilite: 0.35, instabilite: 0.08 },
         age_68_rapide: { chocs: { salaries: -20, fonctionnaires: -20, jeunes: -11, retraites: 1, entrepreneurs: 4 }, grief: { salaries: 32, fonctionnaires: 32, jeunes: 14 }, credibilite: 0.4, instabilite: 0.12 },
+        age_60: { chocs: { salaries: 8, fonctionnaires: 8, jeunes: 3, entrepreneurs: -6 }, opinion: { salaries: 4, fonctionnaires: 4 }, credibilite: -0.45 },
       }[o];
     },
     axes: { retraites: 1 },
-    axesParOption: { abrogation_62: { retraites: -1, social: 0.5 }, suspension: { retraites: -0.4 }, acceleration_64: { retraites: 0.6 }, age_65: { retraites: 1 }, age_68: { retraites: 1.6, social: -0.4 }, age_68_rapide: { retraites: 1.8, social: -0.6 } },
+    axesParOption: { abrogation_62: { retraites: -1, social: 0.5 }, suspension: { retraites: -0.4 }, acceleration_64: { retraites: 0.6 }, age_65: { retraites: 1 }, age_68: { retraites: 1.6, social: -0.4 }, age_68_rapide: { retraites: 1.8, social: -0.6 }, age_60: { retraites: -1.4, social: 0.8, rigueur: -0.6 } },
     chiffrage: 'Dans le modèle, chaque année d\'âge légal en plus réduit à terme la dépense de pensions d\'environ 10 Md€ par an (environ 400 000 retraités de moins), avant les prestations versées aux seniors sans emploi. Le gouvernement chiffrait la réforme de 2023 à 17,7 Md€ en 2030, avant 4,8 Md€ de mesures d\'accompagnement. La suspension actuelle coûte 0,1 Md€ en 2026 et 1,4 Md€ en 2027. 68 ans : environ 5 ans de plus qu\'aujourd\'hui, soit de l\'ordre de 50 Md€ par an à l\'horizon 2037 dans le modèle, avant les prestations versées aux seniors sans emploi (hypothèse de jeu).',
   },
   {
@@ -839,4 +842,4 @@ const ORIENTATIONS = {
 };
 for (const [orientation, ids] of Object.entries(ORIENTATIONS)) for (const r of [...REFORMES_COMMUNES, ...REFORMES_FRANCE]) if (ids.includes(r.id)) r.orientation = orientation;
 
-export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES, ...REFORMES_CONCRETES];
+export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES, ...REFORMES_CONCRETES, ...REFORMES_PROGRAMMES];
