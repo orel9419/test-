@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { reformesDisponibles, chiffrerReforme, voterTexte } from '../../engine/index.js';
+import { reformesDisponibles, chiffrerReforme, voterTexte, effetOpinionReforme } from '../../engine/index.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Apercu from './Apercu.jsx';
 import Capitalisation from './Capitalisation.jsx';
@@ -66,6 +66,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
   const [theme, setTheme] = useState('tous');
   const [recherche, setRecherche] = useState('');
   const [majoritaires, setMajoritaires] = useState(false);
+  const [populaires, setPopulaires] = useState(false);
   const [orientation, setOrientation] = useState('toutes');
   const proposees = decisions.reformes;
   const fr = partie.pays === 'france';
@@ -93,6 +94,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
     if (orientation !== 'toutes' && r.orientation !== orientation) return false;
     if (filtre && !`${r.nom} ${r.resume}`.toLowerCase().includes(filtre)) return false;
     if (majoritaires) { const p = pronostic(partie, r, options[r.id] ?? r.options[0].id); if (p && p.classe === 'mauvais') return false; }
+    if (populaires && effetOpinionReforme(partie, r.id, options[r.id] ?? r.options[0].id) < 1) return false;
     return true;
   });
   const parTheme = {};
@@ -159,6 +161,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
         <div className="ligne">
           <input type="search" placeholder="Rechercher une réforme…" value={recherche} onChange={(ev) => setRecherche(ev.target.value)} aria-label="Rechercher une réforme" className="champ-recherche" />
           {fr && <label className="petit"><input type="checkbox" checked={majoritaires} onChange={(ev) => setMajoritaires(ev.target.checked)} /> Seulement celles qui peuvent passer</label>}
+          <label className="petit"><input type="checkbox" checked={populaires} onChange={(ev) => setPopulaires(ev.target.checked)} /> Seulement les mesures populaires</label>
         </div>
         {fr && (
           <div className="puces" role="tablist" aria-label="Orientation">
@@ -200,6 +203,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                     {r.orientation && <span className={`etiquette orientation-${r.orientation}`}>{r.orientation === 'liberale' ? 'Libérale' : 'Sociale'}</span>}
                     {v && <span className="etiquette" title={v.aide}>{v.nom}</span>}
                     {pr && <span className={`pronostic ${pr.classe}`} title="Pronostic du vote à l'Assemblée pour cette réforme seule, avec l'option choisie">{pr.texte}</span>}
+                    {(() => { const op = effetOpinionReforme(partie, r.id, option); return Math.abs(op) >= 0.5 ? <span className={`etiquette ${op > 0 ? 'populaire' : 'impopulaire'}`} title="Effet estimé sur votre popularité à l'adoption (chocs d'opinion et opinion durable, moins une partie des griefs)">{op > 0 ? '👍' : '👎'} {op > 0 ? '+' : '−'}{Math.abs(op).toFixed(1).replace('.', ',')} pt</span> : null; })()}
                     {r.compensation && <span className="etiquette">compensation</span>}
                     {r.majoriteRenforcee && <span className="etiquette">majorité des deux tiers</span>}
                     {r.active && <span className="etiquette">en vigueur : {r.options.find((o) => o.id === r.active)?.nom}</span>}

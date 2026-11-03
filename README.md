@@ -42,7 +42,7 @@ Sur mobile, la navigation passe dans une barre en bas de l'écran, avec un bouto
 
 Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimestres, du T4 2026 au T4 2050). Vous pouvez aussi jouer un seul mandat : 20 trimestres pour la France, 16 pour l'Allemagne, 9 pour les États-Unis (jusqu'à la présidentielle de novembre 2028). À chaque tour, vous pouvez :
 
-1. **Consulter le tableau de bord** : PIB, croissance, inflation, chômage, dette, déficit, charge d'intérêts, taux à 10 ans et écart avec l'Allemagne, popularité, rapport de force parlementaire, cohésion sociale, émissions, effort de R&D, influence. Chaque indicateur a une infobulle explicative.
+1. **Consulter le tableau de bord** : en tête, la carte **« Solidité du pouvoir »** (note sur 100, popularité et sa variation, projection pour la prochaine élection décisive, menace de censure ou état de la coalition) ; puis PIB, croissance, inflation, chômage, dette, déficit, charge d'intérêts, taux à 10 ans et écart avec l'Allemagne, popularité, rapport de force parlementaire, cohésion sociale, émissions, effort de R&D, influence. Chaque indicateur a une infobulle explicative.
 2. **Répartir le budget** entre 15 postes, avec des curseurs en volume (hors inflation). Le panneau d'impact estime en temps réel l'effet sur le solde, la croissance, le chômage, la popularité par groupe et le revenu de chaque ménage type. Une **inertie** réaliste s'applique : on réduit plus vite un investissement qu'une masse salariale.
 3. **Fixer les impôts** (TVA, impôt sur le revenu, impôt sur les sociétés, CSG, cotisations, taxes sur l'énergie, successions), la part de dette émise à court terme, et annoncer une **trajectoire de déficit** (la tenir renforce la crédibilité, la manquer coûte cher).
 4. **Proposer des réformes**, par exemple :
@@ -51,7 +51,7 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **121 réformes** (dont 31 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 17 thèmes : retraites, capitalisation, travail, baisse des dépenses, fiscalité, santé, énergie, éducation, sécurité, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   En France, **125 réformes** (dont 34 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 20 thèmes : retraites, capitalisation, travail, fonction publique, baisse des dépenses, règles budgétaires, fiscalité, santé, énergie, éducation, sécurité, défense, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.
@@ -61,7 +61,12 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - défense : successeur du Rafale (SCAF européen ou programme national confié à Dassault Aviation), trajectoire vers 3 ou 3,5 % du PIB, porte-avions de nouvelle génération, service militaire volontaire ou obligatoire, renseignement et cyberdéfense ;
    - sécurité et justice : prisons, narcotrafic (offensive ou légalisation du cannabis), peines planchers, exécution des OQTF, polices municipales ;
    - infrastructures : autoroutes (rachat immédiat, régie publique à la fin des concessions en 2031-2036, gratuité ou remise en concurrence), plan ferroviaire ;
-   - organisation de l'État, inspirée de Jean-Louis Borloo : « une compétence, un seul niveau », suppression des agences qui doublonnent avec les préfets et les collectivités, fusion des régions et des départements en provinces (révision constitutionnelle), réduction du nombre de parlementaires.
+   - organisation de l'État, inspirée de Jean-Louis Borloo : « une compétence, un seul niveau », suppression des agences qui doublonnent avec les préfets et les collectivités, **fusion des opérateurs publics par grands pôles** (un tiers en moins, et suppression des 24 agences ciblées par le Sénat), fusion des régions et des départements en provinces (révision constitutionnelle), réduction du nombre de parlementaires ;
+   - modernisation et performance de l'État :
+     - **IA et robotisation** : un départ à la retraite sur trois non remplacé grâce à l'automatisation (variante prudente limitée aux fonctions support : 1 sur 5). Il faut d'abord investir (environ 1,5 Md€ par an au départ), les économies nettes viennent après 4 à 5 ans ;
+     - **règle de performance budgétaire** : norme de dépense pluriannuelle avec revue annuelle des dispositifs, budget « base zéro » ou règle du gage (toute dépense nouvelle compensée) ;
+     - **train de vie de l'État** (décret) : fin des avantages à vie des anciens ministres, réduction des véhicules et des cabinets. Économie symbolique, mais populaire ;
+     - **prime de partage de la valeur** relevée et défiscalisée : du pouvoir d'achat sans dépense publique directe, mais avec un coût en cotisations.
 
    Les filtres par thème, la recherche et l'option « seulement celles qui peuvent passer » aident à s'y retrouver. Chaque réforme peut être **chiffrée sur 3 ans par simulation** avant d'être soumise au Parlement (ou à référendum).
 
@@ -85,10 +90,16 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - trancher des dossiers : ArcelorMittal à Dunkerque, financement des EPR2, UniCredit et Commerzbank, Thyssenkrupp, vente d'Uniper, Intel, puces Nvidia vers la Chine…
 
    Une prise de participation augmente la dette sans creuser le déficit (opération financière) ; les dividendes s'ajoutent aux recettes.
-7. **Suivre l'opinion et les élections** (onglet « Opinion et élections ») : baromètre de satisfaction sur dix thèmes, intentions de vote, projection « si l'élection avait lieu aujourd'hui », résultats. Les élections intermédiaires (régionales, Länder, européennes, mi-mandat américain) et nationales découlent de vos décisions. Vous pouvez déclencher un **référendum** (France, article 11), une **dissolution** (France) ou une **question de confiance** (Allemagne).
-8. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
-9. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
-10. **Valider le trimestre** (bouton ou **Ctrl + Entrée**) et lire le bilan chiffré.
+7. **Garder l'opinion** (onglet « Communication », rubrique « Politique et opinion ») :
+   - **pourquoi votre popularité bouge** : chômage et inflation, pouvoir d'achat, services publics, impôts, réformes et communication, chacun avec un bouton « Agir » qui mène au bon onglet ;
+   - **une action de communication par trimestre** : allocution au 20 h, déplacement de terrain auprès d'un groupe, rencontre avec les maires, feuille de route chiffrée (une fois par an), grand débat national ou convention citoyenne (tous les deux ans). Parler trop souvent use l'opinion : l'efficacité baisse (jusqu'à 40 %) et le risque de « petite phrase » malheureuse augmente ;
+   - **mesures populaires** : les réformes disponibles qui font le plus gagner en popularité, avec un bouton « Proposer ». Dans l'onglet « Réformes », un badge 👍/👎 indique l'effet de chaque mesure sur l'opinion, et un filtre « Seulement les mesures populaires » les isole.
+
+   Ordre de grandeur (France, mode Intermédiaire, sans autre décision) : une action de communication bien choisie chaque trimestre porte la popularité vers 38 % au bout de deux ans, contre 27 % sans rien faire.
+8. **Suivre l'opinion et les élections** (onglet « Opinion et élections ») : baromètre de satisfaction sur dix thèmes, intentions de vote, projection « si l'élection avait lieu aujourd'hui », résultats. Les élections intermédiaires (régionales, Länder, européennes, mi-mandat américain) et nationales découlent de vos décisions. Vous pouvez déclencher un **référendum** (France, article 11), une **dissolution** (France) ou une **question de confiance** (Allemagne).
+9. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
+10. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
+11. **Valider le trimestre** (bouton ou **Ctrl + Entrée**) et lire le bilan chiffré.
 
 ### Trois modes de jeu
 
@@ -174,8 +185,9 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 
 ### Pour rendre le jeu agréable
 
+- une navigation simplifiée en **six rubriques** (Tableau de bord, Gouverner, Politique et opinion, Économie, Monde, Journal et sources), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
 - un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
-- une **visite guidée** en sept étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
+- une **visite guidée** en huit étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
 - des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
 - un **bilan de trimestre** animé, des **notifications** (votes, élections, réformes, entreprises) et des **confettis** quand vous gagnez une élection, réussissez des Jeux ou débloquez un succès ;
 - 16 **succès** à débloquer (premier budget, sous les 3 %, la dette recule, le peuple a tranché, des Jeux réussis…) ;
@@ -247,7 +259,9 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   retraites.js          âge légal, effectifs, indexation
   travail.js            temps de travail et heures supplémentaires
   menages.js            ménages types (euros par mois)
-  social.js             popularité par groupe, griefs, risque de mouvement social
+  social.js             popularité par groupe et ses composantes, griefs, risque de mouvement social
+  communication.js      actions de communication : effets, usure de l'opinion, recharge, petites phrases
+  pouvoir.js            solidité du pouvoir : popularité, marge électorale, menace parlementaire
   reformes.js           adoption et effets des réformes
   international.js      relations, influence, accords
   politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
@@ -263,7 +277,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes (dont reformesFrance.js et reformesOrientations.js), actions diplomatiques,
+src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
 src/ui/                 interface React (écrans, composants, sauvegarde, installation)
 public/                 manifeste de l'application, service worker (hors connexion), icônes

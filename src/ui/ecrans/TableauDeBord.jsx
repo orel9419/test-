@@ -5,6 +5,7 @@ import { nombre, pct, md, signe, classeVariation } from '../format.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Conseiller from '../composants/Conseiller.jsx';
 import ImpactReformes from '../composants/ImpactReformes.jsx';
+import SoliditePouvoir from '../composants/SoliditePouvoir.jsx';
 
 /** Explications pédagogiques des indicateurs. */
 export const EXPLICATIONS = {
@@ -58,6 +59,7 @@ export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
         <h2>Tableau de bord</h2>
         <span className="muet petit">Données de départ au {new Date(partie.statique.dateDonnees).toLocaleDateString('fr-FR')}</span>
       </div>
+      <SoliditePouvoir partie={partie} allerA={allerA} />
       {conseils?.length > 0 && <Conseiller conseils={conseils} allerA={allerA} />}
       {alertes.length > 0 && (
         <div className="pile">

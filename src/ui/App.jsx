@@ -30,6 +30,7 @@ import FinDePartie from './ecrans/FinDePartie.jsx';
 import Objectifs from './ecrans/Objectifs.jsx';
 import BilanTour from './ecrans/BilanTour.jsx';
 import Classements from './ecrans/Classements.jsx';
+import Communication from './ecrans/Communication.jsx';
 
 const ONGLETS = [
   { id: 'tableau', nom: 'Tableau de bord', court: 'Accueil', icone: '📊' },
@@ -46,9 +47,21 @@ const ONGLETS = [
   { id: 'menages', nom: 'Ménages', court: 'Ménages', icone: '👪' },
   { id: 'journal', nom: 'Journal', court: 'Journal', icone: '🗞️' },
   { id: 'sources', nom: 'Données et sources', court: 'Sources', icone: '🔎' },
+  { id: 'communication', nom: 'Communication', court: 'Communication', icone: '🎤' },
 ];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false };
+/** Six rubriques, chacune avec ses sous-onglets : une navigation plus simple. */
+const RUBRIQUES = [
+  { id: 'accueil', nom: 'Tableau de bord', court: 'Accueil', icone: '📊', onglets: ['tableau'] },
+  { id: 'gouverner', nom: 'Gouverner', court: 'Gouverner', icone: '📜', onglets: ['reformes', 'budget', 'fiscalite'] },
+  { id: 'politique', nom: 'Politique et opinion', court: 'Opinion', icone: '📣', onglets: ['communication', 'opinion', 'parlement', 'evenements'] },
+  { id: 'economie', nom: 'Économie', court: 'Économie', icone: '🏭', onglets: ['entreprises', 'menages'] },
+  { id: 'monde', nom: 'Monde', court: 'Monde', icone: '🌍', onglets: ['diplomatie', 'classements', 'rendezvous'] },
+  { id: 'journal', nom: 'Journal et sources', court: 'Journal', icone: '🗞️', onglets: ['journal', 'sources'] },
+];
+const rubriqueDe = (onglet) => RUBRIQUES.find((r) => r.onglets.includes(onglet)) ?? RUBRIQUES[0];
+
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -90,6 +103,12 @@ export default function App() {
   const [partie, setPartie] = useState(null);
   const [decisions, setDecisions] = useState(DECISIONS_VIDES);
   const [onglet, setOnglet] = useState('tableau');
+  // Dernier sous-onglet visité dans chaque rubrique (pour y revenir)
+  const [dernierOnglet, setDernierOnglet] = useState({});
+  useEffect(() => {
+    setDernierOnglet((d) => ({ ...d, [rubriqueDe(onglet).id]: onglet }));
+    try { window.scrollTo({ top: 0 }); } catch { /* environnement sans fenêtre */ }
+  }, [onglet]);
   const [bilan, setBilan] = useState(null);
   const [apercu, setApercu] = useState(null);
   const [prevision, setPrevision] = useState(null);
@@ -139,6 +158,7 @@ export default function App() {
   const demarrer = useCallback(({ pays, mode: m, calendrier, role, intensite }) => {
     const graine = Math.floor(Math.random() * 2 ** 31);
     const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier, role, intensite });
+    try { window.scrollTo({ top: 0 }); } catch { /* environnement sans fenêtre */ }
     setPartie(p);
     setDecisions(decisionsInitiales(p));
     setOnglet('tableau');
@@ -235,6 +255,16 @@ export default function App() {
   const trimestreBudget = us ? (partie.trimestre.t === 3 || partie.tour === 1) : partie.trimestre.t === 4;
   const nomOnglet = (o) => (o.id === 'parlement' ? (us ? 'Congrès' : partie.pays === 'allemagne' ? 'Bundestag et coalition' : 'Parlement') : o.nom);
   const nbActionsEntreprises = (decisions.entreprises?.length ?? 0) + (decisions.programmes?.length ?? 0);
+  const rubrique = rubriqueDe(onglet);
+  /** Badge d'un sous-onglet : nombre de décisions en préparation, ou mention. */
+  const badge = (id) => ({
+    evenements: nbEvenements,
+    reformes: decisions.reformes.length,
+    diplomatie: decisions.diplomatie.length + (decisions.g7?.priorites?.length ? 1 : 0),
+    entreprises: nbActionsEntreprises,
+    communication: decisions.communication ? 1 : 0,
+    parlement: trimestreBudget ? 'budget' : null,
+  }[id] ?? null);
 
   return (
     <div>
@@ -266,19 +296,36 @@ export default function App() {
         <FinDePartie partie={partie} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => setSauvegarde('export')} onContinuer={partie.horizon ? () => setPartie(continuerPartie(partie)) : null} />
       ) : (
         <div className="mise-en-page">
-          <nav className="navigation" aria-label="Sections">
-            {ONGLETS.map((o) => (
-              <button key={o.id} type="button" className={`onglet ${onglet === o.id ? 'actif' : ''}`} onClick={() => setOnglet(o.id)} aria-current={onglet === o.id ? 'page' : undefined}>
-                <span className="onglet-contenu"><span className="onglet-icone" aria-hidden="true">{o.icone}</span><span className="nom-long">{nomOnglet(o)}</span><span className="nom-court">{o.id === 'parlement' && us ? 'Congrès' : o.court}</span></span>
-                {o.id === 'evenements' && nbEvenements > 0 && <span className="pastille pulse">{nbEvenements}</span>}
-                {o.id === 'reformes' && decisions.reformes.length > 0 && <span className="etiquette">{decisions.reformes.length}</span>}
-                {o.id === 'diplomatie' && decisions.diplomatie.length > 0 && <span className="etiquette">{decisions.diplomatie.length}</span>}
-                {o.id === 'entreprises' && nbActionsEntreprises > 0 && <span className="etiquette">{nbActionsEntreprises}</span>}
-                {o.id === 'parlement' && trimestreBudget && <span className="etiquette" title="Vote du budget ce trimestre">budget</span>}
-              </button>
-            ))}
+          <nav className="navigation" aria-label="Rubriques">
+            {RUBRIQUES.map((r) => {
+              const active = rubrique.id === r.id;
+              const evenementsIci = r.onglets.includes('evenements') && nbEvenements > 0;
+              const compteur = r.onglets.reduce((n, id) => n + (typeof badge(id) === 'number' ? badge(id) : 0), 0);
+              return (
+                <button key={r.id} type="button" className={`onglet ${active ? 'actif' : ''}`} onClick={() => setOnglet(dernierOnglet[r.id] ?? r.onglets[0])} aria-current={active ? 'page' : undefined}>
+                  <span className="onglet-contenu"><span className="onglet-icone" aria-hidden="true">{r.icone}</span><span className="nom-long">{r.nom}</span><span className="nom-court">{r.court}</span></span>
+                  {evenementsIci && <span className="pastille pulse">{nbEvenements}</span>}
+                  {!evenementsIci && compteur > 0 && <span className="etiquette">{compteur}</span>}
+                </button>
+              );
+            })}
           </nav>
           <main key={onglet} className="apparition">
+            {rubrique.onglets.length > 1 && (
+              <div className="sous-onglets" role="tablist" aria-label={rubrique.nom}>
+                {rubrique.onglets.map((id) => {
+                  const o = ONGLETS.find((x) => x.id === id);
+                  const b = badge(id);
+                  return (
+                    <button key={id} type="button" role="tab" aria-selected={onglet === id} className={`sous-onglet ${onglet === id ? 'actif' : ''}`} onClick={() => setOnglet(id)}>
+                      <span aria-hidden="true">{o.icone}</span> {nomOnglet(o)}
+                      {b !== null && b !== undefined && b !== 0 && <span className={id === 'evenements' ? 'pastille' : 'etiquette'}>{b}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {onglet === 'communication' && <Communication {...props} allerA={setOnglet} />}
             {onglet === 'tableau' && <TableauDeBord {...props} allerA={setOnglet} conseils={conseils} />}
             {onglet === 'budget' && <Budget {...props} />}
             {onglet === 'fiscalite' && <Fiscalite {...props} />}

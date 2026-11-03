@@ -42,6 +42,12 @@ function calculerAgregats(e, s) {
   }
   s.popularite = pop;
   s.risqueGlobal = risque;
+  // Composantes pondérées de la popularité (écarts à la situation de départ, en points)
+  const comp = {};
+  for (const [id, g] of Object.entries(s.groupes)) {
+    for (const [k, v] of Object.entries(g.composantes ?? {})) comp[k] = (comp[k] ?? 0) + e.statique.groupes[id].poids * v;
+  }
+  s.composantes = comp;
   // Cohésion : baisse avec le risque social, le chômage et les écarts de pouvoir d'achat entre ménages
   const variations = (e.menages ?? []).map((m) => m.variationPct ?? 0);
   const dispersion = variations.length ? Math.max(...variations) - Math.min(...variations) : 0;
@@ -116,6 +122,8 @@ export function majSocial(e, alea) {
       fiscalite -= (id === 'agriculteurs' ? 0.08 : id === 'jeunes' ? 0.01 : 0.04) * dEn;
     }
     const ancrage = g.ancrage0 + economie + pouvoirAchat + budget + fiscalite + (opinionReformes[id] ?? 0);
+    // Composantes, pour expliquer au joueur ce qui fait bouger sa popularité
+    g.composantes = { economie, pouvoirAchat, budget, fiscalite, reformes: opinionReformes[id] ?? 0 };
     g.popularite = borner(g.popularite + P.retourAncrage * (ancrage - g.popularite) + g.chocs, 2, 95);
     g.chocs = 0; // le choc est absorbé dans le niveau ; le retour vers l'ancrage le fait ensuite s'estomper
     g.ancrage = ancrage;

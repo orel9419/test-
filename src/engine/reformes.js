@@ -38,6 +38,23 @@ function accentuer(reaction, k) {
 }
 
 /**
+ * Effet estimé d'une réforme sur la popularité de l'exécutif (points), au
+ * moment de son adoption : chocs et opinion durable, moins une partie des
+ * griefs, plus les compensations, pondérés par le poids électoral des groupes.
+ */
+export function effetOpinionReforme(e, id, option) {
+  const def = trouverReforme(id);
+  if (!def?.reaction) return 0;
+  let r;
+  try { r = accentuer(def.reaction(e, option) ?? {}, Math.sqrt(e.intensiteReformes ?? 1)); } catch { return 0; }
+  let total = 0;
+  for (const [g, def2] of Object.entries(e.statique.groupes)) {
+    total += def2.poids * ((r.chocs?.[g] ?? 0) + (r.opinion?.[g] ?? 0) - 0.5 * (r.grief?.[g] ?? 0) + 0.5 * (r.compensation?.[g] ?? 0));
+  }
+  return total;
+}
+
+/**
  * Bilan, au trimestre courant, de l'effet de chaque réforme en vigueur :
  * budget (Md€ par an), emploi, croissance potentielle, émissions, influence.
  * Sert au tableau de bord (« Impact de vos réformes »).

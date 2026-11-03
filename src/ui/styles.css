@@ -373,3 +373,47 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .programme .etiquette.statut-programme { background: color-mix(in srgb, var(--bon) 15%, transparent); }
 .programme .etiquette.statut-annonce { background: color-mix(in srgb, var(--accent) 15%, transparent); }
 .programme .etiquette.statut-a_verifier { background: color-mix(in srgb, var(--attention) 22%, transparent); }
+
+/* Navigation par rubriques : sous-onglets */
+.sous-onglets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--bordure); }
+.sous-onglet { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid var(--bordure); background: var(--surface); color: var(--encre); font: inherit; font-size: 0.92rem; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.sous-onglet:hover { border-color: var(--accent); }
+.sous-onglet.actif { background: var(--accent); border-color: var(--accent); color: var(--accent-encre); font-weight: 600; }
+.sous-onglet .etiquette, .sous-onglet .pastille { margin-left: 0.2rem; }
+
+/* Carte « Solidité du pouvoir » */
+.hero-pouvoir { display: grid; grid-template-columns: auto 1fr auto; gap: 1.2rem; align-items: center; border-left: 6px solid var(--attention); background: linear-gradient(120deg, color-mix(in srgb, var(--attention) 10%, var(--surface)), var(--surface) 60%); }
+.hero-pouvoir.bon { border-left-color: var(--bon); background: linear-gradient(120deg, color-mix(in srgb, var(--bon) 10%, var(--surface)), var(--surface) 60%); }
+.hero-pouvoir.critique { border-left-color: var(--critique); background: linear-gradient(120deg, color-mix(in srgb, var(--critique) 10%, var(--surface)), var(--surface) 60%); }
+.hero-score { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; min-width: 9rem; }
+.hero-valeur { font-size: 2.6rem; font-weight: 700; line-height: 1; }
+.hero-etat { font-weight: 600; }
+.hero-blocs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; }
+.hero-blocs > div { display: flex; flex-direction: column; gap: 0.1rem; }
+.hero-blocs strong { font-size: 1.25rem; }
+.hero-actions { display: flex; flex-direction: column; gap: 0.4rem; }
+@media (max-width: 760px) {
+  .hero-pouvoir { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: row; flex-wrap: wrap; }
+}
+
+/* Communication */
+.composante { display: grid; grid-template-columns: minmax(9rem, 1.2fr) 2fr 3.2rem auto; gap: 0.5rem; align-items: center; }
+.barre-divergente { position: relative; height: 10px; background: var(--surface-2); border-radius: 4px; }
+.barre-divergente .axe { position: absolute; left: 50%; top: -2px; width: 1px; height: 14px; background: var(--encre-2); }
+.barre-divergente .pos, .barre-divergente .neg { position: absolute; top: 0; height: 100%; border-radius: 4px; }
+.barre-divergente .pos { background: var(--divergent-pos); }
+.barre-divergente .neg { background: var(--divergent-neg); }
+.grille-actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.8rem; }
+.action-com { display: flex; flex-direction: column; gap: 0.45rem; transition: transform 0.15s, box-shadow 0.15s; }
+.action-com:hover { transform: translateY(-2px); }
+.action-com.choisie { outline: 2px solid var(--accent); }
+.action-com.indisponible { opacity: 0.6; }
+.liste-populaires { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.liste-populaires li { display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center; }
+.etiquette.populaire { background: color-mix(in srgb, var(--bon) 18%, transparent); color: var(--texte-bon); font-weight: 600; }
+.etiquette.impopulaire { background: color-mix(in srgb, var(--critique) 15%, transparent); color: var(--texte-critique); font-weight: 600; }
+@media (max-width: 760px) {
+  .composante { grid-template-columns: 1fr 1fr 3rem; }
+  .composante button { grid-column: 1 / -1; justify-self: start; }
+}

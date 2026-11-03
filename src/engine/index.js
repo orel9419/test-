@@ -47,6 +47,7 @@ import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './cap
 import { ANNEE_FIN, calendrierJusqua2050, nbToursJusqua } from './horizon.js';
 import { initialiserClassements, majClassements } from './classements.js';
 import { initialiserG7, tenirSommet, preparerSommet } from './g7.js';
+import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
 import { referendum } from './elections.js';
@@ -62,7 +63,9 @@ export { siegesLegislativesFrance } from './elections.js';
 export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, parametresProjection, concentrationGains, CIBLE_MIXTE, SCENARIOS_MIXTE } from './capitalisation.js';
 export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politique.js';
 export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
-export { bilanReformes } from './reformes.js';
+export { bilanReformes, effetOpinionReforme } from './reformes.js';
+export { soliditePouvoir } from './pouvoir.js';
+export { actionsCommunication, ACTIONS_COMMUNICATION, GROUPES_CIBLES } from './communication.js';
 export { previsionG7, prochainSommet, peutNegocier, membreG7 } from './g7.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
 
@@ -120,6 +123,7 @@ export function creerPartie(options) {
   initialiserOpinion(e);
   initialiserClassements(e, options.contexte?.classements);
   initialiserG7(e);
+  e.communication = etatCommunicationInitial();
   // Référence de la projection présidentielle (France) : la situation de départ
   if (e.politique.presidentielle && e.pays === 'france') {
     e.politique.presidentielle.reference = { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion };
@@ -305,6 +309,11 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     } else if (def) {
       e.resultatsTour.alertes.push({ type: 'rejet', texte: 'Un seul référendum par an : celui-ci est reporté.' });
     }
+  }
+  // Communication : l'usure se dissipe, puis l'action du trimestre
+  if (!options.sansPolitique) {
+    majCommunication(e);
+    if (decisions.communication) e.resultatsTour.communication = communiquer(e, decisions.communication, alea);
   }
   // G7 : préparation par les sherpas, puis sommet au deuxième trimestre
   if (e.g7 && !options.sansPolitique) {

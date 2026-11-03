@@ -27,6 +27,7 @@ import { REFORMES_FRANCE } from './reformesFrance.js';
 import { REFORMES_LIBERALES, REFORMES_SOCIALES } from './reformesOrientations.js';
 import { REFORMES_CONCRETES } from './reformesConcretes.js';
 import { REFORMES_PROGRAMMES } from './reformesProgrammes.js';
+import { REFORMES_ETAT } from './reformesEtat.js';
 
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const indicePrix = (e) => e.macro.niveauPrix / 100;
@@ -842,4 +843,4 @@ const ORIENTATIONS = {
 };
 for (const [orientation, ids] of Object.entries(ORIENTATIONS)) for (const r of [...REFORMES_COMMUNES, ...REFORMES_FRANCE]) if (ids.includes(r.id)) r.orientation = orientation;
 
-export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES, ...REFORMES_CONCRETES, ...REFORMES_PROGRAMMES];
+export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES, ...REFORMES_CONCRETES, ...REFORMES_PROGRAMMES, ...REFORMES_ETAT];
