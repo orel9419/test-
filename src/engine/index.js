@@ -49,6 +49,8 @@ import { initialiserClassements, majClassements } from './classements.js';
 import { initialiserG7, tenirSommet, preparerSommet } from './g7.js';
 import { initialiserNotation, notesDepuisDonnees, majNotation } from './notation.js';
 import { controleConstitutionnel } from './constitution.js';
+import { initialiserDefense, deciderDefense, majDefense } from './defense.js';
+import { attribuerLot, majChantiers } from './chantiers.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
@@ -69,6 +71,8 @@ export { bilanReformes, effetOpinionReforme } from './reformes.js';
 export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
+export { resumeDefense, domaineReserve } from './defense.js';
+export { resumeChantiers } from './chantiers.js';
 export { actionsCommunication, ACTIONS_COMMUNICATION, GROUPES_CIBLES } from './communication.js';
 export { previsionG7, prochainSommet, peutNegocier, membreG7 } from './g7.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
@@ -128,6 +132,7 @@ export function creerPartie(options) {
   initialiserClassements(e, options.contexte?.classements);
   initialiserG7(e);
   e.communication = etatCommunicationInitial();
+  initialiserDefense(e);
   const { notes, dynamique } = notesDepuisDonnees(options.donnees);
   initialiserNotation(e, notes, dynamique);
   // Référence de la projection présidentielle (France) : la situation de départ
@@ -342,6 +347,10 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   for (const a of decisions.diplomatie ?? []) {
     e.resultatsTour.diplomatie.push(executerAction(e, a.id, a.option, alea));
   }
+  // Défense : programmes, opérations, exportations, dissuasion
+  if (decisions.defense) e.resultatsTour.defense = deciderDefense(e, decisions.defense, alea);
+  // Chantiers des grands événements : attribution des lots
+  for (const c of decisions.chantiers ?? []) (e.resultatsTour.chantiers ??= []).push(attribuerLot(e, c.chantier, c.lot, c.offre));
   // Entreprises et État stratège : programmes, puis actions sur les fleurons (deux au plus par trimestre, hors rencontres)
   for (const p of decisions.programmes ?? []) piloterProgramme(e, p.id, p.commande);
   let operationsCapital = 0; // > 0 : cessions (la dette baisse) ; < 0 : acquisitions (la dette monte)
@@ -433,6 +442,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   // --- 8. Finances publiques ----------------------------------------------------
   majFinances(e, recettes, totalDepensesPrimaires(e), { cessions: effR.cessions + operationsCapital + (effEv.cessions ?? 0), economieInterets: effI.economieInterets, depensesExceptionnelles: effEv.depensesExceptionnelles });
   majEntreprises(e, etat);
+  majDefense(e, options.sansPolitique ? null : alea);
+  majChantiers(e, options.sansPolitique ? null : alea);
   majCapitalisation(e);
   const bilan = bilanAnnuel(e);
   // Agences de notation : revues prévues ce trimestre

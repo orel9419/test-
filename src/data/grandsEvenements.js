@@ -12,6 +12,7 @@
  * prépare, l'effet « grandEvenement » qui mémorise les choix du joueur.
  */
 import { borner } from '../model/outils.js';
+import { qualiteChantier } from '../engine/chantiers.js';
 
 const FR = ['france'];
 const DE = ['allemagne'];
@@ -32,7 +33,11 @@ export const CALENDRIER_GRANDS_EVENEMENTS = [
   { id: 'la28_preparation', nom: 'JO de Los Angeles : sécurité et transports', lieu: 'Los Angeles', annee: 2028, t: 1, date: 'préparation', hotes: ['etatsUnis'], pays: ['etatsUnis'], statut: 'secondaire' },
   { id: 'la28', nom: 'Jeux olympiques de Los Angeles', lieu: 'Los Angeles', annee: 2028, t: 3, date: 'ouverture le 14 juillet 2028', hotes: ['etatsUnis'], pays: ['etatsUnis'], statut: 'secondaire' },
   { id: 'jo2030_securite', nom: 'JO d\'hiver 2030 : plan de sécurité', lieu: 'Alpes françaises', annee: 2029, t: 2, date: 'préparation', hotes: ['france'], pays: ['france'], statut: 'secondaire' },
+  { id: 'g7_2033_france', nom: 'Sommet du G7 sous présidence française', lieu: 'France', annee: 2033, t: 2, date: '2033, déduit de la rotation', hotes: ['france'], pays: ['france'], statut: 'derive' },
+  { id: 'cdm2038', nom: 'Coupe du monde de football (si la France l\'obtient)', lieu: 'France', annee: 2038, t: 3, date: 'juin-juillet 2038 (scénario)', hotes: ['france'], pays: ['france'], statut: 'estimation' },
   { id: 'g7_2029', nom: 'Sommet du G7', lieu: 'Allemagne', annee: 2029, t: 2, date: '2029, déduit de la rotation', hotes: ['allemagne'], pays: ['allemagne'], statut: 'derive' },
+  { id: 'cdm2038_candidature', nom: 'Coupe du monde 2038 : candidater ? (scénario de jeu)', lieu: 'France', annee: 2027, t: 3, date: 'scénario de jeu', hotes: ['france'], pays: ['france'], statut: 'estimation' },
+  { id: 'cdm2038_vote', nom: 'Coupe du monde 2038 : vote de la FIFA (scénario de jeu)', lieu: 'Congrès de la FIFA', annee: 2030, t: 2, date: 'scénario de jeu', hotes: ['france'], pays: ['france'], statut: 'estimation' },
   { id: 'jo2030', nom: 'Jeux olympiques d\'hiver des Alpes françaises', lieu: 'Alpes françaises', annee: 2030, t: 1, date: 'février 2030', hotes: ['france'], pays: ['france'], statut: 'secondaire' },
 ];
 
@@ -217,6 +222,36 @@ export const GRANDS_EVENEMENTS = [
     ],
   },
 
+  // --- Coupe du monde de football 2038 (France, scénario de jeu) -------------------------
+  {
+    id: 'cdm2038_candidature', titre: 'Candidater à l\'organisation de la Coupe du monde 2038 ? (scénario de jeu)', pays: FR, calendrier: true, unique: true,
+    condition: quand(2027, 3), probabilite: () => 1,
+    description: () => 'La Fédération française de football veut porter une candidature pour 2038. Aucune candidature n\'est déposée à ce jour : ce dossier est un scénario de jeu. La France a déjà accueilli la Coupe du monde 1998 et l\'Euro 2016 ; il faudrait surtout rénover des stades existants.',
+    choix: [
+      { id: 'candidater', texte: 'Soutenir une candidature ambitieuse, avec des garanties de l\'État', effets: () => ({ depensesExceptionnelles: 0.05, grandEvenement: { id: 'cdm2038', candidature: 'ambitieuse' }, influence: 1, opinion: { jeunes: 1.5, salaries: 0.5 }, texte: 'Le dossier est lancé : il faudra convaincre les fédérations du monde entier.' }) },
+      { id: 'sobre', texte: 'Soutenir une candidature « sobre » : uniquement des stades existants', effets: () => ({ depensesExceptionnelles: 0.03, grandEvenement: { id: 'cdm2038', candidature: 'sobre' }, opinion: { jeunes: 1 }, credibilite: 0.01, texte: 'Une candidature économe, appréciée des contribuables, moins spectaculaire.' }) },
+      { id: 'non', texte: 'Ne pas soutenir de candidature : priorité aux finances publiques', effets: () => ({ grandEvenement: { id: 'cdm2038', candidature: 'non' }, opinion: { jeunes: -1 }, texte: 'Les supporters sont déçus ; Bercy respire.' }) },
+    ],
+  },
+  {
+    id: 'cdm2038_vote', titre: 'La FIFA attribue la Coupe du monde 2038 (scénario de jeu)', pays: FR, calendrier: true, unique: true,
+    condition: (e) => quand(2030, 2)(e) && ['ambitieuse', 'sobre'].includes(prep(e, 'cdm2038').candidature), probabilite: () => 1,
+    description: () => 'Le congrès de la FIFA se réunit. Face à la France : des candidatures concurrentes d\'autres continents.',
+    choix: [
+      { id: 'president', texte: 'Le chef de l\'État défend lui-même la candidature devant le congrès', effets: (e, alea) => voteCoupeDuMonde(e, alea, 0.1) },
+      { id: 'ministre', texte: 'Laisser la fédération et la ministre des Sports porter le dossier', effets: (e, alea) => voteCoupeDuMonde(e, alea, 0) },
+    ],
+  },
+  {
+    id: 'cdm2038', titre: 'Coup d\'envoi de la Coupe du monde en France', pays: FR, calendrier: true, unique: true,
+    condition: (e) => quand(2038, 3)(e) && prep(e, 'cdm2038').attribuee === true, probabilite: () => 1,
+    description: () => 'Quarante-huit équipes, des millions de visiteurs : la fête commence, et avec elle les risques (sécurité, transports, chaleur).',
+    choix: [
+      { id: 'fete', texte: 'Fan zones gratuites dans toutes les villes hôtes', effets: (e, alea) => ({ ...bilanCoupeDuMonde(e, alea), depensesExceptionnelles: 0.15 }) },
+      { id: 'sobre', texte: 'Une organisation sobre, priorité à la sécurité', effets: (e, alea) => bilanCoupeDuMonde(e, alea, 0.05) },
+    ],
+  },
+
   // --- G7 2029 (Allemagne) -------------------------------------------------------------
   {
     id: 'g7_2029', titre: 'Vous présidez le G7 : quelle priorité ?', pays: DE, calendrier: true, unique: true,
@@ -233,10 +268,38 @@ export const GRANDS_EVENEMENTS = [
 /** Bilan des Jeux d'hiver 2030 selon la préparation (budget, sécurité) et l'enneigement. */
 function bilanJeuxAlpes(e, alea) {
   const p = prep(e, 'jo2030');
-  const proba = 0.62 + ({ renforcee: 0.15, europeenne: 0.1 }[p.securite] ?? 0) + (p.budget === 'prestige' ? 0.08 : 0) - 0.25 * e.social.risqueGlobal;
+  const q = qualiteChantier(e, 'jo2030');
+  const proba = 0.62 + ({ renforcee: 0.15, europeenne: 0.1 }[p.securite] ?? 0) + (p.budget === 'prestige' ? 0.08 : 0) - 0.25 * e.social.risqueGlobal + (q === null ? 0 : (q - 0.75) * 0.8);
   const ok = reussite(e, 'jo2030', alea, proba);
   const b = bilanJeux(ok, 'Les Jeux d\'hiver des Alpes françaises');
   // Déficit du comité d'organisation : la garantie publique joue (État et régions à parts égales)
   if (!ok && p.budget !== 'prestige') b.depensesExceptionnelles = p.budget === 'garantie' ? 0.5 : 0.26;
   return b;
+}
+
+/** Vote de la FIFA : influence, relations avec l'Afrique et le Golfe, type de candidature, engagement personnel. */
+function voteCoupeDuMonde(e, alea, bonus) {
+  const p = prep(e, 'cdm2038');
+  const rel = ((e.international.relations.afrique ?? 0) + (e.international.relations.golfe ?? 0)) / 2;
+  const proba = borner(0.32 + 0.004 * ((e.international.influence ?? 60) - 60) + 0.002 * rel + (p.candidature === 'ambitieuse' ? 0.05 : 0) + bonus, 0.1, 0.7);
+  const ok = alea.tirage(proba);
+  return ok
+    ? { grandEvenement: { id: 'cdm2038', attribuee: true }, influence: 3, fierte: 2, texte: `La France organisera la Coupe du monde 2038 (chances estimées : ${Math.round(proba * 100)} %) ! Les chantiers peuvent commencer (onglet Grands rendez-vous).` }
+    : { grandEvenement: { id: 'cdm2038', attribuee: false }, influence: -1, fierte: -0.5, texte: `La FIFA choisit une autre candidature (chances estimées : ${Math.round(proba * 100)} %).` };
+}
+
+/** Bilan de la Coupe du monde : qualité des chantiers, préparation, et parcours des Bleus. */
+function bilanCoupeDuMonde(e, alea, bonus = 0) {
+  const q = qualiteChantier(e, 'cdm2038');
+  const proba = borner(0.6 + (q === null ? -0.05 : (q - 0.75) * 0.8) + bonus - 0.25 * e.social.risqueGlobal, 0.2, 0.95);
+  const ok = alea.tirage(proba);
+  const parcours = alea.uniforme();
+  const titre = parcours < 0.14;
+  const finale = parcours < 0.3;
+  const sport = titre ? ' Et les Bleus remportent la Coupe du monde à domicile, comme en 1998 : liesse dans tout le pays !' : finale ? ' Les Bleus s\'inclinent en finale, la fierté est intacte.' : ' Les Bleus sortent avant la finale.';
+  return {
+    influence: ok ? 4 : -2, fierte: (ok ? 2 : -1) + (titre ? 4 : finale ? 1.5 : 0), chocPIB: ok ? 0.05 : 0,
+    grandEvenement: { id: 'cdm2038', reussite: ok },
+    texte: `${ok ? 'Organisation réussie, saluée dans le monde entier.' : 'Incidents de sécurité et transports saturés : l\'image du pays en souffre.'}${sport}`,
+  };
 }

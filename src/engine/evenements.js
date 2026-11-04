@@ -114,6 +114,9 @@ export function resoudreEvenements(e, choix = {}, alea) {
 export function depensesTemporairesActives(e) {
   e.depensesTemporaires = e.depensesTemporaires.filter((d) => e.tour < d.fin);
   const parPoste = {};
-  for (const d of e.depensesTemporaires) parPoste[d.poste] = (parPoste[d.poste] ?? 0) + d.valeur * (e.macro.niveauPrix / 100);
+  for (const d of e.depensesTemporaires) {
+    if ((d.debut ?? 0) > e.tour) continue; // dépense programmée pour plus tard (rattrapage après un étalement)
+    parPoste[d.poste] = (parPoste[d.poste] ?? 0) + d.valeur * (e.macro.niveauPrix / 100);
+  }
   return parPoste;
 }

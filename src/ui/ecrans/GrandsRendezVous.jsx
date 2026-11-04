@@ -1,5 +1,6 @@
 import React from 'react';
 import Badge from '../composants/Badge.jsx';
+import Chantiers from '../composants/Chantiers.jsx';
 import { CALENDRIER_GRANDS_EVENEMENTS } from '../../data/grandsEvenements.js';
 import { SUCCES } from '../../engine/index.js';
 import { libelleTrimestre } from '../../engine/calendrier.js';
@@ -8,6 +9,7 @@ const PREPARATION = {
   securite: { renforcee: 'sécurité renforcée', europeenne: 'coopération policière européenne', normale: 'dispositif ordinaire', base: 'crédits de 2025 seulement' },
   budget: { sobre: 'budget sobre', prestige: 'investissements de prestige', garantie: 'garantie publique relevée' },
   soutien: { garanties: 'garanties fédérales', reserve: 'soutien en retrait', abandon: 'candidature abandonnée' },
+  candidature: { ambitieuse: 'candidature ambitieuse', sobre: 'candidature sobre', non: 'pas de candidature' },
 };
 
 /**
@@ -15,7 +17,7 @@ const PREPARATION = {
  * Chronologie du mandat, préparatifs décidés et résultats, plus les succès
  * débloqués.
  */
-export default function GrandsRendezVous({ partie, allerA }) {
+export default function GrandsRendezVous({ partie, decisions, majDecisions, allerA }) {
   const t = partie.trimestre;
   const rang = (x) => x.annee * 4 + x.t;
   const maintenant = rang(t);
@@ -33,7 +35,7 @@ export default function GrandsRendezVous({ partie, allerA }) {
           const r = rang(x);
           const etat = r < maintenant ? 'passe' : r === maintenant ? 'present' : 'avenir';
           const hote = x.hotes.includes(partie.pays);
-          const p = prepa[x.id === 'la28_preparation' ? 'la28' : x.id.startsWith('jo2030') ? 'jo2030' : x.id] ?? {};
+          const p = prepa[x.id === 'la28_preparation' ? 'la28' : x.id.startsWith('jo2030') ? 'jo2030' : x.id.startsWith('cdm2038') ? 'cdm2038' : x.id] ?? {};
           const details = Object.entries(p).filter(([k]) => PREPARATION[k]).map(([k, v]) => PREPARATION[k][v] ?? v);
           return (
             <li key={x.id} className={`chronologie-point ${etat}`}>
@@ -47,7 +49,8 @@ export default function GrandsRendezVous({ partie, allerA }) {
               <div className="petit muet">{libelleTrimestre(x)} · {x.date} · {x.lieu}</div>
               {details.length > 0 && <div className="petit">Préparatifs : {details.join(', ')}</div>}
               {p.referendum !== undefined && <div className="petit">Référendum local : {p.referendum.toFixed(1)} % de oui</div>}
-              {p.reussite !== undefined && <div className={`petit ${p.reussite ? 'positif' : 'negatif'}`}>{p.reussite ? '🥇 Un succès' : 'Des Jeux ternis'}</div>}
+              {p.attribuee !== undefined && x.id === 'cdm2038_vote' && <div className={`petit ${p.attribuee ? 'positif' : 'negatif'}`}>{p.attribuee ? '✓ Attribuée à la France' : 'Une autre candidature est retenue'}</div>}
+              {p.reussite !== undefined && <div className={`petit ${p.reussite ? 'positif' : 'negatif'}`}>{p.reussite ? '🥇 Un succès' : 'Un événement terni'}</div>}
               {enAttente.has(x.id) || (x.id === 'cop31' && enAttente.has('cop31_us')) || (x.id === 'g20_miami' && enAttente.has('g20_participation')) || (x.id === 'g7_2027' && enAttente.has('g7_2027_participation'))
                 ? <button type="button" className="bouton principal petit" onClick={() => allerA('evenements')}>Décider maintenant</button>
                 : null}
@@ -55,6 +58,8 @@ export default function GrandsRendezVous({ partie, allerA }) {
           );
         })}
       </ol>
+
+      {decisions && <Chantiers partie={partie} decisions={decisions} majDecisions={majDecisions} />}
 
       <div className="carte">
         <h3>Succès débloqués ({succes.length}/{SUCCES.length})</h3>

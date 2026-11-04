@@ -15,8 +15,9 @@ export const OPTIONS_DEFAUT = {
   confirmer: true,          // demander confirmation s'il reste des événements à trancher
 };
 
-/** Onglets masqués en interface essentielle (toujours accessibles en interface complète). */
-export const ONGLETS_AVANCES = ['entreprises', 'menages', 'classements', 'rendezvous', 'sources'];
+/** Onglets masqués en interface essentielle (toujours accessibles en interface complète). Les classements
+ * internationaux, les grands rendez-vous et la rubrique régalienne restent toujours visibles. */
+export const ONGLETS_AVANCES = ['entreprises', 'menages', 'sources'];
 
 export function lireOptions() {
   let o = {};

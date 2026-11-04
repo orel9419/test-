@@ -108,10 +108,20 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - **mesures populaires** : les réformes disponibles qui font le plus gagner en popularité, avec un bouton « Proposer ». Dans l'onglet « Réformes », un badge 👍/👎 indique l'effet de chaque mesure sur l'opinion, et un filtre « Seulement les mesures populaires » les isole.
 
    Ordre de grandeur (France, mode Intermédiaire, sans autre décision) : une action de communication bien choisie chaque trimestre porte la popularité vers 38 % au bout de deux ans, contre 27 % sans rien faire.
-8. **Suivre l'opinion et les élections** (onglet « Opinion et élections ») : baromètre de satisfaction sur dix thèmes, intentions de vote, projection « si l'élection avait lieu aujourd'hui », résultats. Les élections intermédiaires (régionales, Länder, européennes, mi-mandat américain) et nationales découlent de vos décisions. Vous pouvez déclencher un **référendum** (France, article 11), une **dissolution** (France) ou une **question de confiance** (Allemagne).
-9. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
-10. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
-11. **Valider le trimestre** (bouton ou **Ctrl + Entrée**) et lire le bilan chiffré.
+8. **Exercer les missions régaliennes** (rubrique « Régalien ») :
+   - **Armées** : budget de la défense (63,4 Md€ prévus en 2027 pour la mission Défense, hors pensions) et capacités (environ 150 Rafale en service ; objectif 178 fin 2030 et 225 en 2035). Les grands programmes sont illustrés (dessins originaux) : **Rafale**, **SNLE de 3e génération**, porte-avions **« France Libre »**, successeur du Rafale après l'abandon du chasseur commun du SCAF, drones et munitions, espace. Pour chacun : faits sourcés, industriels, jalons, et vos décisions (commander une tranche de 30 Rafale, accélérer le standard F5, étaler pour économiser, sécuriser le calendrier des SNLE…). Un étalement économise d'abord, puis coûte plus cher : le rattrapage est différé et renchérit chaque appareil.
+   - **Opérations** : missions Aigle (Roumanie) et Lynx (Estonie), formation des soldats ukrainiens, force de réassurance en Ukraine (scénario de jeu) ; coût annuel, influence, relations.
+   - **Exportations** : mobiliser « l'équipe France » pour des contrats de Rafale (appel d'offres indien de 114 avions, prospect dans le Golfe) ; chances selon les relations et l'influence.
+   - **Dissuasion** : SNLE en vue en coupe (16 missiles M51, chaufferie nucléaire), composante aéroportée, et dimension européenne de la dissuasion, **domaine réservé du président** (en tant que Premier ministre, vous ne pouvez pas trancher).
+   - **Sécurité et justice** : les réformes régaliennes (police, prisons, narcotrafic, immigration, renseignement) à proposer directement, avec leur effet sur l'opinion et leur risque constitutionnel.
+
+   L'Allemagne (F-35A, bouclier antimissile Arrow 3, brigade en Lituanie) et les États-Unis (B-21, sous-marins Columbia, Golden Dome) ont leurs propres programmes.
+9. **Suivre l'opinion et les élections** (onglet « Opinion et élections ») : baromètre de satisfaction sur dix thèmes, intentions de vote, projection « si l'élection avait lieu aujourd'hui », résultats. Les élections intermédiaires (régionales, Länder, européennes, mi-mandat américain) et nationales découlent de vos décisions. Vous pouvez déclencher un **référendum** (France, article 11), une **dissolution** (France) ou une **question de confiance** (Allemagne).
+10. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
+
+    **Chantiers et partenaires** : pour les Jeux d'hiver 2030, le sommet du G7 2033 sous présidence française et la **Coupe du monde de football 2038** (candidature : scénario de jeu), chaque lot (sites, sécurité, énergie, hébergement et restauration, numérique, stades) reçoit des offres de grandes entreprises, dont des membres du CAC 40 (Vinci, Bouygues, Eiffage, Capgemini, Orange, Engie, Accor, Veolia…), de Thales, EDF, Sodexo, ou de concurrents étrangers moins chers. Prix, qualité, risque de retard et emplois locaux diffèrent ; la qualité d'ensemble pèse sur la réussite de l'événement, une offre étrangère réduit la souveraineté. Dans la réalité, les marchés sont attribués par les acheteurs publics après mise en concurrence ; l'État fixe le cahier des charges.
+11. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
+12. **Valider le trimestre** (bouton ou **Ctrl + Entrée**) et lire le bilan chiffré.
 
 ### Réalisme institutionnel
 
@@ -208,9 +218,9 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 - un **menu unique** (☰) : sauvegarder, charger, options, visite guidée, partager le jeu, à propos ;
 - des **options** enregistrées dans le navigateur : interface essentielle (par défaut) ou complète, thème clair, sombre ou comme l'appareil, taille du texte, animations réduites, confirmation avant de valider un trimestre s'il reste des événements à trancher ;
 - une page **« À propos »** : ce que le jeu est et n'est pas, vie privée, code source, signalement d'erreurs ;
-- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Politique et opinion, Monde, Journal et sources, plus Économie en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
+- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Régalien, Politique et opinion, Monde avec les classements internationaux et les grands rendez-vous, Journal et sources, plus Économie en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
 - un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
-- une **visite guidée** en huit étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
+- une **visite guidée** en neuf étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
 - des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
 - un **bilan de trimestre** animé, des **notifications** (votes, élections, réformes, entreprises) et des **confettis** quand vous gagnez une élection, réussissez des Jeux ou débloquez un succès ;
 - 16 **succès** à débloquer (premier budget, sous les 3 %, la dette recule, le peuple a tranché, des Jeux réussis…) ;
@@ -287,6 +297,8 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   pouvoir.js            solidité du pouvoir : popularité, marge électorale, menace parlementaire
   notation.js           agences de notation : notes réelles de départ, revues à dates fixes, effets sur les taux
   constitution.js       contrôle de constitutionnalité des réformes adoptées (censure totale ou partielle)
+  defense.js            programmes d'armement, capacités, opérations, exportations, dissuasion
+  chantiers.js          chantiers des grands événements : lots, offres, coûts, aléas, qualité
   reformes.js           adoption et effets des réformes
   international.js      relations, influence, accords
   politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
@@ -302,7 +314,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), actions diplomatiques,
+src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), défense (defense.js), chantiers (chantiers.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
 src/ui/                 interface React (écrans, composants, sauvegarde, options, partage, installation)
 public/                 manifeste de l'application, service worker (hors connexion), icônes
@@ -387,4 +399,6 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
 - Classements : taux de change constants ; plusieurs données de départ (PIB hors top 11, dette et déficit de certains pays de l'euro) sont des estimations signalées comme telles dans `countries/_contexte-mondial.json`.
 - Notation : les coefficients du modèle des agences et le calendrier des revues (deux par an et par agence) sont des hypothèses de jeu ; les notes de départ de l'Allemagne et des États-Unis sont à revérifier.
 - Contrôle de constitutionnalité : les probabilités de censure sont des estimations de jeu ; les précédents cités sont réels.
+- Défense : les coûts des options (tranche de Rafale, accélérations, opérations) et leurs effets sont des hypothèses de jeu ; le coût de la dissuasion n'est publié qu'en part de la LPM (environ 13 %). Les dessins sont des illustrations stylisées, pas des plans. La force de réassurance en Ukraine et le prospect d'exportation dans le Golfe sont des scénarios de jeu.
+- Chantiers : montants, prix, qualités et risques des offres sont des hypothèses de jeu ; la candidature française à la Coupe du monde 2038 est un scénario (aucune candidature déposée à ce jour).
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

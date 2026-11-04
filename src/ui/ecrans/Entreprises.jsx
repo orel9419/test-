@@ -83,7 +83,7 @@ export default function Entreprises({ partie, decisions, majDecisions, allerA })
               return (
                 <tr key={d.id}>
                   <td>
-                    <strong>{d.nom}</strong>{d.strategique >= 0.8 && <span className="etiquette" style={{ marginLeft: 6 }}>stratégique</span>}{f.actionSpecifique && <span className="etiquette" style={{ marginLeft: 6 }} title="Action spécifique ou contrôle renforcé des investissements étrangers">🛡️</span>}
+                    <strong>{d.nom}</strong>{d.cac40 && <span className="etiquette cac40" style={{ marginLeft: 6 }}>CAC 40</span>}{d.strategique >= 0.8 && <span className="etiquette" style={{ marginLeft: 6 }}>stratégique</span>}{f.actionSpecifique && <span className="etiquette" style={{ marginLeft: 6 }} title="Action spécifique ou contrôle renforcé des investissements étrangers">🛡️</span>}
                     <div className="tres-petit muet">{d.secteur}{d.note ? ` · ${d.note}` : ''}</div>
                   </td>
                   <td className="nombre">{pct(f.partEtat, 0)} {d.statutPart && <Badge provenance={{ statut: d.statutPart, texte: 'Participation non confirmée pendant la collecte des données' }} />}</td>

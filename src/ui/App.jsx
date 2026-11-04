@@ -36,6 +36,9 @@ import Objectifs from './ecrans/Objectifs.jsx';
 import BilanTour from './ecrans/BilanTour.jsx';
 import Classements from './ecrans/Classements.jsx';
 import Communication from './ecrans/Communication.jsx';
+import Armees from './ecrans/Armees.jsx';
+import Dissuasion from './ecrans/Dissuasion.jsx';
+import Securite from './ecrans/Securite.jsx';
 
 const ONGLETS = [
   { id: 'tableau', nom: 'Tableau de bord', court: 'Accueil', icone: '📊' },
@@ -53,12 +56,16 @@ const ONGLETS = [
   { id: 'journal', nom: 'Journal', court: 'Journal', icone: '🗞️' },
   { id: 'sources', nom: 'Données et sources', court: 'Sources', icone: '🔎' },
   { id: 'communication', nom: 'Communication', court: 'Communication', icone: '🎤' },
+  { id: 'armees', nom: 'Armées', court: 'Armées', icone: '🎖️' },
+  { id: 'dissuasion', nom: 'Dissuasion', court: 'Dissuasion', icone: '⚓' },
+  { id: 'securite', nom: 'Sécurité et justice', court: 'Sécurité', icone: '🛡️' },
 ];
 
 /** Six rubriques, chacune avec ses sous-onglets : une navigation plus simple. */
 const RUBRIQUES = [
   { id: 'accueil', nom: 'Tableau de bord', court: 'Accueil', icone: '📊', onglets: ['tableau'] },
   { id: 'gouverner', nom: 'Gouverner', court: 'Gouverner', icone: '📜', onglets: ['reformes', 'budget', 'fiscalite'] },
+  { id: 'regalien', nom: 'Régalien', court: 'Régalien', icone: '🎖️', onglets: ['armees', 'dissuasion', 'securite'] },
   { id: 'politique', nom: 'Politique et opinion', court: 'Opinion', icone: '📣', onglets: ['communication', 'opinion', 'parlement', 'evenements'] },
   { id: 'economie', nom: 'Économie', court: 'Économie', icone: '🏭', onglets: ['entreprises', 'menages'] },
   { id: 'monde', nom: 'Monde', court: 'Monde', icone: '🌍', onglets: ['diplomatie', 'classements', 'rendezvous'] },
@@ -66,7 +73,7 @@ const RUBRIQUES = [
 ];
 const rubriqueDe = (onglet) => RUBRIQUES.find((r) => r.onglets.includes(onglet)) ?? RUBRIQUES[0];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [] };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -98,7 +105,8 @@ function notificationsDuTour(avant, apres) {
   for (const x of (r.entreprises ?? []).filter((x) => x.texte)) n.push({ type: 'entreprise', titre: 'Entreprises', texte: x.texte });
   for (const [id, g] of Object.entries(apres.grandsEvenements ?? {})) {
     if (g.reussite !== undefined && avant.grandsEvenements?.[id]?.reussite === undefined) {
-      n.push({ type: g.reussite ? 'succes' : 'alerte', icone: g.reussite ? '🥇' : '😬', titre: g.reussite ? 'Des Jeux réussis !' : 'Des Jeux ternis', texte: g.reussite ? 'Le pays rayonne : influence et fierté nationale en hausse.' : 'Incidents et polémiques : l\'image du pays en souffre.' });
+      const coupe = id === 'cdm2038';
+      n.push({ type: g.reussite ? 'succes' : 'alerte', icone: g.reussite ? (coupe ? '⚽' : '🥇') : '😬', titre: g.reussite ? (coupe ? 'Une Coupe du monde réussie !' : 'Des Jeux réussis !') : (coupe ? 'Une Coupe du monde ternie' : 'Des Jeux ternis'), texte: g.reussite ? 'Le pays rayonne : influence et fierté nationale en hausse.' : 'Incidents et polémiques : l\'image du pays en souffre.' });
       if (g.reussite) fete = true;
     }
   }
@@ -290,9 +298,12 @@ export default function App() {
   const badge = (id) => ({
     evenements: nbEvenements,
     reformes: decisions.reformes.length,
+    rendezvous: decisions.chantiers?.length ?? 0,
     diplomatie: decisions.diplomatie.length + (decisions.g7?.priorites?.length ? 1 : 0),
     entreprises: nbActionsEntreprises,
     communication: decisions.communication ? 1 : 0,
+    armees: decisions.defense ? Object.values(decisions.defense.programmes ?? {}).filter((o) => o !== 'nominal').length + Object.keys(decisions.defense.operations ?? {}).length + (decisions.defense.exports?.length ?? 0) : 0,
+    dissuasion: decisions.defense?.dissuasion ? 1 : 0,
     parlement: trimestreBudget ? 'budget' : null,
   }[id] ?? null);
 
@@ -353,6 +364,9 @@ export default function App() {
               </div>
             )}
             {onglet === 'communication' && <Communication {...props} allerA={setOnglet} />}
+            {onglet === 'armees' && <Armees {...props} allerA={setOnglet} />}
+            {onglet === 'dissuasion' && <Dissuasion {...props} allerA={setOnglet} />}
+            {onglet === 'securite' && <Securite {...props} allerA={setOnglet} />}
             {onglet === 'tableau' && <TableauDeBord {...props} allerA={setOnglet} conseils={conseils} />}
             {onglet === 'budget' && <Budget {...props} />}
             {onglet === 'fiscalite' && <Fiscalite {...props} />}
@@ -362,7 +376,7 @@ export default function App() {
             {onglet === 'opinion' && <Opinion {...props} />}
             {onglet === 'diplomatie' && <Diplomatie {...props} />}
             {onglet === 'classements' && <Classements partie={partie} />}
-            {onglet === 'rendezvous' && <GrandsRendezVous partie={partie} allerA={setOnglet} />}
+            {onglet === 'rendezvous' && <GrandsRendezVous {...props} allerA={setOnglet} />}
             {onglet === 'evenements' && <Evenements {...props} />}
             {onglet === 'menages' && <Menages {...props} />}
             {onglet === 'journal' && <Journal partie={partie} />}
