@@ -69,7 +69,8 @@ export const PROGRAMMES_DEFENSE = {
       industriels: ['Naval Group et Chantiers de l\'Atlantique (MO Porte-Avions)', 'TechnicAtome (réacteurs)'], fleurons: ['naval_group'],
       faits: [
         'Construction lancée par le président de la République le 21 décembre 2025 ; navire baptisé « France Libre » le 18 mars 2026.',
-        'Environ 310 mètres et 75 000 tonnes ; une trentaine d\'avions de combat. Livraison vers 2038, pour remplacer le Charles-de-Gaulle.',
+        '310 m, 78 000 t, deux réacteurs nucléaires de 220 MW, 27 nœuds, environ 2 000 marins (Marine nationale). Mise en service prévue en 2038 pour remplacer le Charles-de-Gaulle ; durée de vie estimée à 45 ans.',
+        'Groupe aérien : jusqu\'à 30 avions de combat de nouvelle génération, 2 avions de guet aérien, 6 hélicoptères et des drones. Construit à Saint-Nazaire par les Chantiers de l\'Atlantique, avec Naval Group.',
       ],
       reforme: 'porte_avions',
       options: [

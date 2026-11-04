@@ -54,9 +54,13 @@ Les situations sont fictives, inspirées de l'actualité ; les entreprises cité
 
 ## Rafale et SNLE en 3D
 
-Dans la rubrique Régalien (Armées, Dissuasion) et dans le **Hangar 3D** (écran d'accueil), le Rafale et un SNLE de la classe Le Triomphant sont modélisés en 3D (three.js) à leurs **proportions réelles** :
+Dans la rubrique Régalien (Armées, Dissuasion) et dans le **Hangar 3D** (écran d'accueil), quatre modèles 3D (three.js) aux **proportions réelles** :
 - **Rafale** : 15,27 m de long, 10,90 m d'envergure, aile delta, plans canard, entrées d'air, dérive unique avec drapeau tricolore, verrière dorée et habitacle, perche de ravitaillement, deux réacteurs M88, cocardes, et une configuration air-air (2 MICA, 2 Meteor, 2 réservoirs de 2 000 litres) ;
-- **SNLE** : 138 m de long, 12,5 m de diamètre, kiosque et barres de plongée, « dos » des 16 tubes de missiles M51 avec leurs trappes, gouvernes en croix, hydrojet ; on peut **ouvrir les trappes** et lancer un **tir d'essai simulé**.
+- **SNLE Le Triomphant** : 138 m de long, 12,5 m de diamètre, kiosque et barres de plongée, « dos » des 16 tubes de missiles M51 avec leurs trappes, gouvernes en croix, hydrojet ; on peut **ouvrir les trappes** et lancer un **tir d'essai simulé** ;
+- **SNLE de 3e génération** : silhouette indicative (coque lisse à tuiles anéchoïques, kiosque avancé, antenne sonar latérale, gouvernes en X), les plans définitifs n'étant pas publics ;
+- **porte-avions « France Libre »**, d'après les chiffres de la Marine nationale : 310 m, 78 000 t, deux réacteurs de 220 MW, 27 nœuds, environ 2 000 marins, mise en service prévue en 2038 ; île à tribord vers l'arrière, piste oblique, trois catapultes, deux ascenseurs latéraux, Rafale Marine, avion de guet et hélicoptères sur le pont, coque peinte en rouge sous la flottaison ; bouton **« Catapulter un Rafale »** (environ 3,8 g pendant 2,2 s, comme une catapulte électromagnétique).
+
+Le Rafale existe en monoplace (C) et en biplace (B), train d'atterrissage rentré ou sorti.
 
 Rotation au doigt ou à la souris, vues de profil, de dessus et de face, légendes, et bouton **Photo** pour partager sa plus belle vue. Les formes sont simplifiées : ce ne sont pas des plans. La 3D n'est chargée qu'à l'ouverture de ces écrans.
 

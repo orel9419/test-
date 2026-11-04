@@ -592,3 +592,6 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .bouton-express:hover { filter: brightness(1.05); }
 .express .bouton:not(.principal) { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.28); }
 .express .bouton:not(.principal):hover { background: rgba(255, 255, 255, 0.2); }
+.visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #f6f7f9 0%, #dfe3e8 60%, #c3c9d1 100%); }
+.visionneuse-porteAvions .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+:root[data-theme="dark"] .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #3b4350 0%, #232a33 60%, #151a20 100%); }

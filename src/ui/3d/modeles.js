@@ -40,10 +40,14 @@ function densifier(cles, parSegment = 6) {
  * Surface « loftée » : une suite de sections (super-ellipses) le long de x.
  * Section : { x, w (largeur), hHaut, hBas (demi-hauteurs), y (centre), z, n (exposant : 2 = ellipse, plus = plus carré) }.
  */
-export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true } = {}) {
+export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true, couleur = null } = {}) {
   const sections = densifier(cles.map((s) => ({ hHaut: s.h / 2, hBas: s.h / 2, y: 0, z: 0, n: 2, ...s })), parSegment);
   const pos = [];
   const idx = [];
+  const uv = [];
+  const col = [];
+  const x0 = sections[0].x, x1 = sections[sections.length - 1].x;
+  const ajouterCouleur = (x, y, z) => { if (couleur) col.push(...couleur(x, y, z)); };
   for (const s of sections) {
     const e = 2 / s.n;
     for (let j = 0; j < segments; j++) {
@@ -52,6 +56,8 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
       const dz = (s.w / 2) * Math.sign(c) * Math.pow(Math.abs(c), e);
       const dy = (si >= 0 ? s.hHaut : s.hBas) * Math.sign(si) * Math.pow(Math.abs(si), e);
       pos.push(s.x, s.y + dy, s.z + dz);
+      uv.push((s.x - x0) / Math.max(1e-6, x1 - x0), j / segments);
+      ajouterCouleur(s.x, s.y + dy, s.z + dz);
     }
   }
   const n = sections.length;
@@ -69,6 +75,8 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
       if (s.w < 1e-3 && s.hHaut < 1e-3) continue;
       const centre = pos.length / 3;
       pos.push(s.x, s.y, s.z);
+      uv.push(i === 0 ? 0 : 1, 0.5);
+      ajouterCouleur(s.x, s.y, s.z);
       for (let j = 0; j < segments; j++) {
         const a = i * segments + j, b = i * segments + ((j + 1) % segments);
         if (sens < 0) idx.push(centre, b, a); else idx.push(centre, a, b);
@@ -77,9 +85,39 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  if (couleur) g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setIndex(idx);
   g.computeVertexNormals();
   return g;
+}
+
+/**
+ * Texture procédurale de panneaux (tuiles anéchoïques d'un sous-marin) :
+ * fines lignes claires sur fond sombre, répétées le long de la coque.
+ */
+function texturePanneaux(THREE, { fond = '#141618', trait = 'rgba(210,215,220,0.16)', repetition = [10, 3] } = {}) {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 512;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = fond;
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = trait;
+  ctx.lineWidth = 2;
+  let graine = 7;
+  const hasard = () => { graine = (graine * 16807) % 2147483647; return graine / 2147483647; };
+  for (let y = 0; y <= c.height; y += 64) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke();
+    for (let x = hasard() * 120; x < c.width; x += 90 + hasard() * 160) {
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 64); ctx.stroke();
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(...repetition);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
 }
 
 /** Surface portante (aile, plan canard, dérive) extrudée à partir d'un contour, avec bords arrondis. */
@@ -131,14 +169,14 @@ function missile(THREE, longueur, diametre, materiaux, ailettes = 0.18) {
  * 2 MICA en bout d'aile, 2 Meteor, 2 réservoirs de 2 000 litres.
  * @returns {THREE.Group} centré, avec les points de légende dans userData.legendes
  */
-export function construireRafale(THREE) {
+export function construireRafale(THREE, { armement = true } = {}) {
   const avion = new THREE.Group();
-  const gris = new THREE.MeshStandardMaterial({ color: 0x8b9298, metalness: 0.35, roughness: 0.48 });
-  const grisFonce = new THREE.MeshStandardMaterial({ color: 0x6e757b, metalness: 0.35, roughness: 0.55 });
-  const radome = new THREE.MeshStandardMaterial({ color: 0x7d848a, metalness: 0.2, roughness: 0.6 });
+  const gris = new THREE.MeshStandardMaterial({ color: 0x7e878f, metalness: 0.3, roughness: 0.5 });
+  const grisFonce = new THREE.MeshStandardMaterial({ color: 0x5f676f, metalness: 0.3, roughness: 0.55 });
+  const radome = new THREE.MeshStandardMaterial({ color: 0x737b83, metalness: 0.2, roughness: 0.6 });
   const metal = new THREE.MeshStandardMaterial({ color: 0x55585c, metalness: 0.9, roughness: 0.35 });
   const noir = new THREE.MeshStandardMaterial({ color: 0x141618, metalness: 0.2, roughness: 0.8 });
-  const verre = new THREE.MeshPhysicalMaterial({ color: 0x6a5c38, metalness: 0.35, roughness: 0.04, transparent: true, opacity: 0.6, clearcoat: 1, clearcoatRoughness: 0.02 });
+  const verre = new THREE.MeshPhysicalMaterial({ color: 0x4b4a3e, metalness: 0.4, roughness: 0.03, transparent: true, opacity: 0.62, clearcoat: 1, clearcoatRoughness: 0.02 });
   const materiaux = { missile: new THREE.MeshStandardMaterial({ color: 0xd8dadb, metalness: 0.2, roughness: 0.5 }), missileOgive: new THREE.MeshStandardMaterial({ color: 0x9da3a8, metalness: 0.3, roughness: 0.4 }) };
 
   // Fuselage : nez effilé, poste de pilotage surélevé, dos qui descend vers les tuyères
@@ -231,7 +269,8 @@ export function construireRafale(THREE) {
     res.position.set(8.2, -0.92, cote * 2.05);
     const pylone2 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.42, 0.07), grisFonce);
     pylone2.position.set(10.6, -0.5, cote * 2.05);
-    avion.add(mica, rail, meteor, pylone1, res, pylone2);
+    avion.add(rail);
+    if (armement) avion.add(mica, meteor, pylone1, res, pylone2);
   }
 
   // Dérive unique, avec petit drapeau tricolore
@@ -250,25 +289,79 @@ export function construireRafale(THREE) {
     });
   }
 
-  // Verrière en bulle et perche de ravitaillement (côté droit, devant la verrière)
-  // Habitacle visible à travers la verrière : planche de bord, siège éjectable, casque
-  const habitacle = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12), new THREE.MeshStandardMaterial({ color: 0x1a1c1f, roughness: 0.9 }));
-  habitacle.scale.set(1.25, 0.22, 0.36);
-  habitacle.position.set(3.95, 0.62, 0);
-  const siege = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.55, 0.42), new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.8 }));
-  siege.position.set(4.55, 0.82, 0);
-  const casque = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), new THREE.MeshStandardMaterial({ color: 0x3b4046, roughness: 0.5, metalness: 0.2 }));
-  casque.position.set(4.3, 0.98, 0);
-  avion.add(habitacle, siege, casque);
-  const bulle = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), verre);
-  bulle.scale.set(1.4, 0.46, 0.43);
-  bulle.position.set(3.9, 0.6, 0);
-  avion.add(bulle);
-  const arceau = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.025, 8, 24, Math.PI), grisFonce);
-  arceau.scale.set(1, 1.07, 1);
-  arceau.position.set(3.15, 0.6, 0);
-  arceau.rotation.y = Math.PI / 2;
-  avion.add(arceau);
+  // Habitacle(s) et verrière : monoplace (C, M) ou biplace en tandem (B), à basculer
+  const matHabitacle = new THREE.MeshStandardMaterial({ color: 0x1a1c1f, roughness: 0.9 });
+  const matSiege = new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.8 });
+  const matCasque = new THREE.MeshStandardMaterial({ color: 0x3b4046, roughness: 0.5, metalness: 0.2 });
+  const poste = (places) => {
+    const g = new THREE.Group();
+    const longueur = places === 2 ? 1.95 : 1.4;
+    const centre = places === 2 ? 4.3 : 3.9;
+    const hab = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12), matHabitacle);
+    hab.scale.set(longueur * 0.9, 0.22, 0.36);
+    hab.position.set(centre + 0.05, 0.62, 0);
+    g.add(hab);
+    [...Array(places).keys()].forEach((k) => {
+      const x = places === 2 ? 3.85 + k * 1.05 : 4.3;
+      const siege = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.55, 0.42), matSiege);
+      siege.position.set(x + 0.25, 0.82, 0);
+      const casque = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), matCasque);
+      casque.position.set(x, 0.98, 0);
+      g.add(siege, casque);
+    });
+    const bulle = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), verre);
+    bulle.scale.set(longueur, 0.46, 0.43);
+    bulle.position.set(centre, 0.6, 0);
+    const pareBrise = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.025, 8, 24, Math.PI), grisFonce);
+    pareBrise.scale.set(1, 1.07, 1);
+    pareBrise.position.set(centre - longueur * 0.53, 0.6, 0);
+    pareBrise.rotation.y = Math.PI / 2;
+    g.add(bulle, pareBrise);
+    if (places === 2) {
+      const arceau = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.022, 8, 24, Math.PI), grisFonce);
+      arceau.scale.set(1, 1.07, 1);
+      arceau.position.set(centre + 0.05, 0.6, 0);
+      arceau.rotation.y = Math.PI / 2;
+      g.add(arceau);
+    }
+    return g;
+  };
+  const monoplace = poste(1);
+  const biplace = poste(2);
+  biplace.visible = false;
+  avion.add(monoplace, biplace);
+
+  // Carénage à la base de la dérive, qui dépasse au-dessus des tuyères
+  const carenage = loft(THREE, [
+    { x: 13.6, w: 0.05, hHaut: 0.02, hBas: 0.02, y: 0.6 },
+    { x: 14.3, w: 0.28, hHaut: 0.12, hBas: 0.12, y: 0.58 },
+    { x: 15.35, w: 0.22, hHaut: 0.1, hBas: 0.1, y: 0.56 },
+    { x: 15.6, w: 0.12, hHaut: 0.06, hBas: 0.06, y: 0.56 },
+  ], { segments: 16, parSegment: 4 });
+  avion.add(new THREE.Mesh(carenage, gris));
+
+  // Train d'atterrissage (rentré par défaut) : diabolo avant, deux atterrisseurs principaux
+  const train = new THREE.Group();
+  const matJambe = new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 0.6, roughness: 0.35 });
+  const matPneu = new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.9 });
+  const roue = (r, l) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 24), matPneu); m.rotation.x = Math.PI / 2; return m; };
+  const jambeAvant = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.3, 12), matJambe);
+  jambeAvant.position.set(3.0, -1.05, 0);
+  const roueAvant1 = roue(0.24, 0.16); roueAvant1.position.set(3.05, -1.72, 0.14);
+  const roueAvant2 = roue(0.24, 0.16); roueAvant2.position.set(3.05, -1.72, -0.14);
+  train.add(jambeAvant, roueAvant1, roueAvant2);
+  for (const cote of [1, -1]) {
+    const jambe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 1.25, 12), matJambe);
+    jambe.position.set(9.9, -1.0, cote * 1.32);
+    jambe.rotation.x = cote * 0.08;
+    const r = roue(0.36, 0.22); r.position.set(9.95, -1.6, cote * 1.42);
+    const trappe = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.03), grisFonce);
+    trappe.position.set(9.9, -0.8, cote * 1.12);
+    train.add(jambe, r, trappe);
+  }
+  train.visible = false;
+  avion.add(train);
+
   const perche = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 1.7, 12), grisFonce);
   perche.rotation.z = Math.PI / 2 - 0.06;
   perche.position.set(2.55, 0.5, -0.4);
@@ -298,6 +391,10 @@ export function construireRafale(THREE) {
     { texte: 'Dérive', point: new THREE.Vector3(13.4 - 7.6, 3.2, 0) },
   ];
   groupe.userData.taille = 16;
+  groupe.userData.basculer = {
+    biplace: (on) => { biplace.visible = on; monoplace.visible = !on; },
+    train: (on) => { train.visible = on; },
+  };
   return groupe;
 }
 
@@ -453,5 +550,364 @@ export function construireSnle(THREE) {
     { texte: 'Étrave (sonar)', point: decal(2, 0, 3) },
   ];
   groupe.userData.taille = 14;
+  return groupe;
+}
+
+/** Gouvernes et trappes communes aux sous-marins lanceurs d'engins. */
+function trappesMissiles(THREE, { xDebut, pas, y, s, materiaux }) {
+  const groupe = new THREE.Group();
+  const trappes = [];
+  for (let i = 0; i < 8; i++) {
+    for (const cote of [1, -1]) {
+      const x = xDebut + i * pas;
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 0.2, 24), materiaux.tube);
+      tube.position.set(x * s, (y + 0.01) * s, cote * 2.0 * s);
+      tube.scale.setScalar(s);
+      groupe.add(tube);
+      const charniere = new THREE.Group();
+      charniere.position.set(x * s, (y + 0.06) * s, cote * 3.45 * s);
+      const trappe = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.18, 2.9), materiaux.trappe);
+      trappe.position.set(0, 0, -cote * 1.45);
+      const pivot = new THREE.Group();
+      pivot.add(trappe);
+      pivot.scale.setScalar(s);
+      charniere.add(pivot);
+      charniere.userData = { cote, angle: 0 };
+      groupe.add(charniere);
+      trappes.push(charniere);
+    }
+  }
+  return { groupe, trappes };
+}
+
+/**
+ * SNLE de 3e génération : silhouette indicative (coque lisse à tuiles
+ * anéchoïques, kiosque avancé avec barres de plongée, antenne sonar latérale,
+ * gouvernes en X, hydrojet). Plans définitifs non publics. Échelle 1/10.
+ */
+export function construireSnle3G(THREE) {
+  const s = 0.1;
+  const L = 150, R = 6.5;
+  const sub = new THREE.Group();
+  const coque = new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#16181b', repetition: [14, 4] }), metalness: 0.15, roughness: 0.5 });
+  const kiosqueMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#191b1e', repetition: [3, 2] }), metalness: 0.15, roughness: 0.5 });
+  const antenneMat = new THREE.MeshStandardMaterial({ color: 0x23272b, metalness: 0.3, roughness: 0.32 });
+  const metal = new THREE.MeshStandardMaterial({ color: 0x4a4f55, metalness: 0.7, roughness: 0.4 });
+  const materiaux = { trappe: new THREE.MeshStandardMaterial({ color: 0x24282d, metalness: 0.3, roughness: 0.55 }), tube: new THREE.MeshStandardMaterial({ color: 0x0b0c0e, roughness: 0.9 }) };
+
+  sub.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 0, h: 0 }, { x: 1.5, w: 5.4, h: 5.4 }, { x: 4.5, w: 9.2, h: 9.2 }, { x: 9, w: 11.8, h: 11.8 },
+    { x: 15, w: 12.8, h: 12.8 }, { x: 22, w: 2 * R, h: 2 * R }, { x: 112, w: 2 * R, h: 2 * R }, { x: 122, w: 12.2, h: 12.2 },
+    { x: 131, w: 10, h: 10 }, { x: 139, w: 7.2, h: 7.2 }, { x: 145, w: 4.8, h: 4.8 }, { x: 148.5, w: 3.6, h: 3.6 },
+  ], { segments: 64, parSegment: 6 }).scale(s, s, s), coque));
+
+  // Pont légèrement aplati au-dessus des tubes, derrière le kiosque
+  sub.add(new THREE.Mesh(loft(THREE, [
+    { x: 62, w: 2, hHaut: 0.1, hBas: 2, y: R - 0.4, n: 3 },
+    { x: 66, w: 7.4, hHaut: 0.55, hBas: 2.6, y: R - 0.35, n: 4 },
+    { x: 101, w: 7.4, hHaut: 0.55, hBas: 2.6, y: R - 0.35, n: 4 },
+    { x: 106, w: 2, hHaut: 0.1, hBas: 2, y: R - 0.4, n: 3 },
+  ], { segments: 40, parSegment: 5 }).scale(s, s, s), coque));
+  const { groupe: tubes, trappes } = trappesMissiles(THREE, { xDebut: 68.5, pas: 4.5, y: R + 0.2, s, materiaux });
+  sub.add(tubes);
+
+  // Kiosque avancé, profil droit, avec congé à l'arrière et barres de plongée à mi-hauteur
+  const contour = new THREE.Shape();
+  contour.moveTo(0, 0);
+  contour.bezierCurveTo(0, 1.5, 1.6, 1.6, 3.5, 1.6);
+  contour.lineTo(13, 1.45);
+  contour.quadraticCurveTo(15.6, 1.2, 16, 0);
+  contour.quadraticCurveTo(15.6, -1.2, 13, -1.45);
+  contour.lineTo(3.5, -1.6);
+  contour.bezierCurveTo(1.6, -1.6, 0, -1.5, 0, 0);
+  const kiosqueGeo = new THREE.ExtrudeGeometry(contour, { depth: 10, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.35, bevelSegments: 4, curveSegments: 16 });
+  kiosqueGeo.rotateX(-Math.PI / 2);
+  kiosqueGeo.translate(44, R - 1.5, 0);
+  kiosqueGeo.scale(s, s, s);
+  sub.add(new THREE.Mesh(kiosqueGeo, kiosqueMat));
+  sub.add(new THREE.Mesh(loft(THREE, [
+    { x: 57, w: 3.1, hHaut: 3.2, hBas: 0.2, y: R - 0.4, n: 2.6 },
+    { x: 62, w: 2.2, hHaut: 1.2, hBas: 0.2, y: R - 0.4, n: 2.4 },
+    { x: 66, w: 0.6, hHaut: 0.1, hBas: 0.1, y: R - 0.4, n: 2 },
+  ], { segments: 24, parSegment: 5 }).scale(s, s, s), kiosqueMat));
+  const barre = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.4, 13.5), kiosqueMat);
+  barre.position.set(47.6 * s, (R + 5.2) * s, 0);
+  barre.rotation.y = 0.06;
+  barre.scale.setScalar(s);
+  sub.add(barre);
+  [[46.5, 1.4], [48, 2.2], [50, 1.7]].forEach(([x, h]) => {
+    const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, h, 12), metal);
+    mat.position.set(x * s, (R + 9 + h / 2) * s, 0);
+    mat.scale.setScalar(s);
+    sub.add(mat);
+  });
+
+  // Antennes sonar latérales (longs panneaux sur les flancs)
+  for (const cote of [1, -1]) {
+    const antenne = new THREE.Mesh(new THREE.BoxGeometry(62, 2.6, 0.4), antenneMat);
+    antenne.position.set(70 * s, -0.9 * s, cote * (R + 0.02) * s);
+    antenne.scale.setScalar(s);
+    sub.add(antenne);
+  }
+
+  // Gouvernes en X et hydrojet
+  const forme = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(7.5, 0), new THREE.Vector2(8.2, 5.6), new THREE.Vector2(4.6, 5.6)]);
+  for (const angle of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
+    const g = new THREE.ExtrudeGeometry(forme, { depth: 0.5, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 2 });
+    g.translate(134, 3.2, -0.25);
+    const m = new THREE.Mesh(g, coque);
+    const pivot = new THREE.Group();
+    pivot.rotation.x = angle;
+    pivot.add(m);
+    pivot.scale.setScalar(s);
+    sub.add(pivot);
+  }
+  const carenageMat = coque.clone();
+  carenageMat.side = THREE.DoubleSide;
+  const carenage = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.05, 4.4, 40, 1, true), carenageMat);
+  carenage.rotation.z = Math.PI / 2;
+  carenage.position.set(150 * s, 0, 0);
+  carenage.scale.setScalar(s);
+  const moyeu = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3.6, 24), metal);
+  moyeu.rotation.z = -Math.PI / 2;
+  moyeu.position.set(151.2 * s, 0, 0);
+  moyeu.scale.setScalar(s);
+  sub.add(carenage, moyeu);
+
+  // Missile M51 (tir d'essai)
+  const m51 = new THREE.Group();
+  const missileMat = new THREE.MeshStandardMaterial({ color: 0xe6e8ea, metalness: 0.2, roughness: 0.45 });
+  const corps = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 11, 24), missileMat);
+  corps.position.y = 5.5;
+  const coiffe = new THREE.Mesh(new THREE.ConeGeometry(1.15, 3.2, 24), missileMat);
+  coiffe.position.y = 12.6;
+  m51.add(corps, coiffe);
+  m51.scale.setScalar(s);
+  m51.position.set(68.5 * s, (R + 0.2 - 12) * s, 2.0 * s);
+  m51.visible = false;
+  sub.add(m51);
+
+  sub.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  sub.position.set(-(L / 2) * s, -1.5 * s, 0);
+  const groupe = new THREE.Group();
+  groupe.add(sub);
+  const decal = (x, y, z) => new THREE.Vector3(x * s - (L / 2) * s, y * s - 1.5 * s, z * s);
+  groupe.userData.trappes = trappes;
+  groupe.userData.missile = m51;
+  groupe.userData.dessusDos = (R + 0.2) * s;
+  groupe.userData.legendes = [
+    { texte: 'Kiosque', point: decal(52, R + 10, 0) },
+    { texte: 'Barres de plongée', point: decal(47.6, R + 5.2, 6.8) },
+    { texte: '16 tubes de missiles M51', point: decal(84, R + 0.8, 3.5) },
+    { texte: 'Antenne sonar latérale', point: decal(70, -0.9, R + 0.3) },
+    { texte: 'Gouvernes en X', point: decal(140, 7, 3) },
+    { texte: 'Hydrojet (propulsion)', point: decal(151, 2.4, 0) },
+  ];
+  groupe.userData.taille = 15;
+  return groupe;
+}
+
+/** Texture du pont d'envol (marquages, catapultes, ascenseurs), transparente hors du pont. */
+function texturePont(THREE, contour) {
+  const W = 2048, H = 674; // 310 m × 102 m
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const px = (x) => (x / 310) * W;
+  const py = (z) => ((z + 51) / 102) * H; // le haut de l'image = tribord
+  ctx.beginPath();
+  contour.forEach(([x, z], i) => (i ? ctx.lineTo(px(x), py(z)) : ctx.moveTo(px(x), py(z))));
+  ctx.closePath();
+  ctx.fillStyle = '#45484d';
+  ctx.fill();
+  ctx.save();
+  ctx.clip();
+  // Usure du revêtement
+  let g = 3;
+  const h = () => { g = (g * 16807) % 2147483647; return g / 2147483647; };
+  for (let k = 0; k < 2500; k++) { ctx.fillStyle = `rgba(${h() > 0.5 ? '255,255,255' : '0,0,0'},0.035)`; ctx.fillRect(h() * W, h() * H, 6 + h() * 30, 2 + h() * 6); }
+  const ligne = (x1, z1, x2, z2, couleur, largeur, tirets = null) => {
+    ctx.strokeStyle = couleur; ctx.lineWidth = largeur; ctx.setLineDash(tirets ?? []);
+    ctx.beginPath(); ctx.moveTo(px(x1), py(z1)); ctx.lineTo(px(x2), py(z2)); ctx.stroke(); ctx.setLineDash([]);
+  };
+  // Piste oblique (environ 9°) : bords, axe en tirets, zone d'appontage et brins d'arrêt
+  const A = [306, 4], B = [135, 31];
+  const dx = B[0] - A[0], dz = B[1] - A[1], n = Math.hypot(dx, dz), ox = -dz / n * 12, oz = dx / n * 12;
+  ligne(A[0] + ox, A[1] + oz, B[0] + ox, B[1] + oz, '#f2f2f2', 4);
+  ligne(A[0] - ox, A[1] - oz, B[0] - ox, B[1] - oz, '#f2f2f2', 4);
+  ligne(A[0], A[1], B[0], B[1], '#f2f2f2', 3, [26, 22]);
+  for (let k = 0; k < 3; k++) { const t = 0.12 + k * 0.06; const x = A[0] + dx * t, z = A[1] + dz * t; ligne(x + ox, z + oz, x - ox, z - oz, '#d9d9d9', 3); }
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  for (let k = 0; k < 8; k++) { const t = 0.32 + k * 0.012; const x = A[0] + dx * t, z = A[1] + dz * t; ctx.fillRect(px(x) - 3, py(z) - 26, 6, 52); }
+  // Catapultes électromagnétiques : deux à l'avant, une sur la piste oblique
+  ligne(14, 7, 95, 7, '#f5d94a', 3);
+  ligne(18, -8, 100, -9, '#f5d94a', 3);
+  ligne(130, 27, 205, 15, '#f5d94a', 3);
+  // Ligne de sécurité (« foul line ») et axe avant
+  ligne(310, -18, 120, 12, '#f5d94a', 2, [14, 10]);
+  ligne(4, 0, 120, 0, '#f2f2f2', 2, [18, 18]);
+  // Ascenseurs latéraux à tribord
+  ctx.strokeStyle = '#d8c04a'; ctx.lineWidth = 5;
+  for (const [x1, x2] of [[128, 150], [184, 206]]) ctx.strokeRect(px(x1), py(-43), px(x2) - px(x1), py(-31) - py(-43));
+  ctx.restore();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/** Hélicoptère simplifié (NH90 Caïman Marine). */
+function helicoptere(THREE, mat, matRotor) {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 0.5, hHaut: 0.6, hBas: 0.6, y: 1.6 }, { x: 1.5, w: 2.6, hHaut: 1.5, hBas: 1.1, y: 1.8, n: 2.6 },
+    { x: 7, w: 2.8, hHaut: 1.5, hBas: 1.2, y: 1.8, n: 3 }, { x: 10, w: 1.2, hHaut: 0.7, hBas: 0.3, y: 2.6 }, { x: 15, w: 0.5, hHaut: 0.4, hBas: 0.2, y: 3 },
+  ], { segments: 24, parSegment: 4 }), mat));
+  // Rotor principal : cinq pales repliées le long du fuselage, comme sur un pont d'envol
+  const rotor = new THREE.Group();
+  rotor.position.set(5, 4, 0);
+  [0, 0.25, -0.25, 0.5, -0.5].forEach((a) => { const pale = new THREE.Mesh(new THREE.BoxGeometry(8, 0.08, 0.5), matRotor); pale.position.x = 4; const pivot = new THREE.Group(); pivot.rotation.y = a; pivot.add(pale); rotor.add(pivot); });
+  const deriv = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.4, 0.2), mat);
+  deriv.position.set(15, 4, 0);
+  g.add(rotor, deriv);
+  return g;
+}
+
+/** Avion de guet aérien simplifié (aile droite haute, radôme rotatif, quatre dérives). */
+function avionDeGuet(THREE, mat, matSombre) {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 0.4, h: 0.4, y: 1.9 }, { x: 2.5, w: 2.2, hHaut: 1.2, hBas: 1.1, y: 2.2 }, { x: 10, w: 2.4, hHaut: 1.2, hBas: 1.1, y: 2.4 }, { x: 17.5, w: 0.8, hHaut: 0.4, hBas: 0.3, y: 3 },
+  ], { segments: 24, parSegment: 4 }), mat));
+  const aile = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.35, 24.6), mat);
+  aile.position.set(6.5, 3.5, 0);
+  const radome = new THREE.Mesh(new THREE.CylinderGeometry(3.65, 3.65, 0.75, 40), matSombre);
+  radome.position.set(9.5, 5.4, 0);
+  const empennage = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.25, 8), mat);
+  empennage.position.set(16.5, 3.2, 0);
+  g.add(aile, radome, empennage);
+  for (const z of [-4, -1.4, 1.4, 4]) { const d = new THREE.Mesh(new THREE.BoxGeometry(2, 2.6, 0.2), mat); d.position.set(16.6, 4.4, z); g.add(d); }
+  for (const z of [-3.6, 3.6]) { const h = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 0.9, 1.4, 16), matSombre); h.rotation.z = Math.PI / 2; h.position.set(4.6, 3.3, z); g.add(h); }
+  return g;
+}
+
+/**
+ * Porte-avions « France Libre » (porte-avions de nouvelle génération), d'après
+ * l'infographie de la Marine nationale : 310 m, île à tribord vers l'arrière,
+ * piste oblique, deux ascenseurs latéraux, trois catapultes. Échelle 1/20.
+ * userData.catapulte : Rafale en bout de catapulte (lancement animé).
+ */
+export function construirePorteAvions(THREE) {
+  const s = 0.05;
+  const navire = new THREE.Group();
+  const flottaison = -20;
+  const coque = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.1, roughness: 0.75, envMapIntensity: 0.45 });
+  const gris = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, metalness: 0.2, roughness: 0.6 });
+  const grisFonce = new THREE.MeshStandardMaterial({ color: 0x60666c, metalness: 0.25, roughness: 0.6 });
+  const vitres = new THREE.MeshStandardMaterial({ color: 0x1c2733, metalness: 0.6, roughness: 0.15 });
+
+  // Coque : gris au-dessus de la flottaison, liseré noir, carène rouge (peinture antisalissure)
+  const couleur = (x, y) => (y < flottaison - 0.6 ? [0.5, 0.12, 0.1] : y < flottaison + 0.6 ? [0.1, 0.1, 0.11] : [0.47, 0.5, 0.53]);
+  navire.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 2, hHaut: 1, hBas: 1, y: -1.5, n: 2.5 },
+    { x: 6, w: 12, hHaut: 2, hBas: 9, y: -3, n: 2.5 },
+    { x: 20, w: 26, hHaut: 3, hBas: 18, y: -5, n: 2.8 },
+    { x: 50, w: 36, hHaut: 3, hBas: 24, y: -5, n: 3.2 },
+    { x: 150, w: 41, hHaut: 3, hBas: 26, y: -5, n: 3.6 },
+    { x: 262, w: 40, hHaut: 3, hBas: 25, y: -5, n: 3.6 },
+    { x: 300, w: 36, hHaut: 3, hBas: 19, y: -5, n: 3.4 },
+    { x: 309, w: 33, hHaut: 3, hBas: 13, y: -5, n: 3.2 },
+  ], { segments: 56, parSegment: 6, couleur }), coque));
+
+  // Pont d'envol (épaisseur 2 m) et ses marquages
+  const contour = [[1, -6], [1, 6], [25, 18], [80, 24], [140, 27], [165, 45], [296, 46], [306, 40], [308, -30], [298, -36], [250, -36], [246, -43], [122, -43], [116, -36], [60, -31], [22, -20]];
+  const forme = new THREE.Shape(contour.map(([x, z]) => new THREE.Vector2(x, z)));
+  const pontGeo = new THREE.ExtrudeGeometry(forme, { depth: 2, bevelEnabled: false });
+  pontGeo.rotateX(Math.PI / 2);
+  pontGeo.translate(0, 0, 0);
+  navire.add(new THREE.Mesh(pontGeo, gris));
+  const marquages = new THREE.Mesh(new THREE.PlaneGeometry(310, 102), new THREE.MeshStandardMaterial({ map: texturePont(THREE, contour), transparent: true, alphaTest: 0.4, roughness: 0.85, metalness: 0.05 }));
+  marquages.rotation.x = -Math.PI / 2;
+  marquages.position.set(155, 0.06, 0);
+  navire.add(marquages);
+  // Sous le pont : flancs du débord (ombre) jusqu'à la coque
+  const flancs = new THREE.Mesh(new THREE.ExtrudeGeometry(forme, { depth: 4, bevelEnabled: false }), grisFonce);
+  flancs.geometry.rotateX(Math.PI / 2);
+  flancs.position.y = -2;
+  flancs.scale.set(0.985, 1, 0.94);
+  flancs.position.x = 2;
+  navire.add(flancs);
+
+  // Île à tribord, vers l'arrière : passerelles, radars à faces planes, mât
+  const base = new THREE.Mesh(new THREE.BoxGeometry(28, 14, 10), gris);
+  base.position.set(229, 7, -35);
+  const haut = new THREE.Mesh(new THREE.BoxGeometry(19, 9, 8), gris);
+  haut.position.set(231, 18.5, -35);
+  const passerelle = new THREE.Mesh(new THREE.BoxGeometry(19.3, 1.6, 8.3), vitres);
+  passerelle.position.set(231, 20.5, -35);
+  const radar = new THREE.Mesh(new THREE.CylinderGeometry(3, 4.6, 7, 4), gris);
+  radar.rotation.y = Math.PI / 4;
+  radar.position.set(231, 26.5, -35);
+  const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 16, 10), grisFonce);
+  mat.position.set(231, 38, -35);
+  const vergue = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 7), grisFonce);
+  vergue.position.set(231, 40, -35);
+  navire.add(base, haut, passerelle, radar, mat, vergue);
+
+  // Groupe aérien sur le pont : Rafale Marine (train sorti), avion de guet, hélicoptères
+  const rafale = construireRafale(THREE, { armement: false });
+  rafale.userData.basculer.train(true);
+  const hauteur = 2.0;
+  const parques = [[60, -24, 0.8], [76, -24, 0.8], [92, -24, 0.8], [258, -27, 0.9], [274, -27, 0.9], [290, -26, 0.9]];
+  for (const [x, z, r] of parques) {
+    const a = rafale.clone(true);
+    a.position.set(x, hauteur, z);
+    a.rotation.y = r;
+    navire.add(a);
+  }
+  const catapulte = rafale.clone(true);
+  catapulte.position.set(88, hauteur, 7);
+  navire.add(catapulte);
+  const guet = avionDeGuet(THREE, gris, grisFonce);
+  guet.position.set(35, 0, 12);
+  guet.rotation.y = -2.5;
+  navire.add(guet);
+  const matRotor = new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.7 });
+  for (const [x, z, r] of [[112, -30, 1.3], [200, -30, 1.4]]) {
+    const h = helicoptere(THREE, grisFonce, matRotor);
+    h.position.set(x, 0, z);
+    h.rotation.y = r;
+    navire.add(h);
+  }
+
+  navire.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  marquages.castShadow = false;
+  // Les petits appareils sur le pont ne projettent pas d'ombre (rendu plus fluide sur téléphone)
+  navire.children.filter((o) => o.isGroup).forEach((g) => g.traverse((o) => { if (o.isMesh) o.castShadow = false; }));
+
+  // Mer
+  const mer = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ color: 0x0e3a5f, roughness: 0.45, metalness: 0, envMapIntensity: 0.3, transparent: true, opacity: 0.86 }));
+  mer.rotation.x = -Math.PI / 2;
+  mer.position.y = flottaison;
+  mer.receiveShadow = true;
+  navire.add(mer);
+
+  navire.scale.setScalar(s);
+  navire.position.set(-155 * s, 0.4, 0);
+  const groupe = new THREE.Group();
+  groupe.add(navire);
+  const p = (x, y, z) => new THREE.Vector3(x * s - 155 * s, y * s + 0.4, z * s);
+  groupe.userData.catapulte = { avion: catapulte, x0: 88, y0: hauteur };
+  groupe.userData.legendes = [
+    { texte: 'Île', point: p(231, 30, -35) },
+    { texte: 'Piste oblique', point: p(240, 1, 18) },
+    { texte: 'Catapultes électromagnétiques', point: p(40, 1, 0) },
+    { texte: 'Ascenseurs', point: p(140, 1, -40) },
+    { texte: 'Rafale Marine', point: p(76, 4, -24) },
+    { texte: 'Avion de guet aérien', point: p(32, 6, 12) },
+    { texte: 'Hélicoptère', point: p(112, 4, -30) },
+  ];
+  groupe.userData.taille = 16;
+  groupe.userData.mer = true;
   return groupe;
 }

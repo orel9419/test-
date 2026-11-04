@@ -76,7 +76,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
           return (
             <article key={p.id} className="carte pile programme">
               {p.id === 'rafale' ? <Visionneuse3D modele="rafale" hauteur={300} />
-                : p.id === 'snle3g' ? <Visionneuse3D modele="snle" hauteur={300} />
+                : p.id === 'snle3g' ? <Visionneuse3D modele="snle3g" hauteur={300} />
+                  : p.id === 'pang' ? <Visionneuse3D modele="porteAvions" hauteur={300} />
                   : Illustration && <Illustration legende={false} coupe={false} />}
               <div className="ligne espace">
                 <div><h4 style={{ margin: 0 }}>{p.nom}</h4><span className="tres-petit muet">{p.sousTitre}</span></div>
