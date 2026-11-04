@@ -39,6 +39,8 @@ import Communication from './ecrans/Communication.jsx';
 import Armees from './ecrans/Armees.jsx';
 import Dissuasion from './ecrans/Dissuasion.jsx';
 import Securite from './ecrans/Securite.jsx';
+import Express from './express/Express.jsx';
+import Hangar from './composants/Hangar.jsx';
 
 const ONGLETS = [
   { id: 'tableau', nom: 'Tableau de bord', court: 'Accueil', icone: '📊' },
@@ -115,6 +117,20 @@ function notificationsDuTour(avant, apres) {
 
 export default function App() {
   const [options, setOptions] = useState(lireOptions);
+  // Mode Express : ouvert directement par un lien partagé (?express ou ?defi)
+  const [express, setExpress] = useState(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.has('defi')) return { quotidien: true };
+      if (q.has('express')) return { quotidien: false };
+    } catch { /* pas de fenêtre */ }
+    return null;
+  });
+  const [hangar, setHangar] = useState(false);
+  const quitterExpress = useCallback(() => {
+    setExpress(null);
+    try { if (window.location.search) window.history.replaceState(null, '', window.location.pathname); } catch { /* sans historique */ }
+  }, []);
   const [fenetre, setFenetre] = useState(null); // 'menu' | 'options' | 'apropos' | 'confirmer' | null
   const [partie, setPartie] = useState(null);
   const [decisions, setDecisions] = useState(DECISIONS_VIDES);
@@ -260,6 +276,10 @@ export default function App() {
   const majDecisions = useCallback((modif) => setDecisions((d) => ({ ...d, ...(typeof modif === 'function' ? modif(d) : modif) })), []);
   const fermerVisite = useCallback(() => { setVisite(false); ecrirePreference('cdg:visite', '1'); }, []);
 
+  if (express) {
+    return <Express key={express.quotidien ? 'defi' : 'libre'} quotidien={express.quotidien} onQuitter={quitterExpress} onChanger={(q) => setExpress({ quotidien: q })} />;
+  }
+
   if (!partie) {
     return (
       <>
@@ -270,11 +290,14 @@ export default function App() {
           onImporter={importer}
           onColler={() => setSauvegarde('import')}
           onOptions={() => setFenetre('options')}
+          onExpress={(q) => setExpress({ quotidien: q })}
+          onHangar={() => setHangar(true)}
           onAPropos={() => setFenetre('apropos')}
           message={message}
         />
         {fenetre === 'options' && <Options options={options} onChange={setOptions} onFermer={() => setFenetre(null)} />}
         {fenetre === 'apropos' && <APropos onFermer={() => setFenetre(null)} />}
+        {hangar && <Hangar onFermer={() => setHangar(false)} />}
         <Notifications liste={notifications} onFermer={fermerNotification} />
         {sauvegarde && <ModaleSauvegarde mode="import" onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage(null); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
       </>
@@ -415,6 +438,8 @@ export default function App() {
       {fenetre === 'menu' && (
         <Modale titre="Menu" onFermer={() => setFenetre(null)} largeur={440}>
           <div className="menu-jeu">
+            <button type="button" className="bouton principal" onClick={() => { setFenetre(null); setExpress({ quotidien: false }); }}>⚡ Mode Express (3 minutes)</button>
+            <button type="button" className="bouton" onClick={() => { setFenetre(null); setExpress({ quotidien: true }); }}>📅 Défi du jour</button>
             <button type="button" className="bouton" onClick={() => { setFenetre(null); setSauvegarde('export'); }}>💾 Sauvegarder la partie</button>
             <button type="button" className="bouton" onClick={() => { setFenetre(null); setSauvegarde('import'); }}>📂 Charger une partie</button>
             <button type="button" className="bouton" onClick={() => setFenetre('options')}>⚙️ Options <span className="tres-petit muet">(interface {essentielle ? 'essentielle' : 'complète'}, thème, texte…)</span></button>

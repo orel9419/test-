@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Info from '../composants/Info.jsx';
-import { Snle, Rafale } from '../composants/Illustrations.jsx';
+import { Snle } from '../composants/Illustrations.jsx';
+import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 import { resumeDefense } from '../../engine/index.js';
 import { DISSUASION_EUROPE, SOURCES_DEFENSE } from '../../data/defense.js';
 import { libelleTrimestre } from '../../engine/calendrier.js';
@@ -34,9 +35,10 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
       <div className="carte pile">
         <div className="ligne espace">
           <h3 style={{ margin: 0 }}>La composante océanique : les SNLE</h3>
-          <button type="button" className="bouton" onClick={() => setCoupe((c) => !c)} aria-pressed={coupe}>{coupe ? 'Vue extérieure' : 'Vue en coupe'}</button>
+          <button type="button" className="bouton" onClick={() => setCoupe((c) => !c)} aria-pressed={coupe}>{coupe ? 'Masquer la vue en coupe' : 'Afficher la vue en coupe'}</button>
         </div>
-        <Snle coupe={coupe} nom="SNLE de la classe Le Triomphant" />
+        <Visionneuse3D modele="snle" hauteur={340} />
+        {coupe && <Snle coupe nom="SNLE de la classe Le Triomphant" />}
         <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>
           <li><strong>4 SNLE</strong> (Le Triomphant, Le Téméraire, Le Vigilant, Le Terrible), mis en service de 1997 à 2010. Basés à l'Île Longue, près de Brest.</li>
           <li><strong>Permanence à la mer</strong> : au moins un SNLE en patrouille, indétectable, depuis 1972. C'est la garantie de pouvoir riposter en toutes circonstances (« frappe en second »).</li>
@@ -48,7 +50,7 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
 
       <div className="carte pile">
         <h3 style={{ margin: 0 }}>La composante aéroportée</h3>
-        <Rafale />
+        <Visionneuse3D modele="rafale" hauteur={320} />
         <p className="petit" style={{ margin: 0 }}>Des Rafale des Forces aériennes stratégiques et de la Marine (depuis le porte-avions) emportent le missile nucléaire ASMPA-R ; son successeur, l'ASN4G (hypersonique), est en développement. Deux composantes plutôt qu'une : des modes de pénétration différents, et la possibilité d'un « avertissement » démonstratif.</p>
       </div>
 

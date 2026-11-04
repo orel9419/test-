@@ -1,6 +1,7 @@
 import React from 'react';
 import Info from '../composants/Info.jsx';
 import { ILLUSTRATIONS } from '../composants/Illustrations.jsx';
+import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 import { resumeDefense } from '../../engine/index.js';
 import { SOURCES_DEFENSE } from '../../data/defense.js';
 import { libelleTrimestre } from '../../engine/calendrier.js';
@@ -74,7 +75,9 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
           const optionEnCours = p.options.find((o) => o.id === p.etat?.option);
           return (
             <article key={p.id} className="carte pile programme">
-              {Illustration && <Illustration legende={false} coupe={false} />}
+              {p.id === 'rafale' ? <Visionneuse3D modele="rafale" hauteur={300} />
+                : p.id === 'snle3g' ? <Visionneuse3D modele="snle" hauteur={300} />
+                  : Illustration && <Illustration legende={false} coupe={false} />}
               <div className="ligne espace">
                 <div><h4 style={{ margin: 0 }}>{p.nom}</h4><span className="tres-petit muet">{p.sousTitre}</span></div>
                 <span className="etiquette">{p.domaine}</span>

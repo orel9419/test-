@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GraphiqueLignes from '../composants/GraphiqueLignes.jsx';
 import Info from '../composants/Info.jsx';
 import Badge from '../composants/Badge.jsx';
@@ -16,10 +16,12 @@ const ACTIONS_LOURDES_MAX = 2;
  * d'investissement stratégique.
  */
 export default function Entreprises({ partie, decisions, majDecisions, allerA }) {
+  const [filtre, setFiltre] = useState('tous');
   const x = partie.entreprises;
   if (!x) return <div className="carte">Module indisponible pour cette partie (sauvegarde antérieure).</div>;
   const agence = AGENCES[partie.pays];
-  const defs = FLEURONS[partie.pays] ?? [];
+  const tousDefs = FLEURONS[partie.pays] ?? [];
+  const defs = tousDefs.filter((d) => filtre === 'tous' || (filtre === 'cac40' && d.cac40) || (filtre === 'etat' && d.partEtat > 0) || (filtre === 'strategiques' && d.strategique >= 0.8));
   const actions = decisions.entreprises ?? [];
   const lourdes = actions.filter((a) => a.action !== 'rencontre').length;
   const programmes = programmesDisponibles(partie);
@@ -71,7 +73,12 @@ export default function Entreprises({ partie, decisions, majDecisions, allerA })
 
       <div className="carte" style={{ overflowX: 'auto' }}>
         <div className="ligne espace">
-          <h3>Fleurons nationaux</h3>
+          <h3>Fleurons nationaux et grandes entreprises</h3>
+          <div className="puces" role="group" aria-label="Filtrer les entreprises">
+            {[['tous', `Toutes (${tousDefs.length})`], ['cac40', `CAC 40 (${tousDefs.filter((d) => d.cac40).length})`], ['etat', 'Participations de l\'État'], ['strategiques', 'Stratégiques']].map(([id, nom]) => (
+              <button key={id} type="button" className={`puce ${filtre === id ? 'active' : ''}`} aria-pressed={filtre === id} onClick={() => setFiltre(id)}>{nom}</button>
+            ))}
+          </div>
           <span className="petit muet">Opérations sur le capital ce trimestre : {lourdes}/{ACTIONS_LOURDES_MAX} · rencontres illimitées</span>
         </div>
         <table className="petit">

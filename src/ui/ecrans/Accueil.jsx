@@ -8,7 +8,7 @@ import { pct } from '../format.js';
 const RAPIDE = { pays: 'france', mode: 'facile', calendrier: 'horizon2050', intensite: 'accentuee', role: 'chef_gouvernement' };
 
 /** Écran d'accueil : démarrage rapide, ou partie personnalisée (pays, mode, calendrier, rôle, code). */
-export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, onColler, onOptions, onAPropos, message }) {
+export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, onColler, onOptions, onAPropos, onExpress, onHangar, message }) {
   const [perso, setPerso] = useState(false);
   const [code, setCode] = useState('');
   const [pays, setPays] = useState('france');
@@ -39,6 +39,13 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
           )}
           <button type="button" className={`bouton grand ${sauvegarde ? '' : 'principal'}`} onClick={() => onDemarrer(RAPIDE)}>{sauvegarde ? 'Nouvelle partie rapide' : '▶ Jouer maintenant'}</button>
           <span className="tres-petit muet">France · Premier ministre · mode Facile, avec visite guidée</span>
+          {onExpress && (
+            <div className="accueil-express">
+              <button type="button" className="bouton grand bouton-express" onClick={() => onExpress(false)}>⚡ Mode Express · 3 min</button>
+              <button type="button" className="bouton" onClick={() => onExpress(true)}>📅 Défi du jour</button>
+            </div>
+          )}
+          {onHangar && <button type="button" className="bouton" onClick={onHangar}>🛩️ Hangar 3D : Rafale et SNLE</button>}
           <button type="button" className="bouton" onClick={() => setPerso((x) => !x)} aria-expanded={perso}>⚙ {perso ? 'Masquer la personnalisation' : 'Personnaliser la partie'}</button>
         </div>
       </section>

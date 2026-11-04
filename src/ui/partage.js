@@ -14,6 +14,34 @@ export function adresseDuJeu() {
   }
 }
 
+/**
+ * Partage d'une image (capture 3D, carte de score) : feuille de partage du
+ * téléphone avec le fichier quand c'est possible, sinon téléchargement.
+ */
+export async function partagerImage(dataUrl, nomFichier, texte = '', url = adresseDuJeu()) {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const fichier = new File([blob], nomFichier, { type: blob.type || 'image/png' });
+    if (navigator.canShare?.({ files: [fichier] })) {
+      await navigator.share({ files: [fichier], text: url ? `${texte}\n${url}` : texte, title: 'Chef de gouvernement' });
+      return 'Merci du partage !';
+    }
+  } catch (err) {
+    if (err?.name === 'AbortError') return null;
+  }
+  try {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = nomFichier;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return 'Image téléchargée : publiez-la sur vos réseaux !';
+  } catch {
+    return 'Impossible d\'enregistrer l\'image sur cet appareil.';
+  }
+}
+
 export async function partager({ titre, texte, url = adresseDuJeu() }) {
   const complet = url ? `${texte}\n${url}` : texte;
   try {

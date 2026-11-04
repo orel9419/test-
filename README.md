@@ -4,7 +4,7 @@ Jeu de simulation en français : vous dirigez le gouvernement d'un pays réel (F
 
 Application 100 % front-end (React + Vite), sans serveur, sans compte et sans mesure d'audience. Sauvegarde automatique dans le navigateur, export et import en JSON.
 
-**Jouer en ligne** : https://orel9419.github.io/test-/ (une fois GitHub Pages activé, voir « Publier le jeu »). Le bouton « Jouer maintenant » lance une partie en France, comme Premier ministre, en mode Facile avec visite guidée ; « Personnaliser la partie » donne accès à tous les réglages.
+**Jouer en ligne** : https://orel9419.github.io/test-/ · **Mode Express** : https://orel9419.github.io/test-/?express · **Défi du jour** : https://orel9419.github.io/test-/?defi (une fois GitHub Pages activé, voir « Publier le jeu »). Le bouton « Jouer maintenant » lance une partie en France, comme Premier ministre, en mode Facile avec visite guidée ; « Personnaliser la partie » donne accès à tous les réglages.
 
 ## Lancer le jeu
 
@@ -39,6 +39,26 @@ Le jeu est une **application web installable** (PWA). Une fois installée, elle 
    - **ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
 
 Sur mobile, la navigation passe dans une barre en bas de l'écran, avec un bouton « Valider le trimestre » toujours accessible. La partie est sauvegardée sur l'appareil ; « ☰ Menu → Sauvegarder » permet aussi de la copier pour la reprendre ailleurs.
+
+## Mode Express (3 minutes, à partager)
+
+Un jeu de décisions rapides, pensé pour le téléphone et les réseaux sociaux :
+- une carte par semaine : un ministre, un syndicat, une agence de notation, le chef d'état-major ou la direction d'une des **40 entreprises du CAC 40** vous soumet un dilemme ; **glissez à gauche ou à droite** (ou utilisez les boutons, ou les flèches du clavier) ;
+- quatre jauges : **opinion, finances publiques, majorité, sécurité et souveraineté**. Si l'une tombe à zéro **ou monte au maximum**, c'est la chute (huit fins différentes, à collectionner : censure, crise de la dette, rue, dérive sécuritaire…). Pendant que vous hésitez, des points indiquent quelles jauges vont bouger, sans dire dans quel sens ;
+- l'usure du pouvoir grignote l'opinion et les finances, et les effets s'amplifient avec le temps ;
+- après une décision, un encadré « Le saviez-vous ? » donne un fait réel (49.3, censure de 1962 et de 2024, dissuasion, EPR de Flamanville, notes des agences…) ;
+- **défi du jour** : les mêmes cartes pour tout le monde le même jour, une série de jours consécutifs ; records et fins découvertes enregistrés dans le navigateur ;
+- **partage** : une image de score au format portrait (1080 × 1350) prête pour Instagram, X, WhatsApp ou LinkedIn, et des liens directs (`?express`, `?defi`) qui ouvrent la partie en un clic.
+
+Les situations sont fictives, inspirées de l'actualité ; les entreprises citées n'ont pas fait ces demandes.
+
+## Rafale et SNLE en 3D
+
+Dans la rubrique Régalien (Armées, Dissuasion) et dans le **Hangar 3D** (écran d'accueil), le Rafale et un SNLE de la classe Le Triomphant sont modélisés en 3D (three.js) à leurs **proportions réelles** :
+- **Rafale** : 15,27 m de long, 10,90 m d'envergure, aile delta, plans canard, entrées d'air, dérive unique avec drapeau tricolore, verrière dorée et habitacle, perche de ravitaillement, deux réacteurs M88, cocardes, et une configuration air-air (2 MICA, 2 Meteor, 2 réservoirs de 2 000 litres) ;
+- **SNLE** : 138 m de long, 12,5 m de diamètre, kiosque et barres de plongée, « dos » des 16 tubes de missiles M51 avec leurs trappes, gouvernes en croix, hydrojet ; on peut **ouvrir les trappes** et lancer un **tir d'essai simulé**.
+
+Rotation au doigt ou à la souris, vues de profil, de dessus et de face, légendes, et bouton **Photo** pour partager sa plus belle vue. Les formes sont simplifiées : ce ne sont pas des plans. La 3D n'est chargée qu'à l'ouverture de ces écrans.
 
 ## Publier le jeu
 
@@ -214,6 +234,7 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 ### Pour rendre le jeu agréable
 
 - un écran d'accueil avec **partie rapide** (un bouton) ou **partie personnalisée** (pays, mode, durée, effets, rôle) ;
+- un onglet Entreprises avec les **40 valeurs du CAC 40** (composition inchangée depuis le 22 décembre 2025 selon Euronext et la presse : entrée d'Euronext en septembre 2025, d'Eiffage en décembre 2025), des fleurons non cotés (EDF, Naval Group) et Dassault Aviation, avec un filtre « CAC 40 » ;
 - un **code de partie** : avec le même code et les mêmes décisions, on vit les mêmes événements, ce qui permet de se lancer des défis ; le résultat final se **partage** en un geste (feuille de partage du téléphone ou copie) ;
 - un **menu unique** (☰) : sauvegarder, charger, options, visite guidée, partager le jeu, à propos ;
 - des **options** enregistrées dans le navigateur : interface essentielle (par défaut) ou complète, thème clair, sombre ou comme l'appareil, taille du texte, animations réduites, confirmation avant de valider un trimestre s'il reste des événements à trancher ;
@@ -316,7 +337,10 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   score.js              score final
 src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), défense (defense.js), chantiers (chantiers.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
+src/express/            mode Express : cartes de décision et moteur (déterministe, testé)
 src/ui/                 interface React (écrans, composants, sauvegarde, options, partage, installation)
+src/ui/3d/              modèles 3D du Rafale et du SNLE (three.js, chargés à la demande) et visionneuse
+src/ui/express/         interface du mode Express et image de score à partager
 public/                 manifeste de l'application, service worker (hors connexion), icônes
 tests/                  tests unitaires (Vitest)
 ```
@@ -401,4 +425,6 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
 - Contrôle de constitutionnalité : les probabilités de censure sont des estimations de jeu ; les précédents cités sont réels.
 - Défense : les coûts des options (tranche de Rafale, accélérations, opérations) et leurs effets sont des hypothèses de jeu ; le coût de la dissuasion n'est publié qu'en part de la LPM (environ 13 %). Les dessins sont des illustrations stylisées, pas des plans. La force de réassurance en Ukraine et le prospect d'exportation dans le Golfe sont des scénarios de jeu.
 - Chantiers : montants, prix, qualités et risques des offres sont des hypothèses de jeu ; la candidature française à la Coupe du monde 2038 est un scénario (aucune candidature déposée à ce jour).
+- Entreprises du CAC 40 : capitalisations et effectifs sont des ordres de grandeur 2025 ; la composition de l'indice est révisée chaque trimestre (prochaine revue en décembre 2026).
+- Mode Express : les situations et leurs effets sont des scénarios de jeu.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.
