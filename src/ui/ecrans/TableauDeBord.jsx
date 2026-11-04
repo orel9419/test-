@@ -6,6 +6,7 @@ import { GROUPES } from '../../model/ministeres.js';
 import Conseiller from '../composants/Conseiller.jsx';
 import ImpactReformes from '../composants/ImpactReformes.jsx';
 import SoliditePouvoir from '../composants/SoliditePouvoir.jsx';
+import NoteSouveraine from '../composants/NoteSouveraine.jsx';
 
 /** Explications pédagogiques des indicateurs. */
 export const EXPLICATIONS = {
@@ -60,6 +61,12 @@ export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
         <span className="muet petit">Données de départ au {new Date(partie.statique.dateDonnees).toLocaleDateString('fr-FR')}</span>
       </div>
       <SoliditePouvoir partie={partie} allerA={allerA} />
+      {partie.notation && (
+        <div className="ligne espace bande-notation">
+          <NoteSouveraine partie={partie} compact />
+          <button type="button" className="lien tres-petit" onClick={() => allerA?.('fiscalite')}>Détail et prochaines revues</button>
+        </div>
+      )}
       {conseils?.length > 0 && <Conseiller conseils={conseils} allerA={allerA} />}
       {alertes.length > 0 && (
         <div className="pile">

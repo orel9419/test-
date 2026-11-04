@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { reformesDisponibles, chiffrerReforme, voterTexte, effetOpinionReforme } from '../../engine/index.js';
+import { reformesDisponibles, chiffrerReforme, voterTexte, effetOpinionReforme, risqueConstitutionnel } from '../../engine/index.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Apercu from './Apercu.jsx';
 import Capitalisation from './Capitalisation.jsx';
@@ -204,6 +204,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                     {v && <span className="etiquette" title={v.aide}>{v.nom}</span>}
                     {pr && <span className={`pronostic ${pr.classe}`} title="Pronostic du vote à l'Assemblée pour cette réforme seule, avec l'option choisie">{pr.texte}</span>}
                     {(() => { const op = effetOpinionReforme(partie, r.id, option); return Math.abs(op) >= 0.5 ? <span className={`etiquette ${op > 0 ? 'populaire' : 'impopulaire'}`} title="Effet estimé sur votre popularité à l'adoption (chocs d'opinion et opinion durable, moins une partie des griefs)">{op > 0 ? '👍' : '👎'} {op > 0 ? '+' : '−'}{Math.abs(op).toFixed(1).replace('.', ',')} pt</span> : null; })()}
+                    {(() => { const rc = risqueConstitutionnel(partie.pays, r.id, option); return rc ? <span className={`etiquette constitution ${rc.risque >= 0.35 ? 'eleve' : ''}`} title={`${rc.juridiction} : risque de censure ${rc.type === 'totale' ? 'totale' : 'partielle'} estimé à ${Math.round(rc.risque * 100)} %. ${rc.motif} ${rc.precedent}${partie.pays === 'france' ? ' Une loi adoptée par référendum échappe à ce contrôle.' : ''}`}>⚖️ Risque constitutionnel {Math.round(rc.risque * 100)} %</span> : null; })()}
                     {r.compensation && <span className="etiquette">compensation</span>}
                     {r.majoriteRenforcee && <span className="etiquette">majorité des deux tiers</span>}
                     {r.active && <span className="etiquette">en vigueur : {r.options.find((o) => o.id === r.active)?.nom}</span>}
@@ -223,6 +224,10 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                       </div>
                     )}
                     {r.exemples.length > 0 && <p className="petit"><strong>Ailleurs :</strong> {r.exemples.join(' ; ')}.</p>}
+                    {(() => {
+                      const rc = risqueConstitutionnel(partie.pays, r.id, option);
+                      return rc ? <p className="petit"><strong>⚖️ Contrôle de constitutionnalité ({rc.juridiction}) :</strong> risque de censure {rc.type === 'totale' ? 'totale' : 'partielle'} estimé à {Math.round(rc.risque * 100)} % dans le jeu. {rc.motif} <em>Précédent :</em> {rc.precedent}{partie.pays === 'france' ? ' Une loi adoptée par référendum (article 11) échappe à ce contrôle.' : ''}</p> : null;
+                    })()}
                     {pr?.vote && (
                       <p className="tres-petit">Votes prévus par groupe : {pr.vote.detail.map((d) => <span key={d.id} className={d.vote === 'pour' ? 'positif' : d.vote === 'contre' ? 'negatif' : 'muet'} style={{ marginRight: 8 }}>{d.id} {d.vote === 'pour' ? 'pour' : d.vote === 'contre' ? 'contre' : 'abst.'}</span>)}
                         <Info texte="Positions estimées à partir des programmes et des votes connus des groupes (hypothèses de jeu quand elles ne sont pas documentées)." /></p>

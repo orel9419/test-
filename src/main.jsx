@@ -1,11 +1,14 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './ui/App.jsx';
+import LimiteErreur from './ui/composants/LimiteErreur.jsx';
 import './ui/styles.css';
 
 createRoot(document.getElementById('racine')).render(
   <React.StrictMode>
-    <App />
+    <LimiteErreur>
+      <App />
+    </LimiteErreur>
   </React.StrictMode>,
 );
 

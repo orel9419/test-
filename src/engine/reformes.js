@@ -27,6 +27,19 @@ export function reformesDisponibles(e) {
   });
 }
 
+/** Effets réduits d'un facteur (censure partielle) : montants, effets structurels et ménages. */
+function reduire(r, facteur) {
+  if (facteur === undefined || facteur === 1) return r;
+  const fois = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v * facteur]));
+  const res = { ...r };
+  if (r.depenses) res.depenses = fois(r.depenses);
+  if (r.recettes) res.recettes = fois(r.recettes);
+  for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS', 'chocDemande', 'influence', 'souverainete', 'emissionsEvitees']) {
+    if (typeof r[cle] === 'number') res[cle] = r[cle] * facteur;
+  }
+  return res;
+}
+
 /** Clés d'effets « structurels » amplifiées en mode « effets accentués » (pas les montants budgétaires). */
 const CLES_STRUCTURELLES = ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocDemande', 'emissionsEvitees', 'influence', 'souverainete'];
 
@@ -66,7 +79,7 @@ export function bilanReformes(e) {
     const def = trouverReforme(a.id);
     let r = {};
     if (a.appliquee) {
-      try { r = def?.effets?.(e, a.option, e.tour - a.tourEffet) ?? {}; } catch { r = {}; }
+      try { r = reduire(def?.effets?.(e, a.option, e.tour - a.tourEffet) ?? {}, a.facteur); } catch { r = {}; }
     }
     const ligne = {
       id: a.id, nom: def?.nom ?? a.nom, option: a.libelleOption, appliquee: a.appliquee, tourApplication: a.tourApplication,
@@ -87,7 +100,7 @@ export function bilanReformes(e) {
  * Si la même réforme est déjà active avec une autre option, elle est remplacée.
  * @returns {object} entrée de la réforme active, ou { erreur }
  */
-export function adopterReforme(e, id, option, alea) {
+export function adopterReforme(e, id, option, alea, facteur = 1) {
   const def = trouverReforme(id);
   if (!def) return { erreur: `Réforme inconnue : ${id}` };
   if (!(def.pays === 'tous' || def.pays.includes(e.pays))) return { erreur: 'Réforme non disponible dans ce pays.' };
@@ -128,6 +141,8 @@ export function adopterReforme(e, id, option, alea) {
     grief: { ...(reaction.grief ?? {}) },
     compensation: { ...(reaction.compensation ?? {}) },
   };
+  // Censure partielle du juge constitutionnel : une partie des dispositions tombe
+  if (facteur !== 1) { entree.facteur = facteur; entree.censurePartielle = true; }
   e.reformes.actives.push(entree);
   e.reformes.historique.push({ id, option, tour: e.tour });
   e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'reforme', texte: `Réforme adoptée : ${def.nom} — ${entree.libelleOption}. Entrée en vigueur : ${def.delai ? `dans ${def.delai} trimestre(s)` : 'immédiate'}.` });
@@ -155,7 +170,7 @@ export function majReformes(e, alea) {
     if (!entree.appliquee) continue;
     const def = trouverReforme(entree.id);
     const age = e.tour - entree.tourEffet;
-    const r = def.effets?.(e, entree.option, age) ?? {};
+    const r = reduire(def.effets?.(e, entree.option, age) ?? {}, entree.facteur);
     for (const [poste, v] of Object.entries(r.depenses ?? {})) effets.depenses[poste] = (effets.depenses[poste] ?? 0) + v;
     for (const [cle, v] of Object.entries(r.recettes ?? {})) effets.recettes[cle] = (effets.recettes[cle] ?? 0) + v;
     for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS', 'chocDemande', 'influence', 'souverainete', 'emissionsEvitees']) effets[cle] += (r[cle] ?? 0) * (CLES_STRUCTURELLES.includes(cle) ? (e.intensiteReformes ?? 1) : 1);

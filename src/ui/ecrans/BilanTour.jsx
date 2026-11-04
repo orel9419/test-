@@ -15,7 +15,8 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
   useEffect(() => { bouton.current?.focus(); }, []);
   const h0 = avant.historique.at(-1), h1 = apres.historique.at(-1);
   const r = apres.resultatsTour ?? {};
-  const entrees = apres.journal.filter((j) => j.tour === avant.tour);
+  // Les décisions des agences et du juge constitutionnel sont affichées à part
+  const entrees = apres.journal.filter((j) => j.tour === avant.tour && !j.texte.startsWith('Notation — ') && !(apres.resultatsTour?.constitution ?? []).some((c) => c.texte === j.texte));
   const lignes = [
     ['Croissance sur un an', h1.croissanceA, h1.croissanceA - h0.croissanceA, pct, true],
     ['Inflation', h1.inflation, h1.inflation - h0.inflation, pct, false],
@@ -45,6 +46,15 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
             <strong>Budget :</strong> {r.budget.pour} pour, {r.budget.contre} contre{r.budget.abstention ? `, ${r.budget.abstention} abstentions` : ''}{r.budget.senat !== null && r.budget.senat !== undefined ? ` ; Sénat : ${r.budget.senat} voix (60 nécessaires)` : ''}{r.budget.procedure === '49.3' ? ', adopté par le 49.3' : ''} — {r.budget.adopte ? 'adopté' : 'rejeté'}.
             {r.budget.censure && <> Censure : {r.budget.censure.voix} voix sur {r.budget.censure.majorite} — {r.budget.censure.adoptee ? 'adoptée' : 'rejetée'}.</>}
           </div>
+        )}
+        {(r.constitution ?? []).map((c) => (
+          <div key={c.id} className={`alerte ${c.decision === 'totale' ? 'critique' : c.decision === 'conforme' ? 'bonne' : ''}`}><strong>⚖️ Contrôle de constitutionnalité :</strong> {c.texte}</div>
+        ))}
+        {(r.notation ?? []).filter((d) => d.action !== 'maintien').map((d) => (
+          <div key={d.agence} className={`alerte ${d.action === 'degradation' ? 'critique' : d.action === 'relevement' ? 'bonne' : ''}`}><strong>📉 Notation :</strong> {d.texte}</div>
+        ))}
+        {(r.notation ?? []).some((d) => d.action === 'maintien') && (
+          <p className="petit muet" style={{ margin: 0 }}>Notation : {r.notation.filter((d) => d.action === 'maintien').map((d) => `${d.nom} maintient ${d.note}`).join(' ; ')}.</p>
         )}
         {(r.alertes ?? []).map((a, i) => <div key={i} className="alerte">{a.texte ?? (a.type === 'mobilisation' ? 'Un mouvement social a éclaté.' : a.type)}</div>)}
         <table className="petit">

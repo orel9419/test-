@@ -2,7 +2,9 @@
 
 Jeu de simulation en français : vous dirigez le gouvernement d'un pays réel (France, Allemagne, États-Unis) à partir de sa **situation réelle au 1er novembre 2026**. Vous gérez le budget ministère par ministère, la fiscalité, la dette, les réformes structurelles et leurs compensations, le Parlement ou le Congrès, les entreprises et les participations de l'État, l'opinion et les élections, l'Europe, la diplomatie et les grands rendez-vous internationaux (sommets, Jeux olympiques). Les effets sur la population sont visibles en euros (ou en dollars) par mois pour des ménages types.
 
-Application 100 % front-end (React + Vite), sans serveur. Sauvegarde automatique dans le navigateur, export et import en JSON, thème clair et sombre.
+Application 100 % front-end (React + Vite), sans serveur, sans compte et sans mesure d'audience. Sauvegarde automatique dans le navigateur, export et import en JSON.
+
+**Jouer en ligne** : https://orel9419.github.io/test-/ (une fois GitHub Pages activé, voir « Publier le jeu »). Le bouton « Jouer maintenant » lance une partie en France, comme Premier ministre, en mode Facile avec visite guidée ; « Personnaliser la partie » donne accès à tous les réglages.
 
 ## Lancer le jeu
 
@@ -36,7 +38,17 @@ Le jeu est une **application web installable** (PWA). Une fois installée, elle 
    - **iPhone et iPad** (Safari) : bouton Partager → « Sur l'écran d'accueil » ;
    - **ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
 
-Sur mobile, la navigation passe dans une barre en bas de l'écran, avec un bouton « Valider le trimestre » toujours accessible. La partie est sauvegardée sur l'appareil ; le bouton « Sauvegarder » permet aussi de la copier pour la reprendre ailleurs.
+Sur mobile, la navigation passe dans une barre en bas de l'écran, avec un bouton « Valider le trimestre » toujours accessible. La partie est sauvegardée sur l'appareil ; « ☰ Menu → Sauvegarder » permet aussi de la copier pour la reprendre ailleurs.
+
+## Publier le jeu
+
+Le dépôt est public et le workflow `.github/workflows/publier-application.yml` publie automatiquement le jeu sur la branche `gh-pages` à chaque mise à jour (après les tests). Pour qu'il soit accessible à tous :
+
+1. **Activer GitHub Pages** (une seule fois) : Settings → Pages → Build and deployment → Source : « Deploy from a branch », branche `gh-pages`, dossier `/ (root)`. Le jeu est alors en ligne à `https://orel9419.github.io/test-/` en une à deux minutes.
+2. **Recommandé** : renommer le dépôt (Settings → General → Repository name), par exemple `chef-de-gouvernement`, pour une adresse plus parlante. Le jeu fonctionne quel que soit le nom (chemins relatifs) ; il faut seulement mettre à jour les deux adresses `og:url` et `og:image` dans `index.html` (aperçu du lien dans les messageries) et le lien du dépôt dans `src/ui/composants/APropos.jsx`.
+3. **Facultatif** : choisir une licence (fichier `LICENSE`) pour dire ce que les autres ont le droit de faire du code ; activer les « Issues » pour recevoir les signalements (le jeu y renvoie depuis « À propos »).
+
+Le partage d'un lien affiche un aperçu (titre, description, image `public/apercu-partage.jpg`).
 
 ## Comment jouer
 
@@ -100,6 +112,12 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
 9. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
 10. **Trancher les événements**, avec 2 à 4 choix chacun : escalade dans le golfe Persique, dégradation de la note, mouvement social, blocages agricoles, sécheresse, crise de coalition, recours à Karlsruhe…
 11. **Valider le trimestre** (bouton ou **Ctrl + Entrée**) et lire le bilan chiffré.
+
+### Réalisme institutionnel
+
+- **Agences de notation** : Fitch, Moody's et S&P partent de leurs notes réelles (France : A+ avec perspective négative chez Fitch depuis le 30/10/2026, Aa3 avec perspective négative chez Moody's le 23/10/2026, A+ chez S&P, qui doit se prononcer le 27/11/2026). Elles se prononcent à dates fixes, comme le prévoit le règlement européen, et jugent la dette, sa dynamique, le déficit, la stabilité politique et la crédibilité de vos engagements. Une perspective négative annonce une possible dégradation ; une dégradation renchérit un peu les emprunts, beaucoup plus si la note tombe en catégorie BBB ou sous BBB−. Une perspective négative met en général plusieurs trimestres à se traduire en dégradation, et une agence qui vient de changer la note attend une nouvelle évolution des fondamentaux pour bouger à nouveau. À politique inchangée, Moody's (perspective négative depuis octobre 2025) puis Fitch abaissent en général la note d'un cran en 2027-2028, S&P ensuite ; une trajectoire crédible et tenue permet de l'éviter.
+- **Contrôle de constitutionnalité** : après leur adoption, les lois fragiles peuvent être censurées en tout ou en partie par le Conseil constitutionnel (France), la Cour constitutionnelle fédérale (Allemagne) ou la Cour suprême (États-Unis). Chaque réforme concernée affiche son risque, son motif et un précédent réel : taxe à 75 % censurée en 2012, 35 articles de la loi immigration censurés en janvier 2024, rétention de 210 jours censurée en août 2025, polices municipales en mai 2021, impôt sur la fortune allemand jugé inconstitutionnel en 1995. Une loi adoptée par référendum échappe au contrôle (jurisprudence de 1962).
+- Le conseiller prévient avant une revue de notation risquée et avant de soumettre une réforme fragile.
 
 ### Trois modes de jeu
 
@@ -185,7 +203,12 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 
 ### Pour rendre le jeu agréable
 
-- une navigation simplifiée en **six rubriques** (Tableau de bord, Gouverner, Politique et opinion, Économie, Monde, Journal et sources), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
+- un écran d'accueil avec **partie rapide** (un bouton) ou **partie personnalisée** (pays, mode, durée, effets, rôle) ;
+- un **code de partie** : avec le même code et les mêmes décisions, on vit les mêmes événements, ce qui permet de se lancer des défis ; le résultat final se **partage** en un geste (feuille de partage du téléphone ou copie) ;
+- un **menu unique** (☰) : sauvegarder, charger, options, visite guidée, partager le jeu, à propos ;
+- des **options** enregistrées dans le navigateur : interface essentielle (par défaut) ou complète, thème clair, sombre ou comme l'appareil, taille du texte, animations réduites, confirmation avant de valider un trimestre s'il reste des événements à trancher ;
+- une page **« À propos »** : ce que le jeu est et n'est pas, vie privée, code source, signalement d'erreurs ;
+- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Politique et opinion, Monde, Journal et sources, plus Économie en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
 - un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
 - une **visite guidée** en huit étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
 - des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
@@ -262,6 +285,8 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   social.js             popularité par groupe et ses composantes, griefs, risque de mouvement social
   communication.js      actions de communication : effets, usure de l'opinion, recharge, petites phrases
   pouvoir.js            solidité du pouvoir : popularité, marge électorale, menace parlementaire
+  notation.js           agences de notation : notes réelles de départ, revues à dates fixes, effets sur les taux
+  constitution.js       contrôle de constitutionnalité des réformes adoptées (censure totale ou partielle)
   reformes.js           adoption et effets des réformes
   international.js      relations, influence, accords
   politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
@@ -277,9 +302,9 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), actions diplomatiques,
+src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
-src/ui/                 interface React (écrans, composants, sauvegarde, installation)
+src/ui/                 interface React (écrans, composants, sauvegarde, options, partage, installation)
 public/                 manifeste de l'application, service worker (hors connexion), icônes
 tests/                  tests unitaires (Vitest)
 ```
@@ -360,4 +385,6 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
   - le profil démographique des retraités et les besoins de santé liés au vieillissement sont des hypothèses de jeu calées sur des ordres de grandeur.
 - G7 : les positions des membres sur chaque dossier sont des hypothèses de jeu fondées sur leurs positions publiques (sommets de Kananaskis en 2025 et d'Évian en 2026) ; le lieu et la date du sommet américain de 2027 n'étaient pas connus à la collecte.
 - Classements : taux de change constants ; plusieurs données de départ (PIB hors top 11, dette et déficit de certains pays de l'euro) sont des estimations signalées comme telles dans `countries/_contexte-mondial.json`.
+- Notation : les coefficients du modèle des agences et le calendrier des revues (deux par an et par agence) sont des hypothèses de jeu ; les notes de départ de l'Allemagne et des États-Unis sont à revérifier.
+- Contrôle de constitutionnalité : les probabilités de censure sont des estimations de jeu ; les précédents cités sont réels.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

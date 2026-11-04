@@ -8,6 +8,9 @@ import { libelleTrimestre } from './calendrier.js';
 import { projectionPresidentielle, projectionPresidentielleEtatsUnis } from './objectifs.js';
 import { prochainSommet, peutNegocier } from './g7.js';
 import { GROUPES } from '../model/ministeres.js';
+import { resumeNotation } from './notation.js';
+import { risqueConstitutionnel } from './constitution.js';
+import { trouverReforme } from './reformes.js';
 
 const NIVEAUX = { alerte: 3, attention: 2, idee: 1 };
 
@@ -20,7 +23,7 @@ function trimestresAvant(e, ech) {
  * @param {object|null} prevision résultat de previsionPolitique (facultatif)
  * @returns {Array} conseils triés par urgence : { niveau, titre, texte, onglet }
  */
-export function conseils(e, prevision = null) {
+export function conseils(e, prevision = null, decisions = null) {
   const c = [];
   const f = e.finances, m = e.macro, pol = e.politique;
   const devise = e.statique.devise ?? '€';
@@ -56,6 +59,16 @@ export function conseils(e, prevision = null) {
   // --- Marchés -----------------------------------------------------------------------
   if (f.spread > 120 || f.crise) {
     c.push({ niveau: f.spread > 200 ? 'alerte' : 'attention', titre: 'Les marchés s\'inquiètent', texte: `Écart de taux : ${Math.round(f.spread)} points de base. Annoncer une trajectoire crédible de déficit (onglet Impôts et dette) et la tenir rassure les investisseurs.`, onglet: 'fiscalite' });
+  }
+  // --- Agences de notation ------------------------------------------------------------
+  const notes = resumeNotation(e);
+  for (const a of (notes?.agences ?? []).filter((x) => x.risque === 'degradation' && x.dans <= 1)) {
+    c.push({ niveau: a.dans === 0 ? 'alerte' : 'attention', titre: `${a.nom} pourrait dégrader la note`, texte: `Note ${a.note}, perspective ${a.perspective === 'negative' ? 'négative' : a.perspective}, revue ${a.prochaineRevue}. Annoncer une trajectoire de déficit crédible (et la tenir), réduire le déficit ou éviter l'instabilité peut l'empêcher.`, onglet: 'fiscalite' });
+  }
+  // --- Réformes exposées à une censure constitutionnelle ----------------------------------
+  for (const r of decisions?.reformes ?? []) {
+    const rc = risqueConstitutionnel(e.pays, r.id, r.option);
+    if (rc && rc.risque >= 0.3) c.push({ niveau: 'attention', titre: 'Risque de censure constitutionnelle', texte: `${trouverReforme(r.id)?.nom ?? r.id} : environ ${Math.round(rc.risque * 100)} % de risque de censure ${rc.type === 'totale' ? 'totale' : 'partielle'} par ${rc.juridiction === 'Conseil constitutionnel' ? 'le Conseil constitutionnel' : `la ${rc.juridiction}`}. ${rc.motif}`, onglet: 'reformes' });
   }
   // --- Élections proches --------------------------------------------------------------
   for (const ech of e.statique.calendrier.echeances ?? []) {

@@ -444,6 +444,35 @@
         "statut": "officiel",
         "note": "Coût non trouvé."
       }
+    },
+    "notation": {
+      "fitch": {
+        "valeur": "AAA",
+        "perspective": "stable",
+        "unite": "note",
+        "date": "2025",
+        "source": "Fitch",
+        "statut": "a_verifier",
+        "note": "Note connue fin 2025, non revérifiée en novembre 2026."
+      },
+      "moodys": {
+        "valeur": "Aaa",
+        "perspective": "stable",
+        "unite": "note",
+        "date": "2025",
+        "source": "Moody's",
+        "statut": "a_verifier",
+        "note": "Note connue fin 2025, non revérifiée en novembre 2026."
+      },
+      "sp": {
+        "valeur": "AAA",
+        "perspective": "stable",
+        "unite": "note",
+        "date": "2025",
+        "source": "S&P Global Ratings",
+        "statut": "a_verifier",
+        "note": "Note connue fin 2025, non revérifiée en novembre 2026."
+      }
     }
   },
   "travail": {

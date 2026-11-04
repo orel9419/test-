@@ -66,6 +66,35 @@
   },
 
   "finances_publiques": {
+    "notation": {
+      "fitch": {
+        "valeur": "AA+",
+        "perspective": "stable",
+        "unite": "note",
+        "date": "2023-08-01",
+        "source": "Fitch",
+        "statut": "a_verifier",
+        "note": "Abaissée de AAA à AA+ en août 2023 ; non revérifiée en novembre 2026."
+      },
+      "moodys": {
+        "valeur": "Aa1",
+        "perspective": "stable",
+        "unite": "note",
+        "date": "2025-05-16",
+        "source": "Moody's",
+        "statut": "a_verifier",
+        "note": "Abaissée de Aaa à Aa1 le 16/05/2025 ; non revérifiée en novembre 2026."
+      },
+      "sp": {
+        "valeur": "AA+",
+        "perspective": "stable",
+        "unite": "note",
+        "date": "2011-08-05",
+        "source": "S&P Global Ratings",
+        "statut": "a_verifier",
+        "note": "Abaissée de AAA à AA+ en août 2011 ; non revérifiée en novembre 2026."
+      }
+    },
     "deficit_md": {
       "valeur": 2000, "unite": "Md$", "periode": "exercice 2026",
       "source": "CBO, Monthly Budget Review de septembre 2026",

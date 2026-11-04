@@ -4,33 +4,49 @@ import { PAYS, PAYS_A_VENIR } from '../donnees.js';
 import { MODES } from '../../model/parametres.js';
 import { pct } from '../format.js';
 
-/** Écran d'accueil : choix du pays, du mode et du calendrier. */
-export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, onColler, theme, onTheme, message }) {
+/** Partie rapide : réglages conseillés pour découvrir le jeu. */
+const RAPIDE = { pays: 'france', mode: 'facile', calendrier: 'horizon2050', intensite: 'accentuee', role: 'chef_gouvernement' };
+
+/** Écran d'accueil : démarrage rapide, ou partie personnalisée (pays, mode, calendrier, rôle, code). */
+export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporter, onColler, onOptions, onAPropos, message }) {
+  const [perso, setPerso] = useState(false);
+  const [code, setCode] = useState('');
   const [pays, setPays] = useState('france');
   const [mode, setMode] = useState('intermediaire');
   const [calendrier, setCalendrier] = useState('horizon2050');
   const [role, setRole] = useState('chef_gouvernement');
   const [intensite, setIntensite] = useState('accentuee');
   const d = PAYS[pays].donnees;
+  const dateDonnees = new Date(PAYS.france.donnees.meta.derniere_mise_a_jour).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   return (
     <div className="accueil pile">
-      <div className="ligne espace">
-        <div>
+      <section className="accueil-hero">
+        <div className="pile">
           <h1>🏛️ Chef de gouvernement</h1>
-          <p className="muet">Gouvernez un pays réel à partir de sa situation au {new Date(d.meta.derniere_mise_a_jour).toLocaleDateString('fr-FR')} : budget, dette, réformes, Parlement, Europe et diplomatie.</p>
+          <p className="accroche">Prenez les commandes d'un pays réel. Budget, réformes, Parlement, opinion, marchés : chaque décision a un prix, et les électeurs jugent.</p>
+          <ul className="atouts">
+            <li><span aria-hidden="true">📊</span> La situation réelle de {dateDonnees} : dette, déficit, chômage, notes des agences, rapports de force au Parlement.</li>
+            <li><span aria-hidden="true">🗳️</span> Des votes crédibles : majorités texte par texte, 49.3, censure, contrôle du Conseil constitutionnel.</li>
+            <li><span aria-hidden="true">⏳</span> Jusqu'en 2050 : retraites, dette, climat, et une élection tous les cinq ans.</li>
+          </ul>
         </div>
-        <button type="button" className="bouton" onClick={onTheme} aria-label="Changer de thème">{theme === 'dark' ? '☀︎ Thème clair' : '☾ Thème sombre'}</button>
-      </div>
+        <div className="accueil-actions pile">
+          {sauvegarde && (
+            <>
+              <button type="button" className="bouton principal grand" onClick={onReprendre}>▶ Reprendre ma partie</button>
+              <span className="tres-petit muet">{PAYS[sauvegarde.partie.pays]?.donnees.meta.nom}, {sauvegarde.partie.tour > 1 ? `tour ${sauvegarde.partie.tour}` : 'début de partie'} · sauvegardée le {new Date(sauvegarde.date).toLocaleDateString('fr-FR')}</span>
+            </>
+          )}
+          <button type="button" className={`bouton grand ${sauvegarde ? '' : 'principal'}`} onClick={() => onDemarrer(RAPIDE)}>{sauvegarde ? 'Nouvelle partie rapide' : '▶ Jouer maintenant'}</button>
+          <span className="tres-petit muet">France · Premier ministre · mode Facile, avec visite guidée</span>
+          <button type="button" className="bouton" onClick={() => setPerso((x) => !x)} aria-expanded={perso}>⚙ {perso ? 'Masquer la personnalisation' : 'Personnaliser la partie'}</button>
+        </div>
+      </section>
 
       <Installation />
       {message && <div className="alerte" role="status">{message}</div>}
-      {sauvegarde && (
-        <div className="carte ligne espace">
-          <span>Partie en cours : {PAYS[sauvegarde.partie.pays]?.donnees.meta.nom}, tour {sauvegarde.partie.tour} (sauvegardée le {new Date(sauvegarde.date).toLocaleString('fr-FR')}).</span>
-          <button type="button" className="bouton principal" onClick={onReprendre}>Reprendre</button>
-        </div>
-      )}
 
+      {perso && (<>
       <h2>1. Choisissez un pays</h2>
       <div className="choix-pays">
         {Object.entries(PAYS).map(([id, p]) => {
@@ -109,14 +125,25 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
         </>
       )}
 
-      <div className="ligne">
-        <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier, intensite, role: pays === 'france' ? role : 'chef_gouvernement' })}>Prendre ses fonctions</button>
-        <label className="bouton">Importer une partie (JSON)<input type="file" accept="application/json" onChange={onImporter} hidden /></label>
-        {onColler && <button type="button" className="bouton" onClick={onColler}>Coller une sauvegarde</button>}
-      </div>
+      <h2>{pays === 'france' ? '6' : '5'}. Code de partie (facultatif)</h2>
+      <label className="petit pile" style={{ maxWidth: 420 }}>
+        <span className="muet">Pour relever un défi : avec le même code et les mêmes décisions, vous vivrez les mêmes événements qu'un ami. Laissez vide pour une partie au hasard.</span>
+        <input type="text" value={code} onChange={(ev) => setCode(ev.target.value)} placeholder="Exemple : K3J9F2" maxLength={40} autoComplete="off" />
+      </label>
 
-      <div className="carte petit muet">
-        <strong>Comment jouer.</strong> Un tour = un trimestre. À chaque tour, répartissez le budget entre les ministères, fixez les impôts, proposez des réformes (avec leurs compensations), pilotez les participations de l'État et les fleurons, agissez à l'international, préparez les grands rendez-vous et tranchez les événements, puis validez (Ctrl + Entrée). Les données de départ sont sourcées (onglet « Données et sources ») ; les paramètres du modèle sont des hypothèses documentées.
+      <div className="ligne">
+        <button type="button" className="bouton principal" style={{ padding: '0.8rem 1.6rem', fontSize: '1.05rem' }} onClick={() => onDemarrer({ pays, mode, calendrier, intensite, role: pays === 'france' ? role : 'chef_gouvernement', code })}>Prendre ses fonctions</button>
+      </div>
+      </>)}
+
+      <div className="carte petit">
+        <strong>Comment jouer.</strong> Un tour = un trimestre. Proposez des réformes, ajustez le budget et les impôts, communiquez, tranchez les événements, puis validez. Le jeu chiffre chaque décision avant que vous la preniez : coût, chances de vote, effet sur l'opinion. Votre objectif : améliorer le pays sans perdre le pouvoir.
+      </div>
+      <div className="ligne pied-accueil">
+        <label className="bouton">📂 Importer une partie<input type="file" accept="application/json" onChange={onImporter} hidden /></label>
+        {onColler && <button type="button" className="bouton" onClick={onColler}>Coller une sauvegarde</button>}
+        <button type="button" className="bouton" onClick={onOptions}>⚙️ Options</button>
+        <button type="button" className="bouton" onClick={onAPropos}>ℹ️ À propos et vie privée</button>
       </div>
     </div>
   );

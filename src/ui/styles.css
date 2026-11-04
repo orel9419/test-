@@ -417,3 +417,41 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
   .composante { grid-template-columns: 1fr 1fr 3rem; }
   .composante button { grid-column: 1 / -1; justify-self: start; }
 }
+
+/* --- Options d'affichage --------------------------------------------------------- */
+:root[data-taille="grande"] { font-size: 17px; }
+:root[data-taille="tres_grande"] { font-size: 19px; }
+:root[data-animations="reduites"] *, :root[data-animations="reduites"] *::before, :root[data-animations="reduites"] *::after { animation: none !important; transition: none !important; }
+.visuellement-cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.choix-option { border: 0; padding: 0; margin: 0; }
+.choix-option legend { font-weight: 600; font-size: 0.92rem; margin-bottom: 0.35rem; }
+.choix-option .puce { font-size: 0.88rem; padding: 0.35rem 0.8rem; }
+.menu-jeu { display: grid; gap: 0.45rem; }
+.menu-jeu .bouton { text-align: left; padding: 0.6rem 0.8rem; }
+
+/* --- Accueil ------------------------------------------------------------------------ */
+.accueil-hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); gap: 1.4rem; align-items: center; padding: 1.4rem; border-radius: 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)), var(--surface)); border: 1px solid var(--bordure); }
+.accueil-hero h1 { font-size: 2rem; margin: 0; }
+.accroche { font-size: 1.1rem; margin: 0; color: var(--encre); }
+.atouts { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; font-size: 0.92rem; color: var(--encre-2); }
+.atouts li { display: flex; gap: 0.5rem; }
+.accueil-actions { display: flex; flex-direction: column; align-items: stretch; text-align: center; gap: 0.45rem; }
+.accueil-actions > * + * { margin-top: 0; }
+.accueil-actions > span { display: block; }
+.pied-accueil { justify-content: center; }
+@media (max-width: 760px) {
+  .accueil-hero { grid-template-columns: 1fr; padding: 1.1rem; }
+  .accueil-hero h1 { font-size: 1.6rem; }
+}
+
+/* --- Notation et contrôle constitutionnel ------------------------------------------ */
+.bande-notation { padding: 0.45rem 0.8rem; border-radius: var(--rayon); background: var(--surface-2); border: 1px solid var(--bordure); }
+.etiquette.critique { background: color-mix(in srgb, var(--critique) 15%, transparent); color: var(--texte-critique); font-weight: 600; }
+.etiquette.bonne { background: color-mix(in srgb, var(--bon) 18%, transparent); color: var(--texte-bon); font-weight: 600; }
+.etiquette.constitution { background: color-mix(in srgb, var(--serie-7) 14%, transparent); color: var(--encre); }
+.etiquette.constitution.eleve { background: color-mix(in srgb, var(--critique) 15%, transparent); color: var(--texte-critique); font-weight: 600; }
+@media (max-width: 760px) {
+  .entete { position: relative; }
+  .entete .actions-entete { position: absolute; top: 0.55rem; right: 0.8rem; }
+  .entete .actions-entete .bouton { padding: 0.35rem 0.65rem; }
+}

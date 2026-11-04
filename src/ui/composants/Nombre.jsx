@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const mouvementReduit = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+import { mouvementReduit } from '../options.js';
 
 /**
  * Nombre animé : passe en douceur de l'ancienne à la nouvelle valeur et

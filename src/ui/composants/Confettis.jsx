@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { mouvementReduit } from '../options.js';
 
 /**
  * Pluie de confettis pour célébrer un succès (élection gagnée, objectif
@@ -9,7 +10,7 @@ export default function Confettis({ declencheur }) {
   const canevas = useRef(null);
   useEffect(() => {
     if (!declencheur) return undefined;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    if (mouvementReduit()) return undefined;
     const c = canevas.current;
     const ctx = c.getContext('2d');
     c.width = window.innerWidth; c.height = window.innerHeight;

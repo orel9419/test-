@@ -501,6 +501,39 @@
           "note": "Introuvable."
         }
       }
+    },
+    "notation": {
+      "fitch": {
+        "valeur": "A+",
+        "perspective": "negative",
+        "unite": "note",
+        "date": "2026-10-30",
+        "source": "Fitch, via AFP (Sud Radio) et Economie Matin",
+        "url": "https://www.sudradio.fr/societe/fitch-maintient-la-note-a-de-la-france-mais-abaisse-sa-perspective",
+        "statut": "secondaire",
+        "note": "Note A+ maintenue, perspective abaissée de stable à négative le 30/10/2026."
+      },
+      "moodys": {
+        "valeur": "Aa3",
+        "perspective": "negative",
+        "unite": "note",
+        "date": "2026-10-23",
+        "source": "Moody's, via Selectra",
+        "url": "https://selectra.info/finance/actualites/marche/moody-note-france-23-octobre-credit-immobilier",
+        "statut": "secondaire",
+        "note": "Note Aa3 et perspective négative maintenues le 23/10/2026 (perspective négative depuis le 24/10/2025).",
+        "perspective_depuis": "2025-10-24"
+      },
+      "sp": {
+        "valeur": "A+",
+        "perspective": "stable",
+        "unite": "note",
+        "date": null,
+        "source": "Agence France Trésor, tableau des notations (repris par la presse)",
+        "url": "https://www.aft.gouv.fr/en/frances-credit-ratings",
+        "statut": "a_verifier",
+        "note": "Page de l'AFT non consultée directement (date de la dernière revue non vérifiée). Prochaine revue annoncée le 27/11/2026."
+      }
     }
   },
   "travail": {

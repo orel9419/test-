@@ -3,6 +3,7 @@ import { IMPOTS } from '../../model/impots.js';
 import Badge from '../composants/Badge.jsx';
 import Info from '../composants/Info.jsx';
 import Apercu from './Apercu.jsx';
+import NoteSouveraine from '../composants/NoteSouveraine.jsx';
 import { md, nombre, pct, signe } from '../format.js';
 import { structurelSchuldenbremse } from '../../engine/finances.js';
 
@@ -45,6 +46,7 @@ export default function Fiscalite({ partie, decisions, majDecisions, apercu }) {
         </div>
         <div className="pile">
           <Apercu apercu={apercu} partie={partie} />
+          <NoteSouveraine partie={partie} />
           <div className="carte pile">
             <h3>Gestion de la dette <Info texte="L'Agence de la dette émet chaque trimestre de quoi rembourser la dette arrivant à échéance et financer le déficit. Emprunter plus à court terme coûte moins cher aujourd'hui quand les taux courts sont bas, mais raccourcit la maturité : la dette se refinance plus vite, au risque de taux plus élevés demain." /></h3>
             <div className="ligne espace petit"><span>Dette</span><strong className="chiffres">{md(f.dette, 0)} ({pct(f.detteRatio)})</strong></div>

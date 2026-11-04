@@ -183,12 +183,13 @@ export const EVENEMENTS = [
     id: 'degradation_note',
     titre: 'Une agence de notation dégrade la note du pays',
     pays: 'tous',
-    condition: (e) => e.finances.detteRatio > 110 && e.finances.deficitRatio > 4.5,
-    probabilite: () => 0.12,
-    description: (e) => `Avec une dette de ${e.finances.detteRatio.toFixed(0)} % du PIB et un déficit de ${e.finances.deficitRatio.toFixed(1)} %, l'agence abaisse sa note d'un cran. Les taux montent.`,
+    // Déclenché par une dégradation réelle du modèle de notation (module notation.js)
+    condition: (e) => !!e.notation?.degradationRecente,
+    probabilite: () => 1,
+    description: (e) => `${e.notation.degradationRecente.agence} abaisse la note du pays à ${e.notation.degradationRecente.note}, avec une dette de ${e.finances.detteRatio.toFixed(0)} % du PIB et un déficit de ${e.finances.deficitRatio.toFixed(1)} %. Comment réagir ?`,
     choix: [
-      { id: 'plan', texte: 'Annoncer un plan pluriannuel de redressement crédible', effets: (e) => { const a = e.trimestre.annee + 1; e.finances.trajectoireAnnoncee[a] = Math.max(2.5, e.finances.deficitRatio - 0.8); return { chocTaux: 0.08, credibilite: 0.1, texte: `Le gouvernement s'engage sur un déficit de ${e.finances.trajectoireAnnoncee[a].toFixed(1)} % l'an prochain : il faudra tenir parole.` }; } },
-      { id: 'contester', texte: 'Contester publiquement la décision', effets: () => ({ chocTaux: 0.2, credibilite: -0.1, opinion: { salaries: 1 }, texte: 'Les marchés n\'apprécient pas.' }) },
+      { id: 'plan', texte: 'Annoncer un plan pluriannuel de redressement crédible', effets: (e) => { const a = e.trimestre.annee + 1; e.finances.trajectoireAnnoncee[a] = Math.max(2.5, e.finances.deficitRatio - 0.8); return { chocTaux: -0.03, credibilite: 0.1, texte: `Le gouvernement s'engage sur un déficit de ${e.finances.trajectoireAnnoncee[a].toFixed(1)} % l'an prochain : il faudra tenir parole, les agences jugeront aux prochaines revues.` }; } },
+      { id: 'contester', texte: 'Contester publiquement la décision', effets: () => ({ chocTaux: 0.1, credibilite: -0.1, opinion: { salaries: 1 }, texte: 'Les marchés n\'apprécient pas.' }) },
     ],
   },
   {

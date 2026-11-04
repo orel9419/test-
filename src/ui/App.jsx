@@ -12,6 +12,11 @@ import Confettis from './composants/Confettis.jsx';
 import Conseiller from './composants/Conseiller.jsx';
 import VisiteGuidee from './composants/VisiteGuidee.jsx';
 import ModaleSauvegarde from './composants/ModaleSauvegarde.jsx';
+import Modale from './composants/Modale.jsx';
+import Options from './composants/Options.jsx';
+import APropos from './composants/APropos.jsx';
+import { lireOptions, ecrireOptions, appliquerOptions, ONGLETS_AVANCES, codeDePartie, graineDepuisCode } from './options.js';
+import { partager } from './partage.js';
 import Accueil from './ecrans/Accueil.jsx';
 import TableauDeBord from './ecrans/TableauDeBord.jsx';
 import Budget from './ecrans/Budget.jsx';
@@ -86,7 +91,9 @@ function notificationsDuTour(avant, apres) {
     if (el.victoireCamp) fete = true;
   }
   if (r.budget) n.push({ type: r.budget.adopte ? 'bon' : 'alerte', titre: r.budget.adopte ? 'Budget adopté' : 'Budget rejeté', texte: `${r.budget.pour} pour, ${r.budget.contre} contre${r.budget.senat !== null && r.budget.senat !== undefined ? ` ; Sénat : ${r.budget.senat} voix` : ''}${r.budget.procedure === '49.3' ? ' (49.3)' : ''}.` });
-  for (const x of (r.reformes ?? []).filter((x) => !x.erreur)) n.push({ type: 'bon', titre: x.referendum ? 'Réforme adoptée par référendum' : 'Réforme adoptée', texte: x.id.replace(/_/g, ' ') });
+  for (const x of (r.reformes ?? []).filter((x) => !x.erreur && !x.censurePartielle)) n.push({ type: 'bon', titre: x.referendum ? 'Réforme adoptée par référendum' : 'Réforme adoptée', texte: x.id.replace(/_/g, ' ') });
+  for (const c of (r.constitution ?? []).filter((x) => x.decision === 'totale' || x.decision === 'partielle')) n.push({ type: 'alerte', icone: '⚖️', titre: c.decision === 'totale' ? 'Réforme censurée' : 'Censure partielle', texte: c.texte, duree: 9000 });
+  for (const d of (r.notation ?? []).filter((x) => x.action === 'degradation' || x.action === 'relevement')) n.push({ type: d.action === 'degradation' ? 'alerte' : 'succes', icone: d.action === 'degradation' ? '📉' : '📈', titre: d.action === 'degradation' ? 'Note dégradée' : 'Note relevée', texte: d.texte });
   if (r.referendum && !r.referendum.adopte) n.push({ type: 'alerte', titre: 'Référendum perdu', texte: `${r.referendum.nom} : ${nombre(100 - r.referendum.oui, 1)} % de non.` });
   for (const x of (r.entreprises ?? []).filter((x) => x.texte)) n.push({ type: 'entreprise', titre: 'Entreprises', texte: x.texte });
   for (const [id, g] of Object.entries(apres.grandsEvenements ?? {})) {
@@ -99,7 +106,8 @@ function notificationsDuTour(avant, apres) {
 }
 
 export default function App() {
-  const [theme, setTheme] = useState(() => lirePreference('cdg:theme') ?? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  const [options, setOptions] = useState(lireOptions);
+  const [fenetre, setFenetre] = useState(null); // 'menu' | 'options' | 'apropos' | 'confirmer' | null
   const [partie, setPartie] = useState(null);
   const [decisions, setDecisions] = useState(DECISIONS_VIDES);
   const [onglet, setOnglet] = useState('tableau');
@@ -124,10 +132,16 @@ export default function App() {
   const compteur = useRef(0);
   const attente = useRef([]);
 
+  // Options : appliquées au document, mémorisées, et thème « comme l'appareil » suivi en direct
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    ecrirePreference('cdg:theme', theme);
-  }, [theme]);
+    appliquerOptions(options);
+    ecrireOptions(options);
+    if (options.theme !== 'auto') return undefined;
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const suivre = () => appliquerOptions(options);
+    mq?.addEventListener?.('change', suivre);
+    return () => mq?.removeEventListener?.('change', suivre);
+  }, [options]);
 
   // Monnaie de la partie (€ ou $) pour toutes les mises en forme
   useEffect(() => { definirDevise(partie?.statique.devise); }, [partie]);
@@ -148,15 +162,15 @@ export default function App() {
   }, [partie, decisions]);
 
   const mode = partie ? MODES[normaliserMode(partie.mode)] : null;
-  const conseils = useMemo(() => (partie && !partie.termine && mode?.conseiller ? calculerConseils(partie, prevision) : []), [partie, prevision, mode]);
+  const conseils = useMemo(() => (partie && !partie.termine && mode?.conseiller ? calculerConseils(partie, prevision, decisions) : []), [partie, prevision, mode, decisions]);
 
   const notifier = useCallback((liste) => {
     setNotifications((n) => [...n, ...liste.map((x) => ({ ...x, id: ++compteur.current }))].slice(-6));
   }, []);
   const fermerNotification = useCallback((id) => setNotifications((n) => n.filter((x) => x.id !== id)), []);
 
-  const demarrer = useCallback(({ pays, mode: m, calendrier, role, intensite }) => {
-    const graine = Math.floor(Math.random() * 2 ** 31);
+  const demarrer = useCallback(({ pays, mode: m, calendrier, role, intensite, code }) => {
+    const graine = graineDepuisCode(code) ?? Math.floor(Math.random() * 2 ** 31);
     const p = creerPartie({ pays, donnees: PAYS[pays].donnees, contexte, mode: m, graine, calendrier, role, intensite });
     try { window.scrollTo({ top: 0 }); } catch { /* environnement sans fenêtre */ }
     setPartie(p);
@@ -175,6 +189,15 @@ export default function App() {
     setPrecedent(null);
   }, []);
 
+  /** Événements encore sans réponse (le premier choix s'appliquerait par défaut). */
+  const evenementsSansReponse = partie && !partie.termine ? partie.evenements.enAttente.filter((ev) => !decisions.evenements?.[ev.id]).length : 0;
+  const demanderValidation = useCallback(() => {
+    if (!partie || partie.termine) return;
+    if (options.confirmer && evenementsSansReponse > 0) { setFenetre('confirmer'); return; }
+    validerTourRef.current?.();
+  }, [partie, options.confirmer, evenementsSansReponse]);
+  const validerTourRef = useRef(null);
+
   const validerTour = useCallback(() => {
     if (!partie || partie.termine) return;
     const avant = partie;
@@ -191,6 +214,7 @@ export default function App() {
     if (celebrer || (apres.termine && apres.issue?.type !== 'defaite')) setFete((k) => k + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [partie, decisions, notifier]);
+  validerTourRef.current = validerTour;
 
   const annulerTour = useCallback(() => {
     if (!precedent) return;
@@ -206,11 +230,11 @@ export default function App() {
   // Raccourci clavier : Ctrl + Entrée (ou Cmd + Entrée) pour valider le trimestre
   useEffect(() => {
     const touche = (ev) => {
-      if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter' && !bilan) { ev.preventDefault(); validerTour(); }
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter' && !bilan && !fenetre) { ev.preventDefault(); demanderValidation(); }
     };
     window.addEventListener('keydown', touche);
     return () => window.removeEventListener('keydown', touche);
-  }, [validerTour, bilan]);
+  }, [demanderValidation, bilan, fenetre]);
 
   const importer = useCallback(async (ev) => {
     const f = ev.target.files?.[0];
@@ -237,10 +261,12 @@ export default function App() {
           onReprendre={() => reprendre(sauvegardeExistante)}
           onImporter={importer}
           onColler={() => setSauvegarde('import')}
-          theme={theme}
-          onTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          onOptions={() => setFenetre('options')}
+          onAPropos={() => setFenetre('apropos')}
           message={message}
         />
+        {fenetre === 'options' && <Options options={options} onChange={setOptions} onFermer={() => setFenetre(null)} />}
+        {fenetre === 'apropos' && <APropos onFermer={() => setFenetre(null)} />}
         <Notifications liste={notifications} onFermer={fermerNotification} />
         {sauvegarde && <ModaleSauvegarde mode="import" onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage(null); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
       </>
@@ -256,6 +282,10 @@ export default function App() {
   const nomOnglet = (o) => (o.id === 'parlement' ? (us ? 'Congrès' : partie.pays === 'allemagne' ? 'Bundestag et coalition' : 'Parlement') : o.nom);
   const nbActionsEntreprises = (decisions.entreprises?.length ?? 0) + (decisions.programmes?.length ?? 0);
   const rubrique = rubriqueDe(onglet);
+  const essentielle = options.interface === 'essentielle';
+  const visible = (id) => !essentielle || !ONGLETS_AVANCES.includes(id) || id === onglet;
+  const rubriques = RUBRIQUES.map((r) => ({ ...r, onglets: r.onglets.filter(visible) })).filter((r) => r.onglets.length > 0);
+  const ongletsRubrique = rubriques.find((r) => r.id === rubrique.id)?.onglets ?? [onglet];
   /** Badge d'un sous-onglet : nombre de décisions en préparation, ou mention. */
   const badge = (id) => ({
     evenements: nbEvenements,
@@ -281,28 +311,25 @@ export default function App() {
           <div>Taux 10 ans<strong><Nombre valeur={f.taux10} format={(v) => pct(v, 2)} favorableSiHausse={false} /></strong></div>
           <div>Chômage<strong><Nombre valeur={partie.macro.chomage} format={(v) => pct(v)} favorableSiHausse={false} /></strong></div>
         </div>
-        <div className="ligne">
-          <button type="button" className="bouton" onClick={() => setSauvegarde('export')} title="Télécharger ou copier la partie (JSON)">Sauvegarder</button>
-          <button type="button" className="bouton" onClick={() => setSauvegarde('import')} title="Charger une partie (fichier ou texte)">Charger</button>
-          <button type="button" className="bouton" onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))} aria-label="Changer de thème">{theme === 'dark' ? '☀︎' : '☾'}</button>
-          <button type="button" className="bouton" onClick={() => setVisite(true)} title="Visite guidée">?</button>
-          <button type="button" className="bouton" onClick={() => setQuitter(true)}>Menu</button>
+        <div className="ligne actions-entete">
+          <button type="button" className="bouton" onClick={() => setVisite(true)} title="Visite guidée" aria-label="Visite guidée">?</button>
+          <button type="button" className="bouton" onClick={() => setFenetre('menu')} aria-haspopup="dialog">☰ Menu</button>
         </div>
       </header>
 
       {message && <div className="alerte bonne" style={{ margin: '0.6rem 1.2rem' }} role="status">{message} <button type="button" className="bouton petit" onClick={() => setMessage(null)}>OK</button></div>}
 
       {partie.termine ? (
-        <FinDePartie partie={partie} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => setSauvegarde('export')} onContinuer={partie.horizon ? () => setPartie(continuerPartie(partie)) : null} />
+        <FinDePartie partie={partie} codePartie={codeDePartie(partie.graine)} onNouvelle={() => { effacerLocal(); setPartie(null); }} onExporter={() => setSauvegarde('export')} onContinuer={partie.horizon ? () => setPartie(continuerPartie(partie)) : null} />
       ) : (
         <div className="mise-en-page">
           <nav className="navigation" aria-label="Rubriques">
-            {RUBRIQUES.map((r) => {
+            {rubriques.map((r) => {
               const active = rubrique.id === r.id;
               const evenementsIci = r.onglets.includes('evenements') && nbEvenements > 0;
               const compteur = r.onglets.reduce((n, id) => n + (typeof badge(id) === 'number' ? badge(id) : 0), 0);
               return (
-                <button key={r.id} type="button" className={`onglet ${active ? 'actif' : ''}`} onClick={() => setOnglet(dernierOnglet[r.id] ?? r.onglets[0])} aria-current={active ? 'page' : undefined}>
+                <button key={r.id} type="button" className={`onglet ${active ? 'actif' : ''}`} onClick={() => setOnglet(r.onglets.includes(dernierOnglet[r.id]) ? dernierOnglet[r.id] : r.onglets[0])} aria-current={active ? 'page' : undefined}>
                   <span className="onglet-contenu"><span className="onglet-icone" aria-hidden="true">{r.icone}</span><span className="nom-long">{r.nom}</span><span className="nom-court">{r.court}</span></span>
                   {evenementsIci && <span className="pastille pulse">{nbEvenements}</span>}
                   {!evenementsIci && compteur > 0 && <span className="etiquette">{compteur}</span>}
@@ -311,9 +338,9 @@ export default function App() {
             })}
           </nav>
           <main key={onglet} className="apparition">
-            {rubrique.onglets.length > 1 && (
+            {ongletsRubrique.length > 1 && (
               <div className="sous-onglets" role="tablist" aria-label={rubrique.nom}>
-                {rubrique.onglets.map((id) => {
+                {ongletsRubrique.map((id) => {
                   const o = ONGLETS.find((x) => x.id === id);
                   const b = badge(id);
                   return (
@@ -354,7 +381,7 @@ export default function App() {
               {apercu && (
                 <p className="petit muet">Effet estimé de vos décisions à un an : solde {apercu.unAn.soldeMd >= 0 ? '+' : '−'}{md(Math.abs(apercu.unAn.soldeMd), 1)}, croissance {apercu.unAn.croissance >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.croissance), 2)} pt, popularité {apercu.unAn.popularite >= 0 ? '+' : '−'}{nombre(Math.abs(apercu.unAn.popularite), 1)} pt.</p>
               )}
-              <button type="button" className="bouton principal grand bouton-valider" onClick={validerTour} title="Raccourci : Ctrl + Entrée">Valider le trimestre</button>
+              <button type="button" className="bouton principal grand bouton-valider" onClick={demanderValidation} title="Raccourci : Ctrl + Entrée">Valider le trimestre</button>
               {precedent && <button type="button" className="bouton" style={{ width: '100%', marginTop: '0.5rem' }} onClick={annulerTour}>↩ Annuler le dernier trimestre</button>}
             </div>
             {mode.conseiller && onglet !== 'tableau' && <Conseiller conseils={conseils} allerA={setOnglet} compact />}
@@ -365,12 +392,38 @@ export default function App() {
       {!partie.termine && (
         <div className="barre-validation-mobile">
           <span className="petit">{libelleTrimestre(partie.trimestre)}{decisions.reformes.length ? ` · ${decisions.reformes.length} réforme(s)` : ''}{nbEvenements ? ` · ${nbEvenements} événement(s)` : ''}</span>
-          <button type="button" className="bouton principal" onClick={validerTour}>Valider le trimestre</button>
+          <button type="button" className="bouton principal" onClick={demanderValidation}>Valider le trimestre</button>
         </div>
       )}
       {bilan && <BilanTour avant={bilan.avant} apres={bilan.apres} onFermer={() => { setBilan(null); notifier(attente.current); attente.current = []; }} onAnnuler={precedent ? annulerTour : null} />}
       {visite && !partie.termine && <VisiteGuidee onFermer={fermerVisite} allerA={setOnglet} />}
       {sauvegarde && <ModaleSauvegarde mode={sauvegarde} partie={partie} decisions={decisions} onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage('Partie chargée.'); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
+      {fenetre === 'menu' && (
+        <Modale titre="Menu" onFermer={() => setFenetre(null)} largeur={440}>
+          <div className="menu-jeu">
+            <button type="button" className="bouton" onClick={() => { setFenetre(null); setSauvegarde('export'); }}>💾 Sauvegarder la partie</button>
+            <button type="button" className="bouton" onClick={() => { setFenetre(null); setSauvegarde('import'); }}>📂 Charger une partie</button>
+            <button type="button" className="bouton" onClick={() => setFenetre('options')}>⚙️ Options <span className="tres-petit muet">(interface {essentielle ? 'essentielle' : 'complète'}, thème, texte…)</span></button>
+            <button type="button" className="bouton" onClick={() => setOptions((o) => ({ ...o, interface: essentielle ? 'complete' : 'essentielle' }))}>{essentielle ? '➕ Afficher toutes les rubriques' : '➖ Revenir à l\'interface essentielle'}</button>
+            <button type="button" className="bouton" onClick={() => { setFenetre(null); setVisite(true); }}>❔ Visite guidée</button>
+            <button type="button" className="bouton" onClick={async () => { const r = await partager({ titre: 'Chef de gouvernement', texte: 'Un jeu gratuit pour gouverner la France (ou l\'Allemagne, ou les États-Unis) avec des données réelles : budget, réformes, Parlement, opinion, marchés.' }); setMessage(r); setFenetre(null); }}>🔗 Partager le jeu</button>
+            <button type="button" className="bouton" onClick={() => setFenetre('apropos')}>ℹ️ À propos, données et vie privée</button>
+            <button type="button" className="bouton" onClick={() => { setFenetre(null); setQuitter(true); }}>🏠 Revenir à l'accueil</button>
+          </div>
+          <p className="tres-petit muet" style={{ margin: 0 }}>Code de cette partie : <strong>{codeDePartie(partie.graine)}</strong>. Partagez-le : avec les mêmes décisions, un ami vivra les mêmes événements.</p>
+        </Modale>
+      )}
+      {fenetre === 'options' && <Options options={options} onChange={setOptions} onFermer={() => setFenetre(null)} />}
+      {fenetre === 'apropos' && <APropos onFermer={() => setFenetre(null)} codePartie={codeDePartie(partie.graine)} />}
+      {fenetre === 'confirmer' && (
+        <Modale titre="Valider le trimestre ?" onFermer={() => setFenetre(null)} largeur={460}>
+          <p className="petit" style={{ margin: 0 }}>{evenementsSansReponse} événement{evenementsSansReponse > 1 ? 's attendent' : ' attend'} encore votre décision. Sans réponse, le premier choix proposé s'appliquera.</p>
+          <div className="ligne">
+            <button type="button" className="bouton principal" onClick={() => { setFenetre(null); setOnglet('evenements'); }}>Voir les événements</button>
+            <button type="button" className="bouton" onClick={() => { setFenetre(null); validerTour(); }}>Valider quand même</button>
+          </div>
+        </Modale>
+      )}
       {quitter && (
         <div className="voile" role="dialog" aria-modal="true" aria-labelledby="titre-quitter" onKeyDown={(ev) => ev.key === 'Escape' && setQuitter(false)}>
           <div className="modale pile entree-modale" style={{ maxWidth: 460 }}>

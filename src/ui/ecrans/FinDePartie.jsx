@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { partager } from '../partage.js';
 import GraphiqueLignes from '../composants/GraphiqueLignes.jsx';
 import Jauge from '../composants/Jauge.jsx';
 import { LIBELLES_COMPOSANTES } from '../../engine/score.js';
 import { nombre, pct, signe, classeVariation, euros, devise } from '../format.js';
 
 /** Écran de fin de partie : score pondéré, objectifs, trajectoires. */
-export default function FinDePartie({ partie, onNouvelle, onExporter, onContinuer }) {
+export default function FinDePartie({ partie, codePartie, onNouvelle, onExporter, onContinuer }) {
+  const [messagePartage, setMessagePartage] = useState(null);
   const sc = partie.score;
   const h = partie.historique;
   const etiquettes = h.map((x) => x.trimestre);
@@ -71,7 +73,13 @@ export default function FinDePartie({ partie, onNouvelle, onExporter, onContinue
       </div>
       <div className="ligne">
         <button type="button" className="bouton principal" onClick={onNouvelle}>Nouvelle partie</button>
+        <button type="button" className="bouton" onClick={async () => {
+          const fin = partie.historique.at(-1);
+          const texte = `J'ai gouverné ${partie.statique.nom === 'États-Unis' ? 'les États-Unis' : partie.statique.nom === 'Allemagne' ? 'l\'Allemagne' : 'la France'} jusqu'en ${fin.trimestre.replace(/^T\d /, '')} dans « Chef de gouvernement »${partie.score ? ` : score ${partie.score.total}/100 (${partie.score.mention})` : ''}, dette ${fin.dette.toFixed(0)} % du PIB, chômage ${fin.chomage.toFixed(1).replace('.', ',')} %. Code de partie : ${codePartie}. À toi de faire mieux !`;
+          setMessagePartage(await partager({ titre: 'Mon bilan dans Chef de gouvernement', texte }));
+        }}>🔗 Partager mon résultat</button>
         <button type="button" className="bouton" onClick={onExporter}>Exporter la partie (JSON)</button>
+        {messagePartage && <span className="petit" role="status">{messagePartage}</span>}
       </div>
     </div>
   );

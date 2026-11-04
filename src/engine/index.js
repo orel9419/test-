@@ -47,6 +47,8 @@ import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './cap
 import { ANNEE_FIN, calendrierJusqua2050, nbToursJusqua } from './horizon.js';
 import { initialiserClassements, majClassements } from './classements.js';
 import { initialiserG7, tenirSommet, preparerSommet } from './g7.js';
+import { initialiserNotation, notesDepuisDonnees, majNotation } from './notation.js';
+import { controleConstitutionnel } from './constitution.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
@@ -65,6 +67,8 @@ export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politiqu
 export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
 export { bilanReformes, effetOpinionReforme } from './reformes.js';
 export { soliditePouvoir } from './pouvoir.js';
+export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
+export { risqueConstitutionnel } from './constitution.js';
 export { actionsCommunication, ACTIONS_COMMUNICATION, GROUPES_CIBLES } from './communication.js';
 export { previsionG7, prochainSommet, peutNegocier, membreG7 } from './g7.js';
 export { intentions as intentionsDeVote, THEMES } from './opinion.js';
@@ -124,6 +128,8 @@ export function creerPartie(options) {
   initialiserClassements(e, options.contexte?.classements);
   initialiserG7(e);
   e.communication = etatCommunicationInitial();
+  const { notes, dynamique } = notesDepuisDonnees(options.donnees);
+  initialiserNotation(e, notes, dynamique);
   // Référence de la projection présidentielle (France) : la situation de départ
   if (e.politique.presidentielle && e.pays === 'france') {
     e.politique.presidentielle.reference = { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion };
@@ -287,8 +293,18 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     }
     if (validation.censure?.adoptee) defaite = { cause: 'censure', texte: 'Le gouvernement a été renversé par une motion de censure après un 49.3.' };
     for (const r of validation.acceptees) {
-      const res = adopterReforme(e, r.id, r.option, alea);
-      e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: res.erreur ?? null });
+      // Contrôle de constitutionnalité des lois (pas des décrets) avant promulgation
+      const def = trouverReforme(r.id);
+      const controle = !options.sansPolitique && def && def.vote !== false
+        ? controleConstitutionnel(e, r.id, r.option, def.nom, alea)
+        : { decision: 'conforme', facteur: 1 };
+      if (controle.texte) (e.resultatsTour.constitution ??= []).push({ id: r.id, nom: def.nom, decision: controle.decision, texte: controle.texte });
+      if (controle.decision === 'totale') {
+        e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: `Censurée par ${controle.juridiction ?? 'le juge constitutionnel'}` });
+        continue;
+      }
+      const res = adopterReforme(e, r.id, r.option, alea, controle.facteur);
+      e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: res.erreur ?? null, censurePartielle: controle.decision === 'partielle' || undefined });
     }
     for (const r of decisions.reformes.filter((x) => !validation.acceptees.includes(x))) {
       e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: validation.rejet?.raison ?? 'Rejetée' });
@@ -303,6 +319,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
       const r = referendum(e, def, reaction, alea);
       e.resultatsTour.referendum = { nom: def.nom, oui: r.oui, adopte: r.adopte };
       if (r.adopte) {
+        const controle = controleConstitutionnel(e, def.id, decisions.referendum.option, def.nom, alea, { referendum: true });
+        if (controle.texte) (e.resultatsTour.constitution ??= []).push({ id: def.id, nom: def.nom, decision: controle.decision, texte: controle.texte });
         const res = adopterReforme(e, def.id, decisions.referendum.option, alea);
         e.resultatsTour.reformes.push({ id: def.id, option: decisions.referendum.option, erreur: res.erreur ?? null, referendum: true });
       }
@@ -417,6 +435,12 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   majEntreprises(e, etat);
   majCapitalisation(e);
   const bilan = bilanAnnuel(e);
+  // Agences de notation : revues prévues ce trimestre
+  if (!options.sansPolitique) {
+    if (e.notation) e.notation.degradationRecente = null;
+    const notes = majNotation(e, alea);
+    if (notes.length) e.resultatsTour.notation = notes;
+  }
   if (bilan) {
     const regles = bilan.regles.map((r) => `${r.nom} : ${r.realise.toFixed(1)} % pour un objectif de ${r.cible.toFixed(1)} % (${r.respect ? 'respectée' : 'NON respectée'})`).join(' ; ');
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'bilan', texte: `Bilan ${bilan.annee} : déficit de ${bilan.deficit.toFixed(1)} % du PIB, dette de ${bilan.dette.toFixed(1)} %. ${regles}` });
