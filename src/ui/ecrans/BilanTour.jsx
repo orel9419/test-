@@ -16,7 +16,9 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
   const h0 = avant.historique.at(-1), h1 = apres.historique.at(-1);
   const r = apres.resultatsTour ?? {};
   // Les décisions des agences et du juge constitutionnel sont affichées à part
-  const entrees = apres.journal.filter((j) => j.tour === avant.tour && !j.texte.startsWith('Notation — ') && !(apres.resultatsTour?.constitution ?? []).some((c) => c.texte === j.texte));
+  // Réponses des entreprises (« Produire en France ») : mises en avant, donc retirées de la liste
+  const relocalisations = (r.relocalisations ?? []).filter((x) => x.texte);
+  const entrees = apres.journal.filter((j) => j.tour === avant.tour && !j.texte.startsWith('Notation — ') && !(apres.resultatsTour?.constitution ?? []).some((c) => c.texte === j.texte) && !relocalisations.some((x) => j.texte === `Produire en France — ${x.texte}`));
   const lignes = [
     ['Croissance sur un an', h1.croissanceA, h1.croissanceA - h0.croissanceA, pct, true],
     ['Inflation', h1.inflation, h1.inflation - h0.inflation, pct, false],
@@ -56,6 +58,9 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
         {(r.notation ?? []).some((d) => d.action === 'maintien') && (
           <p className="petit muet" style={{ margin: 0 }}>Notation : {r.notation.filter((d) => d.action === 'maintien').map((d) => `${d.nom} maintient ${d.note}`).join(' ; ')}.</p>
         )}
+        {relocalisations.map((x) => (
+          <div key={x.id} className={`alerte ${x.accepte ? 'bonne' : ''}`}><strong>🇫🇷 Produire en France :</strong> {x.texte}</div>
+        ))}
         {(r.alertes ?? []).map((a, i) => <div key={i} className="alerte">{a.texte ?? (a.type === 'mobilisation' ? 'Un mouvement social a éclaté.' : a.type)}</div>)}
         <table className="petit">
           <thead><tr><th>Indicateur</th><th className="nombre">Niveau</th><th className="nombre">Variation</th></tr></thead>

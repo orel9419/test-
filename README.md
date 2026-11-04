@@ -209,6 +209,33 @@ Chaque année au deuxième trimestre, le G7 se réunit chez le pays qui le prés
 
 Le G7 décide par **consensus** : un accord exige un soutien moyen suffisant et aucun membre franchement hostile. Les effets touchent les exportations, le prix de l'énergie, les recettes, la souveraineté, l'influence et les relations. En France, la politique étrangère relève du domaine réservé : seul le **président de la République** négocie ; un Premier ministre voit le sommet se dérouler avec les priorités de l'Élysée. Le chancelier allemand et le président américain négocient eux-mêmes.
 
+### Géopolitique et groupe aéronaval (France)
+
+L'onglet « Géopolitique » (rubrique Monde) montre une **carte du monde** avec les territoires d'outre-mer et sept théâtres d'opérations : Méditerranée orientale, mer Rouge, détroit d'Ormuz, océan Indien, Indo-Pacifique, Baltique et golfe de Guinée. Chacun a un **niveau de tension** qui évolue chaque trimestre.
+
+Vous pouvez **déplacer le groupe aéronaval** (le porte-avions Charles-de-Gaulle, puis le « France Libre » s'il est mis en service) :
+- chaque trimestre de présence coûte (budget des armées), use le **potentiel** du groupe (équipages, munitions, maintenance), rapporte de l'influence, améliore les relations avec les pays de la zone et fait baisser la tension ;
+- en mer Rouge et à Ormuz, il protège les routes du commerce et du pétrole ; une escale dans l'océan Indien améliore les chances d'exporter le Rafale en Inde ;
+- quand le potentiel est épuisé, le groupe rentre à Toulon pour son entretien ; l'Indo-Pacifique, très loin, l'use plus vite.
+
+Quand la tension d'un théâtre devient forte, une **crise** peut éclater (attaques de navires en mer Rouge, menace de fermeture d'Ormuz, évacuation de ressortissants, incident en Baltique…). Elle arrive dans l'onglet Événements, et avoir le groupe aéronaval sur place donne de meilleures options.
+
+### Produire en France
+
+L'onglet « Produire en France » (rubrique Économie) propose 13 dossiers où l'État demande à un grand groupe de produire en France : le paracétamol du **Doliprane** et des médicaments essentiels (Sanofi), la Twingo électrique (Renault), des batteries (Stellantis), des puces (STMicroelectronics), des munitions (Thales), des moteurs du Rafale (Safran), de l'hydrogène (Air Liquide), du cloud de confiance (Dassault Systèmes), de la maroquinerie (Hermès), des panneaux solaires (TotalEnergies), des pneus (Michelin), des transformateurs électriques (Schneider Electric).
+
+L'État ne peut pas obliger une entreprise privée : il choisit un **levier**, chacun avec ses chances d'accord et son coût :
+- **convaincre** (gratuit, mais souvent insuffisant) ;
+- **aide publique** (30 % de l'investissement, dans les limites des règles européennes sur les aides d'État) ;
+- **commande publique** sur 5 ans (seulement là où l'État achète : médicaments, munitions, énergie…) ;
+- **faire pression** (populaire, mais refroidit les investisseurs et la relation avec le groupe).
+
+Les chances dépendent aussi de la relation avec l'entreprise et du climat des affaires. Si elle accepte, l'usine est construite en quelques trimestres, puis crée des emplois, renforce la souveraineté et **protège des pénuries** : une rupture d'approvisionnement en médicaments ou en puces (plus probable si les relations avec la Chine se dégradent ou si l'Indo-Pacifique se tend) a alors des effets bien plus faibles. Si elle refuse, il faut attendre un an pour revenir à la charge.
+
+Contexte réel du Doliprane : il est fabriqué à Lisieux et à Compiègne par Opella, l'ancienne branche santé grand public de Sanofi, détenue depuis 2025 par le fonds américain CD&R (50 %), Sanofi (48,2 %) et Bpifrance (1,8 %) ; l'État a obtenu des engagements de maintien de la production en France, mais le paracétamol lui-même vient surtout d'Asie, et une production doit démarrer à Roussillon (Isère) chez Seqens.
+
+Ces deux modules s'ajoutent au jeu sans modifier le modèle économique : ils ont leur propre tirage aléatoire, si bien qu'une partie où l'on ne s'en sert pas donne les mêmes indicateurs qu'avant, à l'exception des crises et pénuries qui peuvent désormais survenir.
+
 ### Classements internationaux
 
 L'onglet « Classements » montre :
@@ -243,7 +270,7 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 - un **menu unique** (☰) : sauvegarder, charger, options, visite guidée, partager le jeu, à propos ;
 - des **options** enregistrées dans le navigateur : interface essentielle (par défaut) ou complète, thème clair, sombre ou comme l'appareil, taille du texte, animations réduites, confirmation avant de valider un trimestre s'il reste des événements à trancher ;
 - une page **« À propos »** : ce que le jeu est et n'est pas, vie privée, code source, signalement d'erreurs ;
-- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Régalien, Politique et opinion, Monde avec les classements internationaux et les grands rendez-vous, Journal et sources, plus Économie en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
+- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Régalien, Politique et opinion, Économie avec « Produire en France » et les entreprises, Monde avec la géopolitique, les classements internationaux et les grands rendez-vous, Journal et sources ; les ménages types et les sources détaillées en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
 - un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
 - une **visite guidée** en neuf étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
 - des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
@@ -324,6 +351,8 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   constitution.js       contrôle de constitutionnalité des réformes adoptées (censure totale ou partielle)
   defense.js            programmes d'armement, capacités, opérations, exportations, dissuasion
   chantiers.js          chantiers des grands événements : lots, offres, coûts, aléas, qualité
+  geopolitique.js       théâtres, tensions, groupe aéronaval (déploiement, usure, entretien), crises
+  relocalisation.js     « Produire en France » : leviers, chances, usines, résilience, pénuries
   reformes.js           adoption et effets des réformes
   international.js      relations, influence, accords
   politique.js          partis, votes, 49.3, censure, coalition, Congrès, shutdown, plafond de la dette
@@ -339,7 +368,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), défense (defense.js), chantiers (chantiers.js), actions diplomatiques,
+src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), défense (defense.js), chantiers (chantiers.js), géopolitique (geopolitique.js), relocalisations (relocalisations.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
 src/express/            mode Express : cartes de décision et moteur (déterministe, testé)
 src/ui/                 interface React (écrans, composants, sauvegarde, options, partage, installation)
@@ -431,4 +460,6 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
 - Chantiers : montants, prix, qualités et risques des offres sont des hypothèses de jeu ; la candidature française à la Coupe du monde 2038 est un scénario (aucune candidature déposée à ce jour).
 - Entreprises du CAC 40 : capitalisations et effectifs sont des ordres de grandeur 2025 ; la composition de l'indice est révisée chaque trimestre (prochaine revue en décembre 2026).
 - Mode Express : les situations et leurs effets sont des scénarios de jeu.
+- Géopolitique : niveaux de tension, coûts de présence, usure du groupe aéronaval et effets des crises sont des hypothèses de jeu ; les descriptions des théâtres s'appuient sur des faits publics (opération Aspides, mission Akila…). La carte utilise les frontières simplifiées de Natural Earth (domaine public).
+- Produire en France : les contextes sont des faits publics ; investissements, emplois, délais et chances d'accord sont des hypothèses de jeu.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

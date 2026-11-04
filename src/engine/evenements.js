@@ -4,9 +4,11 @@
  */
 import { EVENEMENTS as BASE } from '../data/evenements.js';
 import { GRANDS_EVENEMENTS } from '../data/grandsEvenements.js';
+import { CRISES } from '../data/geopolitique.js';
+import { PENURIES } from '../data/relocalisations.js';
 
 /** Catalogue complet : événements aléatoires, dossiers d'entreprises et grands rendez-vous à date fixe. */
-export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS];
+export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES];
 import { appliquerChocs } from './social.js';
 import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';

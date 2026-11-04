@@ -595,3 +595,53 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #f6f7f9 0%, #dfe3e8 60%, #c3c9d1 100%); }
 .visionneuse-porteAvions .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
 :root[data-theme="dark"] .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #3b4350 0%, #232a33 60%, #151a20 100%); }
+
+/* ===== Géopolitique : carte du monde, groupe aéronaval, tensions ===== */
+.carte-monde { display: block; width: 100%; height: auto; border-radius: 8px; }
+.carte-monde.attente { aspect-ratio: 960 / 500; display: grid; place-items: center; background: var(--surface-2); color: var(--encre-attenuee); font-size: 0.85rem; }
+.carte-ocean { fill: color-mix(in srgb, var(--accent) 9%, var(--surface)); stroke: var(--bordure); }
+.carte-pays { fill: var(--surface-3); stroke: var(--surface); stroke-width: 0.6; }
+.carte-pays.france { fill: var(--accent); }
+.carte-outre-mer { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; }
+.carte-route { fill: none; stroke: var(--encre-2); stroke-width: 2; stroke-linecap: round; opacity: 0.55; }
+.carte-route.prevue { stroke: var(--accent); stroke-dasharray: 6 5; opacity: 0.95; animation: route-prevue 1.2s linear infinite; }
+@keyframes route-prevue { to { stroke-dashoffset: -22; } }
+.carte-theatre { cursor: pointer; outline: none; }
+.carte-theatre .halo { opacity: 0.22; transition: opacity 0.15s; }
+.carte-theatre .point { stroke: var(--surface); stroke-width: 2; }
+.carte-theatre.critique .halo, .carte-theatre.critique .point { fill: var(--critique); }
+.carte-theatre.attention .halo, .carte-theatre.attention .point { fill: var(--attention); }
+.carte-theatre.bon .halo, .carte-theatre.bon .point { fill: var(--bon); }
+.carte-theatre text { font-size: 13px; font-weight: 600; fill: var(--encre); paint-order: stroke; stroke: var(--surface); stroke-width: 3.5px; stroke-linejoin: round; pointer-events: none; }
+.carte-theatre:hover .halo, .carte-theatre:focus-visible .halo, .carte-theatre.choisi .halo { opacity: 0.45; }
+.carte-theatre.choisi .point, .carte-theatre:focus-visible .point { stroke: var(--encre); stroke-width: 2.5; }
+.carte-gan { pointer-events: none; }
+.carte-gan rect { fill: var(--surface); stroke: var(--encre); stroke-width: 1.5; }
+.carte-gan text { font-size: 12px; }
+.legende-carte { gap: 0.4rem 1rem; color: var(--encre-2); }
+.legende-carte > span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.pastille-legende { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.pastille-legende.critique { background: var(--critique); }
+.pastille-legende.attention { background: var(--attention); }
+.pastille-legende.bon { background: var(--bon); }
+.pastille-legende.outre-mer { background: var(--accent); border: 1.5px solid var(--surface); box-shadow: 0 0 0 1px var(--accent); }
+.jauge-potentiel { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; margin-top: 0.25rem; }
+.jauge-potentiel > div { height: 100%; border-radius: 4px; background: var(--bon); transition: width 0.4s; }
+.jauge-potentiel > div.bas { background: var(--critique); }
+.grille-tensions { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 0.5rem; }
+.tension { display: grid; gap: 0.25rem; text-align: left; padding: 0.5rem 0.6rem; border: 1px solid var(--bordure); border-radius: 8px; background: var(--surface); color: var(--encre); cursor: pointer; font: inherit; }
+.tension:hover { background: var(--surface-2); }
+.tension.choisie { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.barre-tension { display: block; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+.barre-tension > span { display: block; height: 100%; border-radius: 3px; }
+.barre-tension > .critique { background: var(--critique); }
+.barre-tension > .attention { background: var(--attention); }
+.barre-tension > .bon { background: var(--bon); }
+
+/* ===== Produire en France ===== */
+.dossier-reloc { gap: 0.5rem; }
+.leviers { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 0.45rem; }
+.leviers .offre { align-content: start; }
+/* Petit écran : seul le théâtre choisi garde son nom (la liste des tensions nomme les autres) */
+.carte-monde.compacte .carte-theatre:not(.choisi) text { display: none; }
+.carte-monde.compacte .carte-theatre text { stroke-width: 8px; }

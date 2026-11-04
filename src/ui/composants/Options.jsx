@@ -23,7 +23,7 @@ export default function Options({ options, onChange, onFermer }) {
     <Modale titre="Options" onFermer={onFermer}>
       <Choix libelle="Interface" valeur={options.interface} onChange={maj('interface')}
         choix={[['essentielle', 'Essentielle'], ['complete', 'Complète']]}
-        aide="Essentielle : budget, impôts, réformes, régalien (armées, dissuasion, sécurité), opinion, Parlement, événements, diplomatie, classements et grands rendez-vous. Complète : ajoute les entreprises, les ménages types et les sources détaillées." />
+        aide="Essentielle : budget, impôts, réformes, régalien (armées, dissuasion, sécurité), opinion, Parlement, événements, entreprises, géopolitique, « Produire en France », diplomatie, classements et grands rendez-vous. Complète : ajoute les ménages types et les sources détaillées." />
       <Choix libelle="Thème" valeur={options.theme} onChange={maj('theme')}
         choix={[['auto', 'Comme l\'appareil'], ['clair', 'Clair'], ['sombre', 'Sombre']]} />
       <Choix libelle="Taille du texte" valeur={options.taille} onChange={maj('taille')}

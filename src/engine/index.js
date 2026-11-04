@@ -51,6 +51,8 @@ import { initialiserNotation, notesDepuisDonnees, majNotation } from './notation
 import { controleConstitutionnel } from './constitution.js';
 import { initialiserDefense, deciderDefense, majDefense } from './defense.js';
 import { attribuerLot, majChantiers } from './chantiers.js';
+import { initialiserGeopolitique, majGeopolitique, deplacerGroupe, injecterCrises } from './geopolitique.js';
+import { initialiserRelocalisation, demanderProduction, majRelocalisation, injecterPenuries } from './relocalisation.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
@@ -72,6 +74,8 @@ export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
 export { resumeDefense, domaineReserve } from './defense.js';
+export { resumeGeopolitique, porteAvions } from './geopolitique.js';
+export { resumeRelocalisation } from './relocalisation.js';
 export { resumeChantiers } from './chantiers.js';
 export { actionsCommunication, ACTIONS_COMMUNICATION, GROUPES_CIBLES } from './communication.js';
 export { previsionG7, prochainSommet, peutNegocier, membreG7 } from './g7.js';
@@ -133,6 +137,8 @@ export function creerPartie(options) {
   initialiserG7(e);
   e.communication = etatCommunicationInitial();
   initialiserDefense(e);
+  initialiserGeopolitique(e);
+  initialiserRelocalisation(e);
   const { notes, dynamique } = notesDepuisDonnees(options.donnees);
   initialiserNotation(e, notes, dynamique);
   // Référence de la projection présidentielle (France) : la situation de départ
@@ -349,6 +355,11 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   }
   // Défense : programmes, opérations, exportations, dissuasion
   if (decisions.defense) e.resultatsTour.defense = deciderDefense(e, decisions.defense, alea);
+  // Géopolitique (France) : déplacement du groupe aéronaval, présence et tensions (aléa séparé)
+  if (decisions.gan) e.resultatsTour.gan = deplacerGroupe(e, decisions.gan);
+  if (!options.sansPolitique) majGeopolitique(e);
+  // Produire en France : demandes aux grands groupes (aléa séparé)
+  for (const r of decisions.relocalisations ?? []) (e.resultatsTour.relocalisations ??= []).push({ id: r.id, ...demanderProduction(e, r.id, r.levier) });
   // Chantiers des grands événements : attribution des lots
   for (const c of decisions.chantiers ?? []) (e.resultatsTour.chantiers ??= []).push(attribuerLot(e, c.chantier, c.lot, c.offre));
   // Entreprises et État stratège : programmes, puis actions sur les fleurons (deux au plus par trimestre, hors rencontres)
@@ -444,6 +455,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   majEntreprises(e, etat);
   majDefense(e, options.sansPolitique ? null : alea);
   majChantiers(e, options.sansPolitique ? null : alea);
+  majRelocalisation(e);
   majCapitalisation(e);
   const bilan = bilanAnnuel(e);
   // Agences de notation : revues prévues ce trimestre
@@ -528,6 +540,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     e.score = calculerScore(e);
   } else if (options.evenementsActifs !== false) {
     genererEvenements(e, alea, mode.frequenceEvenements, { max: mode.maxEvenements ?? 3 });
+    // Crises géopolitiques et pénuries (France), tirées avec leur propre aléa
+    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); }
   }
   if (e.statique.devise === '$') {
     e.journal = e.journal.map((j, i) => (i >= etat.journal.length ? adapterDevise(j) : j));

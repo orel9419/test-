@@ -150,7 +150,9 @@ export function deciderDefense(e, d = {}, alea) {
 /** Chances d'emporter un contrat d'armement (relations, influence, carnet de commandes déjà gagné). */
 export function probabiliteExport(e, p) {
   const rel = e.international.relations[p.partenaire] ?? 20;
-  return borner(p.base + 0.002 * rel + 0.003 * ((e.international.influence ?? 60) - 60), 0.05, 0.6);
+  // Bonus d'une escale récente du groupe aéronaval (ex. océan Indien pour l'Inde)
+  const escale = e.geopolitique?.bonusExport?.[p.id]?.valeur ?? 0;
+  return borner(p.base + 0.002 * rel + 0.003 * ((e.international.influence ?? 60) - 60) + escale, 0.05, 0.65);
 }
 
 /** Évolution trimestrielle : livraisons, jalons (et leurs aléas), effets des opérations. */
