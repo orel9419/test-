@@ -21,6 +21,10 @@ export function risqueConstitutionnel(pays, id, option) {
 /**
  * Décision du juge constitutionnel sur une réforme adoptée.
  * @param {object} options { referendum: vrai si adoptée par référendum }
+ * Options : `referendum` (loi adoptée par référendum), `saisinePresident`
+ * (France : le président saisit lui-même le Conseil, qui examine le texte
+ * plus attentivement). La sévérité du Conseil dépend aussi des nominations
+ * (e.institutions.conseil.severite, nulle au départ).
  * @returns {object} { decision: 'conforme'|'partielle'|'totale'|'non_controlee', texte, facteur }
  */
 export function controleConstitutionnel(e, id, option, nom, alea, options = {}) {
@@ -32,7 +36,9 @@ export function controleConstitutionnel(e, id, option, nom, alea, options = {}) 
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte });
     return { decision: 'non_controlee', facteur: 1, texte };
   }
-  const censure = alea.tirage(r.risque);
+  const severite = e.institutions?.conseil?.severite ?? 0;
+  const p = Math.min(0.95, r.risque * (1 + severite) * (options.saisinePresident ? 1.4 : 1));
+  const censure = alea.tirage(p);
   let decision = 'conforme', facteur = 1, texte;
   if (!censure) {
     texte = `${r.juridiction} : ${nom} est jugée conforme à la Constitution.`;

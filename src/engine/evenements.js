@@ -2,13 +2,14 @@
  * Moteur des événements : tirage en fin de trimestre, présentation au
  * joueur au trimestre suivant, application du choix retenu.
  */
+import { EVENEMENTS_INSTITUTIONS } from '../data/evenementsInstitutions.js';
 import { EVENEMENTS as BASE } from '../data/evenements.js';
 import { GRANDS_EVENEMENTS } from '../data/grandsEvenements.js';
 import { CRISES } from '../data/geopolitique.js';
 import { PENURIES } from '../data/relocalisations.js';
 
 /** Catalogue complet : événements aléatoires, dossiers d'entreprises et grands rendez-vous à date fixe. */
-export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES];
+export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES, ...EVENEMENTS_INSTITUTIONS];
 import { appliquerChocs } from './social.js';
 import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';
@@ -60,6 +61,13 @@ function appliquerEffets(e, eff, alea) {
   if (eff.chocTaux) e.finances.chocTaux = (e.finances.chocTaux ?? 0) + eff.chocTaux;
   if (eff.energie) e.monde.energie *= eff.energie;
   if (eff.coalition && e.politique.coalition) e.politique.coalition.choc = (e.politique.coalition.choc ?? 0) + eff.coalition;
+  // Institutions (France) : sévérité du Conseil constitutionnel, entente entre l'Élysée et Matignon, article 16
+  if (eff.institutions && e.institutions) {
+    const ins = eff.institutions;
+    if (ins.severiteCC) e.institutions.conseil.severite = borner(e.institutions.conseil.severite + ins.severiteCC, -0.3, 0.3);
+    if (ins.entente) e.institutions.entente = borner(e.institutions.entente + ins.entente, 0, 100);
+    if (ins.article16) e.institutions.article16 = { tour: e.tour };
+  }
   if (eff.chocAfD) e.politique.chocAfD = (e.politique.chocAfD ?? 0) + eff.chocAfD;
   // Fierté nationale (grands événements) : choc de popularité dans tous les groupes
   if (eff.fierte) appliquerChocs(e, Object.fromEntries(Object.keys(e.social.groupes).map((g) => [g, eff.fierte])));

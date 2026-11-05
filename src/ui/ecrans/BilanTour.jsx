@@ -18,7 +18,8 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
   // Les décisions des agences et du juge constitutionnel sont affichées à part
   // Réponses des entreprises (« Produire en France ») : mises en avant, donc retirées de la liste
   const relocalisations = (r.relocalisations ?? []).filter((x) => x.texte);
-  const entrees = apres.journal.filter((j) => j.tour === avant.tour && !j.texte.startsWith('Notation — ') && !(apres.resultatsTour?.constitution ?? []).some((c) => c.texte === j.texte) && !relocalisations.some((x) => j.texte === `Produire en France — ${x.texte}`));
+  const misEnAvant = [r.cohabitation?.texte, r.navette && r.navette.issue !== 'accord' ? `Navette — ${r.navette.texte}` : null].filter(Boolean);
+  const entrees = apres.journal.filter((j) => j.tour === avant.tour && !j.texte.startsWith('Notation — ') && !j.texte.startsWith('Institutions — Article 49') && !misEnAvant.includes(j.texte) && !(apres.resultatsTour?.constitution ?? []).some((c) => c.texte === j.texte) && !relocalisations.some((x) => j.texte === `Produire en France — ${x.texte}`));
   const lignes = [
     ['Croissance sur un an', h1.croissanceA, h1.croissanceA - h0.croissanceA, pct, true],
     ['Inflation', h1.inflation, h1.inflation - h0.inflation, pct, false],
@@ -58,6 +59,11 @@ export default function BilanTour({ avant, apres, onFermer, onAnnuler }) {
         {(r.notation ?? []).some((d) => d.action === 'maintien') && (
           <p className="petit muet" style={{ margin: 0 }}>Notation : {r.notation.filter((d) => d.action === 'maintien').map((d) => `${d.nom} maintient ${d.note}`).join(' ; ')}.</p>
         )}
+        {r.institutions?.confiance && !r.institutions.confiance.erreur && (
+          <div className={`alerte ${r.institutions.confiance.accordee ? 'bonne' : 'critique'}`}><strong>⚖️ Question de confiance (49.1) :</strong> {r.institutions.confiance.pour} pour, {r.institutions.confiance.contre} contre — {r.institutions.confiance.accordee ? 'confiance accordée.' : 'confiance refusée, le Gouvernement démissionne (article 50).'}</div>
+        )}
+        {r.cohabitation && <div className={`alerte ${r.cohabitation.type === 'adoption' ? '' : 'bonne'}`}><strong>⚖️ Cohabitation :</strong> {r.cohabitation.texte.replace(/^Cohabitation — /, '')}</div>}
+        {r.navette && r.navette.issue !== 'accord' && <div className="alerte"><strong>🏛️ Sénat :</strong> {r.navette.texte}</div>}
         {relocalisations.map((x) => (
           <div key={x.id} className={`alerte ${x.accepte ? 'bonne' : ''}`}><strong>🇫🇷 Produire en France :</strong> {x.texte}</div>
         ))}

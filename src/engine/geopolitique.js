@@ -10,6 +10,7 @@ import { THEATRES, CRISES } from '../data/geopolitique.js';
 import { creerAleatoire } from './aleatoire.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
+import { ANNEE_MIN_FRANCE_LIBRE } from './defense.js';
 
 const actif = (e) => e.pays === 'france';
 const aleaGeo = (e, sel = 0) => creerAleatoire(((e.graine ^ Math.imul(e.tour + 17, 2246822519)) + sel) >>> 0);
@@ -26,12 +27,21 @@ export function initialiserGeopolitique(e) {
   e.geopolitique = actif(e) ? etatInitial() : null;
 }
 
-/** Nom du porte-avions selon la date et le programme de son successeur. */
+/**
+ * Porte-avions en service : le Charles-de-Gaulle (indisponible pendant son
+ * arrêt technique majeur de 2027-2028) jusqu'à son retrait, puis le « France
+ * Libre », jamais avant 2032.
+ * @returns {object} { nom, enService, disponible, arretTechnique, motif }
+ */
 export function porteAvions(e) {
-  const pa = e.defense?.programmes?.pang;
-  if (e.defense?.jalons?.includes('pang')) return { nom: 'France Libre', disponible: true };
-  if (e.trimestre.annee >= 2039 && pa?.abandonne) return { nom: null, disponible: false };
-  return { nom: 'Charles-de-Gaulle', disponible: true };
+  const j = e.defense?.jalons ?? [];
+  const pang = e.defense?.programmes?.pang;
+  if (j.includes('pang') && e.trimestre.annee >= ANNEE_MIN_FRANCE_LIBRE) return { nom: 'France Libre', enService: true, disponible: true };
+  if (!j.includes('cdg_retrait')) {
+    const atm = j.includes('cdg_atm3') && !j.includes('cdg_atm3_fin');
+    return { nom: 'Charles-de-Gaulle', enService: true, disponible: !atm, arretTechnique: atm, motif: atm ? 'Le Charles-de-Gaulle est en arrêt technique majeur à Toulon (rechargement des réacteurs) jusqu\'à fin 2028 environ : pas de porte-avions disponible.' : null };
+  }
+  return { nom: null, enService: false, disponible: false, motif: pang?.abandonne ? 'La France n\'a plus de porte-avions : le Charles-de-Gaulle est retiré et son successeur a été abandonné.' : 'Le Charles-de-Gaulle est retiré et le « France Libre » n\'est pas encore en service.' };
 }
 
 /**
@@ -45,7 +55,8 @@ export function deplacerGroupe(e, destination) {
   const t = THEATRES[destination];
   if (!t) return { erreur: 'Destination inconnue.' };
   if (g.position === destination) return { erreur: 'Le groupe aéronaval y est déjà.' };
-  if (!porteAvions(e).disponible) return { erreur: 'La France n\'a plus de porte-avions.' };
+  const pa = porteAvions(e);
+  if (!t.base && !pa.disponible) return { erreur: pa.motif ?? 'Aucun porte-avions disponible.' };
   if (!t.base && g.maintenance > 0) return { erreur: `Entretien en cours à Toulon : encore ${g.maintenance} trimestre(s).` };
   if (!t.base && g.potentiel < t.usure) return { erreur: 'Potentiel insuffisant : le groupe doit rentrer à Toulon pour son entretien.' };
   const depart = THEATRES[g.position]?.court ?? g.position;
@@ -82,6 +93,13 @@ export function majGeopolitique(e) {
   if (!e.geopolitique) initialiserGeopolitique(e);
   const x = e.geopolitique;
   const g = x.gan;
+  // Porte-avions indisponible (arrêt technique, retrait) : le groupe rentre à Toulon
+  const pa = porteAvions(e);
+  if (!pa.disponible && g.position !== 'toulon') {
+    e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'alerte', texte: `Géopolitique — ${pa.motif} Le groupe aéronaval rentre à Toulon.` });
+    g.position = 'toulon';
+    g.trimestresEnMer = 0;
+  }
   if (g.position === 'toulon') {
     if (g.maintenance > 0) g.maintenance -= 1;
     g.potentiel = Math.min(100, g.potentiel + 40);

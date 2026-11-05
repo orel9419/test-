@@ -2,7 +2,7 @@ import React from 'react';
 import Info from '../composants/Info.jsx';
 import { ILLUSTRATIONS } from '../composants/Illustrations.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
-import { resumeDefense } from '../../engine/index.js';
+import { resumeDefense, porteAvions } from '../../engine/index.js';
 import { SOURCES_DEFENSE } from '../../data/defense.js';
 import { libelleTrimestre } from '../../engine/calendrier.js';
 import { md, nombre, pct } from '../format.js';
@@ -27,6 +27,7 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
   const rafale = r.capacites.rafale;
   const snle3g = r.capacites.snle3g;
   const pang = r.programmes.find((p) => p.id === 'pang');
+  const pa = porteAvions(partie);
   return (
     <div className="pile">
       <h2>Armées et programmes d'armement</h2>
@@ -55,8 +56,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
         {pang && (
           <div className="tuile">
             <span className="libelle">Porte-avions</span>
-            <span className="valeur chiffres">1</span>
-            <span className="variation muet">{pang.etat?.abandonne ? 'Charles-de-Gaulle ; successeur abandonné' : `Charles-de-Gaulle ; « France Libre » vers ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}</span>
+            <span className="valeur chiffres">{pa.enService ? 1 : 0}</span>
+            <span className="variation muet">{pa.nom === 'France Libre' ? '« France Libre » en service' : pa.nom ? `${pa.nom}${pa.arretTechnique ? ' (arrêt technique)' : ''} ; ${pang.etat?.abandonne ? 'successeur abandonné' : `« France Libre » vers ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}` : pang.etat?.abandonne ? 'successeur abandonné' : `« France Libre » attendu en ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}</span>
           </div>
         )}
       </div>
@@ -86,7 +87,7 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
               <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>{p.faits.map((f, i) => <li key={i}>{f}</li>)}</ul>
               <p className="tres-petit muet" style={{ margin: 0 }}>Industriels : {p.industriels.join(', ')}.</p>
               {p.jalonsEffectifs.length > 0 && (
-                <p className="tres-petit" style={{ margin: 0 }}>{p.jalonsEffectifs.map((j) => <span key={j.id}>{j.atteint ? '✓' : '⏳'} {trimestre(j)} : {j.texte}{j.decalage > 0 ? ` (retard de ${j.decalage} trimestres)` : j.decalage < 0 ? ` (avance de ${-j.decalage} trimestres)` : ''}</span>)}</p>
+                <p className="tres-petit" style={{ margin: 0 }}>{p.jalonsEffectifs.map((j) => <span key={j.id} style={{ display: 'block' }}>{j.atteint ? '✓' : '⏳'} {trimestre(j)} : {j.texte}{j.decalage > 0 ? ` (retard de ${j.decalage} trimestres)` : j.decalage < 0 ? ` (avance de ${-j.decalage} trimestres)` : ''}</span>)}</p>
               )}
               {p.etat?.abandonne && <p className="alerte critique petit" style={{ margin: 0 }}>Programme arrêté par la réforme « Renoncer au successeur du Charles-de-Gaulle ».</p>}
               {enCours ? (

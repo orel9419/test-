@@ -30,7 +30,7 @@ export default function Programmes({ partie, liste, decisions, majDecisions }) {
 
   return (
     <details className="carte pile">
-      <summary><strong>Programmes des personnalités</strong> <span className="muet petit">(Mélenchon, Le Pen, Retailleau, Lisnard, Glucksmann) : les tester dans le jeu</span></summary>
+      <summary><strong>Programmes des personnalités</strong> <span className="muet petit">({PROGRAMMES.map((p) => p.nom.split(' ').slice(1).join(' ')).join(', ')}) : les tester dans le jeu</span></summary>
       <p className="petit muet">
         Mesures emblématiques reliées aux réformes du jeu, avec leurs sources. Les programmes pour 2027 sont en cours d'écriture : le statut de chaque mesure indique si elle figure dans un programme publié, si elle a été annoncée publiquement, ou si elle reste à vérifier. Le jeu simplifie et ne reprend aucune citation.
         <Info texte="Le pronostic de vote porte sur le programme entier, jugé sur son contenu par les groupes de l'Assemblée actuelle. Les révisions constitutionnelles exigent en plus les trois cinquièmes du Parlement (ou un référendum). Le chiffrage simule deux ans avec et sans le programme, à contexte identique." />

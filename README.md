@@ -173,7 +173,7 @@ Durée et calendrier :
 
 ### Programmes des personnalités (France)
 
-Dans l'onglet « Réformes », le panneau « Programmes des personnalités » relie aux réformes du jeu les mesures emblématiques de Jean-Luc Mélenchon, Marine Le Pen, Bruno Retailleau, David Lisnard et Raphaël Glucksmann (retraite à 60 ans, SMIC, blocage des prix, VIe République ; TVA à 5,5 % sur l'énergie, priorité nationale ; référendum élargi, AME, DPE ; 200 Md€ d'économies ; taxe sur les très hauts patrimoines…). Pour chaque programme :
+Dans l'onglet « Réformes », le panneau « Programmes des personnalités » relie aux réformes du jeu les mesures emblématiques de onze personnalités : Jean-Luc Mélenchon, Marine Le Pen, Bruno Retailleau, David Lisnard, Raphaël Glucksmann, Édouard Philippe, Gabriel Attal, Fabien Roussel, Marine Tondelier, Éric Zemmour et François Ruffin (retraite à 60 ans, SMIC, blocage des prix, VIe République ; TVA à 5,5 % sur l'énergie, priorité nationale ; référendum élargi, AME, DPE ; 200 Md€ d'économies ; taxe sur les très hauts patrimoines ; règle d'or et capitalisation ; fin de l'âge légal unique ; nucléaire public ; ISF climatique ; peines planchers…). Pour chaque programme :
 - les sources et le statut de chaque mesure (programme publié, proposition publique, à vérifier) ;
 - le pronostic de vote à l'Assemblée du programme entier ;
 - un chiffrage par simulation sur deux ans (solde public, dette, PIB, chômage, popularité) ;
@@ -196,6 +196,28 @@ Le tableau de bord affiche l'**impact de vos réformes** : solde public, populat
 - n'est pas renversé par une censure : le gouvernement tombe et un nouveau Premier ministre est nommé ;
 - peut dissoudre l'Assemblée et convoquer un référendum ;
 - ne peut pas se représenter en 2027 (deux mandats consécutifs au plus) : c'est le candidat de son camp qui affronte le RN.
+
+### Institutions : Élysée, Matignon, Assemblée, Sénat (France)
+
+L'onglet « Institutions » (rubrique Politique et opinion) modélise l'exécutif à deux têtes de la Constitution de 1958 :
+- **cinq lieux du pouvoir**, dessinés et décrits : Élysée (président), Matignon (Premier ministre), Palais Bourbon (Assemblée, présidée par Yaël Braun-Pivet), Palais du Luxembourg (Sénat, présidé par Gérard Larcher, réélu le 1er octobre 2026) et Conseil constitutionnel (présidé par Richard Ferrand) ;
+- la **configuration** de l'exécutif : fait majoritaire, majorité relative (la situation de départ) ou cohabitation, avec ce que chacune change ;
+- l'**entente entre l'Élysée et Matignon** : elle monte quand les réformes adoptées vont dans le sens de l'autre tête de l'exécutif (les « priorités de l'Élysée » quand vous êtes Premier ministre) ; trop basse, le président refuse dissolution et référendum, et peut exiger la démission du Premier ministre ; un Premier ministre nommé par le président joué peut démissionner, comme Jacques Chirac en 1976 ;
+- les **pouvoirs de chacun, article par article**, avec ceux que l'article 19 dispense de contreseing, un schéma « qui fait quoi » et le tableau de répartition des compétences.
+
+Pouvoirs jouables :
+- Premier ministre : question de confiance (article 49, alinéa 1 : une fois par session ; refusée, le Gouvernement tombe, comme celui de François Bayrou le 8 septembre 2025), 49.3, demande de dissolution ou de référendum au président (il décide) ;
+- président : message au Parlement réuni en Congrès (article 18, une fois par an), dissolution, référendum (sur proposition du Gouvernement : un Premier ministre en désaccord peut refuser), nominations au Conseil constitutionnel (mars 2028, 2031... : un juriste rend le Conseil plus exigeant, un proche plus indulgent mais moins respecté), droit de grâce (événement), article 16 (crise extrême, rare : efficace à court terme, très coûteux pour la crédibilité démocratique).
+
+**Le Sénat** (348 sièges, composition d'octobre 2026 : LR 124, Union centriste 63, socialistes 62, premier groupe RN-UDR de 15 élus…) vote chaque projet de loi. Le Gouvernement engage la procédure accélérée : en cas de désaccord, la commission mixte paritaire échoue et l'Assemblée a le dernier mot (article 45). Le Sénat peut en revanche **bloquer** une révision de la Constitution, qui doit être votée dans les mêmes termes par les deux assemblées puis par le Congrès aux trois cinquièmes (article 89), et une loi organique qui le concerne (réduction du nombre de parlementaires, article 46). La moitié des sièges est renouvelée tous les trois ans (2029, 2032...), selon l'implantation locale des partis.
+
+**Cohabitation** : si une majorité absolue opposée au président sort des urnes (après une dissolution, par exemple), elle impose son Premier ministre.
+- Président joué : la partie continue. Le Gouvernement (Jordan Bardella pour le RN, hypothèse de jeu ; ou un Premier ministre de la gauche unie) fixe le budget et fait voter son programme, un texte par trimestre ; vous gardez la défense, la diplomatie et vos pouvoirs propres, et vous répondez à chaque texte : promulguer, saisir le Conseil constitutionnel (article 61), demander une nouvelle délibération (article 10) ou refuser de signer des ordonnances (article 13, comme François Mitterrand en 1986).
+- Premier ministre joué : vous quittez Matignon.
+
+### Porte-avions : Charles-de-Gaulle et « France Libre »
+
+Le Charles-de-Gaulle (en service depuis 2001) a son propre programme dans l'onglet Armées : arrêt technique majeur à Toulon en 2027-2028 (rechargement des réacteurs, environ dix-huit mois sans porte-avions disponible), retrait quand son successeur est opérationnel (vers 2038), prolongation possible jusqu'en 2040. Le « France Libre » n'est jamais disponible avant 2032 ; sans décision, il entre en service vers 2038. La **loi d'accélération du porte-avions « France Libre »** (onglet Réformes) vise une mise en service en 2032 : environ 0,9 Md€ par an de surcoût (hypothèse de jeu), au moins cinq ans de chantier après le vote, un risque de glissement d'un an, puis le retrait du Charles-de-Gaulle six mois plus tard.
 
 ### Négocier au G7
 
@@ -270,7 +292,7 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 - un **menu unique** (☰) : sauvegarder, charger, options, visite guidée, partager le jeu, à propos ;
 - des **options** enregistrées dans le navigateur : interface essentielle (par défaut) ou complète, thème clair, sombre ou comme l'appareil, taille du texte, animations réduites, confirmation avant de valider un trimestre s'il reste des événements à trancher ;
 - une page **« À propos »** : ce que le jeu est et n'est pas, vie privée, code source, signalement d'erreurs ;
-- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Régalien, Politique et opinion, Économie avec « Produire en France » et les entreprises, Monde avec la géopolitique, les classements internationaux et les grands rendez-vous, Journal et sources ; les ménages types et les sources détaillées en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
+- une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Régalien, Politique et opinion avec les institutions, Économie avec « Produire en France » et les entreprises, Monde avec la géopolitique, les classements internationaux et les grands rendez-vous, Journal et sources ; les ménages types et les sources détaillées en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
 - un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
 - une **visite guidée** en neuf étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
 - des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
@@ -352,6 +374,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   defense.js            programmes d'armement, capacités, opérations, exportations, dissuasion
   chantiers.js          chantiers des grands événements : lots, offres, coûts, aléas, qualité
   geopolitique.js       théâtres, tensions, groupe aéronaval (déploiement, usure, entretien), crises
+  institutions.js       Élysée et Matignon (entente, configuration), Sénat (navette, article 89), cohabitation, 49.1, Congrès
   relocalisation.js     « Produire en France » : leviers, chances, usines, résilience, pénuries
   reformes.js           adoption et effets des réformes
   international.js      relations, influence, accords
@@ -368,7 +391,7 @@ src/engine/             moteur de simulation en JavaScript pur (sans interface),
   conseiller.js         conseils du trimestre
   succes.js             succès à débloquer
   score.js              score final
-src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), défense (defense.js), chantiers (chantiers.js), géopolitique (geopolitique.js), relocalisations (relocalisations.js), actions diplomatiques,
+src/data/               catalogues : réformes (dont reformesFrance.js, reformesOrientations.js et reformesEtat.js), risques constitutionnels (constitution.js), défense (defense.js), chantiers (chantiers.js), géopolitique (geopolitique.js), relocalisations (relocalisations.js), institutions (institutions.js, evenementsInstitutions.js), actions diplomatiques,
                         événements, partis, entreprises et programmes, grands rendez-vous
 src/express/            mode Express : cartes de décision et moteur (déterministe, testé)
 src/ui/                 interface React (écrans, composants, sauvegarde, options, partage, installation)
@@ -462,4 +485,7 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
 - Mode Express : les situations et leurs effets sont des scénarios de jeu.
 - Géopolitique : niveaux de tension, coûts de présence, usure du groupe aéronaval et effets des crises sont des hypothèses de jeu ; les descriptions des théâtres s'appuient sur des faits publics (opération Aspides, mission Akila…). La carte utilise les frontières simplifiées de Natural Earth (domaine public).
 - Produire en France : les contextes sont des faits publics ; investissements, emplois, délais et chances d'accord sont des hypothèses de jeu.
+- Institutions : articles de la Constitution, compositions (Sénat d'octobre 2026) et précédents sont sourcés ; l'entente entre l'Élysée et Matignon, les votes du Sénat (calqués sur les groupes proches à l'Assemblée), le renouvellement sénatorial, les effets de la saisine du Conseil constitutionnel et le programme d'un gouvernement de cohabitation sont des hypothèses de jeu. En cohabitation, les événements restent tranchés par le joueur.
+- Porte-avions : les dates de l'arrêt technique majeur du Charles-de-Gaulle viennent de la presse spécialisée, non confirmées officiellement ; le coût du « France Libre » n'est pas publié (10 à 15 Md€ selon la presse) ; le calendrier accéléré à 2032 est un scénario de jeu.
+- Programmes des candidats : les programmes pour 2027 sont incomplets et les sources se contredisent parfois (âge de départ chez Édouard Philippe et Gabriel Attal, statut de la candidature de Marine Tondelier) ; Éric Zemmour est surtout représenté par son programme de 2022. Chaque mesure indique son statut.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

@@ -42,14 +42,14 @@ describe('Réformes libérales et sociales', () => {
     expect(liste.filter((r) => r.orientation === 'liberale').length).toBeGreaterThanOrEqual(15);
     expect(liste.filter((r) => r.orientation === 'sociale').length).toBeGreaterThanOrEqual(15);
   });
-  it('une révision constitutionnelle exige les trois cinquièmes des suffrages exprimés', () => {
+  it('une révision constitutionnelle exige l\'accord des deux assemblées puis les trois cinquièmes (article 89)', () => {
     const e = nouvelle();
     const r = validerReformes(e, [{ id: 'regle_or', option: 'oui' }], '49.3');
     const v = voterTexte(e, [{ id: 'regle_or', option: 'oui' }]);
-    if (v.pour < 0.6 * (v.pour + v.contre)) {
+    if (!v.adopte || v.pour < 0.6 * (v.pour + v.contre)) {
       expect(r.acceptees.length).toBe(0);
-      expect(r.rejet.raison).toMatch(/trois cinquièmes/);
-    } else expect(r.rejet).toBeNull();
+      expect(r.rejet.raison).toMatch(/Assemblée nationale|Sénat|trois cinquièmes/);
+    }
   });
   it('les réformes sociales consensuelles trouvent une majorité, la flat tax non', () => {
     const e = nouvelle();

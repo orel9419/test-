@@ -13,6 +13,9 @@ export const SOURCES_DEFENSE = {
   rafale: { titre: 'Gifas : vers le début du renouvellement de la flotte Rafale (livraisons et carnet de commandes 2025)', url: 'https://www.gifas.fr/press-summary/vers-le-debut-du-renouvellement-de-la-flotte-rafale' },
   snle: { titre: 'Ministère des Armées : lancement de la construction du premier SNLE 3G (20 mars 2024)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/Lancement%20de%20la%20construction%20du%20premier%20sous-marin%20nucl%C3%A9aire%20lanceur%20d%E2%80%99engins%20de%203e%20g%C3%A9n%C3%A9ration%20%28SNLE%203G%29.pdf' },
   pang: { titre: 'Le Journal des entreprises : le président lance la construction du porte-avions de nouvelle génération', url: 'https://www.lejournaldesentreprises.com/article/le-president-emmanuel-macron-lance-officiellement-la-construction-du-porte-avions-de-nouvelle-2133664' },
+  cdgAtm: { titre: 'L\'Essentiel de l\'éco : la France sans porte-avions pendant dix-huit mois (arrêt technique majeur 2027-2028)', url: 'https://lessentieldeleco.fr/7946-la-france-sans-porte-avions-pendant-dix-huit-mois/' },
+  cdgProlongation: { titre: 'Baird Maritime : la France envisage de prolonger le Charles-de-Gaulle jusqu\'en 2040', url: 'https://www.bairdmaritime.com/security/naval/naval-ships/charles-de-gaulle-carrier-extension' },
+  cdgQuestion: { titre: 'Assemblée nationale : question écrite sur le retrait du Charles-de-Gaulle et son arrêt technique majeur', url: 'https://questions.assemblee-nationale.fr/dyn/17/questions/QANR5L17QE12713.pdf' },
   pangNom: { titre: 'Defence Industry Europe : le porte-avions s\'appellera « France Libre »', url: 'https://defence-industry.eu/france-unveils-name-of-next-generation-nuclear-aircraft-carrier-as-pang-programme-advances-toward-build-phase/' },
   scaf: { titre: 'Le JDD : comment Dassault et Airbus ont enterré le futur avion de combat européen (juin 2026)', url: 'https://www.lejdd.fr/International/scaf-comment-dassault-et-airbus-ont-enterre-le-futur-avion-de-combat-europeen-176046' },
   dissuasion: { titre: 'Vie publique : les objectifs de la loi de programmation militaire (dissuasion : environ 13 % de la LPM)', url: 'https://www.vie-publique.fr/eclairage/284741-budget-de-la-defense-quelles-etapes-pour-le-porter-5-du-pib' },
@@ -65,6 +68,26 @@ export const PROGRAMMES_DEFENSE = {
       note: 'Renoncer à la composante océanique de la dissuasion n\'est pas proposé : aucun gouvernement ne l\'a envisagé depuis 1972.',
     },
     {
+      id: 'cdg', nom: 'Porte-avions « Charles-de-Gaulle »', sousTitre: 'En service depuis 2001, jusqu\'à l\'arrivée de son successeur', illustration: 'porteAvions', domaine: 'Marine',
+      industriels: ['Naval Group (entretien à Toulon)', 'TechnicAtome (chaufferies nucléaires K15)'], fleurons: ['naval_group'],
+      faits: [
+        'Seul porte-avions français et seul porte-avions à propulsion nucléaire en service hors des États-Unis : 261 m, environ 42 000 t, deux réacteurs K15. Admis au service actif en mai 2001, port d\'attache Toulon.',
+        'Un porte-avions unique n\'est pas disponible en permanence. Son troisième arrêt technique majeur (rechargement des réacteurs) est prévu à Toulon à partir de 2027, pour dix-huit à vingt-quatre mois selon la presse spécialisée : la France n\'aura pas de porte-avions disponible pendant cette période.',
+        'Son retrait est prévu vers 2038, à l\'arrivée du « France Libre ». Une étude menée pendant l\'arrêt technique doit dire si ses chaufferies permettent de le prolonger de quelques années (jusqu\'à 2040 environ).',
+      ],
+      options: [
+        { id: 'nominal', nom: 'Retrait à l\'arrivée du « France Libre »', description: 'Le Charles-de-Gaulle quitte le service quelques mois après la mise en service de son successeur (vers 2038 sans accélération).' },
+        { id: 'prolonger', nom: 'Prolonger le Charles-de-Gaulle jusqu\'en 2040 au plus', description: 'Assurance contre un retard du « France Libre » : 0,25 Md€ par an pendant trois ans (études, combustible, équipages). Le retrait n\'est repoussé que si le successeur n\'est pas prêt.', cout: 0.25, duree: 12, effets: { souverainete: 1, fleurons: { naval_group: 1 } }, avance: { jalon: 'cdg_retrait', trimestres: -8 } },
+      ],
+      jalons: [
+        { id: 'cdg_atm3', annee: 2027, t: 2, influence: 0, texte: 'Le Charles-de-Gaulle entre en arrêt technique majeur à Toulon (rechargement des réacteurs) : pas de porte-avions disponible pendant environ dix-huit mois.' },
+        { id: 'cdg_atm3_fin', annee: 2028, t: 4, influence: 0, texte: 'Fin de l\'arrêt technique majeur : le Charles-de-Gaulle reprend la mer avec ses chaufferies rechargées.' },
+        { id: 'cdg_retrait', annee: 2038, t: 4, influence: 0, texte: 'Le Charles-de-Gaulle est retiré du service actif.' },
+      ],
+      sources: ['cdgAtm', 'cdgProlongation', 'cdgQuestion'],
+      note: 'Dates de l\'arrêt technique : presse spécialisée, non confirmées officiellement. Le retrait a lieu quand le « France Libre » est opérationnel (deux trimestres de recouvrement), au plus tard fin 2038 (fin 2040 si vous le prolongez).',
+    },
+    {
       id: 'pang', nom: 'Porte-avions « France Libre »', sousTitre: 'Porte-avions de nouvelle génération à propulsion nucléaire', illustration: 'porteAvions', domaine: 'Marine',
       industriels: ['Naval Group et Chantiers de l\'Atlantique (MO Porte-Avions)', 'TechnicAtome (réacteurs)'], fleurons: ['naval_group'],
       faits: [
@@ -74,9 +97,10 @@ export const PROGRAMMES_DEFENSE = {
       ],
       reforme: 'porte_avions',
       options: [
-        { id: 'nominal', nom: 'Suivre le calendrier (livraison vers 2038)', description: 'Pour construire un second porte-avions ou y renoncer, passez par la réforme « Porte-avions de nouvelle génération ».' },
+        { id: 'nominal', nom: 'Suivre le calendrier (livraison vers 2038)', description: 'Pour l\'avancer à 2032, faites voter la « loi d\'accélération du porte-avions France Libre » (onglet Réformes). Pour construire un second porte-avions ou y renoncer, passez par la réforme « Porte-avions de nouvelle génération ».' },
       ],
       jalons: [{ id: 'pang', annee: 2038, t: 2, texte: 'Le porte-avions « France Libre » entre en service.' }],
+      note: 'Jamais disponible avant 2032, même avec la loi d\'accélération ; sans elle, mise en service vers 2038.',
       sources: ['pang', 'pangNom'],
     },
     {

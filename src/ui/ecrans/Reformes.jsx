@@ -122,6 +122,8 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
             <div className={`alerte ${pt.adopte ? 'bonne' : ''}`}>
               <strong>Prévision du vote{prevision?.incertitude ? ' (± 25 voix)' : ''} :</strong> {pt.pour} pour, {pt.contre} contre, {pt.abstention} abstentions → {pt.adopte ? 'adoption probable' : 'rejet probable'}.
               {fr && !pt.adopte && pt.censureApres493 && <> Avec le 49.3, la motion de censure réunirait <strong>{pt.censureApres493.voix}</strong> voix sur {pt.censureApres493.majorite} : {pt.censureApres493.adoptee ? <strong className="negatif">le gouvernement tomberait.</strong> : 'elle échouerait.'}</>}
+              {fr && pt.senatFrance && <> Sénat : {pt.senatFrance.pour} pour, {pt.senatFrance.contre} contre → {pt.senatFrance.adopte ? 'accord en commission mixte paritaire' : 'désaccord : l\'Assemblée aura le dernier mot (article 45)'}{proposees.some((x) => x.id === 'reduction_parlementaires') && !pt.senatFrance.adopte ? <strong className="negatif"> ; la loi organique relative au Sénat serait bloquée (article 46)</strong> : ''}.</>}
+              {fr && pt.revision && <> Révision constitutionnelle (article 89) : {pt.revision.adopte ? `adoptée par les deux assemblées puis par le Congrès (${pt.revision.congres.pour} voix, ${pt.revision.congres.requis} requises)` : <strong className="negatif">{pt.revision.raison}</strong>}</>}
               {partie.pays === 'allemagne' && pt.accordPartenaire === false && <> <strong className="negatif">Le SPD bloquerait le texte au comité de coalition.</strong></>}
               {us && pt.senat && <> Sénat : <strong>{pt.senat.pour}</strong> voix pour {pt.senat.obstruction} nécessaires{pt.senat.pour < 60 ? ' (obstruction)' : ''}.{pt.senatReconciliation !== null && pt.senatReconciliation !== undefined && <> Par réconciliation (mesures budgétaires seulement) : {pt.senatReconciliation} voix pour 50 + le vice-président{pt.reconciliationDisponible ? '' : ', mais elle a déjà servi cet exercice'}.</>}</>}
             </div>
@@ -253,7 +255,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                   {fr && r.disponible && r.vote && (
                     decisions.referendum?.id === r.id
                       ? <span className="etiquette">soumise au référendum ce trimestre</span>
-                      : <button type="button" className="bouton" title="Article 11 : la réforme est soumise directement aux électeurs (un référendum par an)" onClick={() => majDecisions({ referendum: { id: r.id, option } })}>Soumettre au référendum</button>
+                      : <button type="button" className="bouton" title={`Article 11 : ${partie.role === 'president' ? 'vous décidez, sur proposition du Gouvernement' : 'vous proposez, le président décide'} (un référendum par an).${r.majoriteRenforcee || ['immigration', 'securite'].includes(r.categorie) ? ' Le recours à l\'article 11 pour ce sujet est contesté par une partie des juristes (précédent de 1962).' : ''}`} onClick={() => majDecisions({ referendum: { id: r.id, option } })}>Soumettre au référendum</button>
                   )}
                 </div>
               </div>

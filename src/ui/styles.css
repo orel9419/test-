@@ -645,3 +645,43 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 /* Petit écran : seul le théâtre choisi garde son nom (la liste des tensions nomme les autres) */
 .carte-monde.compacte .carte-theatre:not(.choisi) text { display: none; }
 .carte-monde.compacte .carte-theatre text { stroke-width: 8px; }
+
+/* ===== Institutions : palais, entente, schéma, pouvoirs ===== */
+.grille-palais { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 0.9rem; }
+.carte-palais { gap: 0.45rem; }
+.carte-palais.joueur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.palais { display: block; width: 100%; max-width: 220px; height: auto; margin: 0 auto; }
+.palais-mur { fill: var(--surface-2); stroke: var(--encre-2); stroke-width: 0.8; }
+.palais-toit { fill: var(--surface-3); stroke: var(--encre-2); stroke-width: 0.8; }
+.palais-fronton { fill: var(--surface-2); stroke: var(--encre-2); stroke-width: 0.6; }
+.palais-colonne { fill: var(--surface); stroke: var(--encre-2); stroke-width: 0.5; }
+.palais-fenetre { fill: color-mix(in srgb, var(--accent) 22%, var(--surface)); stroke: var(--encre-2); stroke-width: 0.4; }
+.palais-porte { fill: var(--surface-3); stroke: var(--encre-2); stroke-width: 0.6; }
+.palais-trait-plein { fill: var(--encre-2); }
+.palais-marche { fill: var(--surface-3); stroke: var(--encre-2); stroke-width: 0.4; }
+.palais-sol { fill: var(--grille); }
+.palais-mat { stroke: var(--encre-2); stroke-width: 0.8; }
+.jauge-entente { height: 10px; border-radius: 5px; background: var(--surface-3); overflow: hidden; }
+.jauge-entente > div { height: 100%; border-radius: 5px; background: var(--attention); transition: width 0.4s; }
+.jauge-entente > div.haut { background: var(--bon); }
+.jauge-entente > div.bas { background: var(--critique); }
+.case-institution { display: flex; gap: 0.5rem; align-items: flex-start; }
+.case-institution input { margin-top: 0.2rem; }
+.cohabitation { border-left: 4px solid var(--critique); }
+.schema-institutions { display: block; width: 100%; height: auto; }
+.schema-noeud rect { fill: var(--surface-2); stroke: var(--axe); stroke-width: 1.2; }
+.schema-noeud.joueur rect { stroke: var(--accent); stroke-width: 2.5; fill: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.schema-titre { font-size: 14px; font-weight: 650; fill: var(--encre); }
+.schema-sous { font-size: 12px; fill: var(--encre-2); }
+.schema-fleche { fill: none; stroke: var(--encre-2); stroke-width: 1.6; }
+.schema-fleche.pointille { stroke-dasharray: 5 4; }
+.schema-pointe { fill: var(--encre-2); }
+.schema-libelle { font-size: 12px; fill: var(--encre-2); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.schema-texte { display: none; margin: 0; padding-left: 1.1rem; }
+@media (max-width: 560px) {
+  .schema-institutions { display: none; }
+  .schema-texte { display: block; }
+}
+.pouvoir { border-top: 1px solid var(--bordure); padding: 0.35rem 0; }
+.pouvoir summary { cursor: pointer; list-style-position: outside; }
+.pouvoir summary .etiquette { margin-right: 0.25rem; }

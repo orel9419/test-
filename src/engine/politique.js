@@ -28,6 +28,7 @@ import { legislativesFrance, electionsDuTrimestre } from './elections.js';
 import { MODES, normaliserMode } from '../model/parametres.js';
 import { projectionPresidentielle } from './objectifs.js';
 import { replanifier } from './horizon.js';
+import { navette, revisionConstitutionnelle, voteSenatTexte, accordPresident, apresLegislatives, ENTENTE_PROFIL } from './institutions.js';
 
 const AXES = ['social', 'fiscal', 'retraites', 'travail', 'ecologie', 'europe', 'marche', 'securite', 'rigueur'];
 const POSTURE = { gouvernement: 1.5, soutien: 0.5, pivot: -0.3, opposition: -1.5 };
@@ -336,15 +337,24 @@ export function validerReformes(e, reformes, procedure = 'vote') {
 
   if (e.pays === 'etatsUnis') return validerReformesEtatsUnis(e, legislatives, directes, positions, saillance, procedure);
 
-  // France : révision constitutionnelle (règle d'or...) : trois cinquièmes des suffrages exprimés au Congrès, pas de 49.3 possible
+  // France : révision constitutionnelle (article 89) : vote conforme de l'Assemblée et du Sénat, puis
+  // trois cinquièmes des suffrages exprimés au Congrès ; pas de 49.3 possible
   const constitutionnelles = legislatives.filter((r) => trouverReforme(r.id)?.majoriteRenforcee);
   if (constitutionnelles.length) {
-    const vc = voterTexte(e, constitutionnelles);
-    const exprimes = vc.pour + vc.contre;
-    if (vc.pour < 0.6 * exprimes) {
-      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Révision constitutionnelle rejetée : ${vc.pour} voix pour sur ${exprimes} suffrages exprimés, il en faut les trois cinquièmes.` });
+    let vc, raison = null;
+    if (e.institutions) {
+      const rev = revisionConstitutionnelle(e, constitutionnelles);
+      vc = { ...rev.an, pour: rev.congres.pour, contre: rev.an.contre + rev.senat.contre, abstention: rev.an.abstention + rev.senat.abstention, adopte: rev.adopte };
+      raison = rev.raison;
+    } else {
+      vc = voterTexte(e, constitutionnelles);
+      const exprimes = vc.pour + vc.contre;
+      if (vc.pour < 0.6 * exprimes) raison = `${vc.pour} voix sur ${exprimes} exprimées, trois cinquièmes nécessaires.`;
+    }
+    if (raison) {
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Révision constitutionnelle rejetée : ${raison}` });
       const reste = legislatives.filter((r) => !constitutionnelles.includes(r));
-      if (!reste.length) return { acceptees: directes, rejet: { raison: `Révision constitutionnelle : ${vc.pour} voix sur ${exprimes} exprimées, trois cinquièmes nécessaires.`, vote: vc } };
+      if (!reste.length) return { acceptees: directes, rejet: { raison: `Révision constitutionnelle : ${raison}`, vote: vc } };
       return validerReformes(e, [...directes, ...reste], procedure);
     }
     if (legislatives.length === constitutionnelles.length) {
@@ -355,7 +365,14 @@ export function validerReformes(e, reformes, procedure = 'vote') {
   // France : le texte est jugé sur son contenu
   const vote = voterTexte(e, legislatives);
   pol.votes.push({ tour: e.tour, texte: 'Projet de loi de réformes', ...resumeVote(vote) });
-  if (vote.adopte) return { acceptees: reformes, rejet: null, vote };
+  // Navette avec le Sénat (procédure accélérée) : il ne bloque que les lois organiques qui le concernent
+  const apresNavette = (resultat) => {
+    const nav = navette(e, legislatives.filter((r) => !trouverReforme(r.id)?.majoriteRenforcee));
+    if (!nav) return resultat;
+    if (!nav.bloquees.length) return { ...resultat, navette: nav };
+    return { ...resultat, acceptees: resultat.acceptees.filter((r) => !nav.bloquees.includes(r)), rejet: { raison: nav.texte }, navette: nav };
+  };
+  if (vote.adopte) return apresNavette({ acceptees: reformes, rejet: null, vote });
   if (procedure === '49.3') {
     const s = session(e);
     // Le 49.3 est illimité pour les lois de finances et de financement de la Sécurité sociale (article 49, alinéa 3)
@@ -368,7 +385,8 @@ export function validerReformes(e, reformes, procedure = 'vote') {
     for (const g of pol.groupes) g.satisfaction = satisfaction(e, g, positions, saillance);
     const censure = motionCensure(e, -0.2);
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `49.3 sur le projet de loi de réformes. Motion de censure : ${censure.voix} voix (majorité requise : ${censure.majorite}). ${censure.adoptee ? 'ADOPTÉE : le gouvernement est renversé.' : 'Rejetée.'}` });
-    return { acceptees: censure.adoptee ? [] : reformes, rejet: null, vote, censure };
+    if (censure.adoptee) return { acceptees: [], rejet: null, vote, censure };
+    return apresNavette({ acceptees: reformes, rejet: null, vote, censure });
   }
   return { acceptees: directes, rejet: { raison: `Rejet à l'Assemblée (${vote.pour} pour, ${vote.contre} contre, ${vote.abstention} abstentions).`, vote } };
 }
@@ -707,11 +725,13 @@ function presidentielle(e, alea) {
   pol.presidentielle = { ...pol.presidentielle, tenue: true, resultat: part };
   const victoire = part >= 50;
   const lib = libelleTrimestre(e.trimestre);
+  let defaiteLegislatives = null;
   pol.presidentielles = [...(pol.presidentielles ?? []), { annee: e.trimestre.annee, part, victoire }];
   if (victoire) {
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'election', texte: `Présidentielle : la candidate ou le candidat de votre camp l'emporte avec ${part.toFixed(1)} % au second tour.${e.role === 'president' ? ' Vous incarnez désormais le nouveau président, issu de votre camp.' : ''}` });
     // Législatives qui suivent : le « fait majoritaire » donne un élan au camp présidentiel (hypothèse : 8 points + l'avance du second tour)
     legislativesFrance(e, alea, 8 + 0.8 * (part - 50));
+    defaiteLegislatives = apresLegislatives(e).defaite ?? null;
     if (e.opinion) e.opinion.intentions.centre += 3; // état de grâce
   } else {
     pol.cohabitation = true;
@@ -722,7 +742,7 @@ function presidentielle(e, alea) {
   if (e.horizon) {
     pol.presidentielle = { ...pol.presidentielle, partCamp: 48, tenue: false, reference: { popularite: e.social.popularite, croissance: e.macro.croissanceAnnuelle, chomage: e.macro.chomage, inflation: e.macro.inflation, cohesion: e.social.cohesion } };
   }
-  return { victoire, part };
+  return { victoire, part, defaite: defaiteLegislatives };
 }
 
 /** Élection fédérale allemande. */
@@ -786,10 +806,16 @@ export function majPolitique(e, alea, decisions = {}) {
     if (decisions.dissolution && !defaite) {
       const d = pol.derniereDissolution;
       const ecart = (e.trimestre.annee - d.annee) * 4 + (e.trimestre.t - d.t);
-      if (ecart >= 4 && !pol.cohabitation) {
-        // Le résultat découle des intentions de vote du baromètre, donc de votre bilan
+      const accord = accordPresident(e, 'dissolution');
+      if (ecart >= 4 && !pol.cohabitation && !accord.accord) {
+        e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: accord.raison });
+      } else if (ecart >= 4 && !pol.cohabitation) {
+        // Article 12 : après consultation du Premier ministre et des présidents des assemblées ; le résultat découle des intentions de vote
+        e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: 'Dissolution de l\'Assemblée nationale (article 12), après consultation du Premier ministre et des présidents des deux assemblées. Les élections ont lieu dans les vingt à quarante jours.' });
         legislativesFrance(e, alea, 0);
         pol.derniereDissolution = { ...e.trimestre };
+        const apres = apresLegislatives(e);
+        if (apres.defaite) defaite = apres.defaite;
         majSatisfactions(e);
       }
     }
@@ -820,6 +846,7 @@ export function majPolitique(e, alea, decisions = {}) {
     if (ech.annee !== e.trimestre.annee || ech.t !== e.trimestre.t) continue;
     if (ech.type === 'presidentielle' && e.pays === 'france') {
       const r = presidentielle(e, alea);
+      if (r.defaite) defaite = defaite ?? r.defaite;
       if (!r.victoire) defaite = { cause: 'presidentielle', texte: e.role === 'president' ? 'Le candidat de votre camp a perdu l\'élection présidentielle : vous quittez l\'Élysée.' : 'Votre camp a perdu l\'élection présidentielle : un nouveau Premier ministre est nommé.' };
     }
     if (ech.type === 'legislatives' && e.pays === 'allemagne') {
@@ -860,6 +887,7 @@ export function nommerPremierMinistre(e, profil) {
   }
   pol.premierMinistre = { profil, depuis: e.tour };
   pol.nominations = (pol.nominations ?? 0) + 1;
+  if (e.institutions) e.institutions.entente = ENTENTE_PROFIL[profil] ?? 60;
   pol.graceJusqua = e.tour + 1;
   pol.chocInstabilite = (pol.chocInstabilite ?? 0) + 0.03;
   for (const g of Object.values(e.social.groupes)) g.chocs += 1; // nouveau gouvernement : brève embellie
@@ -878,9 +906,10 @@ export function nommerPremierMinistre(e, profil) {
  * crédibilité, instabilité, concessions à renégocier ; un budget censuré
  * est remplacé par une loi spéciale. Deux trimestres de répit suivent.
  */
-export function remaniement(e, { budget = false } = {}) {
+export function remaniement(e, { budget = false, cause = 'censure' } = {}) {
   const pol = e.politique;
   pol.gouvernementsRenverses = (pol.gouvernementsRenverses ?? 0) + 1;
+  if (e.institutions && !e.institutions.cohabitation) e.institutions.entente = ENTENTE_PROFIL.camp;
   if (budget) {
     for (const [id, v] of Object.entries(pol.variationsDebutAnnee)) if (e.budget[id]) e.budget[id].variationVolume = v;
     for (const [id, t] of Object.entries(pol.tauxDebutAnnee)) if (e.impots[id] && t !== null && t !== undefined) e.impots[id].taux = t;
@@ -889,10 +918,15 @@ export function remaniement(e, { budget = false } = {}) {
   e.finances.credibilite = borner(e.finances.credibilite - 0.08, -1, 1);
   for (const g of pol.groupes) g.concessions = 0;
   pol.graceJusqua = e.tour + 2;
-  const suite = e.role === 'president'
-    ? 'Vous nommez un nouveau Premier ministre, du même profil.'
-    : 'Le président de la République nomme un nouveau Premier ministre issu de votre camp : vous en reprenez la direction.';
-  const texte = `Le gouvernement est renversé (${pol.gouvernementsRenverses}${pol.gouvernementsRenverses === 1 ? 'er' : 'e'} depuis le début de la partie). ${suite}${budget ? ' Une loi spéciale reconduit le budget de l\'année précédente.' : ''}`;
+  const suite = e.institutions?.cohabitation
+    ? 'Vous nommez un nouveau Premier ministre issu de la majorité de l\'Assemblée.'
+    : e.role === 'president'
+      ? 'Vous nommez un nouveau Premier ministre, du même profil.'
+      : 'Le président de la République nomme un nouveau Premier ministre issu de votre camp : vous en reprenez la direction.';
+  const debut = cause === 'demission'
+    ? 'À la demande du président de la République, le Premier ministre remet la démission du Gouvernement'
+    : 'Le gouvernement est renversé';
+  const texte = `${debut} (${pol.gouvernementsRenverses}${pol.gouvernementsRenverses === 1 ? 'er' : 'e'} changement de gouvernement depuis le début de la partie). ${suite}${budget ? ' Une loi spéciale reconduit le budget de l\'année précédente.' : ''}`;
   e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'politique', texte });
   return texte;
 }
@@ -915,6 +949,16 @@ export function prevoirVotes(e, reformes = []) {
     const positions = calculerPositions(e, legislatives);
     const saillance = saillanceReformes(legislatives);
     texte = e.pays === 'france' ? voterTexte(e, legislatives) : voter(e, positions, saillance);
+    if (e.pays === 'france' && e.institutions) {
+      const ordinaires = legislatives.filter((r) => !trouverReforme(r.id)?.majoriteRenforcee);
+      const constitutionnelles = legislatives.filter((r) => trouverReforme(r.id)?.majoriteRenforcee);
+      const s = ordinaires.length ? voteSenatTexte(e, ordinaires) : null;
+      texte.senatFrance = s ? { pour: s.pour, contre: s.contre, abstention: s.abstention, adopte: s.adopte } : null;
+      if (constitutionnelles.length) {
+        const rev = revisionConstitutionnelle(e, constitutionnelles);
+        texte.revision = { adopte: rev.adopte, raison: rev.raison, senat: { pour: rev.senat.pour, contre: rev.senat.contre }, congres: rev.congres };
+      }
+    }
     if (e.pays === 'france') {
       const sauvegarde = e.politique.groupes.map((g) => g.satisfaction);
       for (const g of e.politique.groupes) g.satisfaction = satisfaction(e, g, positions, saillance);
@@ -935,7 +979,7 @@ export function prevoirVotes(e, reformes = []) {
   return {
     budget: { ...resumeVote(budget), senat: senatBudget },
     censure: censure ? { voix: censure.voix, majorite: censure.majorite, adoptee: censure.adoptee } : null,
-    texte: texte ? { ...resumeVote(texte), censureApres493: texte.censureApres493 ? { voix: texte.censureApres493.voix, majorite: texte.censureApres493.majorite, adoptee: texte.censureApres493.adoptee } : null, accordPartenaire: texte.accordPartenaire, deuxTiers: texte.deuxTiers, senat: texte.senat, senatReconciliation: texte.senatReconciliation, reconciliationDisponible: texte.reconciliationDisponible } : null,
+    texte: texte ? { ...resumeVote(texte), censureApres493: texte.censureApres493 ? { voix: texte.censureApres493.voix, majorite: texte.censureApres493.majorite, adoptee: texte.censureApres493.adoptee } : null, senatFrance: texte.senatFrance ?? null, revision: texte.revision ?? null, accordPartenaire: texte.accordPartenaire, deuxTiers: texte.deuxTiers, senat: texte.senat, senatReconciliation: texte.senatReconciliation, reconciliationDisponible: texte.reconciliationDisponible } : null,
     satisfactions: e.politique.groupes.map((g) => ({ id: g.id, nom: g.nom, sieges: g.sieges, satisfaction: g.satisfaction, posture: g.posture, couleur: g.couleur })),
   };
 }

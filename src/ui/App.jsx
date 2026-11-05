@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { creerPartie, jouerTour, apercuDecisions, previsionPolitique, conseils as calculerConseils, continuerPartie } from '../engine/index.js';
+import { creerPartie, jouerTour, apercuDecisions, previsionPolitique, conseils as calculerConseils, continuerPartie, cohabitationJoueur } from '../engine/index.js';
 import { libelleTrimestre } from '../engine/calendrier.js';
 import { MODES, normaliserMode } from '../model/parametres.js';
 import { PAYS, contexte } from './donnees.js';
@@ -43,6 +43,7 @@ import Express from './express/Express.jsx';
 import Hangar from './composants/Hangar.jsx';
 import Geopolitique from './ecrans/Geopolitique.jsx';
 import ProduireEnFrance from './ecrans/ProduireEnFrance.jsx';
+import Institutions from './ecrans/Institutions.jsx';
 
 const ONGLETS = [
   { id: 'tableau', nom: 'Tableau de bord', court: 'Accueil', icone: '📊' },
@@ -65,6 +66,7 @@ const ONGLETS = [
   { id: 'securite', nom: 'Sécurité et justice', court: 'Sécurité', icone: '🛡️' },
   { id: 'geopolitique', nom: 'Géopolitique', court: 'Géopolitique', icone: '🗺️' },
   { id: 'relocalisation', nom: 'Produire en France', court: 'Produire', icone: '🇫🇷' },
+  { id: 'institutions', nom: 'Institutions', court: 'Institutions', icone: '⚖️' },
 ];
 
 /** Sept rubriques, chacune avec ses sous-onglets : une navigation plus simple. */
@@ -72,14 +74,14 @@ const RUBRIQUES = [
   { id: 'accueil', nom: 'Tableau de bord', court: 'Accueil', icone: '📊', onglets: ['tableau'] },
   { id: 'gouverner', nom: 'Gouverner', court: 'Gouverner', icone: '📜', onglets: ['reformes', 'budget', 'fiscalite'] },
   { id: 'regalien', nom: 'Régalien', court: 'Régalien', icone: '🎖️', onglets: ['armees', 'dissuasion', 'securite'] },
-  { id: 'politique', nom: 'Politique et opinion', court: 'Opinion', icone: '📣', onglets: ['communication', 'opinion', 'parlement', 'evenements'] },
+  { id: 'politique', nom: 'Politique et opinion', court: 'Opinion', icone: '📣', onglets: ['institutions', 'communication', 'opinion', 'parlement', 'evenements'] },
   { id: 'economie', nom: 'Économie', court: 'Économie', icone: '🏭', onglets: ['relocalisation', 'entreprises', 'menages'] },
   { id: 'monde', nom: 'Monde', court: 'Monde', icone: '🌍', onglets: ['geopolitique', 'diplomatie', 'classements', 'rendezvous'] },
   { id: 'journal', nom: 'Journal et sources', court: 'Journal', icone: '🗞️', onglets: ['journal', 'sources'] },
 ];
 const rubriqueDe = (onglet) => RUBRIQUES.find((r) => r.onglets.includes(onglet)) ?? RUBRIQUES[0];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [], gan: null, relocalisations: [] };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [], gan: null, relocalisations: [], congres: false, cohabitation: null };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -318,7 +320,7 @@ export default function App() {
   const nbActionsEntreprises = (decisions.entreprises?.length ?? 0) + (decisions.programmes?.length ?? 0);
   const rubrique = rubriqueDe(onglet);
   const essentielle = options.interface === 'essentielle';
-  const reserveFrance = (id) => (id === 'geopolitique' || id === 'relocalisation') && partie.pays !== 'france';
+  const reserveFrance = (id) => ['geopolitique', 'relocalisation', 'institutions'].includes(id) && partie.pays !== 'france';
   const visible = (id) => !reserveFrance(id) && (!essentielle || !ONGLETS_AVANCES.includes(id) || id === onglet);
   const rubriques = RUBRIQUES.map((r) => ({ ...r, onglets: r.onglets.filter(visible) })).filter((r) => r.onglets.length > 0);
   const ongletsRubrique = rubriques.find((r) => r.id === rubrique.id)?.onglets ?? [onglet];
@@ -331,6 +333,7 @@ export default function App() {
     entreprises: nbActionsEntreprises,
     communication: decisions.communication ? 1 : 0,
     geopolitique: decisions.gan ? 1 : 0,
+    institutions: (decisions.questionConfiance && partie.pays === 'france' ? 1 : 0) + (decisions.congres ? 1 : 0) + (decisions.cohabitation && decisions.cohabitation !== 'promulguer' ? 1 : 0),
     relocalisation: decisions.relocalisations?.length ?? 0,
     armees: decisions.defense ? Object.values(decisions.defense.programmes ?? {}).filter((o) => o !== 'nominal').length + Object.keys(decisions.defense.operations ?? {}).length + (decisions.defense.exports?.length ?? 0) : 0,
     dissuasion: decisions.defense?.dissuasion ? 1 : 0,
@@ -397,6 +400,12 @@ export default function App() {
             {onglet === 'armees' && <Armees {...props} allerA={setOnglet} />}
             {onglet === 'dissuasion' && <Dissuasion {...props} allerA={setOnglet} />}
             {onglet === 'securite' && <Securite {...props} allerA={setOnglet} />}
+            {cohabitationJoueur(partie) && ['budget', 'fiscalite', 'reformes', 'entreprises', 'relocalisation'].includes(onglet) && (
+              <div className="alerte critique petit" style={{ marginBottom: '0.8rem' }}>
+                <strong>Cohabitation :</strong> le Gouvernement détermine et conduit la politique de la nation (article 20). Le budget, les impôts et les réformes lui appartiennent : vos choix dans cet onglet ne s'appliquent pas. <button type="button" className="lien" onClick={() => setOnglet('institutions')}>Répondre à ses textes (onglet Institutions)</button>
+              </div>
+            )}
+            {onglet === 'institutions' && <Institutions {...props} allerA={setOnglet} />}
             {onglet === 'geopolitique' && <Geopolitique {...props} allerA={setOnglet} />}
             {onglet === 'relocalisation' && <ProduireEnFrance {...props} />}
             {onglet === 'tableau' && <TableauDeBord {...props} allerA={setOnglet} conseils={conseils} />}

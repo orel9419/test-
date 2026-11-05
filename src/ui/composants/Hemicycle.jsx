@@ -5,6 +5,7 @@ const ORDRE = {
   france: ['LFI', 'GDR', 'ECOS', 'SOC', 'LIOT', 'DEM', 'EPR', 'HOR', 'DR', 'UDR', 'RN'],
   allemagne: ['LINKE', 'SPD', 'GRUENE', 'SSW', 'CDUCSU', 'AFD'],
   etatsUnis: ['DEM', 'REP', 'FREEDOM'],
+  senat: ['CRCE', 'GEST', 'SER', 'RDSE', 'RDPI', 'UC', 'LIRT', 'LR', 'UNT', 'NI'],
 };
 
 /** Noms courts lisibles pour la légende. */
@@ -58,7 +59,7 @@ export default function Hemicycle({ pays, groupes, majorite }) {
         {tries.map((g) => (
           <span key={g.id} onPointerEnter={() => setSurvol(g.id)} onPointerLeave={() => setSurvol(null)} style={{ fontWeight: survol === g.id ? 600 : 400 }}>
             <span style={{ width: 10, height: 10, borderRadius: 3, background: g.couleur, display: 'inline-block' }} />
-            {NOMS_COURTS_PAYS[pays]?.[g.id] ?? NOMS_COURTS[g.id] ?? g.id} {g.sieges}
+            {g.court ?? NOMS_COURTS_PAYS[pays]?.[g.id] ?? NOMS_COURTS[g.id] ?? g.id} {g.sieges}
           </span>
         ))}
       </div>

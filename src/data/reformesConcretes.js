@@ -292,6 +292,29 @@ export const REFORMES_CONCRETES = [
     chiffrage: 'Hypothèses de jeu : un porte-avions, environ 0,75 Md€ par an jusqu\'en 2038 ; deux, environ 1,3 Md€ par an jusqu\'en 2042.',
   },
   {
+    id: 'porte_avions_2032',
+    nom: 'Loi d\'accélération du porte-avions « France Libre » (mise en service en 2032)',
+    categorie: 'defense', pays: FR, vehicule: 'loi', unique: true,
+    resume: 'Avancer de 2038 à 2032 la mise en service du « France Libre » : commandes anticipées, étapes menées en parallèle à Saint-Nazaire et chez TechnicAtome, équipes renforcées.',
+    pedagogie: 'Le calendrier officiel prévoit des essais en mer en 2036 et une mise en service en 2038, avec deux ans de recouvrement avec le Charles-de-Gaulle. Gagner six ans suppose de mener en même temps des étapes aujourd\'hui successives : études, coque, chaufferies nucléaires K22, catapultes électromagnétiques achetées aux États-Unis. Dans le jeu, le navire n\'est jamais disponible avant 2032 (au moins cinq ans après le vote), il peut glisser d\'un an, et le Charles-de-Gaulle est retiré six mois après son arrivée.',
+    pour: ['Réduire la période où la France dépend d\'un porte-avions unique et vieillissant', 'Charge de travail pour les chantiers navals et la filière de propulsion nucléaire', 'Signal de puissance vis-à-vis des alliés et des compétiteurs'],
+    contre: ['Surcoût de plusieurs milliards d\'euros pris sur d\'autres priorités (munitions, drones, défense aérienne)', 'Risque industriel : chaufferies et catapultes ont leurs propres délais', 'Calendrier jugé irréaliste par une partie des experts'],
+    exemples: ['Royaume-Uni : deux porte-avions de la classe Queen Elizabeth, mis en service en 2017 et 2019', 'Chine : trois porte-avions lancés en douze ans (2012, 2019, 2024)'],
+    sources: [
+      { texte: 'Naval News : le futur porte-avions s\'appellera « France Libre » (mars 2026)', url: 'https://www.navalnews.com/?p=84324' },
+      { texte: 'L\'Essentiel de l\'éco : la France sans porte-avions pendant dix-huit mois', url: 'https://lessentieldeleco.fr/7946-la-france-sans-porte-avions-pendant-dix-huit-mois/' },
+    ],
+    options: [{ id: 'acceleration_2032', nom: 'Accélérer pour une mise en service en 2032' }],
+    delai: 1,
+    effets(e) {
+      const an = e.trimestre.annee;
+      return { depenses: { defense: (an <= 2032 ? 0.9 : 0) * prix(e) }, souverainete: an <= 2032 ? 0.2 : 0 };
+    },
+    axes: { securite: 0.5, rigueur: -0.3 },
+    positionsGroupes: { RN: 0.5, UDR: 0.5, DR: 0.5, EPR: 0.3, HOR: 0.4, DEM: 0.2, LIOT: 0, SOC: -0.3, ECOS: -0.6, LFI: -0.7, GDR: -0.4 },
+    chiffrage: 'Hypothèse de jeu : environ 0,9 Md€ par an de surcoût jusqu\'en 2032. Le coût du programme n\'est pas publié officiellement (10 à 15 Md€ selon la presse).',
+  },
+  {
     id: 'service_militaire',
     nom: 'Service national militaire',
     categorie: 'defense', pays: FR, vehicule: 'loi',

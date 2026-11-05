@@ -10,8 +10,19 @@ import { PROGRAMMES_DEFENSE, OPERATIONS, EXPORTS, DISSUASION_EUROPE } from '../d
 import { appliquerEffetsEntreprise } from './entreprises.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
+import { creerAleatoire } from './aleatoire.js';
 
 const rang = (x) => x.annee * 4 + x.t;
+/** Le « France Libre » n'est jamais disponible avant 2032 (loi d'accélération comprise). */
+export const ANNEE_MIN_FRANCE_LIBRE = 2032;
+const RANG_PANG_NOMINAL = 2038 * 4 + 2;
+const RANG_RETRAIT_CDG = 2038 * 4 + 4;
+const etatProgrammeDefaut = () => ({ option: 'nominal', debut: 1, fin: 1, retard: 0, securise: false });
+
+/** Sauvegardes antérieures : programmes ajoutés depuis (Charles-de-Gaulle...). */
+function completerProgrammes(e) {
+  for (const p of programmesDuPays(e.pays)) e.defense.programmes[p.id] ??= etatProgrammeDefaut();
+}
 
 export function programmesDuPays(pays) { return PROGRAMMES_DEFENSE[pays] ?? []; }
 export function operationsDuPays(pays) { return OPERATIONS[pays] ?? []; }
@@ -21,7 +32,7 @@ export function initialiserDefense(e) {
   const programmes = {};
   const capacites = {};
   for (const p of programmesDuPays(e.pays)) {
-    programmes[p.id] = { option: 'nominal', debut: 1, fin: 1, retard: 0, securise: false };
+    programmes[p.id] = etatProgrammeDefaut();
     if (p.capacite) capacites[p.capacite.cle] = p.capacite.depart;
   }
   e.defense = {
@@ -68,6 +79,7 @@ export function domaineReserve(e) {
  */
 export function deciderDefense(e, d = {}, alea) {
   if (!e.defense) initialiserDefense(e);
+  completerProgrammes(e);
   const x = e.defense;
   const lib = libelleTrimestre(e.trimestre);
   const res = [];
@@ -158,9 +170,11 @@ export function probabiliteExport(e, p) {
 /** Évolution trimestrielle : livraisons, jalons (et leurs aléas), effets des opérations. */
 export function majDefense(e, alea) {
   if (!e.defense) initialiserDefense(e);
+  completerProgrammes(e);
   const x = e.defense;
   const lib = libelleTrimestre(e.trimestre);
   const maintenant = rang(e.trimestre);
+  if (e.pays === 'france') accelererFranceLibre(e, maintenant, lib);
   for (const p of programmesDuPays(e.pays)) {
     const etat = x.programmes[p.id];
     // Livraisons : on suit la trajectoire de la loi de programmation, ralentie en cas d'étalement
@@ -189,6 +203,7 @@ export function majDefense(e, alea) {
     // Jalons : un programme non sécurisé peut glisser au dernier moment
     for (const j of jalonsEffectifs(e, p)) {
       if (j.atteint || rang(j) > maintenant) continue;
+      if (!jalonPossible(e, j, maintenant, lib)) continue;
       if (j.risqueRetard && !etat.securise && !etat.aleaJoue?.[j.id] && alea?.tirage(j.risqueRetard)) {
         etat.retard += 4;
         etat.aleaJoue = { ...(etat.aleaJoue ?? {}), [j.id]: true };
@@ -196,14 +211,67 @@ export function majDefense(e, alea) {
         continue;
       }
       x.jalons.push(j.id);
+      if (j.id === 'pang') x.franceLibreDepuis = maintenant;
       if (j.capacite && p.capacite) x.capacites[p.capacite.cle] += j.capacite;
-      e.international.bonusInfluence += 1;
+      e.international.bonusInfluence += j.influence ?? 1;
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Défense — ${j.texte}` });
     }
   }
   // Porte-avions : si la réforme « renoncer » est en vigueur, le programme est arrêté
   const pa = e.reformes?.actives?.find((a) => a.id === 'porte_avions');
   if (x.programmes.pang) x.programmes.pang.abandonne = pa?.option === 'renoncer';
+}
+
+/**
+ * Porte-avions : conditions propres à certains jalons.
+ * - « France Libre » : jamais avant 2032, pas si le programme est abandonné ;
+ *   accéléré, il peut glisser d'un an (aléa séparé, joué une fois).
+ * - Retrait du Charles-de-Gaulle : deux trimestres après l'arrivée de son
+ *   successeur, au plus tard fin 2038 (fin 2040 s'il est prolongé).
+ */
+function jalonPossible(e, j, maintenant, lib) {
+  const x = e.defense;
+  if (j.id === 'pang') {
+    const pang = x.programmes.pang;
+    if (pang?.abandonne || e.trimestre.annee < ANNEE_MIN_FRANCE_LIBRE) return false;
+    if (pang?.accelere && !pang.aleaAcceleration) {
+      pang.aleaAcceleration = true;
+      if (creerAleatoire(((e.graine ^ 0x5f3759df) + maintenant) >>> 0).tirage(0.3)) {
+        pang.retard = (pang.retard ?? 0) + 4;
+        e.journal.push({ tour: e.tour, trimestre: lib, type: 'alerte', texte: 'Défense — « France Libre » : les essais des chaufferies nucléaires prennent du retard ; la mise en service glisse d\'un an malgré la loi d\'accélération.' });
+        return false;
+      }
+    }
+    return true;
+  }
+  if (j.id === 'cdg_retrait') {
+    const successeur = x.franceLibreDepuis !== undefined && maintenant >= x.franceLibreDepuis + 2;
+    const limite = RANG_RETRAIT_CDG + (x.programmes.cdg?.option === 'prolonger' ? 8 : 0);
+    return successeur || maintenant >= limite;
+  }
+  return true;
+}
+
+/**
+ * Loi d'accélération du « France Libre » : une fois votée, le jalon de mise en
+ * service est avancé (au plus tôt au 2e trimestre 2032, et au moins cinq ans
+ * après le vote) ; le retrait du Charles-de-Gaulle suit.
+ */
+function accelererFranceLibre(e, maintenant, lib) {
+  const x = e.defense;
+  const pang = x.programmes.pang;
+  const loi = e.reformes?.actives?.find((a) => a.id === 'porte_avions_2032');
+  if (!loi || !pang || pang.accelere || pang.abandonne || x.jalons.includes('pang')) return;
+  const cible = Math.max(ANNEE_MIN_FRANCE_LIBRE * 4 + 2, maintenant + 20);
+  const actuel = RANG_PANG_NOMINAL + (pang.retard ?? 0) - (pang.avance?.pang ?? 0);
+  const gain = actuel - cible;
+  pang.accelere = { tour: e.tour, cible };
+  if (gain <= 0) return;
+  pang.avance = { ...(pang.avance ?? {}), pang: (pang.avance?.pang ?? 0) + gain };
+  const cdg = x.programmes.cdg;
+  if (cdg) cdg.avance = { ...(cdg.avance ?? {}), cdg_retrait: (cdg.avance?.cdg_retrait ?? 0) + gain };
+  const an = Math.floor((cible - 1) / 4), t = ((cible - 1) % 4) + 1;
+  e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Défense — Loi d'accélération : le « France Libre » est désormais attendu au T${t} ${an} (au lieu de 2038). Chantiers en parallèle à Saint-Nazaire et chez TechnicAtome.` });
 }
 
 /** Résumé pour l'interface et les tests. */
@@ -216,7 +284,7 @@ export function resumeDefense(e) {
   return {
     budget, pctPIB: budget && pib ? (budget + temporaires) / pib * 100 : null, supplementaire: temporaires,
     capacites: { ...x.capacites },
-    programmes: programmesDuPays(e.pays).map((p) => ({ ...p, etat: x.programmes[p.id], jalonsEffectifs: jalonsEffectifs(e, p) })),
+    programmes: programmesDuPays(e.pays).map((p) => ({ ...p, etat: x.programmes[p.id] ?? etatProgrammeDefaut(), jalonsEffectifs: jalonsEffectifs(e, p) })),
     operations: operationsDuPays(e.pays).map((o) => ({ ...o, actuelle: x.operations[o.id] })),
     exports: exportsDuPays(e.pays).map((p) => ({ ...p, ...x.exports[p.id], probabilite: probabiliteExport(e, p), disponible: x.exports[p.id]?.statut === 'ouvert' && (x.exports[p.id].derniereTentative === null || e.tour - x.exports[p.id].derniereTentative >= 4) })),
     dissuasion: x.dissuasion,

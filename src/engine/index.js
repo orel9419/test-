@@ -53,6 +53,7 @@ import { initialiserDefense, deciderDefense, majDefense } from './defense.js';
 import { attribuerLot, majChantiers } from './chantiers.js';
 import { initialiserGeopolitique, majGeopolitique, deplacerGroupe, injecterCrises } from './geopolitique.js';
 import { initialiserRelocalisation, demanderProduction, majRelocalisation, injecterPenuries } from './relocalisation.js';
+import { initialiserInstitutions, majInstitutions, gouvernementCohabitation, neutraliserDecisions, reactionAuxReformes, propositionGouvernement, accordPresident, injecterEvenementsInstitutions } from './institutions.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
 import { conseils } from './conseiller.js';
 import { initialiserEntreprises, effetsEntreprises, majEntreprises, executerActionEntreprise, piloterProgramme, ACTIONS_PAR_TRIMESTRE } from './entreprises.js';
@@ -76,6 +77,7 @@ export { risqueConstitutionnel } from './constitution.js';
 export { resumeDefense, domaineReserve } from './defense.js';
 export { resumeGeopolitique, porteAvions } from './geopolitique.js';
 export { resumeRelocalisation } from './relocalisation.js';
+export { resumeInstitutions, configuration as configurationInstitutions, cohabitationJoueur } from './institutions.js';
 export { resumeChantiers } from './chantiers.js';
 export { actionsCommunication, ACTIONS_COMMUNICATION, GROUPES_CIBLES } from './communication.js';
 export { previsionG7, prochainSommet, peutNegocier, membreG7 } from './g7.js';
@@ -139,6 +141,7 @@ export function creerPartie(options) {
   initialiserDefense(e);
   initialiserGeopolitique(e);
   initialiserRelocalisation(e);
+  initialiserInstitutions(e);
   const { notes, dynamique } = notesDepuisDonnees(options.donnees);
   initialiserNotation(e, notes, dynamique);
   // Référence de la projection présidentielle (France) : la situation de départ
@@ -248,6 +251,10 @@ function instantane(e) {
 export function jouerTour(etat, decisions = {}, options = {}) {
   const e = structuredClone(etat);
   if (e.termine) return e;
+  // France : institutions (sauvegardes antérieures au module), puis décisions qui relèvent du Gouvernement
+  // retirées si le joueur est un président de cohabitation
+  if (e.pays === 'france' && e.institutions === undefined) initialiserInstitutions(e);
+  decisions = neutraliserDecisions(e, decisions);
   e.mode = normaliserMode(e.mode); // sauvegardes antérieures (bac à sable, réaliste, difficile)
   const alea = creerAleatoire(e.graine);
   const mode = MODES[e.mode];
@@ -320,12 +327,20 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     for (const r of decisions.reformes.filter((x) => !validation.acceptees.includes(x))) {
       e.resultatsTour.reformes.push({ id: r.id, option: r.option, erreur: validation.rejet?.raison ?? 'Rejetée' });
     }
+    if (validation.navette) e.resultatsTour.navette = { issue: validation.navette.issue, texte: validation.navette.texte, pour: validation.navette.senat.pour, contre: validation.navette.senat.contre };
+    // L'Élysée (ou Matignon) réagit aux réformes adoptées
+    if (!options.sansPolitique) reactionAuxReformes(e, e.resultatsTour.reformes.filter((x) => !x.erreur));
   }
   // Référendum (France, article 11) : la réforme est soumise directement aux électeurs
   if (decisions.referendum && e.pays === 'france' && !options.sansPolitique) {
     const def = trouverReforme(decisions.referendum.id);
     const dernier = e.politique.dernierReferendum;
-    if (def && (!dernier || dernier.annee < e.trimestre.annee)) {
+    // Article 11 : sur proposition du Gouvernement ; le président décide
+    const accord = e.role === 'president' ? propositionGouvernement(e) : accordPresident(e, 'referendum');
+    if (def && !accord.accord) {
+      e.resultatsTour.alertes.push({ type: 'rejet', texte: accord.raison });
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: accord.raison });
+    } else if (def && (!dernier || dernier.annee < e.trimestre.annee)) {
       const reaction = def.reaction?.(e, decisions.referendum.option) ?? {};
       const r = referendum(e, def, reaction, alea);
       e.resultatsTour.referendum = { nom: def.nom, oui: r.oui, adopte: r.adopte };
@@ -338,6 +353,11 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     } else if (def) {
       e.resultatsTour.alertes.push({ type: 'rejet', texte: 'Un seul référendum par an : celui-ci est reporté.' });
     }
+  }
+  // Cohabitation (joueur président) : le Gouvernement fait voter son texte, le président répond
+  if (!options.sansPolitique) {
+    const rc = gouvernementCohabitation(e, decisions.cohabitation);
+    if (rc) e.resultatsTour.cohabitation = rc;
   }
   // Communication : l'usure se dissipe, puis l'action du trimestre
   if (!options.sansPolitique) {
@@ -493,6 +513,10 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     if (vb.censure?.adoptee) defaite = defaite ?? { cause: 'censure', texte: 'Le gouvernement a été renversé par une motion de censure sur le budget.' };
   }
   if (!options.sansPolitique) {
+    const mi = majInstitutions(e, decisions);
+    e.resultatsTour.alertes.push(...mi.alertes);
+    if (mi.congres || mi.confiance) e.resultatsTour.institutions = { congres: mi.congres ?? null, confiance: mi.confiance ?? null };
+    if (mi.defaite) defaite = defaite ?? mi.defaite;
     const mp = majPolitique(e, alea, decisions);
     if (mp.defaite) defaite = defaite ?? mp.defaite;
   }
@@ -509,8 +533,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
     }
   } else e.finances.trimestresCrise = 0;
   // Partie longue (France) : une censure provoque un remaniement, pas la fin de la partie
-  if (defaite?.cause === 'censure' && (e.horizon || e.role === 'president')) {
-    const texte = remaniement(e, { budget: !!e.resultatsTour.budget?.censure?.adoptee });
+  if (['censure', 'demission'].includes(defaite?.cause) && (e.horizon || e.role === 'president')) {
+    const texte = remaniement(e, { budget: !!e.resultatsTour.budget?.censure?.adoptee, cause: defaite.cause });
     e.resultatsTour.alertes.push({ type: 'remaniement', texte });
     defaite = null;
   }
@@ -541,7 +565,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   } else if (options.evenementsActifs !== false) {
     genererEvenements(e, alea, mode.frequenceEvenements, { max: mode.maxEvenements ?? 3 });
     // Crises géopolitiques et pénuries (France), tirées avec leur propre aléa
-    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); }
+    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); injecterEvenementsInstitutions(e, mode.maxEvenements ?? 3); }
   }
   if (e.statique.devise === '$') {
     e.journal = e.journal.map((j, i) => (i >= etat.journal.length ? adapterDevise(j) : j));

@@ -41,7 +41,7 @@ describe('Groupe aéronaval', () => {
     expect(e.geopolitique.gan.position).toBe('toulon');
     expect(e.journal.some((j) => j.texte.includes('rentre à Toulon pour son entretien'))).toBe(true);
     const r = deplacerGroupe(e, 'mediterranee');
-    expect(r.erreur ?? '').toMatch(/Entretien|Potentiel/);
+    expect(r.erreur ?? '').toMatch(/Entretien|Potentiel|arrêt technique/);
   });
 
   it('une escale dans l\'océan Indien améliore les chances du Rafale en Inde', () => {
@@ -59,9 +59,11 @@ describe('Groupe aéronaval', () => {
     expect(deplacerGroupe(e, 'mediterranee').texte).toContain('Méditerranée');
   });
 
-  it('le porte-avions « France Libre » prend le relais après sa mise en service', () => {
+  it('le porte-avions « France Libre » prend le relais après sa mise en service, jamais avant 2032', () => {
     const e = nouvelle();
     e.defense.jalons.push('pang');
+    expect(porteAvions(e).nom).toBe('Charles-de-Gaulle');
+    e.trimestre = { annee: 2032, t: 2 };
     expect(porteAvions(e).nom).toBe('France Libre');
   });
 });

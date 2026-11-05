@@ -3,6 +3,7 @@ import Hemicycle from '../composants/Hemicycle.jsx';
 import Info from '../composants/Info.jsx';
 import { nombre, pct } from '../format.js';
 import { exerciceBudgetaire, PROFILS_PREMIER_MINISTRE } from '../../engine/politique.js';
+import { resumeInstitutions } from '../../engine/index.js';
 
 const POSTURES = { gouvernement: 'Gouvernement', soutien: 'Soutien', pivot: 'Pivot', opposition: 'Opposition' };
 
@@ -122,9 +123,11 @@ export default function Parlement(props) {
   const groupes = prevision?.satisfactions ?? pol.groupes;
   const voteBudget = prevision?.budget;
   const t4 = partie.trimestre.t === 4;
+  const institutions = fr ? resumeInstitutions(partie) : null;
+  const senatPrevu = prevision?.texte?.senatFrance;
   return (
     <div className="pile">
-      <h2>{fr ? 'Assemblée nationale' : 'Bundestag et coalition'}</h2>
+      <h2>{fr ? 'Parlement : Assemblée nationale et Sénat' : 'Bundestag et coalition'}</h2>
       <div className="grille-2">
         <div className="carte">
           <Hemicycle pays={partie.pays} groupes={pol.groupes} majorite={pol.majorite} />
@@ -161,7 +164,10 @@ export default function Parlement(props) {
               </select>
             </label>
           )}
-          {fr && partie.role === 'president' && (
+          {fr && partie.role === 'president' && institutions?.cohabitation && (
+            <p className="alerte petit" style={{ margin: 0 }}>Cohabitation : la majorité de l'Assemblée impose son Premier ministre ({institutions.cohabitation.premierMinistre}). Vous ne pouvez pas le renvoyer ; seule une dissolution gagnée y mettrait fin.</p>
+          )}
+          {fr && partie.role === 'president' && !institutions?.cohabitation && (
             <div className="carte pile" style={{ background: 'var(--surface-2)' }}>
               <strong className="petit">Matignon : nommer le Premier ministre <Info texte="Prérogative du président (article 8 de la Constitution). Le profil du Premier ministre change la position des groupes : un Premier ministre de droite fait entrer LR au gouvernement, un socialiste y fait entrer le PS. Chaque changement ajoute de l'instabilité ; le nouveau gouvernement a un trimestre de répit avant une censure." /></strong>
               <span className="tres-petit muet">Actuellement : {PROFILS_PREMIER_MINISTRE[partie.politique.premierMinistre?.profil ?? 'camp']?.nom}{partie.politique.nominations ? ` · ${partie.politique.nominations} nomination(s) depuis le début` : ''}{partie.politique.gouvernementsRenverses ? ` · ${partie.politique.gouvernementsRenverses} gouvernement(s) renversé(s)` : ''}</span>
@@ -174,11 +180,28 @@ export default function Parlement(props) {
           )}
           {fr && (
             <label className="petit" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}><input type="checkbox" checked={!!decisions.dissolution} onChange={(ev) => majDecisions({ dissolution: ev.target.checked })} />
-              <span>{partie.role === 'president' ? 'Dissoudre l\'Assemblée (article 12)' : 'Demander au président de dissoudre l\'Assemblée'} (législatives anticipées, possible un an après la précédente dissolution)</span>
+              <span>{partie.role === 'president' ? 'Dissoudre l\'Assemblée (article 12)' : 'Demander au président de dissoudre l\'Assemblée (il décide seul, selon votre entente)'} (législatives anticipées, possible un an après la précédente dissolution){institutions?.disponibles && !institutions.disponibles.dissolution ? ` — pas avant ${institutions.disponibles.moisAvantDissolution} mois` : ''}</span>
             </label>
           )}
         </div>
       </div>
+
+      {institutions && (
+        <div className="grille-2">
+          <div className="carte">
+            <h3>Sénat <span className="tres-petit muet">(président : {institutions.senat.president})</span></h3>
+            <Hemicycle pays="senat" groupes={institutions.senat.groupes} majorite={175} />
+          </div>
+          <div className="carte pile">
+            <h3 style={{ margin: 0 }}>Navette et dernier mot <Info texte="Chaque projet de loi adopté par l'Assemblée passe au Sénat. Le Gouvernement engage la procédure accélérée : en cas de désaccord, une commission mixte paritaire (7 députés, 7 sénateurs) cherche un texte commun ; si elle échoue, l'Assemblée statue définitivement (article 45). Exceptions : une révision de la Constitution (article 89) et une loi organique relative au Sénat (article 46) exigent son accord." /></h3>
+            <p className="petit" style={{ margin: 0 }}>La droite et le centre (LR, Union centriste) détiennent <strong>{institutions.senat.majoriteDroiteCentre}</strong> sièges sur 348 : le Sénat ne peut ni renverser le Gouvernement ni être dissous, mais il peut ralentir les textes et bloquer les révisions de la Constitution.</p>
+            {senatPrevu
+              ? <div className={`alerte petit ${senatPrevu.adopte ? 'bonne' : ''}`}>Vos réformes au Sénat : {senatPrevu.pour} pour, {senatPrevu.contre} contre, {senatPrevu.abstention} abstentions → {senatPrevu.adopte ? 'accord probable' : 'désaccord : l\'Assemblée aurait le dernier mot'}.</div>
+              : <p className="petit muet" style={{ margin: 0 }}>Proposez des réformes pour voir le pronostic du Sénat.</p>}
+            <p className="tres-petit muet" style={{ margin: 0 }}>Prochain renouvellement de la moitié des sièges : septembre {institutions.senat.prochainRenouvellement}. Composition d'octobre 2026 (Sénat, Public Sénat).</p>
+          </div>
+        </div>
+      )}
 
       <div className="carte" style={{ overflowX: 'auto' }}>
         <h3>Groupes</h3>
