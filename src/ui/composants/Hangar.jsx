@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import Modale from './Modale.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
-/** Hangar 3D : Rafale, porte-avions France Libre, SNLE 3G et SNLE Le Triomphant, à faire tourner et à photographier. */
+/** Hangar 3D : Rafale, porte-avions Charles-de-Gaulle et France Libre, char Leclerc, SNLE 3G et SNLE Le Triomphant. */
 export default function Hangar({ onFermer }) {
   const [modele, setModele] = useState('rafale');
   return (
     <Modale titre="Hangar 3D" onFermer={onFermer} largeur={900}>
       <div className="puces" role="tablist" aria-label="Modèle">
-        {[['rafale', '✈️ Rafale'], ['porteAvions', '🚢 Porte-avions France Libre'], ['snle3g', '⚓ SNLE 3G'], ['snle', '⚓ SNLE Le Triomphant']].map(([id, nom]) => (
+        {[['rafale', '✈️ Rafale'], ['charlesDeGaulle', '🚢 Charles-de-Gaulle'], ['porteAvions', '🚢 France Libre'], ['leclerc', '🪖 Char Leclerc'], ['snle3g', '⚓ SNLE 3G'], ['snle', '⚓ SNLE Le Triomphant']].map(([id, nom]) => (
           <button key={id} type="button" role="tab" aria-selected={modele === id} className={`puce ${modele === id ? 'active' : ''}`} onClick={() => setModele(id)}>{nom}</button>
         ))}
       </div>

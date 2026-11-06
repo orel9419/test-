@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Info from '../composants/Info.jsx';
 import { ILLUSTRATIONS } from '../composants/Illustrations.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
@@ -19,6 +19,7 @@ const trimestre = (x) => libelleTrimestre({ annee: x.annee, t: x.t });
 
 /** Rubrique régalienne : les armées (programmes, capacités, opérations, exportations). */
 export default function Armees({ partie, decisions, majDecisions, allerA }) {
+  const [domaine, setDomaine] = useState('Tous');
   const r = resumeDefense(partie);
   if (!r) return null;
   const d = decisions.defense ?? { programmes: {}, operations: {}, exports: [] };
@@ -28,6 +29,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
   const snle3g = r.capacites.snle3g;
   const pang = r.programmes.find((p) => p.id === 'pang');
   const pa = porteAvions(partie);
+  const domaines = ['Tous', ...new Set(r.programmes.flatMap((p) => p.domaine.split(' et ')))];
+  const visibles = r.programmes.filter((p) => domaine === 'Tous' || p.domaine.split(' et ').includes(domaine));
   return (
     <div className="pile">
       <h2>Armées et programmes d'armement</h2>
@@ -53,6 +56,13 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
             <span className="variation muet">{snle3g >= 1 ? `dont ${nombre(snle3g, 0)} de 3e génération` : 'classe Le Triomphant ; SNLE 3G vers 2035'}</span>
           </div>
         )}
+        {france && (
+          <div className="tuile">
+            <span className="libelle">Armée de Terre <Info texte="Force opérationnelle terrestre : 77 000 combattants ; l'armée de Terre assure 60 % de l'engagement opérationnel des armées (ministère des Armées, chiffres clés 2025). Objectifs de la loi de programmation : 1 437 Griffon et 238 Jaguar en 2030, 160 Leclerc rénovés fin 2030 et 200 fin 2035, 109 Caesar MkII commandés." /></span>
+            <span className="valeur chiffres">77 000</span>
+            <span className="variation muet">combattants · {r.programmes.find((p) => p.id === 'leclerc')?.jalonsEffectifs.find((j) => j.id === 'leclerc_160')?.atteint ? '160 Leclerc rénovés ✓' : '160 Leclerc rénovés visés fin 2030'}</span>
+          </div>
+        )}
         {pang && (
           <div className="tuile">
             <span className="libelle">Porte-avions</span>
@@ -68,8 +78,13 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
       </div>
 
       <h3>Programmes</h3>
+      {domaines.length > 2 && (
+        <div className="puces" role="tablist" aria-label="Armée ou domaine">
+          {domaines.map((x) => <button key={x} type="button" role="tab" aria-selected={domaine === x} className={`puce ${domaine === x ? 'active' : ''}`} onClick={() => setDomaine(x)}>{x === 'Terre' ? '🪖 Terre' : x === 'Air' ? '✈️ Air' : x === 'Marine' ? '⚓ Marine' : x}</button>)}
+        </div>
+      )}
       <div className="grille-programmes">
-        {r.programmes.map((p) => {
+        {visibles.map((p) => {
           const Illustration = ILLUSTRATIONS[p.illustration];
           const choisie = d.programmes?.[p.id];
           const enCours = p.etat && p.etat.option !== 'nominal' && partie.tour < p.etat.fin;
@@ -79,6 +94,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
               {p.id === 'rafale' ? <Visionneuse3D modele="rafale" hauteur={300} />
                 : p.id === 'snle3g' ? <Visionneuse3D modele="snle3g" hauteur={300} />
                   : p.id === 'pang' ? <Visionneuse3D modele="porteAvions" hauteur={300} />
+                  : p.id === 'cdg' ? <Visionneuse3D modele="charlesDeGaulle" hauteur={300} />
+                  : p.id === 'leclerc' ? <Visionneuse3D modele="leclerc" hauteur={300} />
                   : Illustration && <Illustration legende={false} coupe={false} />}
               <div className="ligne espace">
                 <div><h4 style={{ margin: 0 }}>{p.nom}</h4><span className="tres-petit muet">{p.sousTitre}</span></div>

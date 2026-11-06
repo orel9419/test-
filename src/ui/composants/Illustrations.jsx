@@ -248,7 +248,67 @@ export function DefenseAerienne({ legende = true }) {
   );
 }
 
+/** Char Leclerc vu de profil (canon vers la gauche) : six galets, jupes, tourelle à blindage modulaire. */
+export function Char({ legende = true }) {
+  return (
+    <Cadre titre="Char Leclerc vu de profil" viewBox="0 0 400 220" legende={legende ? 'Char Leclerc : canon de 120 mm à chargement automatique, six galets par côté, viseur panoramique du chef de char.' : null}>
+      <rect width="400" height="220" rx="12" className="illu-ciel" />
+      <rect x="0" y="176" width="400" height="44" className="illu-sol" />
+      <rect x="62" y="138" width="282" height="40" rx="20" className="illu-sombre" />
+      {[0, 1, 2, 3, 4, 5].map((i) => <circle key={i} cx={98 + i * 42} cy={160} r="15" className="illu-corps illu-trait" />)}
+      <circle cx="78" cy="152" r="11" className="illu-corps illu-trait" />
+      <circle cx="328" cy="150" r="13" className="illu-corps illu-trait" />
+      <path d="M60,132 L96,112 L340,112 L350,132 Z" className="illu-corps illu-trait" />
+      <rect x="66" y="128" width="262" height="18" className="illu-corps illu-trait" />
+      <path d="M120,112 L134,84 L176,78 L300,80 L322,90 L322,112 Z" className="illu-corps illu-trait" />
+      <rect x="14" y="89" width="110" height="7" rx="3" className="illu-sombre" />
+      <rect x="64" y="87" width="34" height="11" rx="3" className="illu-sombre" />
+      <rect x="118" y="84" width="16" height="22" className="illu-sombre" />
+      <rect x="214" y="64" width="18" height="16" rx="2" className="illu-sombre" />
+      <path d="M300,80 L306,40" className="illu-trait" />
+      <path d="M150,100 L190,100 M230,100 L290,100" className="illu-trait" opacity="0.5" />
+    </Cadre>
+  );
+}
+
+/** Griffon (SCORPION) : véhicule blindé multirôle 6×6, tourelleau téléopéré. */
+export function Blinde({ legende = true }) {
+  return (
+    <Cadre titre="Véhicule blindé Griffon" viewBox="0 0 400 220" legende={legende ? 'Griffon : véhicule blindé multirôle 6×6 du programme SCORPION, tourelleau téléopéré, transport d\'un groupe de combat.' : null}>
+      <rect width="400" height="220" rx="12" className="illu-ciel" />
+      <rect x="0" y="176" width="400" height="44" className="illu-sol" />
+      <path d="M58,150 L58,110 L92,72 L326,72 L342,96 L342,150 Z" className="illu-corps illu-trait" />
+      <path d="M96,80 L132,80 L132,104 L76,104 Z" className="illu-sombre" opacity="0.8" />
+      <rect x="160" y="88" width="60" height="30" rx="3" className="illu-trait" fill="none" />
+      <rect x="240" y="88" width="60" height="30" rx="3" className="illu-trait" fill="none" />
+      <rect x="236" y="56" width="34" height="16" rx="3" className="illu-sombre" />
+      <rect x="196" y="61" width="44" height="5" rx="2" className="illu-sombre" />
+      {[110, 230, 300].map((x) => <g key={x}><circle cx={x} cy={160} r="22" className="illu-sombre" /><circle cx={x} cy={160} r="10" className="illu-corps" /></g>)}
+      <path d="M58,132 L342,132" className="illu-trait" opacity="0.5" />
+    </Cadre>
+  );
+}
+
+/** Caesar : canon de 155 mm sur camion 6×6, bêche arrière. */
+export function Artillerie({ legende = true }) {
+  return (
+    <Cadre titre="Canon automoteur Caesar" viewBox="0 0 400 220" legende={legende ? 'Caesar : canon de 155 mm monté sur camion, tir puis changement de position en quelques minutes.' : null}>
+      <rect width="400" height="220" rx="12" className="illu-ciel" />
+      <rect x="0" y="176" width="400" height="44" className="illu-sol" />
+      <path d="M40,150 L40,96 L62,74 L118,74 L118,150 Z" className="illu-corps illu-trait" />
+      <path d="M66,80 L112,80 L112,100 L54,100 Z" className="illu-sombre" opacity="0.8" />
+      <rect x="118" y="124" width="232" height="18" className="illu-corps illu-trait" />
+      <rect x="200" y="104" width="70" height="22" rx="3" className="illu-corps illu-trait" />
+      <path d="M232,108 L392,40 L396,48 L238,118 Z" className="illu-sombre" />
+      <rect x="380" y="38" width="16" height="12" rx="2" transform="rotate(-23 388 44)" className="illu-sombre" />
+      <path d="M350,130 L372,172 L360,176 L340,140 Z" className="illu-sombre" />
+      {[80, 220, 290].map((x) => <g key={x}><circle cx={x} cy={160} r="20" className="illu-sombre" /><circle cx={x} cy={160} r="9" className="illu-corps" /></g>)}
+    </Cadre>
+  );
+}
+
 export const ILLUSTRATIONS = {
   rafale: Rafale, snle: Snle, porteAvions: PorteAvions, chasseurFutur: ChasseurFutur,
   drone: Drone, satellite: Satellite, chasseur: Chasseur, bombardier: Bombardier, defenseAerienne: DefenseAerienne,
+  char: Char, blinde: Blinde, artillerie: Artillerie,
 };

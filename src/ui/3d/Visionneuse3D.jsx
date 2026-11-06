@@ -19,6 +19,14 @@ const FICHES = {
     titre: 'Porte-avions « France Libre »',
     lignes: ['310 m · 78 000 t · 2 réacteurs nucléaires de 220 MW · 27 nœuds (50 km/h)', 'Environ 2 000 marins · mise en service prévue en 2038 · durée de vie estimée : 45 ans', 'Groupe aérien : jusqu\'à 30 avions de combat, 2 avions de guet aérien, 6 hélicoptères, des drones', '9e porte-avions français · construit à Saint-Nazaire (Chantiers de l\'Atlantique, avec Naval Group) · source : Marine nationale'],
   },
+  charlesDeGaulle: {
+    titre: 'Porte-avions « Charles-de-Gaulle »',
+    lignes: ['261,5 m de long · 64,4 m de large · mis en service en mai 2001 · port d\'attache : base navale de Toulon', '2 réacteurs nucléaires et 2 groupes turbo-réducteurs : 61 MW (83 000 ch) · 27 nœuds (50 km/h)', 'Équipage : 1 900 marins · 40 aéronefs, dont 24 Rafale Marine · 2 catapultes de 75 m', '8e porte-avions français · seul bâtiment de combat de surface à propulsion nucléaire en Europe · source : Marine nationale'],
+  },
+  leclerc: {
+    titre: 'Char Leclerc rénové (XLR)',
+    lignes: ['Char de combat de l\'armée de Terre, en service depuis 1992 · 9,87 m canon compris · 3,71 m de large · environ 57 t', 'Canon de 120 mm à chargement automatique : trois hommes d\'équipage au lieu de quatre · 72 km/h sur route', 'Rénovation XLR : intégration au combat collaboratif SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030, 200 fin 2035', 'Camouflage centre-Europe · silhouette fidèle, détails simplifiés'],
+  },
 };
 
 const VUES = {
@@ -26,10 +34,12 @@ const VUES = {
   snle: { '3/4': [11, 6.5, 13], Profil: [0, 1.5, 19], Dessus: [0, 21, 0.01], Face: [-18, 2, 0.01] },
   snle3g: { '3/4': [12, 6.5, 14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
+  charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
+  leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
 };
 /** Recule la caméra sur les écrans étroits (téléphone en portrait) pour que l'appareil tienne dans le cadre. */
 const recul = (aspect) => Math.max(1, 1.45 / Math.max(0.5, aspect));
-const CONSTRUCTEURS = { rafale: 'construireRafale', snle: 'construireSnle', snle3g: 'construireSnle3G', porteAvions: 'construirePorteAvions' };
+const CONSTRUCTEURS = { rafale: 'construireRafale', snle: 'construireSnle', snle3g: 'construireSnle3G', porteAvions: 'construirePorteAvions', charlesDeGaulle: 'construireCharlesDeGaulle', leclerc: 'construireLeclerc' };
 
 /**
  * Visionneuse 3D interactive (three.js, chargé à la demande) : rotation au
@@ -48,9 +58,10 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
   const [trappes, setTrappes] = useState(false);
   const [biplace, setBiplace] = useState(false);
   const [train, setTrain] = useState(false);
+  const [tourelle, setTourelle] = useState(false);
   const [message, setMessage] = useState(null);
   const sous = modele === 'snle' || modele === 'snle3g';
-  const navire = modele === 'porteAvions';
+  const navire = modele === 'porteAvions' || modele === 'charlesDeGaulle';
 
   useEffect(() => {
     let annule = false;
@@ -177,6 +188,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
             if (d > 6) { lancement = null; av.position.set(cat.x0, cat.y0, av.position.z); av.rotation.z = 0; }
           }
         }
+        objet.userData.animer?.(t, api.current);
         controles.update();
         renderer.render(scene, camera);
         const conteneurLegendes = legendesRef.current;
@@ -247,6 +259,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
           {sous && <button type="button" className={`puce ${trappes ? 'active' : ''}`} aria-pressed={trappes} onClick={() => { api.current.trappes = !trappes; setTrappes(!trappes); }}>{trappes ? 'Fermer les trappes' : 'Ouvrir les trappes'}</button>}
           {sous && <button type="button" className="puce" disabled={!trappes} onClick={() => { api.current.tir = true; }} title={trappes ? '' : 'Ouvrez d\'abord les trappes'}>🚀 Tir d'essai (simulation)</button>}
           {navire && <button type="button" className="puce" onClick={() => { api.current.lancer = true; }}>🛫 Catapulter un Rafale</button>}
+          {modele === 'leclerc' && <button type="button" className={`puce ${tourelle ? 'active' : ''}`} aria-pressed={tourelle} onClick={() => { api.current.tourelle = !tourelle; setTourelle(!tourelle); }}>{tourelle ? 'Tourelle en veille' : 'Faire pivoter la tourelle'}</button>}
           <button type="button" className="puce" onClick={photo}>📸 Photo</button>
         </div>
       )}

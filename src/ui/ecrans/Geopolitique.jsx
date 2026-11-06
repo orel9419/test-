@@ -81,7 +81,7 @@ function CarteMonde({ theatres, position, destination, choisi, onChoisir }) {
 export default function Geopolitique({ partie, decisions, majDecisions, allerA }) {
   const r = resumeGeopolitique(partie);
   const [choisi, setChoisi] = useState(null);
-  const [voir3d, setVoir3d] = useState(false);
+  const [voir3d, setVoir3d] = useState(null); // 'charlesDeGaulle' | 'porteAvions' | null
   const theatres = r?.theatres ?? [];
   const selection = useMemo(() => theatres.find((t) => t.id === (choisi ?? r?.gan.position)), [theatres, choisi, r]);
   if (!r) return <div className="carte"><h2>Géopolitique</h2><p>Ce module est disponible pour la France.</p></div>;
@@ -119,8 +119,11 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
           {enMaintenance && <p className="petit alerte" style={{ margin: 0 }}>Entretien à Toulon : encore {g.maintenance} trimestre(s).</p>}
           {destination && <p className="petit alerte bonne" style={{ margin: 0 }}>Ordre donné : {destination === 'toulon' ? 'rentrer à Toulon' : `appareiller pour ${nomTheatre(destination)}`} (à la validation du trimestre). <button type="button" className="lien" onClick={() => majDecisions({ gan: null })}>Annuler</button></p>}
           <ul className="tres-petit muet" style={{ margin: 0, paddingLeft: '1rem' }}>{GROUPE_AERONAVAL.composition.map((c) => <li key={c}>{c}</li>)}</ul>
-          <button type="button" className="lien petit" onClick={() => setVoir3d((v) => !v)}>{voir3d ? 'Masquer le modèle 3D' : pa.nom === 'France Libre' ? 'Voir le porte-avions en 3D' : 'Voir son successeur, le « France Libre », en 3D'}</button>
-          {voir3d && <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D modele="porteAvions" hauteur={280} /></Suspense>}
+          <div className="ligne petit">
+            {pa.nom !== 'France Libre' && <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'charlesDeGaulle' ? null : 'charlesDeGaulle'))}>{voir3d === 'charlesDeGaulle' ? 'Masquer le modèle 3D' : 'Voir le Charles-de-Gaulle en 3D'}</button>}
+            <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'porteAvions' ? null : 'porteAvions'))}>{voir3d === 'porteAvions' ? 'Masquer le modèle 3D' : pa.nom === 'France Libre' ? 'Voir le porte-avions en 3D' : 'Voir son successeur, le « France Libre »'}</button>
+          </div>
+          {voir3d && <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D key={voir3d} modele={voir3d} hauteur={280} /></Suspense>}
         </div>
 
         {selection && (

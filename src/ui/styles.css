@@ -594,6 +594,9 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .express .bouton:not(.principal):hover { background: rgba(255, 255, 255, 0.2); }
 .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #f6f7f9 0%, #dfe3e8 60%, #c3c9d1 100%); }
 .visionneuse-porteAvions .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+.visionneuse-charlesDeGaulle .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+.visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f3f1e8 0%, #d9d6c4 55%, #b3ad94 100%); }
+:root[data-theme="dark"] .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45443a 0%, #2b2a24 60%, #191814 100%); }
 :root[data-theme="dark"] .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #3b4350 0%, #232a33 60%, #151a20 100%); }
 
 /* ===== Géopolitique : carte du monde, groupe aéronaval, tensions ===== */

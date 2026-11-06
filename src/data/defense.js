@@ -16,6 +16,10 @@ export const SOURCES_DEFENSE = {
   cdgAtm: { titre: 'L\'Essentiel de l\'éco : la France sans porte-avions pendant dix-huit mois (arrêt technique majeur 2027-2028)', url: 'https://lessentieldeleco.fr/7946-la-france-sans-porte-avions-pendant-dix-huit-mois/' },
   cdgProlongation: { titre: 'Baird Maritime : la France envisage de prolonger le Charles-de-Gaulle jusqu\'en 2040', url: 'https://www.bairdmaritime.com/security/naval/naval-ships/charles-de-gaulle-carrier-extension' },
   cdgQuestion: { titre: 'Assemblée nationale : question écrite sur le retrait du Charles-de-Gaulle et son arrêt technique majeur', url: 'https://questions.assemblee-nationale.fr/dyn/17/questions/QANR5L17QE12713.pdf' },
+  lpmTerre: { titre: 'Forces Operations Blog : LPM 2024-2030, cibles relevées à 1 437 Griffon et 238 Jaguar en 2030', url: 'https://forcesoperations.com/amp/lpm-2024-2030-feu-vert-pour-la-rehausse-des-cibles-de-griffon-et-de-jaguar/' },
+  chiffresTerre: { titre: 'Ministère des Armées : armée de Terre, chiffres clés 2025', url: 'https://www.defense.gouv.fr/sites/default/files/terre/PRAT%20-%20Livret%20Chiffres%20cle%CC%81s%202025_.pdf' },
+  leclercDga: { titre: 'DGA : livraison du 15e char Leclerc rénové (160 fin 2030, 200 fin 2035)', url: 'https://www.defense.gouv.fr/dga/actualites/dga-livre-15e-char-leclerc-renove-larmee-terre' },
+  caesar: { titre: 'KNDS : le ministère des Armées commande 109 Caesar MkII', url: 'https://knds.com/en/press-releases/the-french-mod-orders-109-caesar-mk-ii-from-nexter-a-company-of-knds' },
   pangNom: { titre: 'Defence Industry Europe : le porte-avions s\'appellera « France Libre »', url: 'https://defence-industry.eu/france-unveils-name-of-next-generation-nuclear-aircraft-carrier-as-pang-programme-advances-toward-build-phase/' },
   scaf: { titre: 'Le JDD : comment Dassault et Airbus ont enterré le futur avion de combat européen (juin 2026)', url: 'https://www.lejdd.fr/International/scaf-comment-dassault-et-airbus-ont-enterre-le-futur-avion-de-combat-europeen-176046' },
   dissuasion: { titre: 'Vie publique : les objectifs de la loi de programmation militaire (dissuasion : environ 13 % de la LPM)', url: 'https://www.vie-publique.fr/eclairage/284741-budget-de-la-defense-quelles-etapes-pour-le-porter-5-du-pib' },
@@ -71,7 +75,8 @@ export const PROGRAMMES_DEFENSE = {
       id: 'cdg', nom: 'Porte-avions « Charles-de-Gaulle »', sousTitre: 'En service depuis 2001, jusqu\'à l\'arrivée de son successeur', illustration: 'porteAvions', domaine: 'Marine',
       industriels: ['Naval Group (entretien à Toulon)', 'TechnicAtome (chaufferies nucléaires K15)'], fleurons: ['naval_group'],
       faits: [
-        'Seul porte-avions français et seul porte-avions à propulsion nucléaire en service hors des États-Unis : 261 m, environ 42 000 t, deux réacteurs K15. Admis au service actif en mai 2001, port d\'attache Toulon.',
+        '8e porte-avions français, mis en service en mai 2001, port d\'attache Toulon : 261,5 m de long, 64,4 m de large, environ 42 000 t. Seul bâtiment de combat de surface à propulsion nucléaire en Europe : 2 réacteurs nucléaires et 2 groupes turbo-réducteurs (61 MW, 83 000 ch), 27 nœuds.',
+        'Équipage de 1 900 marins ; jusqu\'à 40 aéronefs, dont 24 Rafale Marine, un avion de guet aérien Hawkeye et des hélicoptères ; 2 catapultes de 75 m (Marine nationale).',
         'Un porte-avions unique n\'est pas disponible en permanence. Son troisième arrêt technique majeur (rechargement des réacteurs) est prévu à Toulon à partir de 2027, pour dix-huit à vingt-quatre mois selon la presse spécialisée : la France n\'aura pas de porte-avions disponible pendant cette période.',
         'Son retrait est prévu vers 2038, à l\'arrivée du « France Libre ». Une étude menée pendant l\'arrêt technique doit dire si ses chaufferies permettent de le prolonger de quelques années (jusqu\'à 2040 environ).',
       ],
@@ -113,6 +118,57 @@ export const PROGRAMMES_DEFENSE = {
       options: [{ id: 'nominal', nom: 'Décision par la réforme « Avion de combat de nouvelle génération »', description: 'Programme national, relance européenne, ou Rafale F5 d\'abord.' }],
       jalons: [],
       sources: ['scaf'],
+    },
+    {
+      id: 'scorpion', nom: 'SCORPION : Griffon, Jaguar, Serval', sousTitre: 'Renouvellement des blindés de l\'armée de Terre et combat collaboratif', illustration: 'blinde', domaine: 'Terre',
+      industriels: ['KNDS France, Arquus et Thales (groupement d\'entreprises)', 'Thales (système d\'information du combat, radios)', 'Safran (optronique)'], fleurons: ['thales', 'safran'],
+      faits: [
+        'SCORPION remplace les blindés des années 1970-1980 (VAB, AMX-10 RC, ERC 90) par le Griffon (transport de troupes 6×6), le Jaguar (reconnaissance et combat, canon de 40 mm) et le Serval (blindé léger 4×4), reliés par un système d\'information commun : chaque véhicule voit ce que voient les autres.',
+        'Objectifs de la loi de programmation militaire, relevés par amendement en 2023 : 1 437 Griffon et 238 Jaguar en 2030.',
+        'L\'armée de Terre aligne une force opérationnelle terrestre de 77 000 combattants et assure 60 % de l\'engagement opérationnel des armées (ministère des Armées, chiffres clés 2025).',
+      ],
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation militaire', description: 'Livraisons au rythme prévu.' },
+        { id: 'accelerer', nom: 'Accélérer les livraisons', description: '0,6 Md€ de plus par an pendant quatre ans (hypothèse de jeu) : chaînes de production renforcées, régiments équipés plus tôt.', cout: 0.6, duree: 16, effets: { souverainete: 2, influence: 1, relations: { ue: 1 }, fleurons: { thales: 2 } }, avance: { jalon: 'scorpion_2030', trimestres: 4 } },
+        { id: 'etaler', nom: 'Étaler les livraisons pour économiser', description: '0,5 Md€ d\'économie par an pendant trois ans, puis un rattrapage plus coûteux ; les vieux VAB roulent plus longtemps.', cout: -0.5, duree: 12, puis: { cout: 0.6, duree: 12 }, effets: { souverainete: -2, influence: -1, fleurons: { thales: -2 } }, retard: { jalon: 'scorpion_2030', trimestres: 8 } },
+      ],
+      jalons: [{ id: 'scorpion_2030', influence: 0, annee: 2030, t: 4, texte: 'SCORPION : 1 437 Griffon et 238 Jaguar en service (objectif de la loi de programmation).' }],
+      sources: ['lpmTerre', 'chiffresTerre'],
+    },
+    {
+      id: 'leclerc', nom: 'Char Leclerc rénové et char du futur', sousTitre: 'Le blindé lourd de l\'armée de Terre, en attendant son successeur', illustration: 'char', domaine: 'Terre',
+      industriels: ['KNDS France (ex-Nexter)', 'Thales (vétronique, optronique)'], fleurons: ['thales'],
+      faits: [
+        'Char de combat en service depuis 1992 : canon de 120 mm à chargement automatique, trois hommes d\'équipage. Des Leclerc sont déployés en Estonie avec la mission Lynx, sur le flanc est de l\'OTAN.',
+        'Rénovation à mi-vie (XLR) : intégration au système SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030 et 40 de plus fin 2035 (DGA).',
+        'Son successeur, le char franco-allemand MGCS (avec l\'Allemagne), en est toujours au stade des études ; une partie de la classe politique réclame un char national.',
+      ],
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation', description: '200 Leclerc rénovés en 2035 ; successeur étudié avec l\'Allemagne (MGCS).' },
+        { id: 'char_national', nom: 'Lancer un char de combat national', description: '0,5 Md€ de plus par an pendant huit ans (hypothèse de jeu) : bureau d\'études et démonstrateur, souveraineté industrielle, mais froid avec Berlin.', cout: 0.5, duree: 32, effets: { souverainete: 3, relations: { allemagne: -4 }, fleurons: { thales: 2 } } },
+        { id: 'accelerer', nom: 'Accélérer la rénovation', description: '0,3 Md€ de plus par an pendant quatre ans : les 160 chars rénovés un an plus tôt.', cout: 0.3, duree: 16, effets: { souverainete: 1, influence: 1 }, avance: { jalon: 'leclerc_160', trimestres: 4 } },
+        { id: 'etaler', nom: 'Étaler la rénovation', description: '0,3 Md€ d\'économie par an pendant trois ans, puis un rattrapage ; deux ans de retard.', cout: -0.3, duree: 12, puis: { cout: 0.4, duree: 8 }, effets: { souverainete: -1, influence: -1 }, retard: { jalon: 'leclerc_160', trimestres: 8 } },
+      ],
+      jalons: [
+        { id: 'leclerc_160', influence: 0, annee: 2030, t: 4, texte: '160 chars Leclerc rénovés (XLR) en service.' },
+        { id: 'leclerc_200', influence: 0, annee: 2035, t: 4, texte: '200 chars Leclerc rénovés : fin de la rénovation.' },
+      ],
+      sources: ['leclercDga'],
+    },
+    {
+      id: 'artillerie', nom: 'Artillerie : Caesar MkII et frappe longue portée', sousTitre: 'Canons automoteurs de 155 mm et lance-roquettes', illustration: 'artillerie', domaine: 'Terre',
+      industriels: ['KNDS France (Caesar)', 'Safran et MBDA (frappe longue portée)'], fleurons: ['safran'],
+      faits: [
+        'Le Caesar, canon de 155 mm monté sur camion, s\'est imposé en Ukraine par sa mobilité : il tire puis change de position en quelques minutes.',
+        '109 Caesar MkII (cabine blindée, nouveau châssis) commandés en 2024 pour environ 350 M€, livrables à partir de 2026 : ils remplacent les automoteurs AuF1, puis les premiers Caesar.',
+        'Les lance-roquettes unitaires arrivent en fin de vie : la loi de programmation prévoit une capacité de frappe longue portée terrestre de conception française.',
+      ],
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation militaire', description: 'Caesar MkII livrés au rythme prévu.' },
+        { id: 'doubler', nom: 'Doubler les commandes d\'artillerie', description: '0,6 Md€ de plus par an pendant quatre ans (hypothèse de jeu) : Caesar MkII supplémentaires et lance-roquettes souverain plus tôt.', cout: 0.6, duree: 16, effets: { souverainete: 3, influence: 1, relations: { ukraine: 2 }, fleurons: { safran: 2 } } },
+      ],
+      jalons: [{ id: 'caesar_mk2', influence: 0, annee: 2027, t: 2, texte: 'Premiers Caesar MkII en service dans les régiments d\'artillerie.' }],
+      sources: ['caesar'],
     },
     {
       id: 'drones', nom: 'Drones et munitions', sousTitre: '« Économie de guerre » : stocks d\'obus, de missiles et de drones', illustration: 'drone', domaine: 'Terre',

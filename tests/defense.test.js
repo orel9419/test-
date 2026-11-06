@@ -90,3 +90,27 @@ describe('Opérations, exportations et dissuasion', () => {
     expect(resumeDefense(x).capacites.rafale).toBeGreaterThan(150);
   });
 });
+
+describe('Armée de Terre', () => {
+  it('SCORPION, Leclerc rénové et artillerie figurent parmi les programmes, avec leurs objectifs', () => {
+    const r = resumeDefense(nouvelle());
+    const terre = r.programmes.filter((p) => p.domaine === 'Terre').map((p) => p.id);
+    expect(terre).toEqual(expect.arrayContaining(['scorpion', 'leclerc', 'artillerie', 'drones']));
+    const leclerc = r.programmes.find((p) => p.id === 'leclerc');
+    expect(leclerc.jalonsEffectifs.map((j) => `${j.id}:${j.annee}`)).toEqual(['leclerc_160:2030', 'leclerc_200:2035']);
+    expect(r.programmes.find((p) => p.id === 'scorpion').faits.join(' ')).toMatch(/1 437 Griffon et 238 Jaguar/);
+  });
+
+  it('accélérer la rénovation des Leclerc coûte et avance l\'objectif d\'un an', () => {
+    const e = nouvelle();
+    deciderDefense(e, { programmes: { leclerc: 'accelerer' } }, certain);
+    expect(depensesTemporairesActives(e).defense).toBeGreaterThan(0);
+    const j = resumeDefense(e).programmes.find((p) => p.id === 'leclerc').jalonsEffectifs.find((x) => x.id === 'leclerc_160');
+    expect(j.annee).toBe(2029);
+  });
+
+  it('les objectifs de l\'armée de Terre sont atteints à leur date', () => {
+    const x = jouer(nouvelle(), 18);
+    expect(x.defense.jalons).toEqual(expect.arrayContaining(['caesar_mk2', 'scorpion_2030', 'leclerc_160']));
+  });
+});
