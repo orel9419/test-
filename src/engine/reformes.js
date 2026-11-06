@@ -79,7 +79,7 @@ export function bilanReformes(e) {
     const def = trouverReforme(a.id);
     let r = {};
     if (a.appliquee) {
-      try { r = reduire(def?.effets?.(e, a.option, e.tour - a.tourEffet) ?? {}, a.facteur); } catch { r = {}; }
+      try { r = reduire(def?.effets?.(e, a.option, e.tour - a.tourEffet, a) ?? {}, a.facteur); } catch { r = {}; }
     }
     const ligne = {
       id: a.id, nom: def?.nom ?? a.nom, option: a.libelleOption, appliquee: a.appliquee, tourApplication: a.tourApplication,
@@ -90,6 +90,7 @@ export function bilanReformes(e) {
     // Réformes pilotées par un sous-modèle : temps de travail et âge de départ
     if (a.id === 'temps_travail' && a.appliquee) { ligne.emploi = e.travail.offreTravail * k; ligne.chomage = e.travail.chomageStructurel * k; ligne.recettes = -e.travail.coutBudgetaire; }
     if (a.id === 'retraites_age') ligne.note = `âge légal ${e.retraites.ageLegal.toFixed(2).replace('.', ',')} ans, cible ${String(e.retraites.ageCible).replace('.', ',')}`;
+    if (a.pilotage?.cible !== undefined) ligne.note = `dépense publique ${a.pilotage.ratio.toFixed(1).replace('.', ',')} % du PIB, trajectoire ${a.pilotage.cible.toFixed(1).replace('.', ',')} %`;
     ligne.solde = ligne.recettes - ligne.depenses;
     return ligne;
   });
@@ -170,7 +171,9 @@ export function majReformes(e, alea) {
     if (!entree.appliquee) continue;
     const def = trouverReforme(entree.id);
     const age = e.tour - entree.tourEffet;
-    const r = reduire(def.effets?.(e, entree.option, age) ?? {}, entree.facteur);
+    // Réformes pilotées (trajectoire de dépense...) : mise à jour de leur état, une fois par trimestre
+    def.piloter?.(e, entree, age);
+    const r = reduire(def.effets?.(e, entree.option, age, entree) ?? {}, entree.facteur);
     for (const [poste, v] of Object.entries(r.depenses ?? {})) effets.depenses[poste] = (effets.depenses[poste] ?? 0) + v;
     for (const [cle, v] of Object.entries(r.recettes ?? {})) effets.recettes[cle] = (effets.recettes[cle] ?? 0) + v;
     for (const cle of ['offreTravail', 'chomageStructurel', 'potentielBonus', 'chocPrix', 'cessions', 'fondsSS', 'chocDemande', 'influence', 'souverainete', 'emissionsEvitees']) effets[cle] += (r[cle] ?? 0) * (CLES_STRUCTURELLES.includes(cle) ? (e.intensiteReformes ?? 1) : 1);

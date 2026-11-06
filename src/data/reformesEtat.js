@@ -11,6 +11,40 @@ const prix = (e) => e.macro.niveauPrix / 100;
 const FR = ['france'];
 const ans = (age) => Math.max(0, age) / 4;
 
+/** Trajectoires de dépense publique (en % du PIB) : cible à cinq ans, puis à dix ans. */
+export const TRAJECTOIRES_DEPENSE = {
+  '47_43': { cinq: 47.5, dix: 43 },
+  '45_40': { cinq: 45, dix: 40 },
+  '43_38': { cinq: 43, dix: 38 },
+};
+
+/**
+ * Répartition des économies (hypothèse de jeu) : au prorata de la dépense de
+ * chaque poste, davantage sur les aides, subventions et interventions, moins
+ * sur la défense, la sécurité, la justice et la recherche.
+ */
+const POIDS_ECONOMIES = { retraites: 0.9, sante: 0.9, protectionSociale: 1.1, travailEmploi: 1.3, education: 0.7, recherche: 0.5, defense: 0.2, affairesEtrangeres: 1, interieurJustice: 0.3, ecologieEnergie: 1.2, transports: 1, agriculture: 1.2, logement: 1.3, culture: 1.2, economieFinances: 1.3 };
+
+/** Part maximale de la dépense publique que le pilotage peut supprimer. */
+const ECONOMIE_MAX = 0.45;
+
+/** Cible de dépense (% du PIB) après `age` trimestres : linéaire vers la cible à cinq ans, puis vers celle à dix ans. */
+export function cibleDepensePIB(option, age, depart) {
+  const t = TRAJECTOIRES_DEPENSE[option] ?? TRAJECTOIRES_DEPENSE['47_43'];
+  const q = Math.max(0, age + 1);
+  const cinq = Math.min(depart, t.cinq);
+  const dix = Math.min(cinq, t.dix);
+  if (q <= 20) return depart + (cinq - depart) * q / 20;
+  if (q <= 40) return cinq + (dix - cinq) * (q - 20) / 20;
+  return dix;
+}
+
+function repartirParPoids(e, montant) {
+  const postes = Object.entries(e.budget).map(([id, l]) => [id, (POIDS_ECONOMIES[id] ?? 1) * (l.montantInitial ?? l.montant)]);
+  const total = postes.reduce((s, [, w]) => s + w, 0);
+  return Object.fromEntries(postes.map(([id, w]) => [id, montant * w / total]));
+}
+
 export const REFORMES_ETAT = [
   {
     id: 'ia_fonction_publique',
@@ -103,5 +137,71 @@ export const REFORMES_ETAT = [
     reaction: () => ({ chocs: { salaries: 4, entrepreneurs: 2, jeunes: 1 }, opinion: { salaries: 1.5 } }),
     axes: { marche: 0.3, social: 0.2, rigueur: -0.2 },
     chiffrage: 'Hypothèse de jeu : environ 1,2 Md€ de cotisations en moins par an.',
+  },
+  {
+    id: 'plafond_depense_pib',
+    nom: 'Ramener la dépense publique de 57 % à 47,5 %, 45 % ou 43 % du PIB en cinq ans',
+    categorie: 'depenses', pays: FR, vehicule: 'loi', orientation: 'liberale',
+    resume: 'Une loi de programmation fixe un plafond de dépense publique en part du PIB, atteint en cinq ans puis abaissé encore pendant cinq ans. Chaque trimestre, les économies s\'ajustent pour suivre la trajectoire, sur tous les postes, retraites et santé comprises.',
+    pedagogie: 'En 2025, la dépense publique a atteint 57,3 % du PIB selon l\'Insee (57,2 % en première estimation, 57,0 % en 2024), l\'un des niveaux les plus élevés d\'Europe : 49,5 % dans l\'Union européenne et 49,8 % dans la zone euro. Un point de PIB vaut environ 30 Md€. Passer à 47,5 % en cinq ans, c\'est près de 300 Md€ d\'économies par an aux prix de 2026, plus que toute la dépense de santé ; descendre à 38 %, proche du niveau de la France du milieu des années 1960, en demande près de 600. Les retraites (un quart de la dépense) et la santé ne peuvent pas être épargnées. Dans le jeu, la trajectoire est suivie chaque trimestre : moins de dépense freine aussi l\'activité, donc le PIB, et il faut couper davantage que l\'écart initial. Sans baisse d\'impôts décidée par ailleurs (onglet Impôts), l\'État dégagerait vite un excédent. Dans la réalité, une loi de programmation n\'oblige pas : chaque budget doit ensuite être voté.',
+    pour: ['Rapprocher la France de ses voisins et redresser durablement les comptes', 'Désendettement rapide, taux d\'intérêt plus bas, marges pour baisser les impôts', 'Oblige à réformer l\'État et à évaluer chaque dépense'],
+    contre: ['Choc récessif : chômage en hausse pendant plusieurs années', 'Baisse des pensions, des remboursements de soins et des prestations', 'Services publics dégradés, rejet social et politique très fort'],
+    exemples: ['Suède : dépense publique ramenée d\'environ 72 % du PIB en 1993 à 55 % en 2000, après une crise bancaire et avec une forte croissance', 'France : environ 35 % du PIB au début des années 1960, 41,9 % en 1968', 'Zone euro : 49,8 % du PIB en 2025'],
+    sources: [
+      { texte: 'Insee Première n° 2106 : comptes des administrations publiques en 2025 (57,3 % du PIB)', url: 'https://www.insee.fr/fr/statistiques/8997691' },
+      { texte: 'Insee : première estimation des comptes publics 2025 (mars 2026, 57,2 % du PIB)', url: 'https://www.insee.fr/fr/statistiques/8956575' },
+      { texte: 'Insee : dépenses des administrations publiques dans l\'Union européenne', url: 'https://www.insee.fr/fr/statistiques/2381406' },
+      { texte: 'CESifo, rapport EEAG 2012 : la consolidation budgétaire suédoise (71,7 % du PIB en 1993, 55,1 % en 2000)', url: 'https://www.cesifo.org/DocDL/eeag_report_chap4_2012.pdf' },
+    ],
+    options: [
+      { id: '47_43', nom: '47,5 % du PIB en cinq ans, puis 43 % en dix ans' },
+      { id: '45_40', nom: '45 % du PIB en cinq ans, puis 40 % en dix ans' },
+      { id: '43_38', nom: '43 % du PIB en cinq ans, puis 38 % en dix ans' },
+    ],
+    remplace: ['choc_depenses'],
+    delai: 1,
+    /** Pilotage trimestriel : anticipation de la trajectoire, puis correction de l'écart constaté. */
+    piloter(e, entree, age) {
+      const pib = e.macro.pibNominal;
+      const ratio = (e.finances.depenses / pib) * 100;
+      const p = (entree.pilotage ??= { depart: ratio, economie: 0, age: -1, ratio, cible: ratio });
+      if (p.age === age) return;
+      const avant = cibleDepensePIB(entree.option, age - 1, p.depart);
+      const cible = cibleDepensePIB(entree.option, age, p.depart);
+      const plafond = ECONOMIE_MAX * (e.finances.depenses + p.economie);
+      p.economie = Math.min(plafond, Math.max(0, p.economie + (pib / 100) * ((avant - cible) + 0.6 * (ratio - avant))));
+      p.horsAtteinte = p.economie >= plafond - 1e-6;
+      p.age = age; p.ratio = ratio; p.cible = cible;
+    },
+    effets(e, o, age, entree) {
+      const economie = entree?.pilotage?.economie ?? 0;
+      if (economie <= 0) return {};
+      const depenses = repartirParPoids(e, -economie);
+      const part = economie / (e.finances.depenses + economie);
+      const partRetraites = Math.min(0.6, -depenses.retraites / Math.max(1, e.retraites?.depenses ?? e.budget.retraites.montant));
+      const pension = e.statique.retraites?.pensionMoyenne ?? 1750;
+      return {
+        depenses,
+        // Moins de transferts : un peu plus d'incitations à travailler (hypothèse de jeu, modeste)
+        offreTravail: 1.2 * part, potentielBonus: 0.15 * part,
+        menages: {
+          retraite: [{ montant: -Math.round(partRetraites * pension), texte: 'Baisse des pensions (plafond de dépense publique)' }],
+          smic: [{ montant: -Math.round(400 * 1.2 * part), texte: 'Baisse de la prime d\'activité et des aides au logement (estimation)' }],
+          fonctionnaire: [{ montant: -Math.round(2400 * 0.5 * part), texte: 'Gel puis baisse des rémunérations publiques (estimation)' }],
+        },
+      };
+    },
+    reaction: (e, o) => {
+      const k = { '47_43': 1, '45_40': 1.3, '43_38': 1.6 }[o] ?? 1;
+      return { chocs: { fonctionnaires: -14 * k, retraites: -10 * k, jeunes: -4 * k, salaries: -3 * k, agriculteurs: -3 * k, entrepreneurs: 5 }, grief: { fonctionnaires: 14 * k, retraites: 10 * k, salaries: 3 * k }, credibilite: 0.15, instabilite: 0.1 * k };
+    },
+    axes: { rigueur: 1, marche: 0.8, social: -1, fiscal: -0.3 },
+    axesParOption: { '45_40': { rigueur: 1.2, social: -1.3 }, '43_38': { rigueur: 1.4, social: -1.6 } },
+    positionsGroupesParOption: {
+      '47_43': { DR: 0.6, UDR: 0.7, HOR: 0.5, EPR: 0.1, DEM: -0.2, LIOT: -0.4, RN: -0.6, SOC: -1, ECOS: -1, LFI: -1, GDR: -1 },
+      '45_40': { DR: 0.4, UDR: 0.6, HOR: 0.2, EPR: -0.2, DEM: -0.5, LIOT: -0.6, RN: -0.8, SOC: -1, ECOS: -1, LFI: -1, GDR: -1 },
+      '43_38': { DR: 0.1, UDR: 0.4, HOR: -0.2, EPR: -0.5, DEM: -0.7, LIOT: -0.8, RN: -0.9, SOC: -1, ECOS: -1, LFI: -1, GDR: -1 },
+    },
+    chiffrage: 'Écart à combler aux prix de 2026 : environ 300 Md€ par an à cinq ans pour 47,5 %, 375 Md€ pour 45 %, 435 Md€ pour 43 % ; à dix ans, environ 435, 525 et 590 Md€. Comme la baisse de la dépense réduit aussi le PIB, il faut couper davantage : dans le jeu, de l\'ordre de 450 à 650 Md€ par an au bout de cinq ans selon la trajectoire. Les économies sont recalculées chaque trimestre ; répartition et plafond (45 % de la dépense au plus) : hypothèses de jeu.',
   },
 ];
