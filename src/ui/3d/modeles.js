@@ -912,7 +912,15 @@ export function construirePorteAvions(THREE) {
   return groupe;
 }
 
-/** Texture du pont d'envol du Charles-de-Gaulle (262 m × 70 m) : piste oblique, deux catapultes, ascenseurs. */
+/**
+ * Contour du pont d'envol du Charles-de-Gaulle, relevé sur le plan de
+ * l'infographie de la Marine nationale (x : distance à l'étrave en mètres,
+ * z : bâbord positif). Étrave large, bord bâbord dans l'axe de la piste
+ * oblique, île et ascenseurs à tribord.
+ */
+const CONTOUR_CDG = [[0, -16.5], [2.5, -18.8], [57, -19.6], [61, -30.5], [244, -30.5], [249, -20], [261.5, -19], [261.5, 17.7], [72, 33.5], [66.5, 33], [60, 16.5], [3, 11.2], [0, 9.2]];
+
+/** Pont du Charles-de-Gaulle (262 m × 70 m) : piste oblique sombre, brins d'arrêt, catapultes, lignes de sécurité, ascenseurs. */
 function texturePontCdG(THREE, contour) {
   const L = 262, LARG = 70;
   const W = 2048, H = Math.round(W * LARG / L);
@@ -921,77 +929,150 @@ function texturePontCdG(THREE, contour) {
   const ctx = c.getContext('2d');
   const px = (x) => (x / L) * W;
   const py = (z) => ((z + LARG / 2) / LARG) * H; // le haut de l'image = tribord
-  ctx.beginPath();
-  contour.forEach(([x, z], i) => (i ? ctx.lineTo(px(x), py(z)) : ctx.moveTo(px(x), py(z))));
-  ctx.closePath();
-  ctx.fillStyle = '#4a4c50';
+  const k = W / L; // pixels par mètre
+  const chemin = (pts) => { ctx.beginPath(); pts.forEach(([x, z], i) => (i ? ctx.lineTo(px(x), py(z)) : ctx.moveTo(px(x), py(z)))); ctx.closePath(); };
+  chemin(contour);
+  ctx.fillStyle = '#6b6e72';
   ctx.fill();
   ctx.save();
   ctx.clip();
+  // Piste oblique : revêtement antidérapant sombre
+  const piste = [[260.5, 8.5], [260.5, -18.5], [67.5, 5.8], [67.5, 28.5]];
+  chemin(piste);
+  ctx.fillStyle = '#3c3e42';
+  ctx.fill();
   let g = 7;
   const h = () => { g = (g * 16807) % 2147483647; return g / 2147483647; };
-  for (let k = 0; k < 2200; k++) { ctx.fillStyle = `rgba(${h() > 0.5 ? '255,255,255' : '0,0,0'},0.035)`; ctx.fillRect(h() * W, h() * H, 6 + h() * 30, 2 + h() * 6); }
+  for (let n = 0; n < 2600; n++) { ctx.fillStyle = `rgba(${h() > 0.5 ? '255,255,255' : '0,0,0'},0.04)`; ctx.fillRect(h() * W, h() * H, 6 + h() * 30, 2 + h() * 6); }
   const ligne = (x1, z1, x2, z2, couleur, largeur, tirets = null) => {
-    ctx.strokeStyle = couleur; ctx.lineWidth = largeur; ctx.setLineDash(tirets ?? []);
+    ctx.strokeStyle = couleur; ctx.lineWidth = largeur * k; ctx.setLineDash((tirets ?? []).map((d) => d * k));
     ctx.beginPath(); ctx.moveTo(px(x1), py(z1)); ctx.lineTo(px(x2), py(z2)); ctx.stroke(); ctx.setLineDash([]);
   };
-  // Piste oblique (environ 8°) : bords, axe, brins d'arrêt et zone d'appontage
-  const A = [258, 6], B = [100, 29];
-  const dx = B[0] - A[0], dz = B[1] - A[1], n = Math.hypot(dx, dz), ox = -dz / n * 11, oz = dx / n * 11;
-  ligne(A[0] + ox, A[1] + oz, B[0] + ox, B[1] + oz, '#f2f2f2', 4);
-  ligne(A[0] - ox, A[1] - oz, B[0] - ox, B[1] - oz, '#f2f2f2', 4);
-  ligne(A[0], A[1], B[0], B[1], '#f2f2f2', 3, [26, 22]);
-  for (let k = 0; k < 3; k++) { const t = 0.14 + k * 0.06; const x = A[0] + dx * t, z = A[1] + dz * t; ligne(x + ox, z + oz, x - ox, z - oz, '#d9d9d9', 3); }
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-  for (let k = 0; k < 7; k++) { const t = 0.33 + k * 0.013; const x = A[0] + dx * t, z = A[1] + dz * t; ctx.fillRect(px(x) - 3, py(z) - 22, 6, 44); }
-  // Deux catapultes à vapeur de 75 m : à l'avant et sur la piste oblique
-  ligne(10, 4, 85, 4, '#f5d94a', 3);
-  ligne(180, 17.4, 105, 28.3, '#f5d94a', 3);
-  // Ligne de sécurité et axe avant
-  ligne(261, -12, 112, 12, '#f5d94a', 2, [14, 10]);
-  ligne(3, -2, 68, -2, '#f2f2f2', 2, [18, 18]);
-  // Deux ascenseurs latéraux à tribord, en arrière de l'île
-  ctx.strokeStyle = '#d8c04a'; ctx.lineWidth = 5;
-  for (const [x1, x2] of [[126, 147], [193, 214]]) ctx.strokeRect(px(x1), py(-30), px(x2) - px(x1), py(-23) - py(-30));
+  const rouge = (x1, z1, x2, z2) => { ligne(x1, z1, x2, z2, '#f2f2f2', 0.55); ligne(x1, z1, x2, z2, '#d8343a', 0.55, [1.6, 1.6]); };
+  // Bords de la piste, axe, extrémité avant
+  const [A, B, C, D] = piste;
+  ligne(A[0] - 1, A[1] - 0.6, D[0], D[1] - 0.6, '#f0f0f0', 0.9);
+  ligne(B[0] - 1, B[1] + 0.6, C[0], C[1] + 0.6, '#f0f0f0', 0.9);
+  ligne(C[0] + 0.4, C[1], D[0] + 0.4, D[1], '#f0f0f0', 0.9);
+  const axe = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], axeAv = [(C[0] + D[0]) / 2, (C[1] + D[1]) / 2];
+  ligne(axe[0], axe[1], axeAv[0], axeAv[1], '#f0f0f0', 0.5, [7, 7]);
+  // Trois brins d'arrêt
+  for (const t of [0.17, 0.2, 0.23]) {
+    const x = A[0] + (D[0] - A[0]) * t;
+    const z1 = A[1] + (D[1] - A[1]) * t, z2 = B[1] + (C[1] - B[1]) * t;
+    ligne(x, z1 - 0.8, x - 3 * (z1 - z2) / 27 * 0.1, z2 + 0.8, '#d4d4d4', 0.25);
+  }
+  // Zone hachurée à l'avant de la piste oblique (comme sur le plan de la Marine)
+  const coin = [[122.7, 20.1], [76.8, 18.8], [76.8, 14.2], [122.7, 3.1]];
+  chemin(coin);
+  ctx.strokeStyle = '#f2f2f2'; ctx.lineWidth = 0.7 * k; ctx.stroke();
+  for (let n = 1; n < 12; n++) {
+    const t = n / 12;
+    const x = 122.7 + (76.8 - 122.7) * t;
+    ligne(x, 20.1 + (18.8 - 20.1) * t, x, 3.1 + (14.2 - 3.1) * t, '#f2f2f2', 0.7);
+  }
+  ligne(122.7, 11.6, 76.8, 16.5, '#f2f2f2', 0.6);
+  // Catapultes de 75 m : à l'avant et sur la piste oblique
+  ligne(9, 3.6, 96, 3.6, '#d9d9d9', 0.6);
+  ligne(150, 20.6, 78, 25.1, '#d9d9d9', 0.6);
+  // Lignes de sécurité rouges et blanches
+  rouge(247, -20.6, 23, 10.2);
+  rouge(179, 10.2, 62, 15.9);
+  rouge(161, 6.3, 43, 12);
+  // Bande jaune du bord arrière
+  ctx.fillStyle = '#f2b705';
+  ctx.fillRect(px(259.6), py(-18.5), px(261.5) - px(259.6), py(17.2) - py(-18.5));
+  // Deux ascenseurs latéraux à tribord, en arrière de l'île : bordure hachurée jaune et noire
+  for (const [x1, x2] of [[122, 141], [190, 209]]) {
+    const z1 = -30.5, z2 = -18.5;
+    ctx.fillStyle = '#55585c';
+    ctx.fillRect(px(x1), py(z1), px(x2) - px(x1), py(z2) - py(z1));
+    ctx.save();
+    ctx.beginPath(); ctx.rect(px(x1), py(z1), px(x2) - px(x1), py(z2) - py(z1)); ctx.clip();
+    ctx.lineWidth = 1.2 * k;
+    for (let n = -20; n < 40; n++) {
+      ctx.strokeStyle = n % 2 ? '#1d1d1d' : '#e8c21c';
+      ctx.beginPath(); ctx.moveTo(px(x1 + n * 1.2), py(z1)); ctx.lineTo(px(x1 + n * 1.2 + 12), py(z2)); ctx.stroke();
+    }
+    ctx.fillStyle = '#55585c';
+    ctx.fillRect(px(x1 + 1.3), py(z1 + 0.2), px(x2 - 1.3) - px(x1 + 1.3), py(z2 - 1.3) - py(z1 + 0.2));
+    ctx.strokeStyle = '#c9504f'; ctx.lineWidth = 0.3 * k;
+    ctx.strokeRect(px(x1 + 3), py(z1 + 2), px(x2 - 3) - px(x1 + 3), py(z2 - 3) - py(z1 + 2));
+    ctx.restore();
+    ctx.strokeStyle = '#2a2b2d'; ctx.lineWidth = 0.4 * k;
+    ctx.strokeRect(px(x1), py(z1), px(x2) - px(x1), py(z2) - py(z1));
+  }
   ctx.restore();
+  // Liseré du bord du pont
+  chemin(contour);
+  ctx.strokeStyle = 'rgba(30,32,35,0.8)'; ctx.lineWidth = 0.6 * k; ctx.stroke();
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
   return t;
 }
 
+/** Texte peint (numéro de coque) sur fond transparent. */
+function texturePeinte(THREE, texte, { couleur = '#1b1d20', largeur = 256, hauteur = 96 } = {}) {
+  const c = document.createElement('canvas');
+  c.width = largeur; c.height = hauteur;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = couleur;
+  ctx.font = `bold ${Math.round(hauteur * 0.8)}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(texte, largeur / 2, hauteur / 2 + 4);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Bloc aux flancs inclinés (superstructures furtives) : base l × p, sommet réduit. */
+function tronc(THREE, l, h, p, lHaut, pHaut, materiau) {
+  const geo = new THREE.BoxGeometry(l, h, p);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    if (pos.getY(i) > 0) { pos.setX(i, pos.getX(i) * lHaut / l); pos.setZ(i, pos.getZ(i) * pHaut / p); }
+  }
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, materiau);
+}
+
 /**
  * Porte-avions « Charles-de-Gaulle », d'après l'infographie de la Marine
- * nationale : 261,5 m × 64,4 m, île à tribord vers l'avant (sans cheminée :
- * propulsion nucléaire), piste oblique, deux catapultes de 75 m, deux
+ * nationale (profil, plan du pont, photographies) : 261,5 m × 64,4 m, île à
+ * tribord vers l'avant (sans cheminée : propulsion nucléaire) avec ses
+ * radômes et son mât, piste oblique sombre, deux catapultes de 75 m, deux
  * ascenseurs latéraux en arrière de l'île, Rafale Marine, avion de guet et
- * hélicoptères sur le pont. Échelle 1/20.
+ * hélicoptère sur le pont. Échelle 1/20.
  */
 export function construireCharlesDeGaulle(THREE) {
   const s = 0.05;
   const navire = new THREE.Group();
-  const flottaison = -16;
-  const coque = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.1, roughness: 0.75, envMapIntensity: 0.45 });
+  const flottaison = -17.5;
+  const coque = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.1, roughness: 0.72, envMapIntensity: 0.5 });
   const gris = new THREE.MeshStandardMaterial({ color: 0x9da3a9, metalness: 0.2, roughness: 0.6 });
   const grisFonce = new THREE.MeshStandardMaterial({ color: 0x5f656b, metalness: 0.25, roughness: 0.6 });
-  const blanc = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, metalness: 0.05, roughness: 0.5 });
+  const blanc = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, metalness: 0.05, roughness: 0.45 });
   const vitres = new THREE.MeshStandardMaterial({ color: 0x1c2733, metalness: 0.6, roughness: 0.15 });
+  const sombre = new THREE.MeshStandardMaterial({ color: 0x2b2f34, metalness: 0.2, roughness: 0.8 });
+  const jaune = new THREE.MeshStandardMaterial({ color: 0xf2b705, metalness: 0.1, roughness: 0.6 });
 
-  // Coque : gris au-dessus de la flottaison, liseré noir, carène rouge ; tirant d'eau 9,4 m
-  const couleur = (x, y) => (y < flottaison - 0.6 ? [0.48, 0.12, 0.1] : y < flottaison + 0.6 ? [0.1, 0.1, 0.11] : [0.39, 0.42, 0.45]);
+  // Coque gris clair au-dessus de la flottaison, liseré noir, carène rouge ; franc-bord d'environ 17 m, tirant d'eau 9,4 m
+  const couleur = (x, y) => (y < flottaison - 0.6 ? [0.48, 0.12, 0.1] : y < flottaison + 0.6 ? [0.1, 0.1, 0.11] : [0.47, 0.5, 0.53]);
   navire.add(new THREE.Mesh(loft(THREE, [
     { x: 0, w: 2, hHaut: 1, hBas: 1, y: -1.5, n: 2.5 },
-    { x: 5, w: 10, hHaut: 2, hBas: 8, y: -3, n: 2.5 },
-    { x: 18, w: 22, hHaut: 3, hBas: 15, y: -5, n: 2.8 },
-    { x: 45, w: 30, hHaut: 3, hBas: 19, y: -5, n: 3.2 },
-    { x: 130, w: 33, hHaut: 3, hBas: 20.4, y: -5, n: 3.6 },
-    { x: 215, w: 32, hHaut: 3, hBas: 19.5, y: -5, n: 3.6 },
-    { x: 250, w: 29, hHaut: 3, hBas: 15, y: -5, n: 3.4 },
-    { x: 261, w: 27, hHaut: 3, hBas: 10, y: -5, n: 3.2 },
+    { x: 5, w: 10, hHaut: 2, hBas: 9, y: -3, n: 2.5 },
+    { x: 18, w: 22, hHaut: 3, hBas: 16.5, y: -5, n: 2.8 },
+    { x: 45, w: 30, hHaut: 3, hBas: 21, y: -5, n: 3.2 },
+    { x: 130, w: 33, hHaut: 3, hBas: 22, y: -5, n: 3.6 },
+    { x: 215, w: 32, hHaut: 3, hBas: 21, y: -5, n: 3.6 },
+    { x: 250, w: 29, hHaut: 3, hBas: 16.5, y: -5, n: 3.4 },
+    { x: 261, w: 27, hHaut: 3, hBas: 11.5, y: -5, n: 3.2 },
   ], { segments: 56, parSegment: 6, couleur }), coque));
 
-  // Pont d'envol : 261,5 m × 64,4 m (débord de la piste oblique à bâbord, île et ascenseurs à tribord)
-  const contour = [[0, -7], [0, 6], [20, 15], [60, 22], [92, 26], [110, 33], [205, 34], [240, 30], [258, 24], [261.5, 18], [261.5, -19], [250, -22], [214, -23], [214, -30], [193, -30], [193, -23], [147, -23], [147, -30], [126, -30], [126, -23], [116, -23], [116, -30.5], [70, -30.5], [70, -24], [30, -19], [10, -12]];
+  // Pont d'envol et ses marquages
+  const contour = CONTOUR_CDG;
   const forme = new THREE.Shape(contour.map(([x, z]) => new THREE.Vector2(x, z)));
   const pontGeo = new THREE.ExtrudeGeometry(forme, { depth: 2, bevelEnabled: false });
   pontGeo.rotateX(Math.PI / 2);
@@ -1000,53 +1081,134 @@ export function construireCharlesDeGaulle(THREE) {
   marquages.rotation.x = -Math.PI / 2;
   marquages.position.set(131, 0.06, 0);
   navire.add(marquages);
-  const flancs = new THREE.Mesh(new THREE.ExtrudeGeometry(forme, { depth: 4, bevelEnabled: false }), grisFonce);
+  // Encorbellements sous le pont (débords de la piste oblique, de l'étrave et des ascenseurs)
+  const flancs = new THREE.Mesh(new THREE.ExtrudeGeometry(forme, { depth: 4.5, bevelEnabled: false }), gris);
   flancs.geometry.rotateX(Math.PI / 2);
-  flancs.position.set(2, -2, 0);
-  flancs.scale.set(0.985, 1, 0.94);
+  flancs.position.set(1.5, -2, 0);
+  flancs.scale.set(0.988, 1, 0.95);
   navire.add(flancs);
-
-  // Île à tribord, vers l'avant (sans cheminée : propulsion nucléaire) : étages en gradins, passerelle vitrée,
-  // mât principal et radars, radômes blancs de télécommunications par satellite
-  const ile = new THREE.MeshStandardMaterial({ color: 0xb4b9be, metalness: 0.15, roughness: 0.55 });
-  const bloc = (l, h, p, x, y, z, m = ile) => { const b = new THREE.Mesh(new THREE.BoxGeometry(l, h, p), m); b.position.set(x, y, z); navire.add(b); return b; };
-  const zi = -27;
-  bloc(38, 8, 5.6, 93, 4, zi);
-  bloc(34, 5, 5.2, 94, 10.5, zi);
-  bloc(24, 2.4, 5.6, 87, 14.2, zi, vitres);
-  bloc(24.4, 0.8, 5.9, 87, 15.8, zi);
-  bloc(18, 4.5, 4.8, 97, 18.4, zi);
-  bloc(9, 2, 5, 82, 16.6, zi, vitres);
-  for (const y of [2.6, 5.6, 9.6]) bloc(36, 0.5, 0.12, 93, y, zi - 2.86, grisFonce);
-  const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 1.3, 16, 8), grisFonce);
-  mat.position.set(92, 28.6, zi);
-  const plateforme = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.5, 16), grisFonce);
-  plateforme.position.set(92, 21, zi);
-  const radarVeille = new THREE.Mesh(new THREE.BoxGeometry(1, 2.8, 9), grisFonce);
-  radarVeille.position.set(92, 30.5, zi);
-  radarVeille.rotation.y = 0.5;
-  const radar3d = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.4, 5.5), ile);
-  radar3d.position.set(92, 36.6, zi);
-  radar3d.rotation.y = -0.4;
-  const vergueAvant = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 7), grisFonce);
-  vergueAvant.position.set(92, 34, zi);
-  navire.add(mat, plateforme, radarVeille, radar3d, vergueAvant);
-  for (const [x, y, r] of [[103, 22.6, 2.2], [107.5, 22.2, 1.8], [80, 19.3, 1.4]]) {
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), blanc);
-    dome.position.set(x, y, zi);
-    navire.add(dome);
+  // Bande jaune du bord arrière et portes de la poupe
+  const bande = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.4, 35.5), jaune);
+  bande.position.set(261.6, -0.7, -0.6);
+  navire.add(bande);
+  for (const [z, l] of [[-8, 9], [7, 7]]) {
+    const porte = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.5, l), sombre);
+    porte.position.set(261.2, -9, z);
+    navire.add(porte);
   }
-  const matArriere = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.45, 8, 8), grisFonce);
-  matArriere.position.set(100, 24.6, zi);
-  const vergue = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 5), grisFonce);
-  vergue.position.set(100, 27, zi);
-  navire.add(matArriere, vergue);
+  // Radeaux de survie blancs alignés sous le bord du pont (tribord et bâbord)
+  const radeau = new THREE.CylinderGeometry(0.6, 0.6, 1.6, 10);
+  radeau.rotateX(Math.PI / 2);
+  const radeaux = new THREE.InstancedMesh(radeau, blanc, 60);
+  const m4 = new THREE.Matrix4();
+  let nR = 0;
+  for (const [x0, z, nb] of [[148, -30.9, 14], [216, -30.9, 10], [150, 30.2, 10]]) {
+    for (let r = 0; r < 2; r++) for (let i = 0; i < nb / 2; i++) {
+      m4.makeTranslation(x0 + i * 1.5, -3.2 - r * 1.3, z);
+      radeaux.setMatrixAt(nR++, m4);
+    }
+  }
+  radeaux.count = nR;
+  navire.add(radeaux);
 
-  // Groupe aérien : Rafale Marine (24 à bord en pleine charge), avion de guet Hawkeye, hélicoptères
+  // Île à tribord, vers l'avant (sans cheminée : propulsion nucléaire) : étages aux flancs inclinés,
+  // passerelles vitrées, tour, mât treillis, radars et radômes blancs de télécommunications par satellite
+  const ile = new THREE.MeshStandardMaterial({ color: 0xbfc4c8, metalness: 0.15, roughness: 0.55 });
+  const zi = -24;
+  const etage = (l, h, p, lH, pH, x, y, m = ile) => { const b = tronc(THREE, l, h, p, lH, pH, m); b.position.set(x, y + h / 2, zi); navire.add(b); return b; };
+  const bloc = (l, h, p, x, y, z, m = ile) => { const b = new THREE.Mesh(new THREE.BoxGeometry(l, h, p), m); b.position.set(x, y, z); navire.add(b); return b; };
+  // Corps principal (deux ponts de hauteur), passerelle de navigation vitrée, étage supérieur, tour
+  etage(46, 14.5, 12.4, 44, 11.2, 89, 0);
+  etage(36, 3.8, 11.4, 35.4, 11, 88, 14.5);
+  bloc(35.8, 2, 11.6, 88, 16.3, zi, vitres);
+  bloc(37, 0.4, 12.2, 88, 18.5, zi, grisFonce);
+  etage(23, 6, 8.5, 21, 7.6, 89.5, 18.7);
+  etage(9, 9, 6, 7.5, 5, 91, 24.7);
+  // Passerelle « aviation » vitrée tournée vers le pont (côté bâbord de l'île)
+  const pev = tronc(THREE, 14, 3.4, 2.2, 14, 3, vitres);
+  pev.position.set(90, 16.2, zi + 6.3);
+  navire.add(pev);
+  bloc(14.6, 0.35, 3.4, 90, 18.05, zi + 6.2, grisFonce);
+  // Bloc arrière (radar de navigation) et bloc avant (mât d'antennes)
+  etage(9, 7, 8, 8.4, 7.4, 108.5, 14.5);
+  bloc(1.4, 0.8, 4.2, 108.5, 22.2, zi, grisFonce);
+  etage(6, 5.5, 7, 5.4, 6.4, 69.5, 14.5);
+  const matAvant = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.35, 9, 6), grisFonce);
+  matAvant.position.set(69.5, 24.5, zi);
+  navire.add(matAvant);
+  bloc(0.25, 0.25, 4, 69.5, 27, zi, grisFonce);
+  // Coursives (galeries) et rangées de hublots
+  for (const [l, p, x, y] of [[47, 13.6, 89, 7.2], [47.5, 12.6, 89, 14.5], [24, 9.4, 89.5, 18.7]]) bloc(l, 0.3, p, x, y, zi, grisFonce);
+  for (const [l, x, y, p] of [[44, 89, 3.2, 12.25], [44, 89, 5.4, 12.15], [43, 89, 10, 11.7], [43, 89, 12.3, 11.55], [19, 89.5, 21.6, 8.05]]) {
+    for (const c of [-1, 1]) bloc(l, 0.6, 0.1, x, y, zi + c * (p / 2 + 0.03), vitres);
+  }
+  // Échelles et gaines verticales sur le flanc tribord
+  for (const x of [72, 80, 101, 107]) bloc(0.6, 14, 0.4, x, 7.2, zi - 6.3, grisFonce);
+  // Numéro de coque « R91 » sur les deux flancs de l'île
+  const numero = new THREE.MeshBasicMaterial({ map: texturePeinte(THREE, 'R91'), transparent: true, depthWrite: false });
+  for (const c of [-1, 1]) {
+    const n = new THREE.Mesh(new THREE.PlaneGeometry(8, 3), numero);
+    n.position.set(97, 7.9, zi + c * 6.2);
+    n.rotation.y = c > 0 ? 0 : Math.PI;
+    navire.add(n);
+  }
+  // Plate-forme de la tour, radôme sommital et mât treillis
+  bloc(12, 0.6, 8, 91, 34, zi, grisFonce);
+  const domeHaut = new THREE.Mesh(new THREE.SphereGeometry(2.7, 24, 16), blanc);
+  domeHaut.position.set(90, 37, zi);
+  navire.add(domeHaut);
+  const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.5, 15, 6), grisFonce);
+  mat.position.set(90, 46.5, zi);
+  navire.add(mat);
+  for (let n = 0; n < 6; n++) {
+    const entretoise = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.2, 0.15), grisFonce);
+    entretoise.position.set(90 + (n % 2 ? 0.5 : -0.5), 40.5 + n * 1.8, zi);
+    entretoise.rotation.z = n % 2 ? 0.4 : -0.4;
+    navire.add(entretoise);
+  }
+  bloc(0.3, 0.3, 9, 90, 44, zi, grisFonce);
+  bloc(0.3, 0.3, 5.5, 90, 48.5, zi, grisFonce);
+  bloc(1.6, 1.2, 1.6, 90, 45.4, zi, ile);
+  // Radar tridimensionnel (antenne plane tournante) à l'arrière de la tour, radar de veille sur la vergue
+  const pied = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1, 2, 10), grisFonce);
+  pied.position.set(99, 34.6, zi);
+  const antenne3d = new THREE.Mesh(new THREE.BoxGeometry(0.9, 3.4, 7.5), ile);
+  antenne3d.position.set(99, 37.2, zi);
+  antenne3d.rotation.y = 0.6;
+  const veille = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.4, 6), grisFonce);
+  veille.position.set(90, 50.2, zi);
+  veille.rotation.y = -0.5;
+  navire.add(pied, antenne3d, veille);
+  // Radômes de l'étage supérieur, de part et d'autre de la tour
+  for (const [x, y, z, r] of [[81.5, 27, zi - 2.3, 2.4], [98.5, 26.8, zi + 2.1, 2.3], [108.5, 23.8, zi - 2, 1.2]]) {
+    const socle = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.55, r * 0.6, 1.2, 12), ile);
+    socle.position.set(x, y - r + 0.2, z);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(r, 22, 14), blanc);
+    dome.position.set(x, y, z);
+    navire.add(socle, dome);
+  }
+  // Pavillon national en tête de mât
+  const pavillon = new THREE.Group();
+  ['#1f3c88', '#f4f4f4', '#d6262e'].forEach((col, i) => {
+    const bandeau = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.4), new THREE.MeshStandardMaterial({ color: col, side: THREE.DoubleSide, roughness: 0.8 }));
+    bandeau.position.set(0.6 + i * 1.2, 0, 0);
+    pavillon.add(bandeau);
+  });
+  pavillon.position.set(90.3, 43.2, zi - 4.4);
+  navire.add(pavillon);
+
+  // Groupe aérien : Rafale Marine (24 à bord en pleine charge), avion de guet Hawkeye, hélicoptère
   const rafale = construireRafale(THREE, { armement: false });
   rafale.userData.basculer.train(true);
   const hauteur = 2.0;
-  const parques = [[28, -10, 0.7], [42, -10, 0.7], [56, -12, 0.7], [158, -16, 0.9], [172, -16, 0.9], [226, -16, 0.9], [240, -15, 0.9], [130, 24, -2.6]];
+  const parques = [
+    // à tribord arrière, nez vers bâbord (dont un sur l'ascenseur arrière)
+    [247, -23, 1.45], [233, -23, 1.45], [199.5, -23.5, 1.5], [168, -23, 1.45],
+    // le long du bord bâbord arrière, nez vers tribord
+    [247, 15.2, -1.5], [233, 16.4, -1.5], [219, 17.6, -1.5],
+    // à l'avant tribord
+    [11, -11.5, 1.4], [24, -11.5, 1.4], [37, -11.8, 1.4], [50, -12, 1.4],
+  ];
   for (const [x, z, r] of parques) {
     const a = rafale.clone(true);
     a.position.set(x, hauteur, z);
@@ -1054,19 +1216,17 @@ export function construireCharlesDeGaulle(THREE) {
     navire.add(a);
   }
   const catapulte = rafale.clone(true);
-  catapulte.position.set(80, hauteur, 4);
+  catapulte.position.set(86, hauteur, 3.6);
   navire.add(catapulte);
   const guet = avionDeGuet(THREE, gris, grisFonce);
-  guet.position.set(135, 0, -14);
+  guet.position.set(150, 0, -9);
   guet.rotation.y = 0.8;
   navire.add(guet);
   const matRotor = new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.7 });
-  for (const [x, z, r] of [[246, -6, 1.5], [246, 9, 1.6]]) {
-    const hel = helicoptere(THREE, grisFonce, matRotor);
-    hel.position.set(x, 0, z);
-    hel.rotation.y = r;
-    navire.add(hel);
-  }
+  const hel = helicoptere(THREE, grisFonce, matRotor);
+  hel.position.set(119, 0, -6);
+  hel.rotation.y = 1.5;
+  navire.add(hel);
 
   navire.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   marquages.castShadow = false;
@@ -1083,15 +1243,16 @@ export function construireCharlesDeGaulle(THREE) {
   const groupe = new THREE.Group();
   groupe.add(navire);
   const p = (x, y, z) => new THREE.Vector3(x * s - 131 * s, y * s + 0.4, z * s);
-  groupe.userData.catapulte = { avion: catapulte, x0: 80, y0: hauteur };
+  groupe.userData.catapulte = { avion: catapulte, x0: 86, y0: hauteur };
   groupe.userData.legendes = [
-    { texte: 'Île (sans cheminée : propulsion nucléaire)', point: p(93, 26, -27) },
-    { texte: 'Piste oblique', point: p(215, 1, 14) },
-    { texte: 'Catapultes de 75 m', point: p(45, 1, 4) },
-    { texte: 'Ascenseurs', point: p(136, 1, -27) },
-    { texte: 'Rafale Marine', point: p(42, 4, -10) },
-    { texte: 'Avion de guet Hawkeye', point: p(135, 6, -14) },
-    { texte: 'Hélicoptères', point: p(246, 4, 2) },
+    { texte: 'Île (sans cheminée : propulsion nucléaire)', point: p(72, 14, -30) },
+    { texte: 'Radômes (télécommunications par satellite)', point: p(90, 39, -24) },
+    { texte: 'Piste oblique', point: p(200, 1, -2) },
+    { texte: 'Catapultes de 75 m', point: p(45, 1, 3.6) },
+    { texte: 'Ascenseurs', point: p(131, 1, -28) },
+    { texte: 'Rafale Marine', point: p(24, 4, -11.5) },
+    { texte: 'Avion de guet Hawkeye', point: p(150, 6, -9) },
+    { texte: 'Hélicoptère', point: p(119, 4, -6) },
   ];
   groupe.userData.taille = 14;
   groupe.userData.mer = true;
@@ -1130,6 +1291,31 @@ function textureCamouflage(THREE) {
   return t;
 }
 
+/** Livrée sable (opérations extérieures) : teinte unie, grain antidérapant et légère poussière. */
+function textureSable(THREE) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#a28c69';
+  ctx.fillRect(0, 0, 256, 256);
+  let g = 5;
+  const h = () => { g = (g * 16807) % 2147483647; return g / 2147483647; };
+  for (let k = 0; k < 2600; k++) {
+    const clair = h() > 0.5;
+    ctx.fillStyle = clair ? 'rgba(235,222,195,0.18)' : 'rgba(90,72,48,0.14)';
+    ctx.fillRect(h() * 256, h() * 256, 1 + h() * 2, 1 + h() * 2);
+  }
+  for (let k = 0; k < 18; k++) {
+    ctx.fillStyle = `rgba(${h() > 0.5 ? '205,190,160' : '150,128,96'},0.08)`;
+    ctx.beginPath(); ctx.arc(h() * 256, h() * 256, 10 + h() * 30, 0, Math.PI * 2); ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(0.5, 0.5);
+  return t;
+}
+
 /** Profil latéral extrudé dans la largeur (x vers l'avant négatif, y vers le haut). */
 function profilExtrude(THREE, points, largeur, materiau, biseau = 0.04) {
   const forme = new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y)));
@@ -1138,37 +1324,84 @@ function profilExtrude(THREE, points, largeur, materiau, biseau = 0.04) {
   return new THREE.Mesh(geo, materiau);
 }
 
+/** Beaucoup de petites pièces parallélépipédiques (nervures, barreaux, rivets) en un seul maillage instancié : [x, y, z, lx, ly, lz]. */
+function pieces(THREE, materiau, liste) {
+  const m = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), materiau, liste.length);
+  const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), pos = new THREE.Vector3(), ech = new THREE.Vector3();
+  liste.forEach(([x, y, z, lx, ly, lz], i) => { m.setMatrixAt(i, mat.compose(pos.set(x, y, z), q, ech.set(lx, ly, lz))); });
+  return m;
+}
+
+/** Grille anti-roquettes (barreaux) dans un plan vertical : le long de x (plan = 'x') ou de z (plan = 'z'). */
+function grilleBarreaux(centre, longueur, hauteur, plan, { pasL = 0.16, pasH = 0.2, e = 0.03 } = {}) {
+  const [cx, cy, cz] = centre;
+  const liste = [];
+  const nL = Math.round(longueur / pasL), nH = Math.round(hauteur / pasH);
+  for (let i = 0; i <= nL; i++) {
+    const d = -longueur / 2 + (i * longueur) / nL;
+    liste.push(plan === 'x' ? [cx + d, cy, cz, e, hauteur, e] : [cx, cy, cz + d, e, hauteur, e]);
+  }
+  for (let j = 0; j <= nH; j++) {
+    const y = cy - hauteur / 2 + (j * hauteur) / nH;
+    liste.push(plan === 'x' ? [cx, y, cz, longueur, e, e] : [cx, y, cz, e, e, longueur]);
+  }
+  return liste;
+}
+
 /**
- * Char Leclerc rénové (XLR) : caisse et tourelle en blindage modulaire, canon
- * de 120 mm à chargement automatique, six galets par côté, viseur panoramique
- * du chef de char, tourelleau téléopéré, grilles anti-roquettes à l'arrière.
+ * Char Leclerc rénové (XLR), d'après une maquette de référence : livrée sable
+ * (ou camouflage centre-Europe), modules de blindage en pointe autour du masque,
+ * canon de 120 mm à manchon thermique et housse de masque en toile verte,
+ * tourelleau téléopéré, mitrailleuse, viseurs, antennes, briques de blindage
+ * nervurées sur l'arrière des flancs, jupes à bavette noire, grilles
+ * anti-roquettes à l'arrière de la caisse et de la tourelle, phares avant.
  * Dimensions réelles (9,87 m canon compris, 3,71 m de large), échelle 1,35.
- * userData.animer : rotation de la tourelle (bouton « Tourelle »).
+ * userData.animer : rotation de la tourelle et changement de livrée.
  */
 export function construireLeclerc(THREE) {
   const char = new THREE.Group();
-  const camo = new THREE.MeshStandardMaterial({ map: textureCamouflage(THREE), roughness: 0.85, metalness: 0.08 });
+  const textures = { sable: textureSable(THREE), centreEurope: textureCamouflage(THREE) };
+  const peinture = new THREE.MeshStandardMaterial({ map: textures.sable, roughness: 0.9, metalness: 0.05, envMapIntensity: 0.7 });
   const sombre = new THREE.MeshStandardMaterial({ color: 0x2a2c27, roughness: 0.8, metalness: 0.2 });
-  const chenille = new THREE.MeshStandardMaterial({ color: 0x1d1e1c, roughness: 0.95, metalness: 0.3 });
+  const noir = new THREE.MeshStandardMaterial({ color: 0x151615, roughness: 0.7, metalness: 0.3 });
+  const chenille = new THREE.MeshStandardMaterial({ color: 0x1b1c1a, roughness: 0.95, metalness: 0.3 });
   const optique = new THREE.MeshStandardMaterial({ color: 0x0d1b26, roughness: 0.1, metalness: 0.8 });
+  const toile = new THREE.MeshStandardMaterial({ color: 0x41603f, roughness: 0.95, metalness: 0 });
+  const verre = new THREE.MeshStandardMaterial({ color: 0xf4f1e2, emissive: 0x2a2820, roughness: 0.2, metalness: 0.1 });
 
   // Caisse : partie basse entre les chenilles, partie haute au-dessus (glacis incliné à l'avant)
-  char.add(profilExtrude(THREE, [[-3.3, 0.5], [3.3, 0.5], [3.44, 0.95], [3.44, 1.05], [-3.44, 1.05], [-3.44, 0.85]], 2.4, camo));
-  char.add(profilExtrude(THREE, [[-3.44, 1.02], [3.44, 1.02], [3.44, 1.5], [3.25, 1.58], [-2.3, 1.58], [-3.44, 1.22]], 3.5, camo));
-  // Grilles d'échappement à l'arrière du pont moteur
+  char.add(profilExtrude(THREE, [[-3.3, 0.5], [3.3, 0.5], [3.44, 0.95], [3.44, 1.05], [-3.44, 1.05], [-3.44, 0.85]], 2.4, peinture));
+  char.add(profilExtrude(THREE, [[-3.44, 1.02], [3.44, 1.02], [3.44, 1.5], [3.25, 1.58], [-2.3, 1.58], [-3.44, 1.22]], 3.5, peinture));
+  // Grilles d'échappement à l'arrière du pont moteur, phares et crochets de remorquage à l'avant
   for (const z of [-0.8, 0.8]) { const gr = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.04, 1), sombre); gr.position.set(2.5, 1.6, z); char.add(gr); }
+  for (const cote of [-1, 1]) {
+    const phare = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.2, 0.42), noir);
+    phare.position.set(-3.05, 1.42, cote * 1.42);
+    phare.rotation.z = 0.3;
+    char.add(phare);
+    for (const [dz, m] of [[-0.09, verre], [0.09, verre]]) {
+      const feu = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 12), m);
+      feu.rotation.z = Math.PI / 2 + 0.3;
+      feu.position.set(-3.17, 1.39, cote * 1.42 + dz);
+      char.add(feu);
+    }
+    const crochet = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.03, 6, 12), sombre);
+    crochet.position.set(-3.47, 0.9, cote * 0.85);
+    crochet.rotation.y = Math.PI / 2;
+    char.add(crochet);
+  }
 
-  // Trains de roulement : six galets, barbotin à l'arrière, roue tendeuse à l'avant, chenille, jupes latérales
+  // Trains de roulement : six galets, barbotin à l'arrière, roue tendeuse à l'avant, chenille
   for (const cote of [-1, 1]) {
     const z = cote * 1.5;
     for (let k = 0; k < 6; k++) {
-      const galet = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.5, 20), sombre);
+      const galet = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.5, 20), noir);
       galet.rotation.x = Math.PI / 2;
       galet.position.set(-2.45 + k * 0.97, 0.38, z);
       char.add(galet);
     }
     for (const [x, y, r] of [[-3.15, 0.66, 0.3], [3.12, 0.7, 0.36]]) {
-      const roue = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.52, 18), sombre);
+      const roue = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.52, 18), noir);
       roue.rotation.x = Math.PI / 2;
       roue.position.set(x, y, z);
       char.add(roue);
@@ -1191,82 +1424,167 @@ export function construireLeclerc(THREE) {
     const geoPiste = new THREE.ExtrudeGeometry(piste, { depth: 0.63, bevelEnabled: false, curveSegments: 10 });
     geoPiste.translate(0, 0, z - 0.315);
     char.add(new THREE.Mesh(geoPiste, chenille));
-    const jupe = new THREE.Mesh(new THREE.BoxGeometry(6.3, 0.5, 0.07), camo);
-    jupe.position.set(-0.1, 0.82, cote * 1.85);
-    char.add(jupe);
-    // Grilles anti-roquettes (kit XLR) à l'arrière de la caisse
-    for (let k = 0; k < 7; k++) {
-      const barre = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.55, 0.04), sombre);
-      barre.position.set(2.45 + k * 0.15, 1.3, cote * 1.92);
-      char.add(barre);
-    }
-    const lisse = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.04, 0.04), sombre);
-    lisse.position.set(2.9, 1.55, cote * 1.92);
-    char.add(lisse);
-  }
 
-  // Tourelle (pivot sur la couronne), blindage modulaire en pointe, nuque du chargeur automatique
+    // Jupe avant (tôle sable) et bavette noire en caoutchouc sur toute la longueur
+    const jupe = new THREE.Mesh(new THREE.BoxGeometry(2.85, 0.42, 0.07), peinture);
+    jupe.position.set(-1.98, 0.86, cote * 1.85);
+    char.add(jupe);
+    const bavette = new THREE.Mesh(new THREE.BoxGeometry(6.25, 0.2, 0.06), noir);
+    bavette.position.set(-0.12, 0.56, cote * 1.85);
+    char.add(bavette);
+    // Briques de blindage latéral nervurées (kit XLR), de la mi-longueur jusqu'à l'arrière
+    const brique = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.88, 0.2), peinture);
+    brique.position.set(1.0, 1.1, cote * 1.88);
+    char.add(brique);
+    const nervures = [];
+    for (let k = 0; k < 24; k++) nervures.push([-0.6 + k * 0.138, 1.12, cote * 2.0, 0.05, 0.8, 0.05]);
+    char.add(pieces(THREE, peinture, nervures));
+    // Grilles anti-roquettes à l'arrière des flancs (elles dépassent l'arrière de la caisse)
+    char.add(pieces(THREE, peinture, grilleBarreaux([3.25, 1.15, cote * 1.98], 0.9, 0.95, 'x', { pasL: 0.15, pasH: 0.16 })));
+  }
+  char.add(pieces(THREE, peinture, grilleBarreaux([3.7, 1.15, 0], 3.9, 0.95, 'z', { pasL: 0.16, pasH: 0.16 })));
+  for (const cote of [-1, 1]) char.add(pieces(THREE, peinture, [[3.45, 1.15, cote * 1.97, 0.5, 0.04, 0.04], [3.45, 0.68, cote * 1.97, 0.5, 0.04, 0.04]]));
+
+  // Tourelle (pivot sur la couronne) : flancs à facettes, toit antidérapant, nuque du chargeur automatique
   const tourelle = new THREE.Group();
   tourelle.position.set(0.3, 1.58, 0);
-  const vueDessus = [[-1.95, -1.6], [-2.35, -0.7], [-2.35, 0.7], [-1.95, 1.6], [0.9, 1.72], [2.75, 1.4], [2.75, -1.4], [0.9, -1.72]];
+  const vueDessus = [[-2.3, -1.15], [-2.3, 1.15], [-1.55, 1.74], [1.4, 1.74], [2.75, 1.48], [2.75, -1.48], [1.4, -1.74], [-1.55, -1.74]];
   const formeTourelle = new THREE.Shape(vueDessus.map(([x, z]) => new THREE.Vector2(x, z)));
-  const geoTourelle = new THREE.ExtrudeGeometry(formeTourelle, { depth: 0.8, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08, bevelSegments: 1 });
+  const geoTourelle = new THREE.ExtrudeGeometry(formeTourelle, { depth: 0.66, bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.12, bevelSegments: 1 });
   geoTourelle.rotateX(-Math.PI / 2);
-  const caisseTourelle = new THREE.Mesh(geoTourelle, camo);
-  caisseTourelle.position.y = 0.08;
+  const caisseTourelle = new THREE.Mesh(geoTourelle, peinture);
+  caisseTourelle.position.y = 0.12;
   tourelle.add(caisseTourelle);
-  // Masque et canon de 120 mm (manchon thermique, système de référence de bouche)
-  const masque = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.9), camo);
-  masque.position.set(-2.4, 0.5, 0);
-  const canon = new THREE.Group();
-  canon.position.set(-2.55, 0.5, 0);
-  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.11, 4.2, 18), camo);
-  tube.rotation.z = Math.PI / 2;
-  tube.position.x = -2.1;
-  const manchon1 = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.135, 1.4, 18), sombre);
-  manchon1.rotation.z = Math.PI / 2;
-  manchon1.position.x = -0.9;
-  const manchon2 = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.115, 1.0, 18), sombre);
-  manchon2.rotation.z = Math.PI / 2;
-  manchon2.position.x = -2.6;
-  const reference = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.1), sombre);
-  reference.position.set(-4.05, 0.15, 0);
-  canon.add(tube, manchon1, manchon2, reference);
-  // Viseur panoramique du chef (à gauche), viseur du tireur (à droite), tourelleau téléopéré
-  const viseurChef = new THREE.Group();
-  viseurChef.position.set(-0.3, 0.88, 0.75);
-  const pied = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.35, 16), sombre);
-  pied.position.y = 0.17;
-  const tete = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.36), sombre);
-  tete.position.y = 0.48;
-  const fenetre = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.26), optique);
-  fenetre.position.set(-0.21, 0.5, 0);
-  viseurChef.add(pied, tete, fenetre);
-  const viseurTireur = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.5), sombre);
-  viseurTireur.position.set(-1.5, 1.0, -0.95);
-  const vitreTireur = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.18, 0.36), optique);
-  vitreTireur.position.set(-1.81, 1.0, -0.95);
-  const tourelleau = new THREE.Group();
-  tourelleau.position.set(0.7, 0.9, -0.75);
-  const socle = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.45), sombre);
-  socle.position.y = 0.15;
-  const mitrailleuse = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 8), sombre);
-  mitrailleuse.rotation.z = Math.PI / 2;
-  mitrailleuse.position.set(-0.6, 0.3, 0);
-  tourelleau.add(socle, mitrailleuse);
-  tourelle.add(masque, canon, viseurChef, viseurTireur, vitreTireur, tourelleau);
-  // Lance-pots fumigènes GALIX et antennes
+  // Modules de blindage avant, de part et d'autre du masque, avec rivets et joints en caoutchouc vert
+  const rivets = [];
   for (const cote of [-1, 1]) {
-    for (let k = 0; k < 4; k++) {
-      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.22, 10), sombre);
-      pot.rotation.x = cote * 0.9;
-      pot.position.set(1.0 + k * 0.17, 0.75, cote * 1.72);
-      tourelle.add(pot);
-    }
-    const antenne = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 2.2, 6), sombre);
-    antenne.position.set(2.5, 1.95, cote * 1.1);
-    tourelle.add(antenne);
+    const module = profilExtrude(THREE, [[-2.85, 0.06], [-1.95, 0.06], [-1.95, 0.9], [-2.6, 0.9], [-2.85, 0.72]], 0.78, peinture, 0.03);
+    module.position.z = cote * 0.82;
+    tourelle.add(module);
+    const joint = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.8, 0.72), toile);
+    joint.position.set(-1.93, 0.48, cote * 0.82);
+    tourelle.add(joint);
+    for (const y of [0.25, 0.45, 0.65]) for (const dz of [-0.25, 0, 0.25]) rivets.push([-2.86, y, cote * 0.82 + dz, 0.03, 0.04, 0.04]);
+    for (const x of [-2.5, -2.25]) for (const y of [0.3, 0.6]) rivets.push([x, y, cote * 1.22, 0.04, 0.04, 0.03]);
   }
+  tourelle.add(pieces(THREE, sombre, rivets));
+  // Masque, housse de toile verte et canon de 120 mm (manchon thermique en segments, référence de bouche)
+  const masque = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.6, 0.84), peinture);
+  masque.position.set(-2.55, 0.48, 0);
+  const canon = new THREE.Group();
+  canon.position.set(-2.75, 0.5, 0);
+  const housse = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.23, 0.55, 18), toile);
+  housse.rotation.z = Math.PI / 2;
+  housse.position.x = -0.2;
+  canon.add(housse);
+  const troncons = [[-0.47, -1.05, 0.15], [-1.08, -1.95, 0.14], [-1.98, -2.9, 0.13], [-2.93, -3.75, 0.12]];
+  for (const [x1, x2, r] of troncons) {
+    const seg = new THREE.Mesh(new THREE.CylinderGeometry(r, r, x1 - x2, 18), peinture);
+    seg.rotation.z = Math.PI / 2;
+    seg.position.x = (x1 + x2) / 2;
+    const bague = new THREE.Mesh(new THREE.CylinderGeometry(r + 0.012, r + 0.012, 0.03, 18), sombre);
+    bague.rotation.z = Math.PI / 2;
+    bague.position.x = x2 + 0.01;
+    canon.add(seg, bague);
+  }
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.25, 18), peinture);
+  tube.rotation.z = Math.PI / 2;
+  tube.position.x = -3.88;
+  const bouche = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.105, 0.12, 18), peinture);
+  bouche.rotation.z = Math.PI / 2;
+  bouche.position.x = -4.04;
+  const ame = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 14), noir);
+  ame.rotation.z = Math.PI / 2;
+  ame.position.x = -4.105;
+  const reference = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.08, 0.1), peinture);
+  reference.position.set(-3.95, 0.15, 0);
+  const coaxiale = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.5, 8), noir);
+  coaxiale.rotation.z = Math.PI / 2;
+  coaxiale.position.set(-0.3, -0.18, 0.32);
+  canon.add(tube, bouche, ame, reference, coaxiale);
+  // Toit : viseur panoramique du chef, viseur du tireur, épiscopes
+  const viseurChef = new THREE.Group();
+  viseurChef.position.set(-0.85, 0.86, 1.0);
+  const pied = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.3, 16), peinture);
+  pied.position.y = 0.15;
+  const tete = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.32, 0.38), peinture);
+  tete.position.y = 0.44;
+  const fenetre = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.26), optique);
+  fenetre.position.set(-0.22, 0.46, 0);
+  viseurChef.add(pied, tete, fenetre);
+  const viseurTireur = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.32, 0.55), peinture);
+  viseurTireur.position.set(-1.45, 0.98, -0.95);
+  const vitreTireur = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.4), optique);
+  vitreTireur.position.set(-1.81, 0.98, -0.95);
+  const episcopes = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.22, 0.5), peinture);
+  episcopes.position.set(-0.2, 0.97, 0.75);
+  const vitresEpiscopes = pieces(THREE, optique, [[-0.66, 0.98, 0.65, 0.03, 0.1, 0.16], [-0.66, 0.98, 0.88, 0.03, 0.1, 0.16], [-0.35, 0.98, 1.01, 0.18, 0.1, 0.03], [-0.05, 0.98, 1.01, 0.18, 0.1, 0.03]]);
+  // Tourelleau téléopéré (XLR) : socle, boîtier à fenêtre de visée, berceau, mitrailleuse et tête optronique
+  const tourelleau = new THREE.Group();
+  tourelleau.position.set(0.25, 0.86, 0.55);
+  const couronne = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.42, 0.14, 20), peinture);
+  couronne.position.y = 0.07;
+  const fut = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.62, 0.52), peinture);
+  fut.position.y = 0.45;
+  const visee = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.32, 0.14), optique);
+  visee.position.set(-0.29, 0.48, 0.05);
+  const berceau = tronc(THREE, 0.7, 0.34, 0.7, 0.86, 0.8, peinture);
+  berceau.position.y = 0.93;
+  const teteOptro = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.24, 0.26), peinture);
+  teteOptro.position.set(-0.42, 1.04, 0.24);
+  const objectif = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 14), optique);
+  objectif.rotation.z = Math.PI / 2;
+  objectif.position.set(-0.58, 1.04, 0.24);
+  const mitrailleuse = new THREE.Group();
+  const carter = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.13, 0.12), noir);
+  const canonMg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.6, 8), noir);
+  canonMg.rotation.z = Math.PI / 2;
+  canonMg.position.x = -0.55;
+  const caisseMun = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.16), noir);
+  caisseMun.position.set(0.05, -0.02, -0.16);
+  mitrailleuse.add(carter, canonMg, caisseMun);
+  mitrailleuse.position.set(-0.05, 1.18, -0.02);
+  tourelleau.add(couronne, fut, visee, berceau, teteOptro, objectif, mitrailleuse);
+  // Seconde mitrailleuse sur affût, vers l'avant
+  const affut = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.26, 0.26), peinture);
+  affut.position.set(0.55, 0.99, -0.45);
+  const mg2 = mitrailleuse.clone(true);
+  mg2.position.set(0.5, 1.2, -0.45);
+  mg2.scale.setScalar(0.8);
+  tourelle.add(masque, canon, viseurChef, viseurTireur, vitreTireur, episcopes, vitresEpiscopes, tourelleau, affut, mg2);
+  // Lance-pots fumigènes GALIX (orifices sur les flancs de la nuque) et grille anti-roquettes de la nuque
+  const orifices = [];
+  for (const cote of [-1, 1]) {
+    for (let k = 0; k < 5; k++) {
+      const x = 1.35 + k * 0.24;
+      const zBord = x < 1.4 ? 1.74 : 1.74 - (x - 1.4) * (0.26 / 1.35);
+      const trou = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.04, 12), noir);
+      trou.rotation.x = Math.PI / 2;
+      trou.position.set(x, 0.62, cote * (zBord + 0.1));
+      orifices.push(trou);
+    }
+  }
+  tourelle.add(...orifices);
+  tourelle.add(pieces(THREE, peinture, [
+    ...grilleBarreaux([3.05, 0.48, 0], 3.1, 0.75, 'z', { pasL: 0.15, pasH: 0.15 }),
+    ...grilleBarreaux([2.55, 0.48, 1.66], 0.95, 0.75, 'x', { pasL: 0.15, pasH: 0.15 }),
+    ...grilleBarreaux([2.55, 0.48, -1.66], 0.95, 0.75, 'x', { pasL: 0.15, pasH: 0.15 }),
+  ]));
+  // Antennes : mât épais (brouilleur), fouets, antenne courte, capteur météo
+  const antennes = [
+    [1.55, 1.0, 0.045, 0.05, 1.5, noir],
+    [1.95, 0.55, 0.008, 0.012, 2.2, sombre],
+    [2.55, -1.05, 0.035, 0.04, 0.75, noir],
+    [1.25, 1.35, 0.06, 0.06, 0.4, peinture],
+  ];
+  for (const [x, z, r1, r2, h, m] of antennes) {
+    const a = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, 8), m);
+    a.position.set(x, 0.9 + h / 2, z);
+    tourelle.add(a);
+  }
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.25, 10), noir);
+  cone.position.set(1.95, 1.0, 0.55);
+  tourelle.add(cone);
   char.add(tourelle);
 
   char.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
@@ -1278,18 +1596,26 @@ export function construireLeclerc(THREE) {
   const p = (x, y, z) => new THREE.Vector3(x * k + 1.2, y * k - 2.2, z * k);
   groupe.userData.legendes = [
     { texte: 'Canon de 120 mm (chargement automatique)', point: p(-5.4, 2.1, 0) },
-    { texte: 'Viseur panoramique du chef de char', point: p(0, 3.1, 0.75) },
-    { texte: 'Blindage modulaire', point: p(-1.9, 2.3, 1.3) },
+    { texte: 'Viseur panoramique du chef de char', point: p(-0.55, 3.15, 1.0) },
+    { texte: 'Blindage modulaire', point: p(-2.2, 2.3, 1.3) },
     { texte: 'Nuque : chargeur automatique', point: p(3, 2.2, 0) },
-    { texte: 'Tourelleau téléopéré (XLR)', point: p(1, 2.9, -0.75) },
+    { texte: 'Tourelleau téléopéré (XLR)', point: p(0.5, 3.8, 0.55) },
     { texte: 'Six galets par côté', point: p(-1, 0.4, 1.8) },
-    { texte: 'Grilles anti-roquettes (XLR)', point: p(2.9, 1.3, 1.95) },
+    { texte: 'Briques de blindage latéral (XLR)', point: p(1, 1.2, 2.0) },
+    { texte: 'Grilles anti-roquettes (XLR)', point: p(3.3, 1.5, 2.0) },
   ];
   let angle = 0;
+  let livree = 'sable';
   groupe.userData.animer = (t, api) => {
     const cible = api.tourelle ? 0.7 * Math.sin(t / 1400) : 0;
     angle += (cible - angle) * 0.06;
     tourelle.rotation.y = angle;
+    const voulue = api.livree ?? 'sable';
+    if (voulue !== livree && textures[voulue]) {
+      livree = voulue;
+      peinture.map = textures[voulue];
+      peinture.needsUpdate = true;
+    }
   };
   groupe.userData.taille = 14;
   return groupe;

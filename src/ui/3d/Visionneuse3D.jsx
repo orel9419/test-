@@ -25,7 +25,7 @@ const FICHES = {
   },
   leclerc: {
     titre: 'Char Leclerc rénové (XLR)',
-    lignes: ['Char de combat de l\'armée de Terre, en service depuis 1992 · 9,87 m canon compris · 3,71 m de large · environ 57 t', 'Canon de 120 mm à chargement automatique : trois hommes d\'équipage au lieu de quatre · 72 km/h sur route', 'Rénovation XLR : intégration au combat collaboratif SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030, 200 fin 2035', 'Camouflage centre-Europe · silhouette fidèle, détails simplifiés'],
+    lignes: ['Char de combat de l\'armée de Terre, en service depuis 1992 · 9,87 m canon compris · 3,71 m de large · environ 57 t', 'Canon de 120 mm à chargement automatique : trois hommes d\'équipage au lieu de quatre · 72 km/h sur route', 'Rénovation XLR : intégration au combat collaboratif SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030, 200 fin 2035', 'Livrée sable (opérations extérieures) ou camouflage centre-Europe · silhouette fidèle, détails simplifiés'],
   },
 };
 
@@ -59,6 +59,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
   const [biplace, setBiplace] = useState(false);
   const [train, setTrain] = useState(false);
   const [tourelle, setTourelle] = useState(false);
+  const [livree, setLivree] = useState('sable');
   const [message, setMessage] = useState(null);
   const sous = modele === 'snle' || modele === 'snle3g';
   const navire = modele === 'porteAvions' || modele === 'charlesDeGaulle';
@@ -260,6 +261,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
           {sous && <button type="button" className="puce" disabled={!trappes} onClick={() => { api.current.tir = true; }} title={trappes ? '' : 'Ouvrez d\'abord les trappes'}>🚀 Tir d'essai (simulation)</button>}
           {navire && <button type="button" className="puce" onClick={() => { api.current.lancer = true; }}>🛫 Catapulter un Rafale</button>}
           {modele === 'leclerc' && <button type="button" className={`puce ${tourelle ? 'active' : ''}`} aria-pressed={tourelle} onClick={() => { api.current.tourelle = !tourelle; setTourelle(!tourelle); }}>{tourelle ? 'Tourelle en veille' : 'Faire pivoter la tourelle'}</button>}
+          {modele === 'leclerc' && <button type="button" className="puce" onClick={() => { const l = livree === 'sable' ? 'centreEurope' : 'sable'; api.current.livree = l; setLivree(l); }}>{livree === 'sable' ? 'Livrée : sable' : 'Livrée : centre-Europe'}</button>}
           <button type="button" className="puce" onClick={photo}>📸 Photo</button>
         </div>
       )}
