@@ -62,157 +62,260 @@ function bouffees(THREE, parent, n = 5) {
   return liste;
 }
 
+/** Peinture unie légèrement patinée (sable, brun) en texture procédurale. */
+function textureUnie(THREE, base) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, 256, 256);
+  let g = 13;
+  const h = () => { g = (g * 16807) % 2147483647; return g / 2147483647; };
+  for (let k = 0; k < 2200; k++) { ctx.fillStyle = h() > 0.5 ? 'rgba(255,245,230,0.07)' : 'rgba(40,30,20,0.08)'; ctx.fillRect(h() * 256, h() * 256, 1 + h() * 3, 1 + h() * 3); }
+  for (let k = 0; k < 14; k++) { ctx.fillStyle = `rgba(${h() > 0.5 ? '230,215,190' : '70,55,40'},0.035)`; ctx.beginPath(); ctx.arc(h() * 256, h() * 256, 12 + h() * 34, 0, Math.PI * 2); ctx.fill(); }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(0.4, 0.4);
+  return t;
+}
+
+/** Crampons de pneu tout-terrain (chevrons) pour la bande de roulement. */
+function textureCrampons(THREE) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#26272a';
+  ctx.fillRect(0, 0, 512, 64);
+  ctx.fillStyle = '#121314';
+  for (let i = 0; i < 32; i++) {
+    const x = i * 16;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 7, 0); ctx.lineTo(x + 12, 30); ctx.lineTo(x + 5, 30); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + 5, 34); ctx.lineTo(x + 12, 34); ctx.lineTo(x + 7, 64); ctx.lineTo(x, 64); ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = THREE.RepeatWrapping;
+  t.repeat.set(2, 1);
+  return t;
+}
+
+/** Roue tout-terrain : pneu à crampons, flanc, jante peinte creusée, moyeu et couronne de goujons. */
+function roueTT(THREE, r, largeur, mats) {
+  const g = new THREE.Group();
+  const pneu = new THREE.Mesh(new THREE.CylinderGeometry(r, r, largeur, 40, 1), [mats.bande, mats.flanc, mats.flanc]);
+  pneu.rotation.x = Math.PI / 2;
+  const bourrelet = new THREE.Mesh(new THREE.TorusGeometry(r - 0.06, 0.07, 8, 36), mats.flanc);
+  bourrelet.position.z = largeur / 2 - 0.03;
+  const bourrelet2 = bourrelet.clone();
+  bourrelet2.position.z = -largeur / 2 + 0.03;
+  const jante = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.56, r * 0.56, largeur - 0.04, 24), mats.jante);
+  jante.rotation.x = Math.PI / 2;
+  const moyeu = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.26, largeur + 0.06, 16), mats.jante);
+  moyeu.rotation.x = Math.PI / 2;
+  const goujons = [];
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    for (const s of [-1, 1]) goujons.push([Math.cos(a) * r * 0.36, Math.sin(a) * r * 0.36, s * (largeur / 2 + 0.005), 0.045, 0.045, 0.04]);
+  }
+  g.add(pneu, bourrelet, bourrelet2, jante, moyeu, pieces(THREE, mats.goujon, goujons));
+  return g;
+}
+
+/** Matériaux de roues partagés par un véhicule. */
+function materiauxRoues(THREE, peinture) {
+  return {
+    bande: new THREE.MeshStandardMaterial({ map: textureCrampons(THREE), roughness: 0.95 }),
+    flanc: new THREE.MeshStandardMaterial({ color: 0x1f2022, roughness: 0.92 }),
+    jante: peinture,
+    goujon: new THREE.MeshStandardMaterial({ color: 0x3b3a37, metalness: 0.6, roughness: 0.4 }),
+  };
+}
+
+/** Panneau de classe de pont (disque jaune et chiffre noir) à l'avant des véhicules militaires. */
+function classePont(THREE, n) {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f2c81e'; ctx.beginPath(); ctx.arc(32, 32, 31, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.font = 'bold 34px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(n), 32, 35);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.Mesh(new THREE.CircleGeometry(0.12, 24), new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 }));
+}
+
+/** Change la livrée (couleur des photos ou camouflage centre-Europe) d'après la commande « camouflage ». */
+function livree(peinture, textures) {
+  let etat = false;
+  return (api) => {
+    const v = !!api.camouflage;
+    if (v !== etat) { etat = v; peinture.map = v ? textures.camo : textures.photo; peinture.needsUpdate = true; }
+  };
+}
+
 /**
- * Canon Caesar MkII : camion 6×6 Arquus à cabine blindée (quatre portes),
- * canon de 155 mm / 52 calibres monté à l'arrière, tube posé sur la cabine
- * en route, bêche arrière. Commandes : mise en batterie (la bêche descend,
- * le tube bascule vers l'arrière à 45°) et tir simulé (recul, flamme, fumée).
+ * Canon Caesar MkII, d'après le rendu de KNDS et Arquus : cabine blindée
+ * Arquus à pare-brise incliné, capot en pointe et quatre portes, canon de
+ * 155 mm / 52 calibres posé sur la cabine en route (frein de bouche à double
+ * chicane bien en avant), berceau et deux freins de recul au-dessus du tube,
+ * coffres à munitions et rambardes, bêche arrière relevée, antennes, livrée
+ * brune. Commandes : mise en batterie (la bêche descend, le tube bascule
+ * vers l'arrière à 45°), tir simulé (recul, flamme, fumée), camouflage.
  */
 export function construireCaesar(THREE) {
   const c = new THREE.Group();
-  const camo = new THREE.MeshStandardMaterial({ map: textureCamouflage(THREE), roughness: 0.85, metalness: 0.08 });
-  const kaki = vert(THREE), sombre = noir(THREE), verre = vitre(THREE);
-  const pneu = new THREE.MeshStandardMaterial({ color: 0x1b1b1a, roughness: 0.95 });
+  const textures = { photo: textureUnie(THREE, '#4f4645'), camo: textureCamouflage(THREE) };
+  const peinture = new THREE.MeshStandardMaterial({ map: textures.photo, roughness: 0.85, metalness: 0.08, envMapIntensity: 0.45 });
+  const sombre = noir(THREE), verre = vitre(THREE);
+  const roues = materiauxRoues(THREE, peinture);
 
   // Châssis, plate-forme arrière, garde-boue
-  const chassis = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.32, 1.0), sombre);
-  chassis.position.set(0, 0.9, 0);
+  const chassis = new THREE.Mesh(new THREE.BoxGeometry(9.3, 0.32, 1.0), sombre);
+  chassis.position.set(-0.1, 0.92, 0);
   c.add(chassis);
-  c.add(profilExtrude(THREE, [[-2.25, 1.05], [4.45, 1.05], [4.45, 1.4], [-2.25, 1.4]], 2.5, camo, 0.03));
-  for (const z of [-1, 1]) {
-    const gb = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.08, 0.55), sombre);
-    gb.position.set(1.85, 1.33, z * 1.0);
-    c.add(gb);
-  }
-  // Cabine blindée : pare-brise incliné, quatre portes, rétroviseurs, pare-chocs et phares
-  const cabine = [[-4.7, 0.95], [-2.3, 0.95], [-2.3, 2.95], [-3.85, 2.95], [-4.5, 2.1], [-4.7, 1.9]];
-  c.add(profilExtrude(THREE, cabine, 2.5, camo, 0.06));
-  for (const z of [-0.58, 0.58]) c.add(vitreInclinee(THREE, [-4.5, 2.1], [-3.85, 2.95], 1.0, z, verre));
+  c.add(profilExtrude(THREE, [[-2.2, 1.06], [4.45, 1.06], [4.45, 1.42], [-2.2, 1.42]], 2.5, peinture, 0.03));
+  for (const z of [-1, 1]) c.add(pieces(THREE, sombre, [[1.8, 1.36, z * 1.02, 2.8, 0.08, 0.55], [-3.7, 1.38, z * 1.06, 1.4, 0.08, 0.5]]));
+  // Cabine blindée Arquus : capot en pointe, pare-brise incliné, toit plat, deux portes par côté
+  c.add(profilExtrude(THREE, [[-4.95, 1.0], [-2.25, 1.0], [-2.25, 2.95], [-3.75, 2.95], [-4.3, 2.12], [-4.9, 1.92], [-5.05, 1.45]], 2.5, peinture, 0.06));
+  const bec = profilExtrude(THREE, [[-5.1, 1.42], [-4.3, 1.62], [-4.3, 2.08], [-4.92, 1.9]], 1.5, peinture, 0.03);
+  c.add(bec);
+  for (const z of [-0.6, 0.6]) c.add(vitreInclinee(THREE, [-4.3, 2.12], [-3.75, 2.95], 1.05, z, verre, 0.1));
   for (const cote of [-1, 1]) {
-    for (const [x1, x2] of [[-3.95, -3.25], [-3.05, -2.5]]) {
-      const v = new THREE.Mesh(new THREE.BoxGeometry(x2 - x1, 0.55, 0.04), verre);
-      v.position.set((x1 + x2) / 2, 2.45, cote * 1.26);
-      c.add(v);
-    }
-    c.add(pieces(THREE, sombre, [[-3.15, 1.75, cote * 1.26, 0.03, 1.6, 0.03], [-2.38, 1.75, cote * 1.26, 0.03, 1.6, 0.03], [-4.0, 1.75, cote * 1.26, 0.03, 1.4, 0.03], [-3.5, 1.65, cote * 1.27, 0.18, 0.05, 0.04], [-2.75, 1.65, cote * 1.27, 0.18, 0.05, 0.04]]));
-    const bras = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.3), sombre);
-    bras.position.set(-4.35, 2.4, cote * 1.38);
-    const miroir = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.4, 0.22), sombre);
-    miroir.position.set(-4.35, 2.3, cote * 1.55);
-    const phare = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.3), new THREE.MeshStandardMaterial({ color: 0xf2efe2, emissive: 0x2a2820, roughness: 0.2 }));
-    phare.position.set(-4.73, 1.55, cote * 0.85);
-    // Marchepieds
-    const marche = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.25), sombre);
-    marche.position.set(-3.2, 0.95, cote * 1.3);
-    c.add(bras, miroir, phare, marche);
+    // Vitres des portes avant et arrière, joints de portes, poignées, marchepieds
+    c.add(pieces(THREE, verre, [[-3.55, 2.42, cote * 1.27, 0.62, 0.55, 0.04], [-2.75, 2.48, cote * 1.27, 0.42, 0.42, 0.04]]));
+    c.add(pieces(THREE, sombre, [
+      [-3.12, 1.95, cote * 1.27, 0.03, 1.9, 0.03], [-2.3, 1.95, cote * 1.27, 0.03, 1.9, 0.03], [-3.95, 1.85, cote * 1.27, 0.03, 1.7, 0.03],
+      [-3.4, 1.72, cote * 1.28, 0.2, 0.05, 0.04], [-2.6, 1.72, cote * 1.28, 0.2, 0.05, 0.04],
+      [-3.2, 0.98, cote * 1.32, 1.5, 0.06, 0.26], [-3.2, 0.62, cote * 1.32, 1.3, 0.05, 0.22],
+      [-4.15, 1.45, cote * 1.27, 0.5, 0.05, 0.03], [-4.0, 1.3, cote * 1.27, 0.5, 0.05, 0.03],
+    ]));
+    const bras = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.35), sombre);
+    bras.position.set(-4.25, 2.55, cote * 1.42);
+    const miroir = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.45, 0.24), sombre);
+    miroir.position.set(-4.25, 2.42, cote * 1.62);
+    const phare = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 0.3), new THREE.MeshStandardMaterial({ color: 0xf2efe2, emissive: 0x2a2820, roughness: 0.2 }));
+    phare.position.set(-5.08, 1.18, cote * 0.82);
+    c.add(bras, miroir, phare);
   }
-  const parechoc = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.35, 2.4), sombre);
-  parechoc.position.set(-4.75, 1.15, 0);
-  const grille = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.45, 1.3), sombre);
-  grille.position.set(-4.72, 1.6, 0);
-  // Verrou de route du tube sur le toit de la cabine
-  const verrou = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.22, 0.5), sombre);
-  verrou.position.set(-3.45, 3.06, 0);
-  c.add(parechoc, grille, verrou);
-
-  // Six roues (essieu avant sous la cabine, tandem arrière)
-  for (const x of [-3.55, 1.15, 2.6]) for (const z of [-1, 1]) {
-    const r = roue(THREE, 0.56, 0.42, pneu, kaki);
-    r.position.set(x, 0.56, z * 1.04);
+  // Calandre, pare-chocs, crochets, plaque, classe de pont
+  c.add(pieces(THREE, sombre, [[-5.12, 1.05, 0, 0.18, 0.32, 2.4], ...[0, 1, 2, 3].map((i) => [-5.07, 1.55 + i * 0.09, 0, 0.03, 0.04, 0.95]), [-5.18, 0.95, -0.6, 0.12, 0.12, 0.12], [-5.18, 0.95, 0.6, 0.12, 0.12, 0.12]]));
+  const pont = classePont(THREE, 21);
+  pont.position.set(-5.13, 1.75, -0.95);
+  pont.rotation.y = -Math.PI / 2;
+  c.add(pont);
+  // Six roues : essieu avant sous la cabine, tandem arrière
+  for (const x of [-3.7, 1.05, 2.55]) for (const z of [-1, 1]) {
+    const r = roueTT(THREE, 0.58, 0.44, roues);
+    r.position.set(x, 0.58, z * 1.04);
     c.add(r);
   }
-  // Coffres à munitions (18 coups) et équipements derrière la cabine
-  for (const z of [-0.78, 0.78]) {
-    const coffre = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.75, 0.85), camo);
-    coffre.position.set(-0.85, 1.78, z);
+  // Coffres à munitions et équipements derrière la cabine, rambardes
+  for (const z of [-0.75, 0.75]) {
+    const coffre = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.8, 0.95), peinture);
+    coffre.position.set(-0.8, 1.82, z);
     c.add(coffre);
   }
-  c.add(pieces(THREE, kaki, [[-0.85, 2.17, 0, 2.62, 0.04, 2.45]]), pieces(THREE, sombre, [[-2.1, 1.78, 0, 0.04, 0.6, 2.4], [-0.85, 1.78, 1.21, 2.5, 0.03, 0.03], [-0.85, 1.78, -1.21, 2.5, 0.03, 0.03]]));
-  const bidon = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.9, 14), kaki);
-  bidon.rotation.z = Math.PI / 2;
-  bidon.position.set(0.6, 1.62, 1.05);
-  c.add(bidon);
-
-  // Affût arrière : socle, flasques, tourillons à 3,2 m de haut
-  const socle = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.45, 1.6), camo);
-  socle.position.set(3.3, 1.62, 0);
+  c.add(pieces(THREE, sombre, [[-0.8, 1.82, 1.23, 2.6, 0.02, 0.02], [-0.8, 1.6, 1.23, 2.6, 0.02, 0.02], [-1.5, 1.82, 1.23, 0.03, 0.75, 0.02], [-0.1, 1.82, 1.23, 0.03, 0.75, 0.02], [-0.8, 1.82, -1.23, 2.6, 0.02, 0.02], [-0.8, 1.6, -1.23, 2.6, 0.02, 0.02]]));
+  const rambarde = [];
+  for (const z of [-1.2, 1.2]) {
+    rambarde.push([-0.8, 2.6, z, 2.7, 0.05, 0.05]);
+    for (const x of [-2.1, -0.8, 0.5]) rambarde.push([x, 2.42, z, 0.05, 0.38, 0.05]);
+  }
+  c.add(pieces(THREE, peinture, rambarde));
+  // Affût arrière : couronne, flasques, tourillons
+  const socle = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 1.7), peinture);
+  socle.position.set(2.75, 1.66, 0);
   c.add(socle);
-  for (const z of [-0.5, 0.5]) {
-    const flasque = profilExtrude(THREE, [[2.75, 1.84], [3.85, 1.84], [3.6, 3.35], [3.0, 3.35]], 0.14, kaki, 0.02);
+  for (const z of [-0.52, 0.52]) {
+    const flasque = profilExtrude(THREE, [[2.0, 1.88], [3.5, 1.88], [3.15, 3.4], [2.35, 3.4]], 0.14, peinture, 0.02);
     flasque.position.z = z;
     c.add(flasque);
   }
-  // Ensemble basculant : berceau, freins de recul, culasse, tube de 8 m, frein de bouche
+  // Ensemble basculant : berceau, deux freins de recul au-dessus du tube, culasse, tube, frein de bouche
   const pivot = new THREE.Group();
-  pivot.position.set(3.3, 3.2, 0);
+  pivot.position.set(2.75, 3.25, 0);
   c.add(pivot);
-  const masse = new THREE.Group(); // recule pendant le tir
+  const masse = new THREE.Group();
   pivot.add(masse);
-  const berceau = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.36, 0.62), kaki);
-  berceau.position.x = -0.95;
+  const berceau = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.4, 0.66), peinture);
+  berceau.position.x = -1.2;
   pivot.add(berceau);
-  for (const z of [-0.2, 0.2]) {
-    const frein = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.3, 10), sombre);
+  for (const z of [-0.17, 0.17]) {
+    const frein = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3.3, 14), peinture);
     frein.rotation.z = Math.PI / 2;
-    frein.position.set(-0.9, 0.25, z);
-    pivot.add(frein);
+    frein.position.set(-1.6, 0.3, z);
+    const tete = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.25, 14), sombre);
+    tete.rotation.z = Math.PI / 2;
+    tete.position.set(-3.25, 0.3, z);
+    pivot.add(frein, tete);
   }
-  const culasse = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.46, 0.46), kaki);
+  const culasse = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.5), peinture);
   culasse.position.x = 0.55;
-  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.12, 7.2, 20), kaki);
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.125, 7.6, 22), peinture);
   tube.rotation.z = Math.PI / 2;
-  tube.position.x = -3.75;
-  const manchon = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.4, 20), kaki);
+  tube.position.x = -4.1;
+  const manchon = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.2, 22), peinture);
   manchon.rotation.z = Math.PI / 2;
   manchon.position.x = -0.6;
   const bouche = new THREE.Group();
-  bouche.position.x = -7.55;
-  for (const [x, r, l] of [[0, 0.17, 0.16], [-0.24, 0.17, 0.16], [-0.12, 0.12, 0.1]]) {
-    const b = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 16), sombre);
+  bouche.position.x = -8.1;
+  for (const [x, r, l] of [[0, 0.19, 0.2], [-0.3, 0.19, 0.2], [-0.15, 0.13, 0.12], [0.16, 0.13, 0.14]]) {
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 18), peinture);
     b.rotation.z = Math.PI / 2;
     b.position.x = x;
     bouche.add(b);
   }
+  for (const s of [-1, 1]) bouche.add(pieces(THREE, sombre, [[0, 0, s * 0.19, 0.12, 0.2, 0.02], [-0.3, 0, s * 0.19, 0.12, 0.2, 0.02]]));
   masse.add(culasse, tube, manchon, bouche);
-  // Flamme de bouche
   const flamme = new THREE.Mesh(new THREE.SphereGeometry(0.6, 14, 10), new THREE.MeshBasicMaterial({ color: 0xffb347, transparent: true, opacity: 0.9 }));
-  flamme.position.x = -8.1;
+  flamme.position.x = -8.7;
   flamme.visible = false;
   masse.add(flamme);
-  // Bêche arrière (stabilisation au tir)
+  // Verrou de route : berceau en U sur le toit de la cabine
+  c.add(pieces(THREE, peinture, [[-2.55, 3.05, 0, 0.3, 0.2, 0.55], [-2.55, 3.2, -0.22, 0.3, 0.2, 0.08], [-2.55, 3.2, 0.22, 0.3, 0.2, 0.08]]));
+  // Antennes : deux fouets et un mât épais sur la cabine
+  for (const [x, z, h, r] of [[-2.45, 1.05, 2.6, 0.012], [-3.9, 1.05, 2.4, 0.012], [-2.6, -0.95, 1.2, 0.05]]) {
+    const a = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.7, r, h, 8), r > 0.03 ? peinture : sombre);
+    a.position.set(x, 2.95 + h / 2, z);
+    c.add(a);
+  }
+  // Bêche arrière à dents (stabilisation au tir)
   const beche = new THREE.Group();
-  beche.position.set(4.5, 1.15, 0);
-  const lame = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.6, 1.9), camo);
-  lame.position.y = -0.8;
-  const dents = pieces(THREE, sombre, [-0.7, -0.35, 0, 0.35, 0.7].map((z) => [0, -1.62, z, 0.1, 0.12, 0.14]));
-  const verins = pieces(THREE, sombre, [[-0.25, -0.35, -0.6, 0.08, 0.8, 0.08], [-0.25, -0.35, 0.6, 0.08, 0.8, 0.08]]);
-  beche.add(lame, dents, verins);
+  beche.position.set(4.5, 1.2, 0);
+  const lame = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.65, 2.0), peinture);
+  lame.position.y = -0.82;
+  const renfort = pieces(THREE, peinture, [[-0.12, -0.8, -0.5, 0.12, 1.5, 0.1], [-0.12, -0.8, 0.5, 0.12, 1.5, 0.1]]);
+  const dents = pieces(THREE, sombre, [-0.75, -0.38, 0, 0.38, 0.75].map((z) => [0, -1.68, z, 0.12, 0.14, 0.16]));
+  beche.add(lame, renfort, dents);
   c.add(beche);
-  // Feux arrière et plaques
-  c.add(pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xa31d1d, roughness: 0.4 }), [[4.47, 1.25, -1.1, 0.04, 0.1, 0.2], [4.47, 1.25, 1.1, 0.04, 0.1, 0.2]]));
+  c.add(pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xa31d1d, roughness: 0.4 }), [[4.47, 1.27, -1.1, 0.04, 0.1, 0.2], [4.47, 1.27, 1.1, 0.04, 0.1, 0.2]]));
 
-  const { groupe, p } = poser(THREE, c, 1.28, -4.8, 4.6);
+  const { groupe, p } = poser(THREE, c, 1.2, -5.2, 4.6);
   const fumee = bouffees(THREE, groupe, 6);
   groupe.userData.legendes = [
-    { texte: 'Canon de 155 mm (52 calibres)', point: p(-1.5, 3.4, 0) },
-    { texte: 'Cabine blindée à quatre portes', point: p(-3.5, 3.0, 1.3) },
-    { texte: 'Coffres à munitions (18 coups)', point: p(-0.85, 2.2, 1.2) },
-    { texte: 'Châssis 6×6 Arquus (460 ch)', point: p(1.9, 0.6, 1.3) },
-    { texte: 'Bêche arrière (stabilisation au tir)', point: p(4.6, 0.5, 0) },
+    { texte: 'Canon de 155 mm (52 calibres)', point: p(-3.5, 3.5, 0) },
+    { texte: 'Cabine blindée Arquus à quatre portes', point: p(-3.3, 3.0, 1.3) },
+    { texte: 'Freins de recul', point: p(1.0, 3.7, 0.2) },
+    { texte: 'Coffres à munitions (18 coups)', point: p(-0.8, 2.3, 1.25) },
+    { texte: 'Châssis 6×6 (460 ch)', point: p(1.8, 0.6, 1.3) },
+    { texte: 'Bêche arrière (stabilisation au tir)', point: p(4.6, 2.6, 0) },
   ];
   groupe.userData.commandes = [
     { id: 'batterie', libelle: 'Mettre en batterie', actif: 'Position de route' },
     { id: 'tirCanon', type: 'action', libelle: '💥 Tir (simulation)', requiert: 'batterie', aide: 'Mettez d\'abord le canon en batterie' },
+    { id: 'camouflage', libelle: 'Camouflage centre-Europe', actif: 'Livrée brune' },
   ];
+  const peindre = livree(peinture, textures);
   let f = 0, tir = null;
   const v = new THREE.Vector3();
   groupe.userData.animer = (t, api) => {
+    peindre(api);
     f += ((api.batterie ? 1 : 0) - f) * 0.035;
-    // Le tube bascule de l'avant (route, posé sur la cabine) vers l'arrière, à 45° de hausse
+    // En route, le tube est posé sur la cabine ; en batterie, il bascule vers l'arrière à 45° de hausse
     pivot.rotation.z = -f * (Math.PI * 0.75);
     beche.rotation.z = Math.PI * 0.9 - f * (Math.PI * 0.9 - 0.7);
     if (api.tirCanon && !tir && f > 0.97) { tir = t; api.tirCanon = false; }
-    else if (api.tirCanon && f <= 0.97 && !api.batterie) api.tirCanon = false;
+    else if (api.tirCanon && !api.batterie) api.tirCanon = false;
     if (tir) {
       const d = (t - tir) / 1000;
       masse.position.x = d < 0.08 ? (d / 0.08) * 0.9 : Math.max(0, 0.9 * (1 - (d - 0.08) / 1.1));
@@ -240,128 +343,137 @@ export function construireCaesar(THREE) {
 }
 
 /**
- * Véhicule blindé multirôle Griffon (6×6) : caisse en V, cabine à grand
- * pare-brise blindé, compartiment des fantassins, porte arrière, tourelleau
- * téléopéré, lance-pots fumigènes, détecteur de tirs. Commandes : ouvrir la
- * porte arrière, faire pivoter le tourelleau.
+ * Véhicule blindé multirôle Griffon (6×6), d'après une photo de l'armée de
+ * Terre : capot moteur à grilles, grand pare-brise blindé en deux parties,
+ * caisse haute aux flancs droits, porte du conducteur vitrée, essieu avant et
+ * tandem arrière à gros pneus à crampons, tourelleau téléopéré avec couronne
+ * de lance-pots, mât et antennes, filet de camouflage roulé sur le toit,
+ * porte arrière, livrée sable. Commandes : porte arrière, tourelleau,
+ * camouflage.
  */
 export function construireGriffon(THREE) {
   const c = new THREE.Group();
-  const camo = new THREE.MeshStandardMaterial({ map: textureCamouflage(THREE), roughness: 0.85, metalness: 0.08 });
-  const kaki = vert(THREE), sombre = noir(THREE), verre = vitre(THREE);
-  const pneu = new THREE.MeshStandardMaterial({ color: 0x1b1b1a, roughness: 0.95 });
+  const textures = { photo: textureUnie(THREE, '#8c765f'), camo: textureCamouflage(THREE) };
+  const peinture = new THREE.MeshStandardMaterial({ map: textures.photo, roughness: 0.88, metalness: 0.06, envMapIntensity: 0.45 });
+  const sombre = noir(THREE), verre = vitre(THREE);
+  const roues = materiauxRoues(THREE, peinture);
 
-  // Caisse basse en V (protection contre les mines), extrudée sur la longueur
-  const v = new THREE.Shape([[0, 0.48], [1.0, 0.72], [1.22, 1.25], [-1.22, 1.25], [-1.0, 0.72]].map(([a, b]) => new THREE.Vector2(a, b)));
-  const geoV = new THREE.ExtrudeGeometry(v, { depth: 7.3, bevelEnabled: false });
+  // Caisse basse en V (protection contre les mines)
+  const v = new THREE.Shape([[0, 0.5], [0.95, 0.74], [1.22, 1.25], [-1.22, 1.25], [-0.95, 0.74]].map(([a, b]) => new THREE.Vector2(a, b)));
+  const geoV = new THREE.ExtrudeGeometry(v, { depth: 7.4, bevelEnabled: false });
   geoV.rotateY(Math.PI / 2);
-  geoV.translate(-3.7, 0, 0);
-  c.add(new THREE.Mesh(geoV, camo));
-  // Compartiment arrière aux flancs inclinés
-  const sec = new THREE.Shape([[-1.24, 1.2], [1.24, 1.2], [1.2, 2.45], [0.98, 2.95], [-0.98, 2.95], [-1.2, 2.45]].map(([a, b]) => new THREE.Vector2(a, b)));
-  const geoSec = new THREE.ExtrudeGeometry(sec, { depth: 5.35, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 1 });
+  geoV.translate(-3.75, 0, 0);
+  c.add(new THREE.Mesh(geoV, peinture));
+  // Caisse haute : flancs presque droits, arête de toit chanfreinée
+  const sec = new THREE.Shape([[-1.24, 1.2], [1.24, 1.2], [1.24, 2.78], [1.1, 2.98], [-1.1, 2.98], [-1.24, 2.78]].map(([a, b]) => new THREE.Vector2(a, b)));
+  const geoSec = new THREE.ExtrudeGeometry(sec, { depth: 6.0, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 1 });
   geoSec.rotateY(Math.PI / 2);
-  geoSec.translate(-1.6, 0, 0);
-  c.add(new THREE.Mesh(geoSec, camo));
-  // Avant : capot moteur et cabine au pare-brise incliné
-  c.add(profilExtrude(THREE, [[-3.85, 0.75], [-1.55, 0.75], [-1.55, 2.95], [-1.95, 2.95], [-2.8, 2.08], [-3.85, 1.72]], 2.38, camo, 0.05));
-  for (const z of [-0.52, 0.52]) c.add(vitreInclinee(THREE, [-2.8, 2.08], [-1.95, 2.95], 0.95, z, verre, 0.1));
+  geoSec.translate(-2.2, 0, 0);
+  c.add(new THREE.Mesh(geoSec, peinture));
+  // Capot moteur incliné et face avant, pare-brise blindé presque vertical
+  c.add(profilExtrude(THREE, [[-3.9, 0.78], [-2.15, 0.78], [-2.15, 2.0], [-2.3, 2.02], [-3.75, 1.72], [-3.95, 1.55]], 2.44, peinture, 0.05));
+  c.add(profilExtrude(THREE, [[-2.35, 1.95], [-2.0, 1.95], [-1.95, 2.98], [-2.12, 2.98]], 2.44, peinture, 0.03));
+  for (const z of [-0.55, 0.55]) c.add(vitreInclinee(THREE, [-2.33, 2.03], [-2.1, 2.9], 1.0, z, verre, 0.06));
+  c.add(pieces(THREE, sombre, [
+    // Grilles du capot, calandre, pare-chocs, crochets
+    [-3.0, 1.9, -0.55, 0.8, 0.03, 0.7], [-3.0, 1.9, 0.55, 0.8, 0.03, 0.7],
+    ...[0, 1, 2, 3].map((i) => [-3.97, 1.0 + i * 0.12, 0, 0.03, 0.05, 1.3]),
+    [-4.0, 0.88, 0, 0.18, 0.22, 2.3], [-4.05, 0.82, -0.7, 0.12, 0.12, 0.12], [-4.05, 0.82, 0.7, 0.12, 0.12, 0.12],
+  ]));
+  const pont = classePont(THREE, 20);
+  pont.position.set(-3.82, 1.66, -0.82);
+  pont.rotation.set(0, -Math.PI / 2, 0);
+  pont.rotation.x = 0;
+  c.add(pont);
   for (const cote of [-1, 1]) {
-    // Vitres latérales de la cabine et petits hublots du compartiment
-    const vl = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.42, 0.04), verre);
-    vl.position.set(-2.05, 2.35, cote * 1.2);
-    c.add(vl);
-    for (const x of [0.2, 1.4, 2.6]) {
-      const h = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.22, 0.04), verre);
-      h.position.set(x, 2.3, cote * 1.215);
-      h.rotation.x = cote * 0.03;
-      c.add(h);
-    }
-    // Coffres de rangement et garde-boue
-    const coffre = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 0.25), camo);
-    coffre.position.set(-0.6, 1.5, cote * 1.33);
-    c.add(coffre);
-    c.add(pieces(THREE, sombre, [[-2.35, 1.3, cote * 1.18, 1.3, 0.06, 0.4], [1.3, 1.3, cote * 1.18, 2.4, 0.06, 0.4]]));
-    // Phares, rétroviseurs
-    const phare = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 0.32), new THREE.MeshStandardMaterial({ color: 0xf2efe2, emissive: 0x2a2820, roughness: 0.2 }));
-    phare.position.set(-3.87, 1.45, cote * 0.85);
-    const miroir = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.35, 0.2), sombre);
-    miroir.position.set(-2.6, 2.35, cote * 1.45);
-    // Lance-pots fumigènes GALIX sur le toit
-    const galix = pieces(THREE, sombre, [0, 1, 2].map((i) => [-0.9 + i * 0.22, 3.02, cote * 0.85, 0.14, 0.14, 0.2]));
-    c.add(phare, miroir, galix);
+    // Feux avant doubles, rétroviseurs, porte du conducteur vitrée, épiscopes, garde-boue
+    c.add(pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xf2efe2, emissive: 0x2a2820, roughness: 0.2 }), [[-3.97, 1.42, cote * 0.82, 0.04, 0.1, 0.1], [-3.97, 1.42, cote * 0.98, 0.04, 0.1, 0.1]]));
+    c.add(pieces(THREE, sombre, [[-2.3, 2.75, cote * 1.42, 0.06, 0.5, 0.26], [-2.25, 2.95, cote * 1.3, 0.04, 0.04, 0.3]]));
+    c.add(pieces(THREE, verre, [[-1.75, 2.35, cote * 1.255, 0.55, 0.5, 0.03], [-0.35, 2.55, cote * 1.255, 0.18, 0.12, 0.03], [0.05, 2.55, cote * 1.255, 0.18, 0.12, 0.03]]));
+    c.add(pieces(THREE, sombre, [[-1.4, 2.0, cote * 1.255, 0.03, 1.5, 0.03], [-2.12, 2.0, cote * 1.255, 0.03, 1.5, 0.03], [-1.55, 1.75, cote * 1.27, 0.2, 0.05, 0.04]]));
+    c.add(pieces(THREE, peinture, [[-2.4, 1.32, cote * 1.12, 1.4, 0.07, 0.52], [1.8, 1.32, cote * 1.12, 2.7, 0.07, 0.52], [-0.45, 1.45, cote * 1.28, 1.6, 0.4, 0.1]]));
+    // Lance-pots fumigènes sur le toit, poignées
+    c.add(pieces(THREE, sombre, [0, 1, 2].map((i) => [-0.4 + i * 0.22, 3.04, cote * 0.95, 0.14, 0.14, 0.18])));
   }
-  const parechoc = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 2.3), sombre);
-  parechoc.position.set(-3.9, 1.0, 0);
-  const calandre = pieces(THREE, sombre, [0, 1, 2, 3, 4].map((i) => [-3.86, 1.35 + i * 0.07, 0, 0.03, 0.03, 1.1]));
-  c.add(parechoc, calandre);
-  // Six roues
-  for (const x of [-2.45, 0.55, 2.05]) for (const z of [-1, 1]) {
-    const r = roue(THREE, 0.58, 0.42, pneu, kaki);
-    r.position.set(x, 0.58, z * 1.02);
+  // Six roues : essieu avant, tandem arrière
+  for (const x of [-2.6, 1.05, 2.55]) for (const z of [-1, 1]) {
+    const r = roueTT(THREE, 0.62, 0.46, roues);
+    r.position.set(x, 0.62, z * 1.02);
     c.add(r);
   }
-  // Porte arrière (charnière sur le côté droit) avec hublot et marchepied
+  // Porte arrière (charnière côté droit) avec hublot, marchepied
   const charniere = new THREE.Group();
-  charniere.position.set(3.77, 1.95, -0.55);
-  const porte = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.45, 1.1), camo);
-  porte.position.z = 0.55;
+  charniere.position.set(3.82, 2.0, -0.6);
+  const porte = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.55, 1.2), peinture);
+  porte.position.z = 0.6;
   const hublot = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.25, 0.25), verre);
-  hublot.position.set(0.05, 0.3, 0.55);
+  hublot.position.set(0.05, 0.35, 0.6);
   charniere.add(porte, hublot);
   c.add(charniere);
-  const interieur = new THREE.Mesh(new THREE.BoxGeometry(0.02, 1.4, 1.05), new THREE.MeshStandardMaterial({ color: 0x2b2d2a, roughness: 0.9 }));
-  interieur.position.set(3.74, 1.95, 0);
-  const marche = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.06, 1.0), sombre);
-  marche.position.set(3.85, 0.95, 0);
-  c.add(interieur, marche);
-  // Tourelleau téléopéré (mitrailleuse de 12,7 mm), détecteur de tirs, antennes
+  const interieur = new THREE.Mesh(new THREE.BoxGeometry(0.02, 1.5, 1.15), new THREE.MeshStandardMaterial({ color: 0x2b2d2a, roughness: 0.9 }));
+  interieur.position.set(3.79, 2.0, 0);
+  c.add(interieur, pieces(THREE, sombre, [[3.92, 0.95, 0, 0.35, 0.06, 1.1]]));
+  // Tourelleau téléopéré (mitrailleuse, viseur) sur couronne de lance-pots
   const tourelleau = new THREE.Group();
-  tourelleau.position.set(-1.0, 2.95, -0.35);
-  const fut = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.34, 0.25, 16), camo);
-  fut.position.y = 0.12;
-  const corps = tronc(THREE, 0.7, 0.4, 0.6, 0.6, 0.5, camo);
-  corps.position.y = 0.45;
-  const optro = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.26, 0.22), camo);
-  optro.position.set(-0.1, 0.48, 0.38);
-  const objectif = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.14, 0.14), verre);
-  objectif.position.set(-0.25, 0.48, 0.38);
-  const mitrailleuse = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.1, 8), sombre);
+  tourelleau.position.set(-1.45, 2.98, -0.25);
+  const couronne = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.5, 0.22, 20), peinture);
+  couronne.position.y = 0.11;
+  const pots = [];
+  for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; pots.push([Math.cos(a) * 0.5, 0.3, Math.sin(a) * 0.5, 0.12, 0.12, 0.12]); }
+  const corps = tronc(THREE, 0.8, 0.45, 0.72, 0.72, 0.62, peinture);
+  corps.position.y = 0.6;
+  const viseur = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.3, 0.26), peinture);
+  viseur.position.set(-0.08, 0.98, 0.3);
+  const objectif = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.16, 0.16), verre);
+  objectif.position.set(-0.26, 0.98, 0.3);
+  const mitrailleuse = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8), sombre);
   mitrailleuse.rotation.z = Math.PI / 2;
-  mitrailleuse.position.set(-0.75, 0.5, -0.05);
-  const caisseMun = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.22, 0.2), sombre);
-  caisseMun.position.set(0.1, 0.45, -0.38);
-  tourelleau.add(fut, corps, optro, objectif, mitrailleuse, caisseMun);
+  mitrailleuse.position.set(-0.85, 0.66, -0.05);
+  const caisseMun = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.26, 0.22), peinture);
+  caisseMun.position.set(0.15, 0.62, -0.42);
+  tourelleau.add(couronne, pieces(THREE, sombre, pots), corps, viseur, objectif, mitrailleuse, caisseMun);
   c.add(tourelleau);
-  const antares = new THREE.Group();
-  const matA = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8), sombre);
-  matA.position.y = 0.3;
-  const tete = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), sombre);
-  tete.position.y = 0.65;
-  antares.add(matA, tete);
-  antares.position.set(1.2, 2.95, 0.5);
-  c.add(antares);
-  for (const [x, z, h] of [[3.2, 0.8, 2.0], [3.2, -0.8, 2.0], [-1.7, 0.85, 1.2]]) {
-    const a = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.018, h, 6), sombre);
-    a.position.set(x, 2.95 + h / 2, z);
+  // Mât épais, antennes fouets, filet de camouflage roulé à l'arrière du toit
+  const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 1.9, 10), sombre);
+  mat.position.set(-0.85, 3.93, 0.55);
+  c.add(mat);
+  for (const [x, z, h] of [[-0.6, 0.95, 1.9], [0.0, -0.95, 1.7], [3.4, 0.85, 2.0], [3.4, -0.85, 1.6]]) {
+    const a = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.015, h, 6), sombre);
+    a.position.set(x, 2.98 + h / 2, z);
     c.add(a);
   }
-  c.add(pieces(THREE, sombre, [[0.6, 2.97, -0.4, 0.8, 0.04, 0.7], [2.2, 2.97, 0.2, 0.8, 0.04, 0.7]]));
+  const toileFilet = document.createElement('canvas');
+  toileFilet.width = toileFilet.height = 128;
+  const cf = toileFilet.getContext('2d');
+  cf.fillStyle = '#6e5a42'; cf.fillRect(0, 0, 128, 128);
+  cf.strokeStyle = '#c9b48d'; cf.lineWidth = 3;
+  for (let i = -128; i < 256; i += 12) { cf.beginPath(); cf.moveTo(i, 0); cf.lineTo(i + 128, 128); cf.stroke(); cf.beginPath(); cf.moveTo(i + 128, 0); cf.lineTo(i, 128); cf.stroke(); }
+  const texFilet = new THREE.CanvasTexture(toileFilet);
+  texFilet.colorSpace = THREE.SRGBColorSpace;
+  texFilet.wrapS = texFilet.wrapT = THREE.RepeatWrapping;
+  texFilet.repeat.set(3, 2);
+  const filet = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.75, 1.9), new THREE.MeshStandardMaterial({ map: texFilet, roughness: 1 }));
+  filet.position.set(2.6, 3.35, 0);
+  filet.rotation.y = 0.02;
+  c.add(filet, pieces(THREE, new THREE.MeshStandardMaterial({ color: 0x6d5a40, roughness: 1 }), [[2.6, 3.36, 0, 1.52, 0.04, 1.92], [2.6, 3.36, 0, 0.04, 0.77, 1.92], [2.2, 3.36, 0, 0.04, 0.77, 1.92], [3.0, 3.36, 0, 0.04, 0.77, 1.92]]));
 
-  const { groupe, p } = poser(THREE, c, 1.45, -3.95, 3.95);
+  const { groupe, p } = poser(THREE, c, 1.45, -4.05, 3.95);
   groupe.userData.legendes = [
-    { texte: 'Tourelleau téléopéré', point: p(-1.0, 3.6, -0.35) },
-    { texte: 'Pare-brise blindé', point: p(-2.4, 2.6, 0) },
-    { texte: 'Caisse en V (protection contre les mines)', point: p(0, 0.5, 1.0) },
-    { texte: 'Détecteur de tirs', point: p(1.2, 3.7, 0.5) },
-    { texte: 'Porte arrière : 8 fantassins', point: p(3.8, 2.2, 0) },
+    { texte: 'Tourelleau téléopéré', point: p(-1.45, 4.0, -0.25) },
+    { texte: 'Pare-brise blindé', point: p(-2.2, 2.6, 0) },
+    { texte: 'Caisse en V (protection contre les mines)', point: p(0, 0.55, 1.0) },
+    { texte: 'Filet de camouflage', point: p(2.6, 3.8, 0) },
+    { texte: 'Porte arrière : 8 fantassins', point: p(3.85, 2.2, 0) },
   ];
   groupe.userData.commandes = [
     { id: 'porte', libelle: 'Ouvrir la porte arrière', actif: 'Fermer la porte arrière' },
     { id: 'veille', libelle: 'Faire pivoter le tourelleau', actif: 'Tourelleau en veille' },
+    { id: 'camouflage', libelle: 'Camouflage centre-Europe', actif: 'Livrée sable' },
   ];
+  const peindre = livree(peinture, textures);
   let ouverture = 0, angle = 0;
   groupe.userData.animer = (t, api) => {
+    peindre(api);
     ouverture += ((api.porte ? 1 : 0) - ouverture) * 0.06;
     charniere.rotation.y = -ouverture * 1.75;
     angle += ((api.veille ? 1.2 * Math.sin(t / 1500) : 0) - angle) * 0.05;
@@ -372,137 +484,170 @@ export function construireGriffon(THREE) {
 }
 
 /**
- * Engin blindé de reconnaissance et de combat Jaguar (6×6) : caisse basse à
- * facettes, tourelle à canon de 40 mm CTA, lanceur escamotable de deux
- * missiles MMP, viseurs, tourelleau. Commandes : rotation de la tourelle,
- * déploiement du lanceur de missiles.
+ * Engin blindé de reconnaissance et de combat Jaguar (6×6), d'après une photo
+ * de l'armée de Terre : caisse basse à facettes, nez en pointe avec bandeau de
+ * phares, essieu avant et tandem arrière, tourelle à canon de 40 mm CTA
+ * décalé à droite, caisson du lanceur de missiles MMP sur le flanc gauche
+ * (il se dresse, capot ouvert), grappes de lance-pots, viseur panoramique,
+ * tourelleau, antennes, sacoches, livrée brune. Commandes : rotation de la
+ * tourelle, déploiement du lanceur MMP, camouflage.
  */
 export function construireJaguar(THREE) {
   const c = new THREE.Group();
-  const camo = new THREE.MeshStandardMaterial({ map: textureCamouflage(THREE), roughness: 0.85, metalness: 0.08 });
-  const kaki = vert(THREE), sombre = noir(THREE), verre = vitre(THREE);
-  const pneu = new THREE.MeshStandardMaterial({ color: 0x1b1b1a, roughness: 0.95 });
+  const textures = { photo: textureUnie(THREE, '#584c44'), camo: textureCamouflage(THREE) };
+  const peinture = new THREE.MeshStandardMaterial({ map: textures.photo, roughness: 0.85, metalness: 0.08, envMapIntensity: 0.45 });
+  const sombre = noir(THREE), verre = vitre(THREE);
+  const roues = materiauxRoues(THREE, peinture);
 
-  // Caisse : partie basse en V et partie haute à flancs inclinés, glacis avant
-  const v = new THREE.Shape([[0, 0.5], [1.0, 0.72], [1.25, 1.2], [-1.25, 1.2], [-1.0, 0.72]].map(([a, b]) => new THREE.Vector2(a, b)));
-  const geoV = new THREE.ExtrudeGeometry(v, { depth: 6.9, bevelEnabled: false });
+  // Caisse basse en V et caisse haute à flancs inclinés
+  const v = new THREE.Shape([[0, 0.55], [0.95, 0.75], [1.25, 1.2], [-1.25, 1.2], [-0.95, 0.75]].map(([a, b]) => new THREE.Vector2(a, b)));
+  const geoV = new THREE.ExtrudeGeometry(v, { depth: 6.6, bevelEnabled: false });
   geoV.rotateY(Math.PI / 2);
-  geoV.translate(-3.45, 0, 0);
-  c.add(new THREE.Mesh(geoV, camo));
-  c.add(profilExtrude(THREE, [[-3.55, 1.1], [3.5, 1.1], [3.55, 1.75], [3.35, 1.95], [-1.7, 1.95], [-3.55, 1.45]], 2.6, camo, 0.05));
-  for (const cote of [-1, 1]) {
-    // Blindage additionnel incliné au-dessus des roues
-    const pan = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.55, 0.12), camo);
-    pan.position.set(0, 1.5, cote * 1.38);
-    pan.rotation.x = -cote * 0.35;
-    c.add(pan);
-    const phare = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.28), new THREE.MeshStandardMaterial({ color: 0xf2efe2, emissive: 0x2a2820, roughness: 0.2 }));
-    phare.position.set(-3.5, 1.5, cote * 0.95);
-    c.add(phare);
-    c.add(pieces(THREE, sombre, [[-2.3, 1.22, cote * 1.2, 1.4, 0.05, 0.42], [0.95, 1.22, cote * 1.2, 2.6, 0.05, 0.42]]));
-  }
+  geoV.translate(-3.1, 0, 0);
+  c.add(new THREE.Mesh(geoV, peinture));
+  const sec = new THREE.Shape([[-1.3, 1.15], [1.3, 1.15], [1.3, 1.5], [1.1, 1.92], [-1.1, 1.92], [-1.3, 1.5]].map(([a, b]) => new THREE.Vector2(a, b)));
+  const geoSec = new THREE.ExtrudeGeometry(sec, { depth: 5.6, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 1 });
+  geoSec.rotateY(Math.PI / 2);
+  geoSec.translate(-2.1, 0, 0);
+  c.add(new THREE.Mesh(geoSec, peinture));
+  // Nez en pointe : glacis supérieur, bandeau des phares, pan inférieur rentrant
+  c.add(profilExtrude(THREE, [[-3.15, 0.75], [-2.05, 0.75], [-2.05, 1.92], [-2.4, 1.92], [-3.55, 1.62], [-3.62, 1.35], [-3.45, 1.0]], 2.55, peinture, 0.05));
+  c.add(pieces(THREE, sombre, [[-3.6, 1.45, -0.72, 0.04, 0.16, 0.7], [-3.6, 1.45, 0.72, 0.04, 0.16, 0.7]]));
+  c.add(pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xf2efe2, emissive: 0x2a2820, roughness: 0.2 }), [[-3.63, 1.45, -0.55, 0.03, 0.08, 0.1], [-3.63, 1.45, -0.85, 0.03, 0.08, 0.1], [-3.63, 1.45, 0.55, 0.03, 0.08, 0.1], [-3.63, 1.45, 0.85, 0.03, 0.08, 0.1]]));
+  const pont = classePont(THREE, 28);
+  pont.position.set(-3.6, 1.52, -1.05);
+  pont.rotation.y = -Math.PI / 2;
+  c.add(pont);
   // Poste de pilotage : épiscopes devant le conducteur
-  c.add(vitreInclinee(THREE, [-2.6, 1.72], [-2.1, 1.95], 0.7, 0, verre, 0.05));
-  const parechoc = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.3, 2.3), sombre);
-  parechoc.position.set(-3.6, 1.0, 0);
-  c.add(parechoc);
-  for (const x of [-2.3, -0.15, 1.95]) for (const z of [-1, 1]) {
-    const r = roue(THREE, 0.58, 0.42, pneu, kaki);
-    r.position.set(x, 0.58, z * 1.08);
+  c.add(vitreInclinee(THREE, [-2.55, 1.84], [-2.2, 1.92], 0.7, 0.3, verre, 0.03));
+  for (const cote of [-1, 1]) {
+    // Pans inclinés au-dessus des roues, garde-boue, sacoches noires, feux latéraux orange
+    const pan = new THREE.Mesh(new THREE.BoxGeometry(6.6, 0.5, 0.1), peinture);
+    pan.position.set(-0.1, 1.4, cote * 1.36);
+    pan.rotation.x = -cote * 0.4;
+    c.add(pan);
+    c.add(pieces(THREE, peinture, [[-2.3, 1.18, cote * 1.2, 1.5, 0.06, 0.5], [1.15, 1.18, cote * 1.2, 2.8, 0.06, 0.5]]));
+    c.add(pieces(THREE, sombre, [[-0.6, 1.52, cote * 1.47, 0.32, 0.36, 0.12], [2.5, 1.52, cote * 1.47, 0.32, 0.36, 0.12], [3.0, 1.52, cote * 1.47, 0.32, 0.36, 0.12]]));
+    c.add(pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xe0802a, emissive: 0x3a1a00, roughness: 0.4 }), [[-1.7, 1.2, cote * 1.33, 0.1, 0.05, 0.04], [1.9, 1.2, cote * 1.33, 0.1, 0.05, 0.04]]));
+  }
+  c.add(pieces(THREE, sombre, [[-3.5, 0.95, 0, 0.15, 0.25, 2.2], [2.6, 1.94, -0.6, 1.0, 0.03, 0.8], [2.6, 1.94, 0.6, 1.0, 0.03, 0.8]]));
+  // Six roues : essieu avant, tandem arrière
+  for (const x of [-2.3, 0.4, 1.95]) for (const z of [-1, 1]) {
+    const r = roueTT(THREE, 0.6, 0.46, roues);
+    r.position.set(x, 0.6, z * 1.1);
     c.add(r);
   }
-  // Grilles moteur à l'arrière, antennes
-  c.add(pieces(THREE, sombre, [[2.6, 1.97, -0.6, 1.1, 0.03, 0.8], [2.6, 1.97, 0.6, 1.1, 0.03, 0.8]]));
-  for (const z of [-0.9, 0.9]) {
-    const a = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.018, 2.0, 6), sombre);
-    a.position.set(3.2, 2.95, z);
-    c.add(a);
-  }
 
-  // Tourelle à facettes (pivot sur la couronne)
+  // Tourelle (pivot sur la couronne) : corps à facettes, nuque haute, canon décalé à droite
   const tourelle = new THREE.Group();
-  tourelle.position.set(0.25, 1.95, 0);
-  const dessus = [[-1.25, -0.95], [-1.25, 0.95], [-0.55, 1.22], [1.35, 1.22], [1.7, 0.85], [1.7, -0.85], [1.35, -1.22], [-0.55, -1.22]];
-  const geoT = new THREE.ExtrudeGeometry(new THREE.Shape(dessus.map(([x, z]) => new THREE.Vector2(x, z))), { depth: 0.5, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.1, bevelSegments: 1 });
+  tourelle.position.set(0.35, 1.92, 0);
+  const dessus = [[-1.15, -1.0], [-1.15, 0.55], [-0.75, 0.8], [1.55, 0.8], [1.75, 0.55], [1.75, -1.0], [1.5, -1.15], [-0.95, -1.15]];
+  const geoT = new THREE.ExtrudeGeometry(new THREE.Shape(dessus.map(([x, z]) => new THREE.Vector2(x, z))), { depth: 0.66, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 1 });
   geoT.rotateX(-Math.PI / 2);
-  const corpsT = new THREE.Mesh(geoT, camo);
-  corpsT.position.y = 0.1;
+  const corpsT = new THREE.Mesh(geoT, peinture);
+  corpsT.position.y = 0.06;
   tourelle.add(corpsT);
-  // Canon de 40 mm à munitions télescopées
-  const masque = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.42, 0.55), camo);
-  masque.position.set(-1.38, 0.38, 0);
-  const manchon = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.9, 14), kaki);
-  manchon.rotation.z = Math.PI / 2;
-  manchon.position.set(-1.95, 0.4, 0);
-  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.065, 2.3, 14), kaki);
-  tube.rotation.z = Math.PI / 2;
-  tube.position.set(-3.5, 0.4, 0);
-  const bouche = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.18, 12), sombre);
-  bouche.rotation.z = Math.PI / 2;
-  bouche.position.set(-4.68, 0.4, 0);
-  tourelle.add(masque, manchon, tube, bouche);
-  // Viseur panoramique du chef (PASEO), viseur du tireur, tourelleau de 7,62 mm
-  const paseo = new THREE.Group();
-  paseo.position.set(0.2, 0.7, 0.55);
-  const pied = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.35, 14), camo);
-  pied.position.y = 0.17;
-  const tete = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.32, 0.4), camo);
-  tete.position.y = 0.5;
-  const fenetre = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.16, 0.26), verre);
-  fenetre.position.set(-0.21, 0.52, 0);
-  paseo.add(pied, tete, fenetre);
-  const viseur = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.28, 0.4), camo);
-  viseur.position.set(-0.75, 0.83, -0.6);
-  const vitreV = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.16, 0.3), verre);
-  vitreV.position.set(-1.01, 0.83, -0.6);
-  const rws = new THREE.Group();
-  rws.position.set(0.9, 0.7, -0.45);
-  const rwsCorps = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.3, 0.36), camo);
-  rwsCorps.position.y = 0.2;
-  const mg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.8, 8), sombre);
-  mg.rotation.z = Math.PI / 2;
-  mg.position.set(-0.5, 0.25, 0);
-  rws.add(rwsCorps, mg);
-  tourelle.add(paseo, viseur, vitreV, rws);
-  // Lance-pots fumigènes
-  for (const cote of [-1, 1]) tourelle.add(pieces(THREE, sombre, [0, 1, 2, 3].map((i) => [1.0 + i * 0.16, 0.55, cote * 1.3, 0.12, 0.12, 0.16])));
-  // Lanceur escamotable de deux missiles MMP sur le flanc gauche de la tourelle
+  // Caisson du lanceur MMP sur le flanc gauche (plus haut que la tourelle), capot articulé
+  const caisson = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.86, 0.5), peinture);
+  caisson.position.set(0.55, 0.45, 1.05);
+  tourelle.add(caisson);
   const lanceur = new THREE.Group();
-  lanceur.position.set(0.3, 0.35, 1.32);
-  const bras = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 0.12), kaki);
-  bras.position.y = 0.2;
+  lanceur.position.set(0.55, 0.5, 1.05);
+  const support = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.9, 0.3), peinture);
+  support.position.y = 0.0;
   const tubes = new THREE.Group();
-  tubes.position.y = 0.45;
-  for (const z of [0.08, 0.38]) {
-    const t = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.26, 0.26), camo);
-    t.position.set(0, 0, z);
-    const fond = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.18, 0.18), sombre);
-    fond.position.set(-0.66, 0, z);
-    tubes.add(t, fond);
-  }
-  lanceur.add(bras, tubes);
+  tubes.position.y = 0.42;
+  const boite = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 0.45), peinture);
+  const fonds = pieces(THREE, sombre, [[-0.71, 0.13, 0, 0.02, 0.22, 0.22], [-0.71, -0.15, 0, 0.02, 0.22, 0.22]]);
+  const camera = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16), verre);
+  camera.rotation.z = Math.PI / 2;
+  camera.position.set(-0.75, 0.38, 0);
+  const capotPivot = new THREE.Group();
+  capotPivot.position.set(0.7, 0.32, 0);
+  const capot = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.55), peinture);
+  capot.position.x = -0.8;
+  capotPivot.add(capot);
+  tubes.add(boite, fonds, camera, capotPivot);
+  lanceur.add(support, tubes);
   tourelle.add(lanceur);
+  // Masque et canon de 40 mm CTA (manchon, tube, embout de bouche)
+  const masque = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.48, 0.62), peinture);
+  masque.position.set(-1.3, 0.4, -0.3);
+  const manchon = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 1.2, 16), peinture);
+  manchon.rotation.z = Math.PI / 2;
+  manchon.position.set(-2.1, 0.42, -0.3);
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 2.2, 14), peinture);
+  tube.rotation.z = Math.PI / 2;
+  tube.position.set(-3.75, 0.42, -0.3);
+  const bouche = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.2, 14), peinture);
+  bouche.rotation.z = Math.PI / 2;
+  bouche.position.set(-4.9, 0.42, -0.3);
+  const radarBouche = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.2, 0.06), sombre);
+  radarBouche.position.set(-4.92, 0.28, -0.3);
+  tourelle.add(masque, manchon, tube, bouche, radarBouche);
+  // Grappes de lance-pots fumigènes aux angles avant
+  for (const [z, s] of [[0.55, 1], [-1.0, -1]]) {
+    const liste = [];
+    for (let i = 0; i < 4; i++) liste.push([-0.95, 0.35 + i * 0.12, z + s * (0.1 + i * 0.04), 0.3, 0.1, 0.1]);
+    tourelle.add(pieces(THREE, sombre, liste));
+  }
+  // Viseur panoramique du chef, tourelleau téléopéré, antennes
+  const paseo = new THREE.Group();
+  paseo.position.set(-0.1, 0.72, 0.15);
+  const pied = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.42, 14), peinture);
+  pied.position.y = 0.21;
+  const tete = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.42), peinture);
+  tete.position.y = 0.56;
+  const fenetre = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.16, 0.28), verre);
+  fenetre.position.set(-0.22, 0.58, 0);
+  paseo.add(pied, tete, fenetre);
+  const rws = new THREE.Group();
+  rws.position.set(0.7, 0.72, -0.55);
+  const couronne = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.28, 18), peinture);
+  couronne.position.y = 0.14;
+  const rwsCorps = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.32, 0.5), peinture);
+  rwsCorps.position.y = 0.44;
+  const optro = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.24, 0.2), peinture);
+  optro.position.set(-0.05, 0.72, 0.15);
+  const objectif = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.12, 0.12), verre);
+  objectif.position.set(-0.19, 0.72, 0.15);
+  const mg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.85, 8), sombre);
+  mg.rotation.z = Math.PI / 2;
+  mg.position.set(-0.6, 0.5, -0.05);
+  rws.add(couronne, rwsCorps, optro, objectif, mg);
+  tourelle.add(paseo, rws);
+  for (const [x, z, h] of [[1.55, 0.45, 2.2], [1.5, -0.85, 1.8]]) {
+    const a = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.015, h, 6), sombre);
+    a.position.set(x, 0.72 + h / 2, z);
+    tourelle.add(a);
+  }
   c.add(tourelle);
 
-  const { groupe, p } = poser(THREE, c, 1.45, -4.45, 3.6);
+  const { groupe, p } = poser(THREE, c, 1.45, -4.6, 3.6);
   groupe.userData.legendes = [
-    { texte: 'Canon de 40 mm CTA', point: p(-3.3, 2.5, 0) },
-    { texte: 'Missiles MMP (4 000 m)', point: p(0.6, 3.1, 1.6) },
-    { texte: 'Viseur panoramique du chef', point: p(0.45, 3.2, 0.55) },
-    { texte: 'Six roues motrices', point: p(-0.15, 0.6, 1.3) },
+    { texte: 'Canon de 40 mm CTA', point: p(-3.3, 2.6, -0.3) },
+    { texte: 'Lanceur de missiles MMP (4 000 m)', point: p(0.9, 3.4, 1.1) },
+    { texte: 'Viseur panoramique du chef', point: p(0.25, 3.3, 0.15) },
+    { texte: 'Tourelleau téléopéré', point: p(1.05, 3.3, -0.55) },
+    { texte: 'Lance-pots fumigènes', point: p(-0.6, 2.5, -1.1) },
+    { texte: 'Essieu avant et tandem arrière', point: p(1.2, 0.6, 1.4) },
   ];
   groupe.userData.commandes = [
     { id: 'pivoter', libelle: 'Faire pivoter la tourelle', actif: 'Tourelle en veille' },
     { id: 'missiles', libelle: 'Déployer les missiles MMP', actif: 'Replier les missiles' },
+    { id: 'camouflage', libelle: 'Camouflage centre-Europe', actif: 'Livrée brune' },
   ];
+  const peindre = livree(peinture, textures);
   let angle = 0, d = 0;
   groupe.userData.animer = (t, api) => {
+    peindre(api);
     angle += ((api.pivoter ? 0.8 * Math.sin(t / 1400) : 0) - angle) * 0.05;
     tourelle.rotation.y = angle;
     d += ((api.missiles ? 1 : 0) - d) * 0.05;
-    // Replié : couché contre le flanc ; déployé : levé au-dessus de la tourelle, légèrement cabré
-    lanceur.rotation.x = (1 - d) * 1.45;
-    tubes.rotation.z = -d * 0.12;
+    // Replié dans son caisson ; déployé : il se dresse au-dessus de la tourelle, capot relevé
+    lanceur.position.y = 0.5 + d * 0.75;
+    tubes.rotation.z = -d * 0.15;
+    capotPivot.rotation.z = -d * 0.9;
   };
   groupe.userData.taille = 14;
   return groupe;

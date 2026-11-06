@@ -528,7 +528,7 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 /* --- Visionneuse 3D ---------------------------------------------------------------------- */
 .visionneuse { margin: 0; display: grid; gap: 0.5rem; }
 .visionneuse-scene { position: relative; border-radius: 14px; overflow: hidden; touch-action: none; }
-.visionneuse-rafale .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f4f8fd 0%, #cfdbea 55%, #9fb3cc 100%); }
+.visionneuse-rafale .visionneuse-scene, .visionneuse-mirage2000 .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f4f8fd 0%, #cfdbea 55%, #9fb3cc 100%); }
 .visionneuse-snle .visionneuse-scene { background: linear-gradient(180deg, #2f6aa3 0%, #12395f 45%, #071a2e 100%); }
 :root[data-theme="dark"] .visionneuse-rafale .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #3b4757 0%, #222b37 60%, #141a22 100%); }
 .visionneuse-scene canvas { display: block; width: 100%; height: 100%; cursor: grab; }

@@ -5,7 +5,7 @@ import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
 /** Modèles 3D de chaque programme (plusieurs : puces pour passer de l'un à l'autre). */
 const MODELES_3D = {
-  rafale: [['rafale', 'Rafale']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
+  rafale: [['rafale', 'Rafale'], ['mirage2000', 'Mirage 2000-5']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
   leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
   scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],
 };

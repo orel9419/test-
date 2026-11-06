@@ -5,7 +5,7 @@ import { partagerImage } from '../partage.js';
 const FICHES = {
   rafale: {
     titre: 'Rafale',
-    lignes: ['Longueur 15,27 m · envergure 10,90 m · hauteur 5,34 m', 'Deux réacteurs Safran M88 (7,5 t de poussée chacun avec postcombustion)', 'Vitesse maximale Mach 1,8 · 14 points d\'emport · 24,5 t au décollage au maximum', 'Versions : C (monoplace, armée de l\'Air et de l\'Espace), B (biplace), M (Marine)', 'Configuration affichée : 2 MICA, 2 Meteor, 2 réservoirs de 2 000 litres'],
+    lignes: ['Longueur 15,27 m · envergure 10,80 m · hauteur 5,34 m (ministère des Armées)', 'Deux réacteurs Safran M88 (7,5 t de poussée chacun avec postcombustion)', 'Vitesse maximale Mach 1,8 · 14 points d\'emport · 24,5 t au décollage au maximum', 'Versions : C (monoplace, armée de l\'Air et de l\'Espace), B (biplace), M (Marine)', 'Configuration affichée : 2 MICA, 2 Meteor, 2 réservoirs de 2 000 litres'],
   },
   snle: {
     titre: 'SNLE de la classe Le Triomphant',
@@ -23,17 +23,21 @@ const FICHES = {
     titre: 'Porte-avions « Charles-de-Gaulle »',
     lignes: ['261,5 m de long · 64,4 m de large · mis en service en mai 2001 · port d\'attache : base navale de Toulon', '2 réacteurs nucléaires et 2 groupes turbo-réducteurs : 61 MW (83 000 ch) · 27 nœuds (50 km/h)', 'Équipage : 1 900 marins · 40 aéronefs, dont 24 Rafale Marine · 2 catapultes de 75 m', '8e porte-avions français · seul bâtiment de combat de surface à propulsion nucléaire en Europe · source : Marine nationale'],
   },
+  mirage2000: {
+    titre: 'Mirage 2000-5F',
+    lignes: ['Avion de défense aérienne de Dassault Aviation · longueur 14,36 m · envergure 9,13 m · hauteur 5,20 m', 'Réacteur M53-P2 (95 kN avec postcombustion) · Mach 2,2 · aile delta à commandes de vol électriques, sans plans canard mobiles', 'Version -5 : radar RDY et missiles MICA ; la France a livré des Mirage 2000-5F à l\'Ukraine à partir de février 2025', 'Configuration affichée : 2 réservoirs de 1 700 litres et 2 MICA, camouflage deux tons de gris'],
+  },
   caesar: {
     titre: 'Canon Caesar MkII',
-    lignes: ['Camion équipé d\'un système d\'artillerie : canon de 155 mm (52 calibres) sur châssis 6×6 Arquus, cabine blindée à quatre portes, moteur de 460 ch', 'Portée d\'environ 40 km (plus de 50 km avec des obus à propulsion additionnelle) · 6 coups par minute · 18 coups à bord', 'Mise en batterie en moins d\'une minute : il tire puis repart avant la riposte · 5 artilleurs · transportable par A400M', '109 Caesar MkII commandés par la France en 2024, premières livraisons en 2026 · sources : KNDS, ministère des Armées'],
+    lignes: ['Camion équipé d\'un système d\'artillerie : canon de 155 mm (52 calibres) sur châssis 6×6 Arquus, cabine blindée à quatre portes, moteur de 460 ch', 'Portée d\'environ 40 km (plus de 50 km avec des obus à propulsion additionnelle) · 6 coups par minute · 18 coups à bord', 'Mise en batterie en moins d\'une minute : il tire puis repart avant la riposte · 5 artilleurs · transportable par A400M', '109 Caesar MkII commandés par la France en 2024, premières livraisons en 2026 · livrée brune du rendu KNDS (bouton : camouflage) · sources : KNDS, ministère des Armées'],
   },
   griffon: {
     titre: 'Véhicule blindé multirôle Griffon',
-    lignes: ['6×6 du programme SCORPION (KNDS, Arquus, Thales) · environ 24 t · remplace le VAB', 'Équipage de 3 et 8 fantassins · tourelleau téléopéré (mitrailleuse de 12,7 mm ou lance-grenades), détecteur de tirs, lance-pots fumigènes', 'Partage environ 70 % de ses composants avec le Jaguar · 1 437 en service prévus en 2030 (loi de programmation militaire)', 'Proportions approximatives, détails simplifiés'],
+    lignes: ['6×6 du programme SCORPION (KNDS, Arquus, Thales) · environ 24 t · remplace le VAB', 'Équipage de 3 et 8 fantassins · tourelleau téléopéré (mitrailleuse de 12,7 mm ou lance-grenades), détecteur de tirs, lance-pots fumigènes', 'Partage environ 70 % de ses composants avec le Jaguar · 1 437 en service prévus en 2030 (loi de programmation militaire)', 'Livrée sable (bouton : camouflage centre-Europe) · proportions approximatives, détails simplifiés'],
   },
   jaguar: {
     titre: 'Engin blindé de reconnaissance et de combat Jaguar',
-    lignes: ['6×6 du programme SCORPION · 25 t · 7,8 m canon compris (châssis 7,1 m) · 2,99 m de large · 2,8 m de haut', 'Canon de 40 mm à munitions télescopées (CTA) et deux missiles MMP (portée 4 000 m) sur un lanceur escamotable', 'Équipage de 3 · remplace les AMX-10 RC, ERC-90 Sagaie et VAB HOT · 238 en service prévus en 2030', 'Sources : ministère des Armées (fiche LPM), proportions fidèles, détails simplifiés'],
+    lignes: ['6×6 du programme SCORPION · 25 t · 7,8 m canon compris (châssis 7,1 m) · 2,99 m de large · 2,8 m de haut', 'Canon de 40 mm à munitions télescopées (CTA) et deux missiles MMP (portée 4 000 m) sur un lanceur escamotable', 'Équipage de 3 · remplace les AMX-10 RC, ERC-90 Sagaie et VAB HOT · 238 en service prévus en 2030', 'Livrée brune (bouton : camouflage centre-Europe) · sources : ministère des Armées (fiche LPM), détails simplifiés'],
   },
   patroller: {
     titre: 'Drone tactique Patroller (SDT)',
@@ -74,12 +78,13 @@ const FICHES = {
 };
 
 const VUES = {
-  rafale: { '3/4': [12.5, 6.5, 15], Profil: [0, 1.2, 21], Dessus: [0, 27, 0.01], Face: [-20, 1.6, 0.01] },
+  rafale: { '3/4': [-13, 4.5, 15], Profil: [0, 1.2, 21], Dessus: [0, 27, 0.01], Face: [-20, 1.6, 0.01], Arrière: [13, 6, 15] },
   snle: { '3/4': [11, 6.5, 13], Profil: [0, 1.5, 19], Dessus: [0, 21, 0.01], Face: [-18, 2, 0.01] },
   snle3g: { '3/4': [12, 6.5, 14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
+  mirage2000: { '3/4': [-13, 4, 15], Profil: [0, 1, 20], Dessus: [0, 26, 0.01], Face: [-19, 1.5, 0.01], Arrière: [13, 5.5, 14] },
   caesar: { '3/4': [-12, 6, 13], Profil: [0, 1.5, 19], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
   griffon: { '3/4': [-11, 5.5, 13], Profil: [0, 1.2, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.8, 0.01] },
   jaguar: { '3/4': [-11, 5.5, 13], Profil: [0, 1.2, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.8, 0.01] },
@@ -99,11 +104,12 @@ const MODULES = {
   modeles: () => import('./modeles.js'),
   materiels: () => import('./materiels.js'),
   palais: () => import('./palais.js'),
+  avions: () => import('./avions.js'),
 };
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
   porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
-  caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
+  mirage2000: ['avions', 'construireMirage2000'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
