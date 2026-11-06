@@ -197,17 +197,24 @@ export function construireMirage2000(THREE) {
 
   // Charges : deux réservoirs de 1 700 L sous l'aile, deux MICA sur les pylônes extérieurs
   const reservoir = loft(THREE, [
-    { x: 0, w: 0, h: 0 }, { x: 0.8, w: 0.52, h: 0.52 }, { x: 1.9, w: 0.78, h: 0.78 }, { x: 3.9, w: 0.78, h: 0.78 }, { x: 5.2, w: 0.36, h: 0.36 }, { x: 5.6, w: 0, h: 0 },
+    { x: 0, w: 0, h: 0 }, { x: 0.9, w: 0.58, h: 0.58 }, { x: 2.0, w: 0.86, h: 0.86 }, { x: 4.1, w: 0.86, h: 0.86 }, { x: 5.5, w: 0.4, h: 0.4 }, { x: 5.9, w: 0, h: 0 },
   ], { segments: 28, parSegment: 5 });
   for (const cote of [1, -1]) {
     const res = new THREE.Mesh(reservoir, gris);
-    res.position.set(6.0, -1.12, cote * 1.85);
-    const pyl = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 0.08), gris);
-    pyl.position.set(8.6, -0.6, cote * 1.85);
+    res.position.set(5.6, -1.2, cote * 2.35);
+    const pyl = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.5, 0.09), gris);
+    pyl.position.set(8.4, -0.63, cote * 2.35);
+    // Ailettes arrière du réservoir
+    for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
+      const ailette = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 0.26), grisFonce);
+      ailette.position.set(10.95, -1.2 + Math.sin(a) * 0.3, cote * 2.35 + Math.cos(a) * 0.3);
+      ailette.rotation.x = a;
+      avion.add(ailette);
+    }
     const mica = missile(THREE, 3.1, 0.16, materiaux);
-    mica.position.set(9.9, -0.66, cote * 3.15);
+    mica.position.set(9.9, -0.66, cote * 3.45);
     const pyl2 = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.22, 0.06), gris);
-    pyl2.position.set(11.4, -0.46, cote * 3.15);
+    pyl2.position.set(11.4, -0.46, cote * 3.45);
     avion.add(res, pyl, mica, pyl2);
   }
 
@@ -243,8 +250,8 @@ export function construireMirage2000(THREE) {
     { texte: 'Entrée d\'air à demi-cône (« souris »)', point: p(5.0, 0.3, 0.9) },
     { texte: 'Perche de ravitaillement fixe', point: p(1.4, 1.2, -0.38) },
     { texte: 'Aile delta pure', point: p(11, -0.2, 3.6) },
-    { texte: 'Réservoir de 1 700 L', point: p(8.5, -1.4, 1.85) },
-    { texte: 'Missile MICA', point: p(11.2, -0.8, -3.15) },
+    { texte: 'Réservoirs de 1 700 L (les deux « bidons »)', point: p(8.5, -1.65, 2.35) },
+    { texte: 'Missile MICA', point: p(11.2, -0.8, -3.45) },
     { texte: 'Réacteur M53-P2', point: p(14.2, 0.1, 0) },
     { texte: 'Camouflage deux tons de gris', point: p(9.5, 0.6, 0.6) },
   ];
