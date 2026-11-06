@@ -131,10 +131,14 @@ export function surface(THREE, points, epaisseur, { plan = 'xz', biseau = 0.035 
   return g;
 }
 
-/** Cocarde française (bleu, blanc, rouge du bord vers le centre), plaquée sur une surface. */
+/**
+ * Cocarde française des aéronefs militaires : anneau rouge à l'extérieur,
+ * anneau blanc, disque bleu au centre (rayons 1 ; 0,62 ; 0,28), plaquée sur
+ * une surface.
+ */
 export function cocarde(THREE, rayon) {
   const g = new THREE.Group();
-  const couleurs = [[0x1d3f8f, 1], [0xffffff, 0.66], [0xd52b2b, 0.33]];
+  const couleurs = [[0xc00323, 1], [0xffffff, 0.62], [0x284290, 0.28]];
   couleurs.forEach(([c, r], i) => {
     const m = new THREE.Mesh(new THREE.CircleGeometry(rayon * r, 40), new THREE.MeshStandardMaterial({ color: c, roughness: 0.6, metalness: 0.1, polygonOffset: true, polygonOffsetFactor: -1 - i, polygonOffsetUnits: -1 - i }));
     m.position.z = 0.002 * i;
@@ -165,13 +169,17 @@ export function missile(THREE, longueur, diametre, materiaux, ailettes = 0.18) {
 }
 
 /**
- * Rafale (monoplace C ou M, biplace B à basculer), d'après les photos de
- * l'armée de l'Air et de l'Espace : livrée gris Rafale, nez effilé du radar
- * RBE2, verrière teintée d'or, plans canard rapprochés au-dessus des entrées
- * d'air semi-ventrales, aile delta, dorsale jusqu'à la dérive (avec
- * l'antenne Spectra au sommet), deux réacteurs M88. Configuration air-air
- * longue distance : 2 MICA en bout d'aile, 2 Meteor, 2 réservoirs de 2 000 L.
- * Dimensions : 15,27 m de long, 10,80 m d'envergure, 5,34 m de haut.
+ * Rafale (monoplace C ou M, biplace B à basculer), relevé sur un plan trois
+ * vues (dessus, profil, face) et des photos de l'armée de l'Air et de
+ * l'Espace : nez conique, longue verrière teintée, entrées d'air
+ * semi-ventrales sous des épaulements qui portent les plans canard, aile
+ * delta (flèche de 46°, léger dièdre négatif) à bord de fuite droit et
+ * élevons, dorsale jusqu'à la dérive (barre d'antennes Spectra près du
+ * sommet), deux tuyères M88 bien écartées, carénage arrière entre elles.
+ * Livrée gris Rafale. Configuration air-air longue distance : 2 MICA en bout
+ * d'aile, 2 Meteor, 2 réservoirs de 2 000 L.
+ * Dimensions : 15,27 m de long (perche de Pitot comprise), 10,80 m
+ * d'envergure, 5,34 m de haut.
  * @returns {THREE.Group} centré, avec les points de légende dans userData.legendes
  */
 export function construireRafale(THREE, { armement = true } = {}) {
@@ -185,182 +193,192 @@ export function construireRafale(THREE, { armement = true } = {}) {
   const capteur = new THREE.MeshStandardMaterial({ color: 0x1b2027, metalness: 0.6, roughness: 0.15 });
   const materiaux = { missile: new THREE.MeshStandardMaterial({ color: 0xd9dcde, metalness: 0.2, roughness: 0.5 }), missileOgive: new THREE.MeshStandardMaterial({ color: 0x8f969c, metalness: 0.3, roughness: 0.4 }) };
 
-  // Fuselage central : nez conique, poste de pilotage, section des réacteurs
+  // Fuselage : nez conique, poste de pilotage, section des réacteurs (large à l'arrière)
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: 0.0, w: 0.0, h: 0.0, y: -0.02 },
-    { x: 0.45, w: 0.24, hHaut: 0.12, hBas: 0.12, y: -0.01 },
-    { x: 1.3, w: 0.58, hHaut: 0.29, hBas: 0.28, y: 0.01 },
-    { x: 2.3, w: 0.84, hHaut: 0.42, hBas: 0.38, y: 0.04 },
-    { x: 3.2, w: 0.98, hHaut: 0.5, hBas: 0.44, y: 0.07, n: 2.2 },
-    { x: 4.3, w: 1.04, hHaut: 0.54, hBas: 0.48, y: 0.08, n: 2.4 },
-    { x: 5.4, w: 1.14, hHaut: 0.57, hBas: 0.54, y: 0.07, n: 2.7 },
-    { x: 6.5, w: 1.62, hHaut: 0.62, hBas: 0.62, y: 0.0, n: 3.2 },
-    { x: 8.0, w: 1.94, hHaut: 0.6, hBas: 0.66, y: -0.03, n: 3.6 },
-    { x: 10.2, w: 1.96, hHaut: 0.56, hBas: 0.62, y: -0.04, n: 3.6 },
-    { x: 12.4, w: 1.88, hHaut: 0.5, hBas: 0.56, y: -0.06, n: 3.4 },
-    { x: 14.2, w: 1.72, hHaut: 0.44, hBas: 0.48, y: -0.08, n: 3 },
-    { x: 14.5, w: 1.66, hHaut: 0.42, hBas: 0.46, y: -0.08, n: 3 },
-  ], { segments: 56, parSegment: 8 }), gris));
+    { x: 0.0, w: 0.0, h: 0.0, y: 0.0 },
+    { x: 0.5, w: 0.26, hHaut: 0.13, hBas: 0.13, y: 0.02 },
+    { x: 1.2, w: 0.58, hHaut: 0.29, hBas: 0.28, y: 0.06 },
+    { x: 2.0, w: 0.92, hHaut: 0.45, hBas: 0.43, y: 0.12 },
+    { x: 2.9, w: 1.16, hHaut: 0.5, hBas: 0.54, y: 0.1, n: 2.4 },
+    { x: 3.9, w: 1.3, hHaut: 0.5, hBas: 0.6, y: 0.1, n: 2.6 },
+    { x: 5.0, w: 1.42, hHaut: 0.5, hBas: 0.76, y: 0.12, n: 3.0 },
+    { x: 6.2, w: 1.66, hHaut: 0.56, hBas: 0.8, y: 0.1, n: 3.4 },
+    { x: 8.0, w: 1.96, hHaut: 0.64, hBas: 0.76, y: 0.06, n: 3.6 },
+    { x: 10.0, w: 2.12, hHaut: 0.66, hBas: 0.72, y: 0.05, n: 3.8 },
+    { x: 12.0, w: 2.2, hHaut: 0.6, hBas: 0.62, y: 0.06, n: 3.8 },
+    { x: 13.3, w: 2.08, hHaut: 0.52, hBas: 0.5, y: 0.08, n: 3.4 },
+    { x: 13.75, w: 1.98, hHaut: 0.48, hBas: 0.46, y: 0.08, n: 3 },
+  ], { segments: 64, parSegment: 8 }), gris));
   // Radôme du radar RBE2, d'une teinte légèrement différente
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: -0.005, w: 0, h: 0, y: -0.02 },
-    { x: 0.45, w: 0.245, hHaut: 0.125, hBas: 0.125, y: -0.01 },
-    { x: 1.3, w: 0.585, hHaut: 0.295, hBas: 0.285, y: 0.01 },
-    { x: 2.05, w: 0.79, hHaut: 0.4, hBas: 0.37, y: 0.035 },
+    { x: -0.005, w: 0, h: 0, y: 0 },
+    { x: 0.5, w: 0.265, hHaut: 0.135, hBas: 0.135, y: 0.02 },
+    { x: 1.2, w: 0.585, hHaut: 0.295, hBas: 0.285, y: 0.06 },
+    { x: 1.75, w: 0.83, hHaut: 0.41, hBas: 0.39, y: 0.1 },
   ], { segments: 48, parSegment: 6, fermer: false }), radome));
   // Dorsale : de l'arrière de la verrière jusqu'à la dérive
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: 5.2, w: 0.5, hHaut: 0.02, hBas: 0.02, y: 0.62 },
-    { x: 6.4, w: 0.78, hHaut: 0.2, hBas: 0.05, y: 0.62 },
-    { x: 9.0, w: 0.86, hHaut: 0.24, hBas: 0.05, y: 0.56 },
-    { x: 11.5, w: 0.66, hHaut: 0.2, hBas: 0.05, y: 0.46 },
-    { x: 14.3, w: 0.42, hHaut: 0.12, hBas: 0.05, y: 0.36 },
+    { x: 5.7, w: 0.56, hHaut: 0.3, hBas: 0.05, y: 0.6 },
+    { x: 7.0, w: 0.82, hHaut: 0.38, hBas: 0.05, y: 0.58 },
+    { x: 10.0, w: 0.74, hHaut: 0.3, hBas: 0.05, y: 0.58 },
+    { x: 12.8, w: 0.46, hHaut: 0.2, hBas: 0.05, y: 0.56 },
+    { x: 13.7, w: 0.24, hHaut: 0.08, hBas: 0.05, y: 0.54 },
   ], { segments: 32, parSegment: 6 }), gris));
-
-  // Épaulement : relie le fuselage au-dessus des entrées d'air, sous les plans canard
+  // Épaulements : ils prolongent le dessus des entrées d'air et portent les plans canard
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: 4.4, w: 1.02, hHaut: 0.16, hBas: 0.2, y: 0.02, n: 3 },
-    { x: 5.1, w: 1.5, hHaut: 0.2, hBas: 0.26, y: -0.02, n: 3.6 },
-    { x: 6.2, w: 2.02, hHaut: 0.22, hBas: 0.3, y: -0.04, n: 4 },
-    { x: 7.6, w: 2.06, hHaut: 0.22, hBas: 0.3, y: -0.06, n: 4 },
-    { x: 9.5, w: 1.98, hHaut: 0.2, hBas: 0.28, y: -0.08, n: 4 },
-  ], { segments: 40, parSegment: 6 }), gris));
-  // Entrées d'air semi-ventrales sous les plans canard (bouche en « D » inclinée), conduits jusqu'aux réacteurs
+    { x: 4.5, w: 1.3, hHaut: 0.12, hBas: 0.2, y: 0.24, n: 3 },
+    { x: 5.1, w: 2.1, hHaut: 0.18, hBas: 0.26, y: 0.24, n: 4 },
+    { x: 6.2, w: 2.42, hHaut: 0.2, hBas: 0.3, y: 0.24, n: 4.4 },
+    { x: 7.2, w: 2.62, hHaut: 0.2, hBas: 0.3, y: 0.22, n: 4.4 },
+    { x: 9.5, w: 2.5, hHaut: 0.18, hBas: 0.28, y: 0.18, n: 4.4 },
+    { x: 12.4, w: 2.36, hHaut: 0.14, hBas: 0.24, y: 0.14, n: 4 },
+    { x: 13.4, w: 2.12, hHaut: 0.1, hBas: 0.18, y: 0.12, n: 3.4 },
+  ], { segments: 48, parSegment: 6 }), gris));
+
+  // Entrées d'air semi-ventrales (bouche en « D » de 0,7 × 0,95 m), conduits fondus dans le fuselage
   for (const cote of [1, -1]) {
     avion.add(new THREE.Mesh(loft(THREE, [
-      { x: 5.05, w: 0.62, hHaut: 0.38, hBas: 0.42, y: -0.36, z: cote * 0.76, n: 2.6 },
-      { x: 6.0, w: 0.66, hHaut: 0.42, hBas: 0.44, y: -0.34, z: cote * 0.76, n: 2.8 },
-      { x: 7.2, w: 0.56, hHaut: 0.36, hBas: 0.4, y: -0.32, z: cote * 0.72, n: 2.8 },
-      { x: 8.4, w: 0.3, hHaut: 0.2, hBas: 0.25, y: -0.3, z: cote * 0.66, n: 2.6 },
+      { x: 4.95, w: 0.7, hHaut: 0.45, hBas: 0.5, y: -0.25, z: cote * 0.78, n: 2.6 },
+      { x: 6.0, w: 0.74, hHaut: 0.46, hBas: 0.5, y: -0.25, z: cote * 0.78, n: 2.8 },
+      { x: 7.6, w: 0.64, hHaut: 0.42, hBas: 0.48, y: -0.22, z: cote * 0.72, n: 2.8 },
+      { x: 9.2, w: 0.4, hHaut: 0.3, hBas: 0.35, y: -0.18, z: cote * 0.62, n: 2.6 },
+      { x: 10.2, w: 0.12, hHaut: 0.1, hBas: 0.12, y: -0.15, z: cote * 0.55, n: 2.2 },
     ], { segments: 36, parSegment: 6 }), gris));
-    const bouche = new THREE.Mesh(new THREE.CircleGeometry(1, 32, 0, Math.PI), noir);
-    bouche.scale.set(0.42, 0.29, 1);
-    bouche.rotation.set(0, -Math.PI / 2 + 0.25, -Math.PI / 2 * cote);
-    bouche.position.set(5.04, -0.36, cote * 0.76);
-    const levre = new THREE.Mesh(new THREE.TorusGeometry(1, 0.06, 6, 24, Math.PI), grisFonce);
-    levre.scale.set(0.42, 0.3, 0.6);
-    levre.rotation.copy(bouche.rotation);
-    levre.position.copy(bouche.position);
+    const bouche = new THREE.Mesh(new THREE.CircleGeometry(1, 32), noir);
+    bouche.scale.set(0.3, 0.44, 1);
+    bouche.rotation.y = -Math.PI / 2;
+    bouche.position.set(4.94, -0.27, cote * 0.78);
+    const levre = new THREE.Mesh(new THREE.TorusGeometry(1, 0.07, 6, 32), grisFonce);
+    levre.scale.set(0.34, 0.47, 0.5);
+    levre.rotation.y = -Math.PI / 2;
+    levre.position.set(4.95, -0.27, cote * 0.78);
     avion.add(bouche, levre);
   }
 
-  // Aile delta (bord d'attaque à 48°, bord de fuite droit) et élevons
-  const aileG = surface(THREE, [[7.25, 0.85], [11.75, 5.05], [13.15, 5.05], [14.2, 0.85]], 0.13);
-  const elevonG = surface(THREE, [[13.3, 1.0], [13.05, 4.85], [13.2, 4.85], [14.22, 1.0]], 0.08, { biseau: 0.015 });
+  // Aile delta (bord d'attaque à 46°, bord de fuite droit), léger dièdre négatif, élevons
+  const aileG = surface(THREE, [[6.73, 1.0], [10.98, 5.04], [12.65, 5.04], [12.65, 1.0]], 0.13);
+  const elevonG = surface(THREE, [[11.78, 1.15], [11.78, 2.95], [12.68, 2.95], [12.68, 1.15]], 0.08, { biseau: 0.015 });
+  const elevonG2 = surface(THREE, [[11.78, 3.05], [11.78, 4.95], [12.68, 4.95], [12.68, 3.05]], 0.08, { biseau: 0.015 });
   for (const cote of [1, -1]) {
-    const aile = new THREE.Mesh(aileG, gris);
-    aile.position.y = -0.36;
-    aile.scale.z = cote;
-    const elevon = new THREE.Mesh(elevonG, grisFonce);
-    elevon.position.y = -0.36;
-    elevon.scale.z = cote;
-    avion.add(aile, elevon);
-    // Rail de bout d'aile
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.08, 0.1), grisFonce);
-    rail.position.set(12.4, -0.36, cote * 5.08);
-    avion.add(rail);
-    // Plans canard rapprochés, posés sur les entrées d'air
-    const canard = new THREE.Mesh(surface(THREE, [[5.55, 0.95], [6.95, 2.72], [7.6, 2.72], [7.45, 0.95]], 0.06, { biseau: 0.02 }), gris);
-    canard.position.y = 0.05;
-    canard.rotation.x = cote * 0.04;
-    canard.scale.z = cote;
-    avion.add(canard);
-    // Cocardes : flancs du fuselage (au-dessus de l'emplanture) et dessus de l'aile
-    const c1 = cocarde(THREE, 0.24);
-    c1.position.set(8.25, 0.2, cote * 0.82);
-    c1.rotation.y = cote > 0 ? 0.32 : Math.PI - 0.32;
-    const c2 = cocarde(THREE, 0.3);
+    const aile = new THREE.Group();
+    const peau = new THREE.Mesh(aileG, gris);
+    const e1 = new THREE.Mesh(elevonG, grisFonce);
+    const e2 = new THREE.Mesh(elevonG2, grisFonce);
+    e1.position.y = e2.position.y = 0.012;
+    aile.add(peau, e1, e2);
+    // Rail de bout d'aile et cocarde d'extrados
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.09, 0.12), grisFonce);
+    rail.position.set(11.6, 0, 5.1);
+    const c2 = cocarde(THREE, 0.32);
     c2.rotation.x = -Math.PI / 2;
-    c2.position.set(12.2, -0.36 + 0.09, cote * 4.2);
-    avion.add(c1, c2);
-    // Tuyères des deux réacteurs M88
-    const tuyere = new THREE.Mesh(new THREE.CylinderGeometry(0.41, 0.37, 0.8, 32, 1, true), metal);
-    tuyere.rotation.z = Math.PI / 2;
-    tuyere.position.set(14.85, -0.1, cote * 0.43);
-    const petales = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.36, 0.2, 16, 1, true), noir);
-    petales.rotation.z = Math.PI / 2;
-    petales.position.set(15.33, -0.1, cote * 0.43);
-    const fond = new THREE.Mesh(new THREE.CircleGeometry(0.36, 32), noir);
-    fond.rotation.y = Math.PI / 2;
-    fond.position.set(14.6, -0.1, cote * 0.43);
-    avion.add(tuyere, petales, fond);
-    // Armement : MICA en bout d'aile, Meteor sous l'aile, réservoir de 2 000 litres
+    c2.position.set(11.1, 0.085, 3.9);
+    aile.add(rail, c2);
     if (armement) {
       const mica = missile(THREE, 3.1, 0.16, materiaux);
-      mica.position.set(10.95, -0.36, cote * 5.2);
+      mica.position.set(10.15, 0, 5.2);
+      aile.add(mica);
+    }
+    aile.scale.z = cote;
+    aile.rotation.x = cote * 0.07;
+    aile.position.y = -0.02;
+    avion.add(aile);
+    // Plans canard, posés sur les épaulements
+    const canard = new THREE.Mesh(surface(THREE, [[4.73, 0.9], [6.27, 2.3], [6.61, 2.3], [6.47, 0.9]], 0.06, { biseau: 0.02 }), gris);
+    canard.position.y = 0.42;
+    canard.scale.z = cote;
+    avion.add(canard);
+    // Cocarde sur le flanc, derrière le plan canard
+    const c1 = cocarde(THREE, 0.24);
+    c1.position.set(8.3, 0.34, cote * 1.32);
+    c1.rotation.y = cote > 0 ? 0 : Math.PI;
+    avion.add(c1);
+    // Tuyères des deux réacteurs M88, bien écartées
+    const tuyere = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.37, 0.75, 32, 1, true), metal);
+    tuyere.rotation.z = Math.PI / 2;
+    tuyere.position.set(13.7, 0.06, cote * 0.6);
+    const petales = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.35, 0.22, 16, 1, true), noir);
+    petales.rotation.z = Math.PI / 2;
+    petales.position.set(14.15, 0.06, cote * 0.6);
+    const fond = new THREE.Mesh(new THREE.CircleGeometry(0.35, 32), noir);
+    fond.rotation.y = Math.PI / 2;
+    fond.position.set(13.5, 0.06, cote * 0.6);
+    avion.add(tuyere, petales, fond);
+    // Meteor sous l'aile, réservoir de 2 000 litres sous l'emplanture
+    if (armement) {
       const meteor = missile(THREE, 3.65, 0.18, materiaux);
-      meteor.position.set(10.0, -0.85, cote * 3.7);
-      const pylone1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.36, 0.07), grisFonce);
-      pylone1.position.set(11.4, -0.58, cote * 3.7);
+      meteor.position.set(9.4, -0.75, cote * 3.5);
+      const pylone1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 0.07), grisFonce);
+      pylone1.position.set(10.8, -0.42, cote * 3.5);
       const res = new THREE.Mesh(loft(THREE, [
-        { x: 0, w: 0, h: 0 }, { x: 0.7, w: 0.48, h: 0.48 }, { x: 1.7, w: 0.72, h: 0.72 }, { x: 3.7, w: 0.72, h: 0.72 }, { x: 4.9, w: 0.34, h: 0.34 }, { x: 5.3, w: 0, h: 0 },
+        { x: 0, w: 0, h: 0 }, { x: 0.7, w: 0.5, h: 0.5 }, { x: 1.7, w: 0.74, h: 0.74 }, { x: 3.7, w: 0.74, h: 0.74 }, { x: 4.9, w: 0.34, h: 0.34 }, { x: 5.3, w: 0, h: 0 },
       ], { segments: 28, parSegment: 5 }), gris);
-      res.position.set(7.9, -1.22, cote * 2.0);
+      res.position.set(7.2, -1.1, cote * 2.1);
       const pylone2 = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.5, 0.08), grisFonce);
-      pylone2.position.set(10.4, -0.68, cote * 2.0);
-      avion.add(mica, meteor, pylone1, res, pylone2);
+      pylone2.position.set(9.8, -0.6, cote * 2.1);
+      avion.add(meteor, pylone1, res, pylone2);
     }
   }
 
-  // Dérive en flèche, gouverne de direction, antenne Spectra au sommet, carénage arrière
-  const derive = new THREE.Mesh(surface(THREE, [[10.5, 0.0], [12.95, 2.85], [13.95, 2.85], [14.6, 0.0]], 0.12, { plan: 'xy' }), gris);
-  derive.position.y = 0.48;
-  const gouverne = new THREE.Mesh(surface(THREE, [[13.78, 0.3], [14.0, 2.6], [14.12, 2.6], [14.56, 0.3]], 0.1, { plan: 'xy', biseau: 0.012 }), grisFonce);
-  gouverne.position.y = 0.48;
-  const spectra = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.24, 0.26), grisFonce);
-  spectra.position.set(13.3, 3.36, 0);
-  const sommet = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 8), grisFonce);
-  sommet.scale.set(1, 0.9, 1);
-  sommet.position.set(12.83, 3.36, 0);
-  avion.add(derive, gouverne, spectra, sommet);
+  // Dérive en flèche, gouverne de direction, barre d'antennes Spectra près du sommet, saumon arrondi
+  const derive = new THREE.Mesh(surface(THREE, [[10.1, 0.0], [13.7, 2.5], [14.5, 2.5], [14.05, 0.0]], 0.13, { plan: 'xy' }), gris);
+  derive.position.y = 0.85;
+  const gouverne = new THREE.Mesh(surface(THREE, [[13.5, 0.25], [13.95, 2.1], [14.42, 2.1], [14.05, 0.25]], 0.11, { plan: 'xy', biseau: 0.012 }), grisFonce);
+  gouverne.position.y = 0.85;
+  const spectra = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.22, 0.22), grisFonce);
+  spectra.position.set(13.85, 2.86, 0);
+  const saumon = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.7, 4, 10), gris);
+  saumon.rotation.z = Math.PI / 2;
+  saumon.position.set(14.1, 3.35, 0);
+  avion.add(derive, gouverne, spectra, saumon);
+  // Carénage arrière entre les tuyères (au pied de la dérive)
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: 13.4, w: 0.05, hHaut: 0.02, hBas: 0.02, y: 0.55 },
-    { x: 14.2, w: 0.3, hHaut: 0.13, hBas: 0.13, y: 0.52 },
-    { x: 15.25, w: 0.24, hHaut: 0.11, hBas: 0.11, y: 0.5 },
-    { x: 15.5, w: 0.12, hHaut: 0.06, hBas: 0.06, y: 0.5 },
+    { x: 13.2, w: 0.3, hHaut: 0.16, hBas: 0.16, y: 0.55 },
+    { x: 14.2, w: 0.3, hHaut: 0.15, hBas: 0.15, y: 0.53 },
+    { x: 14.65, w: 0.18, hHaut: 0.09, hBas: 0.09, y: 0.52 },
+    { x: 14.76, w: 0.04, hHaut: 0.02, hBas: 0.02, y: 0.52 },
   ], { segments: 16, parSegment: 4 }), gris));
-  // Optronique secteur frontal (OSF) devant le pare-brise, antennes Spectra des plans canard
+  // Optronique secteur frontal (OSF) devant le pare-brise
   const osf = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 10), capteur);
   osf.scale.set(1.6, 0.9, 1);
-  osf.position.set(2.75, 0.47, 0);
+  osf.position.set(1.85, 0.56, 0);
   avion.add(osf);
 
-  // Verrière teintée d'or (monoplace ou biplace en tandem), habitacle, sièges et casques
+  // Verrière teintée d'or (monoplace ou biplace en tandem), baquet, sièges et casques
   const matHabitacle = new THREE.MeshStandardMaterial({ color: 0x1a1c1f, roughness: 0.9 });
   const matSiege = new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.8 });
   const matCasque = new THREE.MeshStandardMaterial({ color: 0x3b4046, roughness: 0.5, metalness: 0.2 });
   const poste = (places) => {
     const g = new THREE.Group();
-    const fin = places === 2 ? 6.6 : 5.75;
+    const fin = places === 2 ? 6.5 : 6.1;
     g.add(new THREE.Mesh(loft(THREE, [
-      { x: 2.95, w: 0.55, hHaut: 0.0, hBas: 0.02, y: 0.5 },
-      { x: 3.55, w: 0.8, hHaut: 0.36, hBas: 0.02, y: 0.52 },
-      { x: 4.4, w: 0.88, hHaut: 0.58, hBas: 0.02, y: 0.55 },
-      { x: places === 2 ? 5.6 : 5.0, w: 0.86, hHaut: 0.56, hBas: 0.02, y: 0.56 },
-      { x: fin - 0.3, w: 0.7, hHaut: 0.3, hBas: 0.02, y: 0.6 },
-      { x: fin, w: 0.5, hHaut: 0.06, hBas: 0.02, y: 0.62 },
+      { x: 2.0, w: 0.55, hHaut: 0.0, hBas: 0.02, y: 0.58 },
+      { x: 2.6, w: 0.7, hHaut: 0.38, hBas: 0.02, y: 0.58 },
+      { x: 3.3, w: 0.76, hHaut: 0.66, hBas: 0.02, y: 0.58 },
+      { x: 3.9, w: 0.78, hHaut: 0.78, hBas: 0.02, y: 0.6 },
+      { x: places === 2 ? 5.3 : 4.8, w: 0.76, hHaut: 0.72, hBas: 0.02, y: 0.6 },
+      { x: fin - 0.6, w: 0.66, hHaut: 0.5, hBas: 0.02, y: 0.6 },
+      { x: fin, w: 0.5, hHaut: 0.32, hBas: 0.02, y: 0.62 },
     ], { segments: 40, parSegment: 6 }), verre));
-    // Baquet sombre de l'habitacle, sous la verrière
     g.add(new THREE.Mesh(loft(THREE, [
-      { x: 3.2, w: 0.5, hHaut: 0.0, hBas: 0.02, y: 0.52 },
-      { x: 3.8, w: 0.72, hHaut: 0.14, hBas: 0.02, y: 0.53 },
-      { x: fin - 0.5, w: 0.66, hHaut: 0.14, hBas: 0.02, y: 0.57 },
-      { x: fin - 0.1, w: 0.4, hHaut: 0.02, hBas: 0.02, y: 0.6 },
+      { x: 2.3, w: 0.5, hHaut: 0.0, hBas: 0.02, y: 0.58 },
+      { x: 2.9, w: 0.66, hHaut: 0.16, hBas: 0.02, y: 0.58 },
+      { x: fin - 0.5, w: 0.62, hHaut: 0.16, hBas: 0.02, y: 0.6 },
+      { x: fin - 0.1, w: 0.4, hHaut: 0.04, hBas: 0.02, y: 0.62 },
     ], { segments: 24, parSegment: 4 }), matHabitacle));
-    // Arceau du pare-brise et arceau central (biplace)
-    for (const x of places === 2 ? [3.5, 5.15] : [3.5]) {
-      const arceau = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.02, 8, 24, Math.PI), grisFonce);
-      arceau.scale.set(1, x < 4 ? 0.8 : 1.15, 1);
-      arceau.position.set(x, 0.55, 0);
+    // Arceau du pare-brise, arceau central (biplace)
+    for (const x of places === 2 ? [3.25, 4.9] : [3.25]) {
+      const arceau = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.022, 8, 24, Math.PI), grisFonce);
+      arceau.scale.set(1, x < 4 ? 1.85 : 2.0, 1);
+      arceau.position.set(x, 0.6, 0);
       arceau.rotation.y = Math.PI / 2;
       g.add(arceau);
     }
     [...Array(places).keys()].forEach((k) => {
-      const x = places === 2 ? 4.25 + k * 1.15 : 4.45;
-      const siege = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.42, 0.4), matSiege);
-      siege.position.set(x + 0.32, 0.82, 0);
-      const casque = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), matCasque);
-      casque.position.set(x + 0.12, 0.93, 0);
+      const x = places === 2 ? 3.9 + k * 1.3 : 4.1;
+      const siege = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.5, 0.42), matSiege);
+      siege.position.set(x + 0.36, 1.0, 0);
+      const casque = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 12), matCasque);
+      casque.position.set(x + 0.14, 1.12, 0);
       g.add(siege, casque);
     });
     return g;
@@ -375,18 +393,18 @@ export function construireRafale(THREE, { armement = true } = {}) {
   const matJambe = new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 0.6, roughness: 0.35 });
   const matPneu = new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.9 });
   const roue = (r, l) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 24), matPneu); m.rotation.x = Math.PI / 2; return m; };
-  const jambeAvant = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.15, 12), matJambe);
-  jambeAvant.position.set(3.2, -0.95, 0);
-  const roueAvant1 = roue(0.24, 0.16); roueAvant1.position.set(3.25, -1.55, 0.14);
-  const roueAvant2 = roue(0.24, 0.16); roueAvant2.position.set(3.25, -1.55, -0.14);
+  const jambeAvant = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.1, 12), matJambe);
+  jambeAvant.position.set(3.82, -1.05, 0);
+  const roueAvant1 = roue(0.22, 0.15); roueAvant1.position.set(3.86, -1.53, 0.13);
+  const roueAvant2 = roue(0.22, 0.15); roueAvant2.position.set(3.86, -1.53, -0.13);
   train.add(jambeAvant, roueAvant1, roueAvant2);
   for (const cote of [1, -1]) {
-    const jambe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 1.05, 12), matJambe);
-    jambe.position.set(9.9, -0.95, cote * 1.3);
+    const jambe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 1.0, 12), matJambe);
+    jambe.position.set(9.0, -1.0, cote * 1.3);
     jambe.rotation.x = cote * 0.08;
-    const r = roue(0.36, 0.22); r.position.set(9.95, -1.45, cote * 1.38);
-    const trappe = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 0.03), grisFonce);
-    trappe.position.set(9.9, -0.75, cote * 1.08);
+    const r = roue(0.3, 0.22); r.position.set(9.0, -1.45, cote * 1.39);
+    const trappe = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.55, 0.03), grisFonce);
+    trappe.position.set(9.0, -0.8, cote * 1.05);
     train.add(jambe, r, trappe);
   }
   train.visible = false;
@@ -396,35 +414,37 @@ export function construireRafale(THREE, { armement = true } = {}) {
   const perche = new THREE.Group();
   const tige = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 1.5, 12), grisFonce);
   tige.rotation.z = Math.PI / 2 - 0.35;
-  tige.position.set(2.6, 0.72, -0.42);
+  tige.position.set(1.8, 0.85, -0.42);
   const embout = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.045, 0.18, 12), metal);
   embout.rotation.z = Math.PI / 2 - 0.35;
-  embout.position.set(1.88, 0.98, -0.42);
+  embout.position.set(1.08, 1.11, -0.42);
   const base = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.14, 0.12), grisFonce);
-  base.position.set(3.25, 0.5, -0.42);
+  base.position.set(2.45, 0.62, -0.42);
   perche.add(tige, embout, base);
   avion.add(perche);
-  const pitot = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.45, 8), metal);
+  const pitot = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.51, 8), metal);
   pitot.rotation.z = Math.PI / 2;
-  pitot.position.set(-0.2, -0.02, 0);
+  pitot.position.set(-0.25, 0, 0);
   avion.add(pitot);
 
   avion.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  // Centrage : le centre de l'avion à l'origine
-  avion.position.set(-7.6, 0, 0);
+  // Centrage : le milieu de l'avion à l'origine
+  const ox = -7.1;
+  avion.position.set(ox, 0, 0);
   const groupe = new THREE.Group();
   groupe.add(avion);
+  const p = (x, y, z) => new THREE.Vector3(x + ox, y, z);
   groupe.userData.legendes = [
-    { texte: 'Plans canard', point: new THREE.Vector3(6.9 - 7.6, 0.1, 2.4) },
-    { texte: 'Entrée d\'air', point: new THREE.Vector3(5.1 - 7.6, -0.5, 0.95) },
-    { texte: 'Perche de ravitaillement', point: new THREE.Vector3(1.9 - 7.6, 1.0, -0.42) },
-    { texte: 'Verrière', point: new THREE.Vector3(4.4 - 7.6, 1.1, 0) },
-    { texte: 'Optronique secteur frontal', point: new THREE.Vector3(2.75 - 7.6, 0.55, 0) },
-    { texte: 'Missile Meteor', point: new THREE.Vector3(11.3 - 7.6, -0.85, 3.7) },
-    { texte: 'Missile MICA', point: new THREE.Vector3(12.0 - 7.6, -0.36, 5.2) },
-    { texte: 'Réservoir 2 000 L', point: new THREE.Vector3(10.4 - 7.6, -1.22, -2.0) },
-    { texte: 'Réacteurs M88', point: new THREE.Vector3(15.2 - 7.6, -0.1, 0.43) },
-    { texte: 'Dérive et antenne Spectra', point: new THREE.Vector3(13.2 - 7.6, 3.5, 0) },
+    { texte: 'Plans canard', point: p(6.2, 0.5, 2.2) },
+    { texte: 'Entrée d\'air', point: p(4.95, -0.3, 1.0) },
+    { texte: 'Perche de ravitaillement', point: p(1.1, 1.15, -0.42) },
+    { texte: 'Verrière', point: p(3.9, 1.45, 0) },
+    { texte: 'Optronique secteur frontal', point: p(1.85, 0.66, 0) },
+    { texte: 'Missile Meteor', point: p(10.7, -0.75, 3.5) },
+    { texte: 'Missile MICA', point: p(11.6, -0.3, 5.2) },
+    { texte: 'Réservoir 2 000 L', point: p(9.8, -1.1, -2.1) },
+    { texte: 'Réacteurs M88', point: p(14.1, 0.06, 0.6) },
+    { texte: 'Dérive et antennes Spectra', point: p(13.9, 3.1, 0) },
   ];
   groupe.userData.taille = 16;
   groupe.userData.basculer = {
