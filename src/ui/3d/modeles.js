@@ -121,7 +121,7 @@ function texturePanneaux(THREE, { fond = '#141618', trait = 'rgba(210,215,220,0.
 }
 
 /** Surface portante (aile, plan canard, dérive) extrudée à partir d'un contour, avec bords arrondis. */
-function surface(THREE, points, epaisseur, { plan = 'xz', biseau = 0.035 } = {}) {
+export function surface(THREE, points, epaisseur, { plan = 'xz', biseau = 0.035 } = {}) {
   const forme = new THREE.Shape(points.map(([a, b]) => new THREE.Vector2(a, b)));
   const g = new THREE.ExtrudeGeometry(forme, { depth: epaisseur, bevelEnabled: true, bevelThickness: biseau, bevelSize: biseau * 0.9, bevelSegments: 3, curveSegments: 8 });
   g.translate(0, 0, -epaisseur / 2);
@@ -132,7 +132,7 @@ function surface(THREE, points, epaisseur, { plan = 'xz', biseau = 0.035 } = {})
 }
 
 /** Cocarde française (bleu, blanc, rouge du bord vers le centre), plaquée sur une surface. */
-function cocarde(THREE, rayon) {
+export function cocarde(THREE, rayon) {
   const g = new THREE.Group();
   const couleurs = [[0x1d3f8f, 1], [0xffffff, 0.66], [0xd52b2b, 0.33]];
   couleurs.forEach(([c, r], i) => {
@@ -1013,7 +1013,7 @@ function texturePontCdG(THREE, contour) {
 }
 
 /** Texte peint (numéro de coque) sur fond transparent. */
-function texturePeinte(THREE, texte, { couleur = '#1b1d20', largeur = 256, hauteur = 96 } = {}) {
+export function texturePeinte(THREE, texte, { couleur = '#1b1d20', largeur = 256, hauteur = 96 } = {}) {
   const c = document.createElement('canvas');
   c.width = largeur; c.height = hauteur;
   const ctx = c.getContext('2d');
@@ -1028,7 +1028,7 @@ function texturePeinte(THREE, texte, { couleur = '#1b1d20', largeur = 256, haute
 }
 
 /** Bloc aux flancs inclinés (superstructures furtives) : base l × p, sommet réduit. */
-function tronc(THREE, l, h, p, lHaut, pHaut, materiau) {
+export function tronc(THREE, l, h, p, lHaut, pHaut, materiau) {
   const geo = new THREE.BoxGeometry(l, h, p);
   const pos = geo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
@@ -1260,7 +1260,7 @@ export function construireCharlesDeGaulle(THREE) {
 }
 
 /** Camouflage centre-Europe (vert, brun, noir) en texture procédurale. */
-function textureCamouflage(THREE) {
+export function textureCamouflage(THREE) {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 512;
   const ctx = c.getContext('2d');
@@ -1292,7 +1292,7 @@ function textureCamouflage(THREE) {
 }
 
 /** Livrée sable (opérations extérieures) : teinte unie, grain antidérapant et légère poussière. */
-function textureSable(THREE) {
+export function textureSable(THREE) {
   const c = document.createElement('canvas');
   c.width = 256; c.height = 256;
   const ctx = c.getContext('2d');
@@ -1317,7 +1317,7 @@ function textureSable(THREE) {
 }
 
 /** Profil latéral extrudé dans la largeur (x vers l'avant négatif, y vers le haut). */
-function profilExtrude(THREE, points, largeur, materiau, biseau = 0.04) {
+export function profilExtrude(THREE, points, largeur, materiau, biseau = 0.04) {
   const forme = new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y)));
   const geo = new THREE.ExtrudeGeometry(forme, { depth: largeur - 2 * biseau, bevelEnabled: true, bevelThickness: biseau, bevelSize: biseau, bevelSegments: 1 });
   geo.translate(0, 0, -(largeur - 2 * biseau) / 2);
@@ -1325,7 +1325,7 @@ function profilExtrude(THREE, points, largeur, materiau, biseau = 0.04) {
 }
 
 /** Beaucoup de petites pièces parallélépipédiques (nervures, barreaux, rivets) en un seul maillage instancié : [x, y, z, lx, ly, lz]. */
-function pieces(THREE, materiau, liste) {
+export function pieces(THREE, materiau, liste) {
   const m = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), materiau, liste.length);
   const mat = new THREE.Matrix4(), q = new THREE.Quaternion(), pos = new THREE.Vector3(), ech = new THREE.Vector3();
   liste.forEach(([x, y, z, lx, ly, lz], i) => { m.setMatrixAt(i, mat.compose(pos.set(x, y, z), q, ech.set(lx, ly, lz))); });
@@ -1333,7 +1333,7 @@ function pieces(THREE, materiau, liste) {
 }
 
 /** Grille anti-roquettes (barreaux) dans un plan vertical : le long de x (plan = 'x') ou de z (plan = 'z'). */
-function grilleBarreaux(centre, longueur, hauteur, plan, { pasL = 0.16, pasH = 0.2, e = 0.03 } = {}) {
+export function grilleBarreaux(centre, longueur, hauteur, plan, { pasL = 0.16, pasH = 0.2, e = 0.03 } = {}) {
   const [cx, cy, cz] = centre;
   const liste = [];
   const nL = Math.round(longueur / pasL), nH = Math.round(hauteur / pasH);

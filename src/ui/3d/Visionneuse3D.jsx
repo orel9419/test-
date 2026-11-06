@@ -23,6 +23,50 @@ const FICHES = {
     titre: 'Porte-avions « Charles-de-Gaulle »',
     lignes: ['261,5 m de long · 64,4 m de large · mis en service en mai 2001 · port d\'attache : base navale de Toulon', '2 réacteurs nucléaires et 2 groupes turbo-réducteurs : 61 MW (83 000 ch) · 27 nœuds (50 km/h)', 'Équipage : 1 900 marins · 40 aéronefs, dont 24 Rafale Marine · 2 catapultes de 75 m', '8e porte-avions français · seul bâtiment de combat de surface à propulsion nucléaire en Europe · source : Marine nationale'],
   },
+  caesar: {
+    titre: 'Canon Caesar MkII',
+    lignes: ['Camion équipé d\'un système d\'artillerie : canon de 155 mm (52 calibres) sur châssis 6×6 Arquus, cabine blindée à quatre portes, moteur de 460 ch', 'Portée d\'environ 40 km (plus de 50 km avec des obus à propulsion additionnelle) · 6 coups par minute · 18 coups à bord', 'Mise en batterie en moins d\'une minute : il tire puis repart avant la riposte · 5 artilleurs · transportable par A400M', '109 Caesar MkII commandés par la France en 2024, premières livraisons en 2026 · sources : KNDS, ministère des Armées'],
+  },
+  griffon: {
+    titre: 'Véhicule blindé multirôle Griffon',
+    lignes: ['6×6 du programme SCORPION (KNDS, Arquus, Thales) · environ 24 t · remplace le VAB', 'Équipage de 3 et 8 fantassins · tourelleau téléopéré (mitrailleuse de 12,7 mm ou lance-grenades), détecteur de tirs, lance-pots fumigènes', 'Partage environ 70 % de ses composants avec le Jaguar · 1 437 en service prévus en 2030 (loi de programmation militaire)', 'Proportions approximatives, détails simplifiés'],
+  },
+  jaguar: {
+    titre: 'Engin blindé de reconnaissance et de combat Jaguar',
+    lignes: ['6×6 du programme SCORPION · 25 t · 7,8 m canon compris (châssis 7,1 m) · 2,99 m de large · 2,8 m de haut', 'Canon de 40 mm à munitions télescopées (CTA) et deux missiles MMP (portée 4 000 m) sur un lanceur escamotable', 'Équipage de 3 · remplace les AMX-10 RC, ERC-90 Sagaie et VAB HOT · 238 en service prévus en 2030', 'Sources : ministère des Armées (fiche LPM), proportions fidèles, détails simplifiés'],
+  },
+  patroller: {
+    titre: 'Drone tactique Patroller (SDT)',
+    lignes: ['Drone de renseignement de l\'armée de Terre (Safran), mis en œuvre par le 61e régiment d\'artillerie de Chaumont', 'Envergure 18 m · longueur 8,5 m · autonomie de l\'ordre de 20 heures · jusqu\'à 250 kg de capteurs', 'Boule optronique Euroflir sous le fuselage : observation de jour comme de nuit, désignation de cibles pour l\'artillerie', 'Dérivé d\'un motoplaneur (Stemme) · source : ministère des Armées (fiche LPM), Safran'],
+  },
+  satellite: {
+    titre: 'Satellite d\'observation militaire (type CSO)',
+    lignes: ['Composante spatiale optique : CSO-1 (2018), CSO-2 (2020) et CSO-3 (2025, lancé par Ariane 6)', 'Images à très haute résolution pour le renseignement et le ciblage, partagées avec des partenaires européens', 'Orbite basse (quelques centaines de kilomètres) : un passage au-dessus d\'un même point à intervalles réguliers', 'Silhouette indicative : télescope, panneaux solaires et antennes ; la forme exacte n\'est pas publique'],
+  },
+  elysee: {
+    titre: 'Palais de l\'Élysée',
+    lignes: ['Siège de la présidence de la République, rue du Faubourg-Saint-Honoré (Paris 8e)', 'Hôtel construit de 1718 à 1722 par Armand-Claude Mollet pour le comte d\'Évreux · cour d\'honneur devant, parc derrière', 'Le président accueille ses hôtes sur le perron, sous la marquise ; le Conseil des ministres s\'y réunit chaque semaine', 'Proportions approximatives, façades simplifiées'],
+  },
+  matignon: {
+    titre: 'Hôtel de Matignon',
+    lignes: ['Résidence et bureau du Premier ministre, rue de Varenne (Paris 7e)', 'Construit de 1722 à 1725 (architecte Jean Courtonne) · portail en hémicycle sur la rue, cour d\'honneur', 'Parc d\'environ 3 hectares dessiné en 1902 par Achille Duchêne : le plus grand jardin privé de Paris', 'Proportions approximatives, façades simplifiées'],
+  },
+  assemblee: {
+    titre: 'Palais Bourbon (Assemblée nationale)',
+    lignes: ['Siège de l\'Assemblée nationale (577 députés), face à la Seine et au pont de la Concorde', 'Façade sur la Seine de Bernard Poyet (1806-1810) : péristyle de douze colonnes corinthiennes sur un grand escalier, fronton', 'Statues de quatre grands serviteurs de l\'État au pied de l\'escalier (Sully, Colbert, L\'Hospital, d\'Aguesseau)', 'Proportions approximatives · bouton « Hémicycle » dans l\'écran Institutions : les sièges aux couleurs de votre partie'],
+  },
+  senat: {
+    titre: 'Palais du Luxembourg (Sénat)',
+    lignes: ['Siège du Sénat (348 sénateurs) depuis 1799, au bord du jardin du Luxembourg (Paris 6e)', 'Construit à partir de 1615 par Salomon de Brosse pour Marie de Médicis, sur le modèle du palais Pitti de Florence', 'Pavillon central à dôme, pavillons d\'angle, bossages à la florentine ; grand bassin octogonal dans le jardin', 'Proportions approximatives, façades simplifiées'],
+  },
+  hemicycleAN: {
+    titre: 'Hémicycle de l\'Assemblée nationale',
+    lignes: ['577 sièges aux couleurs des groupes de votre partie, de la gauche à la droite vue du « perchoir » (le fauteuil du président)', 'Au centre : la tribune des orateurs et, au premier rang, le banc du Gouvernement', 'Les places réelles dépendent du règlement et des groupes : la répartition affichée est schématique'],
+  },
+  hemicycleSenat: {
+    titre: 'Hémicycle du Sénat',
+    lignes: ['348 sièges aux couleurs des groupes de votre partie, de la gauche à la droite vue du fauteuil du président du Sénat', 'Hémicycle aménagé au XIXe siècle dans le palais du Luxembourg', 'Répartition schématique des places'],
+  },
   leclerc: {
     titre: 'Char Leclerc rénové (XLR)',
     lignes: ['Char de combat de l\'armée de Terre, en service depuis 1992 · 9,87 m canon compris · 3,71 m de large · environ 57 t', 'Canon de 120 mm à chargement automatique : trois hommes d\'équipage au lieu de quatre · 72 km/h sur route', 'Rénovation XLR : intégration au combat collaboratif SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030, 200 fin 2035', 'Livrée sable (opérations extérieures) ou camouflage centre-Europe · silhouette fidèle, détails simplifiés'],
@@ -36,10 +80,37 @@ const VUES = {
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
+  caesar: { '3/4': [-12, 6, 13], Profil: [0, 1.5, 19], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
+  griffon: { '3/4': [-11, 5.5, 13], Profil: [0, 1.2, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.8, 0.01] },
+  jaguar: { '3/4': [-11, 5.5, 13], Profil: [0, 1.2, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.8, 0.01] },
+  patroller: { '3/4': [-11, 6, 14], Profil: [0, 0.5, 20], Dessus: [0, 23, 0.01], Face: [-20, 1, 0.01] },
+  satellite: { '3/4': [-10, 5, 12], Profil: [0, 0.5, 17], Dessus: [0, 18, 0.01], Face: [-17, 0.5, 0.01] },
+  elysee: { '3/4': [-11, 9, 15], Face: [0, 5, 20], Dessus: [0, 24, 0.01], Jardin: [0, 6, -20] },
+  matignon: { '3/4': [-11, 9, 15], Face: [0, 5, 20], Dessus: [0, 26, 0.01], Jardin: [0, 7, -22] },
+  assemblee: { '3/4': [-11, 8, 15], Face: [0, 4, 20], Dessus: [0, 24, 0.01], Côté: [-20, 6, 2] },
+  senat: { '3/4': [-11, 8, 15], Face: [0, 4.5, 20], Dessus: [0, 25, 0.01], Cour: [0, 7, -20] },
+  hemicycleAN: { Tribunes: [0, 9, -15], Perchoir: [0, 12.5, 12], Dessus: [0, 21, 0.01], Côté: [-17, 8, 3] },
+  hemicycleSenat: { Tribunes: [0, 9, -15], Perchoir: [0, 12.5, 12], Dessus: [0, 21, 0.01], Côté: [-17, 8, 3] },
 };
 /** Recule la caméra sur les écrans étroits (téléphone en portrait) pour que l'appareil tienne dans le cadre. */
 const recul = (aspect) => Math.max(1, 1.45 / Math.max(0.5, aspect));
-const CONSTRUCTEURS = { rafale: 'construireRafale', snle: 'construireSnle', snle3g: 'construireSnle3G', porteAvions: 'construirePorteAvions', charlesDeGaulle: 'construireCharlesDeGaulle', leclerc: 'construireLeclerc' };
+/** Fichiers de modèles chargés à la demande (un par famille, pour ne télécharger que le nécessaire). */
+const MODULES = {
+  modeles: () => import('./modeles.js'),
+  materiels: () => import('./materiels.js'),
+  palais: () => import('./palais.js'),
+};
+const CONSTRUCTEURS = {
+  rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
+  porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
+  caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
+  patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
+  elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
+  hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
+};
+/** Modèles posés sur leur propre sol (palais, hémicycles) et modèles dans l'espace. */
+const TERRAIN = new Set(['elysee', 'matignon', 'assemblee', 'senat', 'hemicycleAN', 'hemicycleSenat']);
+const ESPACE = new Set(['satellite']);
 
 /**
  * Visionneuse 3D interactive (three.js, chargé à la demande) : rotation au
@@ -47,7 +118,7 @@ const CONSTRUCTEURS = { rafale: 'construireRafale', snle: 'construireSnle', snle
  * propres à chaque modèle (biplace et train du Rafale, trappes et tir d'essai
  * des SNLE, catapultage depuis le porte-avions).
  */
-export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
+export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnees = null }) {
   const conteneur = useRef(null);
   const legendesRef = useRef(null);
   const api = useRef({});
@@ -60,9 +131,14 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
   const [train, setTrain] = useState(false);
   const [tourelle, setTourelle] = useState(false);
   const [livree, setLivree] = useState('sable');
+  const [commandes, setCommandes] = useState([]);
+  const [etats, setEtats] = useState({});
   const [message, setMessage] = useState(null);
   const sous = modele === 'snle' || modele === 'snle3g';
   const navire = modele === 'porteAvions' || modele === 'charlesDeGaulle';
+  const terrain = TERRAIN.has(modele);
+  const espace = ESPACE.has(modele);
+  const cleDonnees = donnees ? JSON.stringify(donnees) : '';
 
   useEffect(() => {
     let annule = false;
@@ -76,7 +152,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
         import('three'),
         import('three/examples/jsm/controls/OrbitControls.js'),
         import('three/examples/jsm/environments/RoomEnvironment.js'),
-        import('./modeles.js'),
+        MODULES[CONSTRUCTEURS[modele][0]](),
       ]);
       if (annule || !conteneur.current) return;
       const el = conteneur.current;
@@ -92,25 +168,26 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
       const scene = new THREE.Scene();
       const pmrem = new THREE.PMREMGenerator(renderer);
       scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 600);
+      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, terrain ? 400 : 600);
       if (sous) scene.fog = new THREE.Fog(0x0d2a48, 18, 60);
       if (navire) scene.fog = new THREE.Fog(0xc9dcec, 120, 420);
+      if (terrain) scene.fog = new THREE.Fog(0xdfe6ee, 38, 110);
 
-      scene.add(new THREE.HemisphereLight(sous ? 0x9fc6ff : 0xeaf2ff, sous ? 0x0a1a2c : 0x6b6f75, sous ? 1.0 : 0.75));
-      const soleil = new THREE.DirectionalLight(0xffffff, sous ? 1.5 : 2.2);
+      scene.add(new THREE.HemisphereLight(sous ? 0x9fc6ff : 0xeaf2ff, sous ? 0x0a1a2c : espace ? 0x10141c : 0x6b6f75, sous ? 1.0 : espace ? 0.35 : 0.75));
+      const soleil = new THREE.DirectionalLight(0xffffff, sous ? 1.5 : espace ? 3 : 2.2);
       soleil.position.set(6, 14, 8);
       soleil.castShadow = true;
       soleil.shadow.mapSize.set(2048, 2048);
-      const borne = navire ? 14 : 12;
+      const borne = navire ? 14 : terrain ? 16 : 12;
       Object.assign(soleil.shadow.camera, { left: -borne, right: borne, top: borne, bottom: -borne, near: 1, far: 60 });
       scene.add(soleil);
       const contre = new THREE.DirectionalLight(0xbfd4ff, 0.6);
       contre.position.set(-8, 4, -10);
       scene.add(contre);
 
-      const objet = modeles[CONSTRUCTEURS[modele]](THREE);
+      const objet = modeles[CONSTRUCTEURS[modele][1]](THREE, { modele, donnees });
       scene.add(objet);
-      if (!navire) {
+      if (!navire && !terrain && !espace) {
         // Ombre portée douce sous l'appareil (sol invisible)
         const sol = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({ opacity: sous ? 0.25 : 0.18 }));
         sol.rotation.x = -Math.PI / 2;
@@ -126,7 +203,8 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
       controles.maxDistance = 60;
       controles.autoRotate = true;
       controles.autoRotateSpeed = 0.9;
-      if (navire) controles.maxPolarAngle = Math.PI / 2 - 0.06; // ne pas passer sous la mer
+      if (navire || terrain) controles.maxPolarAngle = Math.PI / 2 - 0.06; // ne pas passer sous la mer ni sous le sol
+      if (terrain) controles.maxDistance = 45;
       controles.target.set(0, sous ? 0.3 : 0.2, 0);
       const placer = (nom) => {
         const k = recul(camera.aspect);
@@ -141,7 +219,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
         camera.updateProjectionMatrix();
       };
       taille();
-      placer('3/4');
+      placer(Object.keys(VUES[modele])[0]);
       const ro = new ResizeObserver(taille);
       ro.observe(el);
 
@@ -215,7 +293,10 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
         basculer: objet.userData.basculer ?? {},
         photo: () => renderer.domElement.toDataURL('image/png'),
       };
+      for (const c of objet.userData.commandes ?? []) api.current[c.id] = false;
       setNoms(objet.userData.legendes.map((l) => l.texte));
+      setCommandes(objet.userData.commandes ?? []);
+      setEtats({});
       setEtat('pret');
 
       nettoyer = () => {
@@ -233,7 +314,8 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
       };
     })().catch(() => setEtat('indisponible'));
     return () => { annule = true; nettoyer(); };
-  }, [modele, hauteur, sous, navire]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modele, hauteur, sous, navire, cleDonnees]);
 
   const fiche = FICHES[modele];
   const photo = async () => {
@@ -261,6 +343,9 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360 }) {
           {sous && <button type="button" className="puce" disabled={!trappes} onClick={() => { api.current.tir = true; }} title={trappes ? '' : 'Ouvrez d\'abord les trappes'}>🚀 Tir d'essai (simulation)</button>}
           {navire && <button type="button" className="puce" onClick={() => { api.current.lancer = true; }}>🛫 Catapulter un Rafale</button>}
           {modele === 'leclerc' && <button type="button" className={`puce ${tourelle ? 'active' : ''}`} aria-pressed={tourelle} onClick={() => { api.current.tourelle = !tourelle; setTourelle(!tourelle); }}>{tourelle ? 'Tourelle en veille' : 'Faire pivoter la tourelle'}</button>}
+          {commandes.map((c) => (c.type === 'action'
+            ? <button key={c.id} type="button" className="puce" disabled={c.requiert && !etats[c.requiert]} title={c.requiert && !etats[c.requiert] ? c.aide : ''} onClick={() => { api.current[c.id] = true; }}>{c.libelle}</button>
+            : <button key={c.id} type="button" className={`puce ${etats[c.id] ? 'active' : ''}`} aria-pressed={!!etats[c.id]} onClick={() => { const v = !etats[c.id]; api.current[c.id] = v; setEtats({ ...etats, [c.id]: v }); }}>{etats[c.id] ? c.actif : c.libelle}</button>))}
           {modele === 'leclerc' && <button type="button" className="puce" onClick={() => { const l = livree === 'sable' ? 'centreEurope' : 'sable'; api.current.livree = l; setLivree(l); }}>{livree === 'sable' ? 'Livrée : sable' : 'Livrée : centre-Europe'}</button>}
           <button type="button" className="puce" onClick={photo}>📸 Photo</button>
         </div>

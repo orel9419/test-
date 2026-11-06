@@ -2,18 +2,30 @@ import React, { useState } from 'react';
 import Modale from './Modale.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
-/** Hangar 3D : Rafale, porte-avions Charles-de-Gaulle et France Libre, char Leclerc, SNLE 3G et SNLE Le Triomphant. */
+/** Matériels et lieux de pouvoir proposés dans le Hangar 3D, par famille. */
+const FAMILLES = [
+  { titre: 'Air, mer et dissuasion', modeles: [['rafale', '✈️ Rafale'], ['charlesDeGaulle', '🚢 Charles-de-Gaulle'], ['porteAvions', '🚢 France Libre'], ['snle3g', '⚓ SNLE 3G'], ['snle', '⚓ SNLE Le Triomphant']] },
+  { titre: 'Terre, drones et espace', modeles: [['leclerc', '🪖 Char Leclerc'], ['caesar', '💥 Canon Caesar'], ['griffon', '🛡️ Griffon'], ['jaguar', '🛡️ Jaguar'], ['patroller', '🛩️ Drone Patroller'], ['satellite', '🛰️ Satellite']] },
+  { titre: 'Lieux de pouvoir', modeles: [['elysee', '🏛️ Élysée'], ['matignon', '🏛️ Matignon'], ['assemblee', '🏛️ Assemblée nationale'], ['senat', '🏛️ Sénat']] },
+];
+
+/** Hangar 3D : les matériels des armées et les palais de la République. */
 export default function Hangar({ onFermer }) {
   const [modele, setModele] = useState('rafale');
   return (
     <Modale titre="Hangar 3D" onFermer={onFermer} largeur={900}>
-      <div className="puces" role="tablist" aria-label="Modèle">
-        {[['rafale', '✈️ Rafale'], ['charlesDeGaulle', '🚢 Charles-de-Gaulle'], ['porteAvions', '🚢 France Libre'], ['leclerc', '🪖 Char Leclerc'], ['snle3g', '⚓ SNLE 3G'], ['snle', '⚓ SNLE Le Triomphant']].map(([id, nom]) => (
-          <button key={id} type="button" role="tab" aria-selected={modele === id} className={`puce ${modele === id ? 'active' : ''}`} onClick={() => setModele(id)}>{nom}</button>
-        ))}
-      </div>
+      {FAMILLES.map((f) => (
+        <div key={f.titre} className="pile" style={{ gap: '0.25rem' }}>
+          <div className="tres-petit muet">{f.titre}</div>
+          <div className="puces" role="tablist" aria-label={f.titre}>
+            {f.modeles.map(([id, nom]) => (
+              <button key={id} type="button" role="tab" aria-selected={modele === id} className={`puce ${modele === id ? 'active' : ''}`} onClick={() => setModele(id)}>{nom}</button>
+            ))}
+          </div>
+        </div>
+      ))}
       <Visionneuse3D key={modele} modele={modele} hauteur={420} />
-      <p className="tres-petit muet" style={{ margin: 0 }}>Modèles construits aux proportions réelles, formes simplifiées. Bouton « Photo » : enregistrez ou partagez votre plus belle vue.</p>
+      <p className="tres-petit muet" style={{ margin: 0 }}>Modèles construits aux proportions réelles quand elles sont publiques, formes simplifiées. Les hémicycles aux couleurs de votre partie sont dans l'écran Institutions. Bouton « Photo » : enregistrez ou partagez votre plus belle vue.</p>
     </Modale>
   );
 }

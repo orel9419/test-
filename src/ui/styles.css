@@ -703,3 +703,9 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 
 /* ===== Tableau de bord : familles d'indicateurs ===== */
 .titre-groupe-tuiles { margin: 0.4rem 0 -0.35rem; font-size: 0.8rem; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--encre-2); }
+.visionneuse-caesar .visionneuse-scene, .visionneuse-griffon .visionneuse-scene, .visionneuse-jaguar .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #eef0e6 0%, #d3d6c3 55%, #a9ad93 100%); }
+.visionneuse-patroller .visionneuse-scene { background: linear-gradient(180deg, #6fa3d6 0%, #a9cbea 55%, #dde9f3 100%); }
+.visionneuse-satellite .visionneuse-scene { background: radial-gradient(ellipse at 50% 20%, #10182a 0%, #05070d 70%, #000 100%); }
+.visionneuse-elysee .visionneuse-scene, .visionneuse-matignon .visionneuse-scene, .visionneuse-assemblee .visionneuse-scene, .visionneuse-senat .visionneuse-scene { background: linear-gradient(180deg, #8fb8de 0%, #c7dbee 60%, #dfe6ee 100%); }
+.visionneuse-hemicycleAN .visionneuse-scene, .visionneuse-hemicycleSenat .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #4a3a33 0%, #2a201c 70%, #17110f 100%); }
+:root[data-theme="dark"] .visionneuse-caesar .visionneuse-scene, :root[data-theme="dark"] .visionneuse-griffon .visionneuse-scene, :root[data-theme="dark"] .visionneuse-jaguar .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45473c 0%, #2b2c25 60%, #191a15 100%); }

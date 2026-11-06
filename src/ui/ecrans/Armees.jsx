@@ -2,6 +2,25 @@ import React, { useState } from 'react';
 import Info from '../composants/Info.jsx';
 import { ILLUSTRATIONS } from '../composants/Illustrations.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
+
+/** Modèles 3D de chaque programme (plusieurs : puces pour passer de l'un à l'autre). */
+const MODELES_3D = {
+  rafale: [['rafale', 'Rafale']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
+  leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
+  scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],
+};
+
+function Modeles3D({ modeles }) {
+  const [actif, setActif] = useState(modeles[0][0]);
+  return (
+    <div className="pile" style={{ gap: '0.35rem' }}>
+      {modeles.length > 1 && (
+        <div className="puces">{modeles.map(([id, nom]) => <button key={id} type="button" className={`puce ${actif === id ? 'active' : ''}`} aria-pressed={actif === id} onClick={() => setActif(id)}>{nom}</button>)}</div>
+      )}
+      <Visionneuse3D key={actif} modele={actif} hauteur={300} />
+    </div>
+  );
+}
 import { resumeDefense, porteAvions, flotte } from '../../engine/index.js';
 import { SOURCES_DEFENSE } from '../../data/defense.js';
 import { libelleTrimestre } from '../../engine/calendrier.js';
@@ -91,12 +110,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
           const optionEnCours = p.options.find((o) => o.id === p.etat?.option);
           return (
             <article key={p.id} className="carte pile programme">
-              {p.id === 'rafale' ? <Visionneuse3D modele="rafale" hauteur={300} />
-                : p.id === 'snle3g' ? <Visionneuse3D modele="snle3g" hauteur={300} />
-                  : p.id === 'pang' ? <Visionneuse3D modele="porteAvions" hauteur={300} />
-                  : p.id === 'cdg' ? <Visionneuse3D modele="charlesDeGaulle" hauteur={300} />
-                  : p.id === 'leclerc' ? <Visionneuse3D modele="leclerc" hauteur={300} />
-                  : Illustration && <Illustration legende={false} coupe={false} />}
+              {MODELES_3D[p.id] ? <Modeles3D modeles={MODELES_3D[p.id]} />
+                : Illustration && <Illustration legende={false} coupe={false} />}
               <div className="ligne espace">
                 <div><h4 style={{ margin: 0 }}>{p.nom}</h4><span className="tres-petit muet">{p.sousTitre}</span></div>
                 <span className="etiquette">{p.domaine}</span>

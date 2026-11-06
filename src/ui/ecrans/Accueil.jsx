@@ -45,7 +45,7 @@ export default function Accueil({ onDemarrer, sauvegarde, onReprendre, onImporte
               <button type="button" className="bouton" onClick={() => onExpress(true)}>📅 Défi du jour</button>
             </div>
           )}
-          {onHangar && <button type="button" className="bouton" onClick={onHangar}>🛩️ Hangar 3D : Rafale, porte-avions, SNLE</button>}
+          {onHangar && <button type="button" className="bouton" onClick={onHangar}>🛩️ Hangar 3D : armées et palais de la République</button>}
           <button type="button" className="bouton" onClick={() => setPerso((x) => !x)} aria-expanded={perso}>⚙ {perso ? 'Masquer la personnalisation' : 'Personnaliser la partie'}</button>
         </div>
       </section>

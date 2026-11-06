@@ -1,10 +1,42 @@
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import Info from '../composants/Info.jsx';
-import Hemicycle from '../composants/Hemicycle.jsx';
+import Hemicycle, { groupesOrdonnes } from '../composants/Hemicycle.jsx';
 import Palais from '../composants/Palais.jsx';
+import Modale from '../composants/Modale.jsx';
 import { resumeInstitutions, risqueConstitutionnel } from '../../engine/index.js';
 import { PALAIS, POUVOIRS_PRESIDENT, POUVOIRS_PREMIER_MINISTRE, COHABITATIONS, PRECEDENTS, SOURCES_INSTITUTIONS } from '../../data/institutions.js';
 import { nombre } from '../format.js';
+
+const Visionneuse3D = lazy(() => import('../3d/Visionneuse3D.jsx'));
+
+/** Modèle 3D de chaque palais, et de son hémicycle pour les assemblées. */
+const PALAIS_3D = { elysee: 'elysee', matignon: 'matignon', bourbon: 'assemblee', luxembourg: 'senat' };
+const HEMICYCLE_3D = { bourbon: 'hemicycleAN', luxembourg: 'hemicycleSenat' };
+
+/** Boutons « en 3D » : le palais, et pour les assemblées l'hémicycle aux couleurs de la partie, dans une grande fenêtre. */
+function Palais3D({ id, nom, hemicycle }) {
+  const [vue, setVue] = useState(null);
+  const modele = vue === 'hemicycle' ? HEMICYCLE_3D[id] : PALAIS_3D[id];
+  return (
+    <div className="puces">
+      <button type="button" className="puce" onClick={() => setVue('palais')}>🏛️ Le palais en 3D</button>
+      {hemicycle && <button type="button" className="puce" onClick={() => setVue('hemicycle')}>🪑 L'hémicycle en 3D</button>}
+      {vue && (
+        <Modale titre={vue === 'hemicycle' ? `Hémicycle : ${nom}` : nom} onFermer={() => setVue(null)} largeur={900}>
+          {hemicycle && (
+            <div className="puces">
+              <button type="button" className={`puce ${vue === 'palais' ? 'active' : ''}`} aria-pressed={vue === 'palais'} onClick={() => setVue('palais')}>Le palais</button>
+              <button type="button" className={`puce ${vue === 'hemicycle' ? 'active' : ''}`} aria-pressed={vue === 'hemicycle'} onClick={() => setVue('hemicycle')}>L'hémicycle (composition de votre partie)</button>
+            </div>
+          )}
+          <Suspense fallback={<p className="petit muet">Chargement…</p>}>
+            <Visionneuse3D key={modele} modele={modele} hauteur={420} donnees={vue === 'hemicycle' ? hemicycle : null} />
+          </Suspense>
+        </Modale>
+      )}
+    </div>
+  );
+}
 
 const CLASSE_CONFIG = { fait_majoritaire: 'bonne', majorite_relative: '', cohabitation: 'critique' };
 
@@ -27,7 +59,7 @@ function Jauge({ valeur, bas = 30 }) {
   return <div className="jauge-entente" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(valeur)}><div style={{ width: `${valeur}%` }} className={valeur < bas ? 'bas' : valeur >= 60 ? 'haut' : ''} /></div>;
 }
 
-function CartePalais({ id, titulaire, detail, joueur, children }) {
+function CartePalais({ id, titulaire, detail, joueur, hemicycle, children }) {
   const p = PALAIS[id];
   return (
     <article className={`carte pile carte-palais ${joueur ? 'joueur' : ''}`}>
@@ -39,6 +71,7 @@ function CartePalais({ id, titulaire, detail, joueur, children }) {
       </div>
       {titulaire && <div className="petit"><strong>{titulaire}</strong>{detail && <div className="tres-petit muet">{detail}</div>}</div>}
       {children}
+      <Palais3D id={id} nom={p.nom} hemicycle={hemicycle} />
       <p className="tres-petit muet" style={{ margin: 0 }}>{p.mandat}</p>
     </article>
   );
@@ -108,10 +141,10 @@ export default function Institutions({ partie, decisions, majDecisions, allerA }
       <div className="grille-palais">
         <CartePalais id="elysee" titulaire={r.titulaires.president.nom} detail={r.titulaires.president.detail} joueur={r.titulaires.president.joueur} />
         <CartePalais id="matignon" titulaire={r.titulaires.premierMinistre.nom} detail={r.titulaires.premierMinistre.detail} joueur={r.titulaires.premierMinistre.joueur} />
-        <CartePalais id="bourbon" titulaire={`Présidente : ${PALAIS.bourbon.president}`} detail={PALAIS.bourbon.depuisPresident}>
+        <CartePalais id="bourbon" titulaire={`Présidente : ${PALAIS.bourbon.president}`} detail={PALAIS.bourbon.depuisPresident} hemicycle={{ groupes: groupesOrdonnes('france', groupesAN) }}>
           <Hemicycle pays="france" groupes={groupesAN} majorite={pol.majorite} />
         </CartePalais>
-        <CartePalais id="luxembourg" titulaire={`Président : ${r.senat.president}`} detail={r.senat.president === PALAIS.luxembourg.president ? PALAIS.luxembourg.depuisPresident : null}>
+        <CartePalais id="luxembourg" titulaire={`Président : ${r.senat.president}`} detail={r.senat.president === PALAIS.luxembourg.president ? PALAIS.luxembourg.depuisPresident : null} hemicycle={{ groupes: groupesOrdonnes('senat', senatHemicycle) }}>
           <Hemicycle pays="senat" groupes={senatHemicycle} majorite={175} />
           <div className="tres-petit">Droite et centre (LR, Union centriste) : <strong>{r.senat.majoriteDroiteCentre}</strong> sièges · prochain renouvellement : septembre {r.senat.prochainRenouvellement}.</div>
           <div className="tres-petit">Relation avec le Gouvernement : {Math.round(r.senat.relation)}/100 <Info texte="Elle progresse quand le Sénat et l'Assemblée s'accordent, recule quand l'Assemblée a le dernier mot. Une bonne relation aide à faire passer une révision de la Constitution ou une loi organique relative au Sénat, qui exigent son accord." /></div>
