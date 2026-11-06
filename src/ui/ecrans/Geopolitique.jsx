@@ -17,7 +17,7 @@ const L = 960, H = 500;
 const niveau = (t) => (t >= 65 ? { classe: 'critique', texte: 'forte' } : t >= 40 ? { classe: 'attention', texte: 'moyenne' } : { classe: 'bon', texte: 'faible' });
 
 /** Carte du monde (Natural Earth) chargée à la demande, avec les théâtres et le groupe aéronaval. */
-function CarteMonde({ theatres, position, destination, choisi, onChoisir }) {
+function CarteMonde({ theatres, groupes, choisi, onChoisir }) {
   const [carte, setCarte] = useState(null);
   // Largeur affichée : sur un petit écran, les repères sont agrandis pour rester lisibles et faciles à toucher
   const [largeur, setLargeur] = useState(L);
@@ -46,15 +46,17 @@ function CarteMonde({ theatres, position, destination, choisi, onChoisir }) {
   const k = Math.min(3, Math.max(1, L / largeur / 1.4));
   const compacte = k > 1.6;
   const toulon = theatres.find((t) => t.id === 'toulon');
-  const cible = theatres.find((t) => t.id === (destination ?? position));
-  const route = cible && cible.id !== 'toulon' ? carte.chemin({ type: 'LineString', coordinates: [[toulon.lon, toulon.lat], [cible.lon, cible.lat]] }) : null;
-  const [gx, gy] = p(...(() => { const t = theatres.find((x) => x.id === position); return [t.lon, t.lat]; })());
+  const routes = groupes.map((g) => {
+    const cible = theatres.find((t) => t.id === (g.destination ?? g.position));
+    return cible && cible.id !== 'toulon' ? { numero: g.numero, prevue: !!g.destination, d: carte.chemin({ type: 'LineString', coordinates: [[toulon.lon, toulon.lat], [cible.lon, cible.lat]] }) } : null;
+  }).filter(Boolean);
+  const plusieurs = groupes.length > 1;
   return (
     <svg ref={svg} className={`carte-monde ${compacte ? 'compacte' : ''}`} viewBox={`0 0 ${L} ${H}`} role="img" aria-label="Carte du monde : théâtres d'opérations et position du groupe aéronaval">
       <path d={carte.sphere} className="carte-ocean" />
       {carte.pays.map((c) => <path key={c.id ?? c.d.slice(0, 20)} d={c.d} className={c.id === '250' ? 'carte-pays france' : 'carte-pays'} />)}
       {OUTRE_MER.map(([nom, lon, lat]) => { const [x, y] = p(lon, lat); return <circle key={nom} cx={x} cy={y} r={3 * k} className="carte-outre-mer"><title>{nom}</title></circle>; })}
-      {route && <path d={route} className={`carte-route ${destination ? 'prevue' : ''}`} />}
+      {routes.map((rt) => <path key={rt.numero} d={rt.d} className={`carte-route ${rt.prevue ? 'prevue' : ''}`} />)}
       {theatres.filter((t) => !t.base).map((t) => {
         const [x, y] = p(t.lon, t.lat);
         const n = niveau(t.tensionActuelle);
@@ -66,11 +68,38 @@ function CarteMonde({ theatres, position, destination, choisi, onChoisir }) {
           </g>
         );
       })}
-      <g className="carte-gan" transform={`translate(${gx},${gy + (position === 'toulon' ? -2 : 18) * k}) scale(${k})`}>
-        <rect x="-15" y="-9" width="30" height="18" rx="9" />
-        <text textAnchor="middle" y="5">🚢</text>
-      </g>
+      {groupes.map((g, i) => {
+        const t = theatres.find((x) => x.id === g.position);
+        const [gx, gy] = p(t.lon, t.lat);
+        // Deux groupes au même endroit : décalés pour rester lisibles
+        const memeLieu = plusieurs && groupes.filter((h) => h.position === g.position).length > 1;
+        const dx = memeLieu ? (i ? 18 : -18) : 0;
+        return (
+          <g key={g.numero} className="carte-gan" transform={`translate(${gx + dx * k},${gy + (g.position === 'toulon' ? -2 : 18) * k}) scale(${k})`}>
+            <rect x={plusieurs ? -19 : -15} y="-9" width={plusieurs ? 38 : 30} height="18" rx="9" />
+            <text textAnchor="middle" y="5">{plusieurs ? `🚢${g.numero}` : '🚢'}</text>
+          </g>
+        );
+      })}
     </svg>
+  );
+}
+
+/** Fiche d'un groupe aéronaval : porte-avions, position, potentiel, ordre en attente. */
+function FicheGroupe({ g, numero, plusieurs, destination, nomTheatre, onAnnuler }) {
+  const pa = g.porteAvions ?? {};
+  return (
+    <div className="pile" style={{ gap: '0.45rem' }}>
+      {plusieurs && <strong className="petit">Groupe {numero} · {pa.nom}</strong>}
+      {!pa.disponible && pa.motif && <p className={`alerte petit ${pa.enService ? '' : 'critique'}`} style={{ margin: 0 }}>{pa.motif}</p>}
+      <div className="ligne espace petit"><span>Position</span><strong>{nomTheatre(g.position)}</strong></div>
+      <div className="petit">Potentiel (équipages, munitions, maintenance) : <strong>{Math.round(g.potentiel)} %</strong>
+        <div className="jauge-potentiel"><div style={{ width: `${g.potentiel}%` }} className={g.potentiel < 30 ? 'bas' : ''} /></div>
+      </div>
+      <div className="ligne espace petit"><span>En mer depuis</span><strong>{g.trimestresEnMer} trimestre(s)</strong></div>
+      {g.maintenance > 0 && <p className="petit alerte" style={{ margin: 0 }}>Entretien à Toulon : encore {g.maintenance} trimestre(s).</p>}
+      {destination && <p className="petit alerte bonne" style={{ margin: 0 }}>Ordre donné : {destination === 'toulon' ? 'rentrer à Toulon' : `appareiller pour ${nomTheatre(destination)}`} (à la validation du trimestre). <button type="button" className="lien" onClick={onAnnuler}>Annuler</button></p>}
+    </div>
   );
 }
 
@@ -86,42 +115,41 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
   const selection = useMemo(() => theatres.find((t) => t.id === (choisi ?? r?.gan.position)), [theatres, choisi, r]);
   if (!r) return <div className="carte"><h2>Géopolitique</h2><p>Ce module est disponible pour la France.</p></div>;
   const g = r.gan;
-  const destination = decisions.gan ?? null;
   const pa = g.porteAvions;
   const nomTheatre = (id) => theatres.find((t) => t.id === id)?.nom ?? id;
-  const enMaintenance = g.maintenance > 0;
-  const possible = (t) => t.id !== g.position && (t.base || (pa.disponible && !enMaintenance && g.potentiel >= t.usure));
+  // Un ou deux groupes aéronavals (deux porte-avions en service)
+  const groupes = [{ numero: 1, cle: 'gan', g, destination: decisions.gan ?? null }, ...(r.gan2 ? [{ numero: 2, cle: 'gan2', g: r.gan2, destination: decisions.gan2 ?? null }] : [])];
+  const plusieurs = groupes.length > 1;
+  const possible = (gr, t) => t.id !== gr.position && (t.base || (gr.porteAvions?.disponible && !(gr.maintenance > 0) && gr.potentiel >= t.usure));
+  const raison = (gr) => (!gr.porteAvions?.disponible ? gr.porteAvions?.motif : gr.maintenance > 0 ? 'Entretien en cours.' : 'Potentiel insuffisant : rentrez d\'abord à Toulon.');
   return (
     <div className="pile">
-      <h2>Géopolitique et groupe aéronaval</h2>
+      <h2>Géopolitique et {plusieurs ? 'groupes aéronavals' : 'groupe aéronaval'}</h2>
       <p className="petit muet">La France est présente sur tous les océans : ses territoires d'outre-mer lui donnent le deuxième espace maritime du monde. Déployer le groupe aéronaval rassure les alliés, apaise les tensions et pèse dans les crises ; mais il s'use, coûte cher et ne peut être partout à la fois.</p>
 
       <div className="carte pile">
-        <CarteMonde theatres={theatres} position={g.position} destination={destination} choisi={selection?.id} onChoisir={setChoisi} />
+        <CarteMonde theatres={theatres} groupes={groupes.map(({ numero, g: gr, destination }) => ({ numero, position: gr.position, destination }))} choisi={selection?.id} onChoisir={setChoisi} />
         <div className="ligne petit legende-carte">
           <span><span className="pastille-legende critique" /> tension forte</span>
           <span><span className="pastille-legende attention" /> moyenne</span>
           <span><span className="pastille-legende bon" /> faible</span>
-          <span>🚢 groupe aéronaval</span>
+          <span>🚢 {plusieurs ? 'groupes aéronavals (1 et 2)' : 'groupe aéronaval'}</span>
           <span><span className="pastille-legende outre-mer" /> outre-mer français</span>
         </div>
       </div>
 
       <div className="grille-2">
         <div className="carte pile">
-          <h3 style={{ margin: 0 }}>🚢 Groupe aéronaval {pa.nom ? `· porte-avions ${pa.nom}` : ''} <Info texte={GROUPE_AERONAVAL.pedagogie} /></h3>
-          {!pa.disponible && <p className={`alerte petit ${pa.enService ? '' : 'critique'}`} style={{ margin: 0 }}>{pa.motif}</p>}
-          <div className="ligne espace petit"><span>Position</span><strong>{nomTheatre(g.position)}</strong></div>
-          <div className="petit">Potentiel (équipages, munitions, maintenance) : <strong>{Math.round(g.potentiel)} %</strong>
-            <div className="jauge-potentiel"><div style={{ width: `${g.potentiel}%` }} className={g.potentiel < 30 ? 'bas' : ''} /></div>
-          </div>
-          <div className="ligne espace petit"><span>En mer depuis</span><strong>{g.trimestresEnMer} trimestre(s)</strong></div>
-          {enMaintenance && <p className="petit alerte" style={{ margin: 0 }}>Entretien à Toulon : encore {g.maintenance} trimestre(s).</p>}
-          {destination && <p className="petit alerte bonne" style={{ margin: 0 }}>Ordre donné : {destination === 'toulon' ? 'rentrer à Toulon' : `appareiller pour ${nomTheatre(destination)}`} (à la validation du trimestre). <button type="button" className="lien" onClick={() => majDecisions({ gan: null })}>Annuler</button></p>}
+          <h3 style={{ margin: 0 }}>🚢 {plusieurs ? 'Deux groupes aéronavals' : `Groupe aéronaval ${pa.nom ? `· porte-avions ${pa.nom}` : ''}`} <Info texte={GROUPE_AERONAVAL.pedagogie} /></h3>
+          {plusieurs && <p className="petit muet" style={{ margin: 0 }}>Avec deux porte-avions en service, la France peut tenir deux théâtres à la fois, ou se relayer sur le même sans interruption.</p>}
+          {groupes.map(({ numero, cle, g: gr, destination }) => (
+            <FicheGroupe key={cle} g={gr} numero={numero} plusieurs={plusieurs} destination={destination} nomTheatre={nomTheatre} onAnnuler={() => majDecisions({ [cle]: null })} />
+          ))}
+          {!plusieurs && <p className="tres-petit muet" style={{ margin: 0 }}>Deux groupes aéronavals : gardez le Charles-de-Gaulle jusqu'en 2040 avec un « France Libre » accéléré à 2032, ou décidez de construire deux porte-avions (onglets Armées et Réformes).</p>}
           <ul className="tres-petit muet" style={{ margin: 0, paddingLeft: '1rem' }}>{GROUPE_AERONAVAL.composition.map((c) => <li key={c}>{c}</li>)}</ul>
           <div className="ligne petit">
-            {pa.nom !== 'France Libre' && <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'charlesDeGaulle' ? null : 'charlesDeGaulle'))}>{voir3d === 'charlesDeGaulle' ? 'Masquer le modèle 3D' : 'Voir le Charles-de-Gaulle en 3D'}</button>}
-            <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'porteAvions' ? null : 'porteAvions'))}>{voir3d === 'porteAvions' ? 'Masquer le modèle 3D' : pa.nom === 'France Libre' ? 'Voir le porte-avions en 3D' : 'Voir son successeur, le « France Libre »'}</button>
+            {(r.flotte ?? []).some((x) => x.id === 'cdg') && <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'charlesDeGaulle' ? null : 'charlesDeGaulle'))}>{voir3d === 'charlesDeGaulle' ? 'Masquer le modèle 3D' : 'Voir le Charles-de-Gaulle en 3D'}</button>}
+            <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'porteAvions' ? null : 'porteAvions'))}>{voir3d === 'porteAvions' ? 'Masquer le modèle 3D' : pa.nom === 'France Libre' ? 'Voir le « France Libre » en 3D' : 'Voir son successeur, le « France Libre »'}</button>
           </div>
           {voir3d && <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D key={voir3d} modele={voir3d} hauteur={280} /></Suspense>}
         </div>
@@ -140,10 +168,17 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
                 {selection.bonusExport && <li>Escale chez un client potentiel du Rafale : meilleures chances à l'exportation.</li>}
               </ul>
             )}
-            {selection.id === g.position
-              ? <p className="petit muet" style={{ margin: 0 }}>{selection.base ? 'Le groupe aéronaval est à quai.' : 'Le groupe aéronaval est déjà sur place.'}</p>
-              : <button type="button" className="bouton principal" disabled={!possible(selection)} onClick={() => majDecisions({ gan: selection.id })}>{selection.base ? 'Rentrer à Toulon' : `Envoyer le groupe aéronaval ici`}</button>}
-            {!possible(selection) && selection.id !== g.position && !selection.base && <p className="tres-petit muet" style={{ margin: 0 }}>{!pa.disponible ? pa.motif : enMaintenance ? 'Entretien en cours.' : 'Potentiel insuffisant : rentrez d\'abord à Toulon.'}</p>}
+            {groupes.map(({ numero, cle, g: gr }) => {
+              const nom = plusieurs ? `le groupe ${numero} (${gr.porteAvions?.nom})` : 'le groupe aéronaval';
+              if (selection.id === gr.position) return <p key={cle} className="petit muet" style={{ margin: 0 }}>{selection.base ? `${nom.charAt(0).toUpperCase()}${nom.slice(1)} est à quai.` : `${nom.charAt(0).toUpperCase()}${nom.slice(1)} est déjà sur place.`}</p>;
+              const ok = possible(gr, selection);
+              return (
+                <div key={cle} className="pile" style={{ gap: '0.2rem' }}>
+                  <button type="button" className={`bouton ${numero === 1 ? 'principal' : ''}`} disabled={!ok} onClick={() => majDecisions({ [cle]: selection.id })}>{selection.base ? `Faire rentrer ${nom} à Toulon` : `Envoyer ${nom} ici`}</button>
+                  {!ok && !selection.base && <span className="tres-petit muet">{raison(gr)}</span>}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

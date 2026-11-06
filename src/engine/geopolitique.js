@@ -34,42 +34,60 @@ export function initialiserGeopolitique(e) {
  * @returns {object} { nom, enService, disponible, arretTechnique, motif }
  */
 export function porteAvions(e) {
-  const j = e.defense?.jalons ?? [];
   const pang = e.defense?.programmes?.pang;
-  if (j.includes('pang') && e.trimestre.annee >= ANNEE_MIN_FRANCE_LIBRE) return { nom: 'France Libre', enService: true, disponible: true };
+  return flotte(e)[0] ?? { id: null, nom: null, enService: false, disponible: false, motif: pang?.abandonne ? 'La France n\'a plus de porte-avions : le Charles-de-Gaulle est retiré et son successeur a été abandonné.' : 'Le Charles-de-Gaulle est retiré et le « France Libre » n\'est pas encore en service.' };
+}
+
+/**
+ * Porte-avions en service, le plus récent d'abord : « France Libre » (jamais
+ * avant 2032), second porte-avions de nouvelle génération (si vous en avez
+ * décidé deux), Charles-de-Gaulle (jusqu'à son retrait, ou 2040 s'il est gardé).
+ * Deux porte-avions en service : deux groupes aéronavals.
+ */
+export function flotte(e) {
+  const j = e.defense?.jalons ?? [];
+  const liste = [];
+  if (j.includes('pang') && e.trimestre.annee >= ANNEE_MIN_FRANCE_LIBRE) liste.push({ id: 'france_libre', nom: 'France Libre', enService: true, disponible: true });
+  if (j.includes('pang2')) liste.push({ id: 'pang2', nom: 'second porte-avions de nouvelle génération', enService: true, disponible: true });
   if (!j.includes('cdg_retrait')) {
     const atm = j.includes('cdg_atm3') && !j.includes('cdg_atm3_fin');
-    return { nom: 'Charles-de-Gaulle', enService: true, disponible: !atm, arretTechnique: atm, motif: atm ? 'Le Charles-de-Gaulle est en arrêt technique majeur à Toulon (rechargement des réacteurs) jusqu\'à fin 2028 environ : pas de porte-avions disponible.' : null };
+    liste.push({ id: 'cdg', nom: 'Charles-de-Gaulle', enService: true, disponible: !atm, arretTechnique: atm, motif: atm ? 'Le Charles-de-Gaulle est en arrêt technique majeur à Toulon (rechargement des réacteurs) jusqu\'à fin 2028 environ : pas de porte-avions disponible.' : null });
   }
-  return { nom: null, enService: false, disponible: false, motif: pang?.abandonne ? 'La France n\'a plus de porte-avions : le Charles-de-Gaulle est retiré et son successeur a été abandonné.' : 'Le Charles-de-Gaulle est retiré et le « France Libre » n\'est pas encore en service.' };
+  return liste;
 }
+
+const nouveauGroupe = () => ({ position: 'toulon', potentiel: 100, trimestresEnMer: 0, maintenance: 0 });
+/** Porte-avions d'un groupe (1 : le plus récent, 2 : le second). */
+const porteAvionsDuGroupe = (e, numero) => (numero === 2 ? flotte(e)[1] : porteAvions(e));
 
 /**
  * Ordonne le déplacement du groupe aéronaval vers un théâtre (ou le retour à Toulon).
  * @returns {object} { texte } ou { erreur }
  */
-export function deplacerGroupe(e, destination) {
+export function deplacerGroupe(e, destination, numero = 1) {
   if (!actif(e)) return { erreur: 'Disponible pour la France.' };
   if (!e.geopolitique) initialiserGeopolitique(e); // sauvegarde antérieure au module
-  const g = e.geopolitique.gan;
+  const g = numero === 2 ? e.geopolitique.gan2 : e.geopolitique.gan;
+  if (!g) return { erreur: 'Un second groupe aéronaval suppose deux porte-avions en service.' };
   const t = THEATRES[destination];
   if (!t) return { erreur: 'Destination inconnue.' };
   if (g.position === destination) return { erreur: 'Le groupe aéronaval y est déjà.' };
-  const pa = porteAvions(e);
+  const pa = porteAvionsDuGroupe(e, numero) ?? porteAvions(e);
   if (!t.base && !pa.disponible) return { erreur: pa.motif ?? 'Aucun porte-avions disponible.' };
   if (!t.base && g.maintenance > 0) return { erreur: `Entretien en cours à Toulon : encore ${g.maintenance} trimestre(s).` };
   if (!t.base && g.potentiel < t.usure) return { erreur: 'Potentiel insuffisant : le groupe doit rentrer à Toulon pour son entretien.' };
   const depart = THEATRES[g.position]?.court ?? g.position;
   g.position = destination;
   if (t.base) g.trimestresEnMer = 0;
-  const texte = t.base ? `Le groupe aéronaval rentre à Toulon (depuis : ${depart}).` : `Le groupe aéronaval appareille pour : ${t.nom}.`;
+  const nom = e.geopolitique.gan2 ? `Le groupe aéronaval du ${pa.nom}` : 'Le groupe aéronaval';
+  const texte = t.base ? `${nom} rentre à Toulon (depuis : ${depart}).` : `${nom} appareille pour : ${t.nom}.`;
   e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'politique', texte: `Géopolitique — ${texte}` });
   e.geopolitique.historique.push({ tour: e.tour, position: destination });
   return { texte };
 }
 
 /** Effets d'un trimestre de présence : influence, relations, tension apaisée, coût, usure. */
-function presence(e, id) {
+function presence(e, id, g) {
   const t = THEATRES[id];
   const x = e.geopolitique;
   const i = e.international;
@@ -80,8 +98,8 @@ function presence(e, id) {
   if ((t.protegeCommerce || t.protegeEnergie) && x.tensions[id] > 55 && e.monde) e.monde.energie *= 0.997;
   for (const [cle, v] of Object.entries(t.bonusExport ?? {})) x.bonusExport[cle] = { valeur: v, jusquA: e.tour + 4 };
   e.depensesTemporaires.push({ poste: 'defense', valeur: t.cout * 4, fin: e.tour + 1, source: 'groupe_aeronaval' });
-  x.gan.potentiel = Math.max(0, x.gan.potentiel - t.usure);
-  x.gan.trimestresEnMer += 1;
+  g.potentiel = Math.max(0, g.potentiel - t.usure);
+  g.trimestresEnMer += 1;
 }
 
 /**
@@ -92,25 +110,36 @@ export function majGeopolitique(e) {
   if (!actif(e)) return;
   if (!e.geopolitique) initialiserGeopolitique(e);
   const x = e.geopolitique;
-  const g = x.gan;
-  // Porte-avions indisponible (arrêt technique, retrait) : le groupe rentre à Toulon
-  const pa = porteAvions(e);
-  if (!pa.disponible && g.position !== 'toulon') {
-    e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'alerte', texte: `Géopolitique — ${pa.motif} Le groupe aéronaval rentre à Toulon.` });
-    g.position = 'toulon';
-    g.trimestresEnMer = 0;
+  const lib = libelleTrimestre(e.trimestre);
+  // Deux porte-avions en service : un second groupe aéronaval ; un seul : il est dissous
+  const navires = flotte(e);
+  if (navires.length >= 2 && !x.gan2) {
+    x.gan2 = nouveauGroupe();
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Géopolitique — Deux porte-avions en service (${navires[0].nom} et ${navires[1].nom}) : la France peut déployer deux groupes aéronavals à la fois.` });
+  } else if (navires.length < 2 && x.gan2) {
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: 'Géopolitique — Plus qu\'un porte-avions en service : le second groupe aéronaval est dissous.' });
+    x.gan2 = null;
   }
-  if (g.position === 'toulon') {
-    if (g.maintenance > 0) g.maintenance -= 1;
-    g.potentiel = Math.min(100, g.potentiel + 40);
-  } else {
-    presence(e, g.position);
-    // Potentiel épuisé : retour obligatoire et entretien
-    if (g.potentiel < 15) {
-      e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: 'alerte', texte: `Géopolitique — Après ${g.trimestresEnMer} trimestre(s) en mer, le groupe aéronaval rentre à Toulon pour son entretien.` });
+  for (const [g, pa, nom] of [[x.gan, porteAvions(e), 'Le groupe aéronaval'], [x.gan2, navires[1], `Le groupe aéronaval du ${navires[1]?.nom}`]]) {
+    if (!g) continue;
+    // Porte-avions indisponible (arrêt technique, retrait) : le groupe rentre à Toulon
+    if (!pa.disponible && g.position !== 'toulon') {
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'alerte', texte: `Géopolitique — ${pa.motif} ${nom} rentre à Toulon.` });
       g.position = 'toulon';
       g.trimestresEnMer = 0;
-      g.maintenance = 1;
+    }
+    if (g.position === 'toulon') {
+      if (g.maintenance > 0) g.maintenance -= 1;
+      g.potentiel = Math.min(100, g.potentiel + 40);
+    } else {
+      presence(e, g.position, g);
+      // Potentiel épuisé : retour obligatoire et entretien
+      if (g.potentiel < 15) {
+        e.journal.push({ tour: e.tour, trimestre: lib, type: 'alerte', texte: `Géopolitique — Après ${g.trimestresEnMer} trimestre(s) en mer, ${nom.charAt(0).toLowerCase()}${nom.slice(1)} rentre à Toulon pour son entretien.` });
+        g.position = 'toulon';
+        g.trimestresEnMer = 0;
+        g.maintenance = 1;
+      }
     }
   }
   // Tensions : marche aléatoire qui revient vers le niveau de base de chaque théâtre
@@ -143,9 +172,12 @@ export function injecterCrises(e, max = 3) {
 export function resumeGeopolitique(e) {
   if (!actif(e)) return null;
   const x = e.geopolitique ?? etatInitial(); // sauvegarde antérieure au module : état de départ
+  const navires = flotte(e);
   return {
     gan: { ...x.gan, porteAvions: porteAvions(e) },
-    theatres: Object.entries(THEATRES).map(([id, t]) => ({ id, ...t, tensionActuelle: t.base ? null : x.tensions[id], present: x.gan.position === id })),
+    gan2: x.gan2 ? { ...x.gan2, porteAvions: navires[1] ?? null } : null,
+    flotte: navires,
+    theatres: Object.entries(THEATRES).map(([id, t]) => ({ id, ...t, tensionActuelle: t.base ? null : x.tensions[id], present: x.gan.position === id || x.gan2?.position === id })),
     bonusExport: x.bonusExport,
   };
 }

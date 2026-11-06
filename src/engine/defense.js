@@ -58,9 +58,12 @@ function appliquer(e, eff = {}, source = 'defense', signe = 1) {
 }
 
 /** Jalons d'un programme avec leur date effective (retards et avances compris). */
+/** Vrai si la réforme (id, option) est en vigueur. */
+const reformeActive = (e, [id, option]) => e.reformes?.actives?.some((a) => a.id === id && a.option === option);
+
 export function jalonsEffectifs(e, p) {
   const etat = e.defense?.programmes[p.id];
-  return (p.jalons ?? []).map((j) => {
+  return (p.jalons ?? []).filter((j) => !j.siReforme || reformeActive(e, j.siReforme)).map((j) => {
     const decalage = (etat?.retard ?? 0) - (etat?.avance?.[j.id] ?? 0);
     const r = rang(j) + decalage;
     return { ...j, annee: Math.floor((r - 1) / 4), t: ((r - 1) % 4) + 1, decalage, atteint: (e.defense?.jalons ?? []).includes(j.id) };
@@ -217,6 +220,10 @@ export function majDefense(e, alea) {
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Défense — ${j.texte}` });
     }
   }
+  // Deux porte-avions en même temps (Charles-de-Gaulle gardé à côté du « France Libre ») : équipages et entretien
+  if (x.jalons.includes('pang') && !x.jalons.includes('cdg_retrait') && e.trimestre.annee >= ANNEE_MIN_FRANCE_LIBRE) {
+    e.depensesTemporaires.push({ poste: 'defense', valeur: 0.5, fin: e.tour + 1, source: 'deux_porte_avions' });
+  }
   // Porte-avions : si la réforme « renoncer » est en vigueur, le programme est arrêté
   const pa = e.reformes?.actives?.find((a) => a.id === 'porte_avions');
   if (x.programmes.pang) x.programmes.pang.abandonne = pa?.option === 'renoncer';
@@ -244,10 +251,12 @@ function jalonPossible(e, j, maintenant, lib) {
     }
     return true;
   }
+  if (j.id === 'pang2') return !x.programmes.pang?.abandonne && x.jalons.includes('pang') && reformeActive(e, j.siReforme);
   if (j.id === 'cdg_retrait') {
+    // Gardé jusqu'en 2040 : il navigue aux côtés du « France Libre » ; sinon il part quand son successeur est prêt
+    if (x.programmes.cdg?.option === 'prolonger') return maintenant >= RANG_RETRAIT_CDG + 8;
     const successeur = x.franceLibreDepuis !== undefined && maintenant >= x.franceLibreDepuis + 2;
-    const limite = RANG_RETRAIT_CDG + (x.programmes.cdg?.option === 'prolonger' ? 8 : 0);
-    return successeur || maintenant >= limite;
+    return successeur || maintenant >= RANG_RETRAIT_CDG;
   }
   return true;
 }
@@ -267,7 +276,7 @@ function accelererFranceLibre(e, maintenant, lib) {
   const gain = actuel - cible;
   pang.accelere = { tour: e.tour, cible };
   if (gain <= 0) return;
-  pang.avance = { ...(pang.avance ?? {}), pang: (pang.avance?.pang ?? 0) + gain };
+  pang.avance = { ...(pang.avance ?? {}), pang: (pang.avance?.pang ?? 0) + gain, pang2: (pang.avance?.pang2 ?? 0) + gain };
   const cdg = x.programmes.cdg;
   if (cdg) cdg.avance = { ...(cdg.avance ?? {}), cdg_retrait: (cdg.avance?.cdg_retrait ?? 0) + gain };
   const an = Math.floor((cible - 1) / 4), t = ((cible - 1) % 4) + 1;

@@ -82,7 +82,7 @@ export const PROGRAMMES_DEFENSE = {
       ],
       options: [
         { id: 'nominal', nom: 'Retrait à l\'arrivée du « France Libre »', description: 'Le Charles-de-Gaulle quitte le service quelques mois après la mise en service de son successeur (vers 2038 sans accélération).' },
-        { id: 'prolonger', nom: 'Prolonger le Charles-de-Gaulle jusqu\'en 2040 au plus', description: 'Assurance contre un retard du « France Libre » : 0,25 Md€ par an pendant trois ans (études, combustible, équipages). Le retrait n\'est repoussé que si le successeur n\'est pas prêt.', cout: 0.25, duree: 12, effets: { souverainete: 1, fleurons: { naval_group: 1 } }, avance: { jalon: 'cdg_retrait', trimestres: -8 } },
+        { id: 'prolonger', nom: 'Garder le Charles-de-Gaulle jusqu\'en 2040', description: 'Il reste en service même après l\'arrivée du « France Libre » : avec la loi d\'accélération (France Libre en 2032), la France aligne deux groupes aéronavals de 2032 à 2040. Coût : 0,25 Md€ par an pendant trois ans (études, combustible), puis environ 0,5 Md€ par an tant que les deux porte-avions naviguent (équipages, entretien).', cout: 0.25, duree: 12, effets: { souverainete: 1, fleurons: { naval_group: 1 } }, avance: { jalon: 'cdg_retrait', trimestres: -8 } },
       ],
       jalons: [
         { id: 'cdg_atm3', annee: 2027, t: 2, influence: 0, texte: 'Le Charles-de-Gaulle entre en arrêt technique majeur à Toulon (rechargement des réacteurs) : pas de porte-avions disponible pendant environ dix-huit mois.' },
@@ -90,7 +90,7 @@ export const PROGRAMMES_DEFENSE = {
         { id: 'cdg_retrait', annee: 2038, t: 4, influence: 0, texte: 'Le Charles-de-Gaulle est retiré du service actif.' },
       ],
       sources: ['cdgAtm', 'cdgProlongation', 'cdgQuestion'],
-      note: 'Dates de l\'arrêt technique : presse spécialisée, non confirmées officiellement. Le retrait a lieu quand le « France Libre » est opérationnel (deux trimestres de recouvrement), au plus tard fin 2038 (fin 2040 si vous le prolongez).',
+      note: 'Dates de l\'arrêt technique : presse spécialisée, non confirmées officiellement. Sans décision, le retrait a lieu quand le « France Libre » est opérationnel (deux trimestres de recouvrement), au plus tard fin 2038. Gardé, il navigue jusqu\'à fin 2040, aux côtés du « France Libre » s\'il est arrivé.',
     },
     {
       id: 'pang', nom: 'Porte-avions « France Libre »', sousTitre: 'Porte-avions de nouvelle génération à propulsion nucléaire', illustration: 'porteAvions', domaine: 'Marine',
@@ -104,7 +104,10 @@ export const PROGRAMMES_DEFENSE = {
       options: [
         { id: 'nominal', nom: 'Suivre le calendrier (livraison vers 2038)', description: 'Pour l\'avancer à 2032, faites voter la « loi d\'accélération du porte-avions France Libre » (onglet Réformes). Pour construire un second porte-avions ou y renoncer, passez par la réforme « Porte-avions de nouvelle génération ».' },
       ],
-      jalons: [{ id: 'pang', annee: 2038, t: 2, texte: 'Le porte-avions « France Libre » entre en service.' }],
+      jalons: [
+        { id: 'pang', annee: 2038, t: 2, texte: 'Le porte-avions « France Libre » entre en service.' },
+        { id: 'pang2', annee: 2042, t: 2, siReforme: ['porte_avions', 'deux'], texte: 'Le second porte-avions de nouvelle génération entre en service : deux groupes aéronavals.' },
+      ],
       note: 'Jamais disponible avant 2032, même avec la loi d\'accélération ; sans elle, mise en service vers 2038.',
       sources: ['pang', 'pangNom'],
     },

@@ -75,7 +75,7 @@ export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
 export { resumeDefense, domaineReserve } from './defense.js';
-export { resumeGeopolitique, porteAvions } from './geopolitique.js';
+export { resumeGeopolitique, porteAvions, flotte } from './geopolitique.js';
 export { resumeRelocalisation } from './relocalisation.js';
 export { resumeInstitutions, configuration as configurationInstitutions, cohabitationJoueur } from './institutions.js';
 export { resumeChantiers } from './chantiers.js';
@@ -377,6 +377,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   if (decisions.defense) e.resultatsTour.defense = deciderDefense(e, decisions.defense, alea);
   // Géopolitique (France) : déplacement du groupe aéronaval, présence et tensions (aléa séparé)
   if (decisions.gan) e.resultatsTour.gan = deplacerGroupe(e, decisions.gan);
+  if (decisions.gan2) e.resultatsTour.gan2 = deplacerGroupe(e, decisions.gan2, 2);
   if (!options.sansPolitique) majGeopolitique(e);
   // Produire en France : demandes aux grands groupes (aléa séparé)
   for (const r of decisions.relocalisations ?? []) (e.resultatsTour.relocalisations ??= []).push({ id: r.id, ...demanderProduction(e, r.id, r.levier) });

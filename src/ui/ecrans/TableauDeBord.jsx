@@ -29,6 +29,7 @@ export const EXPLICATIONS = {
 
 export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
   const h = partie.historique;
+  const fonds = partie.reformes.actives.find((x) => x.id === 'fonds_souverain')?.pilotage;
   const prec = h.length >= 2 ? h[h.length - 2] : h[0];
   const der = h[h.length - 1];
   const m = partie.macro, f = partie.finances, s = partie.social, pol = partie.politique;
@@ -78,23 +79,34 @@ export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
         </div>
       )}
 
+      <h3 className="titre-groupe-tuiles">Économie</h3>
       <div className="grille-tuiles">
         <Tuile libelle="PIB" nombre={m.pibNominal} format={(v) => md(v, 0)} favorableSiHausse info={EXPLICATIONS.pib} serie={serie('pib')} />
         <Tuile libelle="Croissance (1 an)" nombre={m.croissanceAnnuelle} format={(v) => pct(v)} favorableSiHausse variation={`${signe(m.croissanceTrimestrielle, 2)} % ce trimestre`} classe={classeVariation(m.croissanceTrimestrielle)} info={EXPLICATIONS.croissance} serie={serie('croissanceA')} />
         <Tuile libelle="Inflation" nombre={m.inflation} format={(v) => pct(v)} favorableSiHausse={false} variation={`${signe(der.inflation - prec.inflation)} pt`} classe={classeVariation(der.inflation - prec.inflation, false)} info={EXPLICATIONS.inflation} serie={serie('inflation')} />
         <Tuile libelle="Chômage" nombre={m.chomage} format={(v) => pct(v)} favorableSiHausse={false} variation={`${signe(der.chomage - prec.chomage)} pt`} classe={classeVariation(der.chomage - prec.chomage, false)} info={EXPLICATIONS.chomage} serie={serie('chomage')} />
+        <Tuile libelle="Effort de R&D" valeur={`${nombre(partie.recherche?.effortPctPIB, 2)} %`} info={EXPLICATIONS.innovation} />
+        {partie.entreprises && <Tuile libelle={`Bourse (${partie.entreprises.indice.nom})`} nombre={partie.entreprises.indice.valeur} format={(v) => nombre(v, partie.entreprises.indice.base100 ? 1 : 0)} favorableSiHausse variation={`climat des affaires ${nombre(partie.entreprises.climatAffaires, 0)}`} info="Indice boursier (base 100 au départ quand le niveau réel n'a pas été collecté) et climat des affaires (100 = moyenne de long terme). Détails dans l'onglet Entreprises." serie={partie.entreprises.historique.map((x) => x.indice)} />}
+      </div>
+      <h3 className="titre-groupe-tuiles">Finances publiques</h3>
+      <div className="grille-tuiles">
         <Tuile libelle={us ? 'Dette fédérale (détenue par le public)' : 'Dette publique'} nombre={f.detteRatio} format={(v) => `${nombre(v)} %`} favorableSiHausse={false} variation={md(f.dette, 0)} info={EXPLICATIONS.dette} serie={serie('dette')} alerte={f.detteRatio > 130} />
         <Tuile libelle={us ? 'Déficit fédéral' : 'Déficit public'} nombre={f.deficitRatio} format={(v) => `${nombre(v)} %`} favorableSiHausse={false} variation={`${md(f.deficit, 0)} par an`} info={EXPLICATIONS.deficit} serie={serie('deficit')} />
         <Tuile libelle="Charge d'intérêts" nombre={f.interets} format={(v) => md(v, 0)} favorableSiHausse={false} variation={`${nombre(f.interetsRatio)} % du PIB`} info={EXPLICATIONS.interets} serie={serie('interets')} />
         <Tuile libelle="Taux à 10 ans" nombre={f.taux10} format={(v) => pct(v, 2)} favorableSiHausse={false} variation={us ? `prime de risque ${Math.round(f.spread)} pb` : `écart ${Math.round(f.spread)} pb`} info={EXPLICATIONS.taux} serie={serie('taux10')} alerte={f.spread > 250} />
+        {fonds && <Tuile libelle="Fonds souverain" valeur={md(fonds.capital, 0)} variation={`${md(fonds.flux, 0)} investis par an`} info="Capital du fonds souverain (réforme « Créer un fonds souverain ») : apports et rendement réinvesti (5 % par an, hypothèse de jeu). Ces actifs ne réduisent pas la dette brute, qui reste la référence européenne." />}
+      </div>
+      <h3 className="titre-groupe-tuiles">Politique et société</h3>
+      <div className="grille-tuiles">
         <Tuile libelle="Popularité" nombre={s.popularite} format={(v) => pct(v, 0)} favorableSiHausse variation={`${signe(der.popularite - prec.popularite)} pt`} classe={classeVariation(der.popularite - prec.popularite)} info={EXPLICATIONS.popularite} serie={serie('popularite')} />
         <Tuile libelle={soutienLibelle} valeur={soutienValeur} info={EXPLICATIONS.soutien} />
         <Tuile libelle="Cohésion sociale" valeur={`${nombre(s.cohesion, 0)}/100`} variation={`risque social ${nombre(s.risqueGlobal, 0)}/100`} info={EXPLICATIONS.cohesion} serie={serie('cohesion')} />
-        <Tuile libelle="Émissions" valeur={`${nombre(partie.climat.emissions, 0)} Mt`} variation={partie.climat.objectif2030 ? `objectif 2030 : ${partie.climat.objectif2030} Mt` : 'pas d\'objectif fédéral'} info={EXPLICATIONS.emissions} serie={serie('emissions')} />
-        <Tuile libelle="Effort de R&D" valeur={`${nombre(partie.recherche?.effortPctPIB, 2)} %`} info={EXPLICATIONS.innovation} />
-        {partie.entreprises && <Tuile libelle={`Bourse (${partie.entreprises.indice.nom})`} nombre={partie.entreprises.indice.valeur} format={(v) => nombre(v, partie.entreprises.indice.base100 ? 1 : 0)} favorableSiHausse variation={`climat des affaires ${nombre(partie.entreprises.climatAffaires, 0)}`} info="Indice boursier (base 100 au départ quand le niveau réel n'a pas été collecté) et climat des affaires (100 = moyenne de long terme). Détails dans l'onglet Entreprises." serie={partie.entreprises.historique.map((x) => x.indice)} />}
-        {partie.entreprises && <Tuile libelle="Souveraineté économique" nombre={partie.entreprises.souverainete} format={(v) => `${nombre(v, 0)}/100`} favorableSiHausse info="Contrôle public des actifs stratégiques, actions spécifiques et programmes de l'État stratège (estimation de jeu)." serie={partie.entreprises.historique.map((x) => x.souverainete)} />}
+      </div>
+      <h3 className="titre-groupe-tuiles">Monde, souveraineté et climat</h3>
+      <div className="grille-tuiles">
         <Tuile libelle="Influence" nombre={partie.international.influence} format={(v) => `${nombre(v, 0)}/100`} favorableSiHausse info={EXPLICATIONS.influence} serie={serie('influence')} />
+        {partie.entreprises && <Tuile libelle="Souveraineté économique" nombre={partie.entreprises.souverainete} format={(v) => `${nombre(v, 0)}/100`} favorableSiHausse info="Contrôle public des actifs stratégiques, actions spécifiques et programmes de l'État stratège (estimation de jeu)." serie={partie.entreprises.historique.map((x) => x.souverainete)} />}
+        <Tuile libelle="Émissions" valeur={`${nombre(partie.climat.emissions, 0)} Mt`} variation={partie.climat.objectif2030 ? `objectif 2030 : ${partie.climat.objectif2030} Mt` : 'pas d\'objectif fédéral'} info={EXPLICATIONS.emissions} serie={serie('emissions')} />
       </div>
 
       <ImpactReformes partie={partie} allerA={allerA} />

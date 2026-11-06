@@ -688,3 +688,18 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .pouvoir { border-top: 1px solid var(--bordure); padding: 0.35rem 0; }
 .pouvoir summary { cursor: pointer; list-style-position: outside; }
 .pouvoir summary .etiquette { margin-right: 0.25rem; }
+
+/* ===== Classements : croissance annuelle ===== */
+.tableau-croissance { width: 100%; border-collapse: collapse; }
+.tableau-croissance th { font-weight: 600; color: var(--encre-2); font-size: 0.78rem; border-bottom: 1px solid var(--bordure); padding: 0.25rem 0.35rem; }
+.tableau-croissance td { padding: 0.18rem 0.35rem; border-bottom: 1px solid color-mix(in srgb, var(--bordure) 50%, transparent); }
+.tableau-croissance tr.pays-joue td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.courbe-croissance { display: block; }
+.courbe-zero { stroke: var(--axe); stroke-width: 1; stroke-dasharray: 2 2; }
+.courbe-ligne { fill: none; stroke: var(--encre-attenuee); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.courbe-ligne.joue { stroke: var(--accent); stroke-width: 2; }
+.courbe-point { fill: var(--encre-attenuee); }
+.courbe-point.joue { fill: var(--accent); }
+
+/* ===== Tableau de bord : familles d'indicateurs ===== */
+.titre-groupe-tuiles { margin: 0.4rem 0 -0.35rem; font-size: 0.8rem; font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; color: var(--encre-2); }

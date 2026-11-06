@@ -55,6 +55,63 @@ function Barres({ liste, joue, valeur, format, rangsDepart, etendue, reference, 
   );
 }
 
+/** Mini-courbe de la croissance annuelle d'un pays (échelle commune au tableau, zéro en pointillés). */
+function Courbe({ valeurs, min, max, joue }) {
+  const W = 96, H = 26, pad = 3;
+  const pts = valeurs.map((v, i) => [valeurs.length > 1 ? pad + (i * (W - 2 * pad)) / (valeurs.length - 1) : W / 2, v]).filter(([, v]) => v !== null && v !== undefined);
+  const y = (v) => H - pad - ((Math.min(max, Math.max(min, v)) - min) / (max - min || 1)) * (H - 2 * pad);
+  const dernier = pts.at(-1);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="courbe-croissance" aria-hidden="true">
+      {min < 0 && max > 0 && <line x1="0" x2={W} y1={y(0)} y2={y(0)} className="courbe-zero" />}
+      {pts.length > 1 && <polyline points={pts.map(([x, v]) => `${x},${y(v)}`).join(' ')} className={`courbe-ligne ${joue ? 'joue' : ''}`} />}
+      {dernier && <circle cx={dernier[0]} cy={y(dernier[1])} r="2.6" className={`courbe-point ${joue ? 'joue' : ''}`} />}
+    </svg>
+  );
+}
+
+/**
+ * Croissance annuelle des pays d'une liste : courbe depuis le début de la
+ * partie, cinq dernières années, moyenne. Nominale (réelle + inflation).
+ */
+function Croissances({ liste, series, annees, joue }) {
+  const recentes = annees.slice(-5);
+  const valeursDe = (id) => series[id] ?? [];
+  // Échelle propre à chaque pays (amplitude d'au moins 3 points) : la forme de la courbe reste lisible ;
+  // les chiffres du tableau permettent la comparaison entre pays
+  const echelle = (vals) => {
+    if (!vals.length) return { min: 0, max: 1 };
+    const lo = Math.min(...vals), hi = Math.max(...vals), mid = (lo + hi) / 2, demi = Math.max(1.5, (hi - lo) / 2);
+    return { min: mid - demi, max: mid + demi };
+  };
+  const f = (v) => (v === null || v === undefined ? '—' : `${v > 0 ? '+' : ''}${nombre(v, 1)}`);
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table className="petit tableau-croissance">
+        <thead>
+          <tr><th>Pays</th><th>Évolution</th>{recentes.map((a) => <th key={a} className="nombre">{a}</th>)}<th className="nombre">Moyenne</th></tr>
+        </thead>
+        <tbody>
+          {liste.map((p) => {
+            const v = valeursDe(p.id);
+            const def = v.filter((x) => x !== null && x !== undefined);
+            const moyenne = def.length ? def.reduce((a, b) => a + b, 0) / def.length : null;
+            const estJoue = p.id === joue;
+            return (
+              <tr key={p.id} className={estJoue ? 'pays-joue' : ''}>
+                <td style={{ whiteSpace: 'nowrap' }}><span aria-hidden="true">{p.drapeau}</span> {estJoue ? <strong>{p.nom}</strong> : p.nom}</td>
+                <td><Courbe valeurs={v} {...echelle(def)} joue={estJoue} /></td>
+                {recentes.map((a) => <td key={a} className="nombre chiffres">{f(v[annees.indexOf(a)])}</td>)}
+                <td className="nombre chiffres"><strong>{f(moyenne)}</strong></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /**
  * Classements internationaux : PIB mondial (top 10), PIB de la zone euro,
  * dette et déficit des 21 pays de l'euro. Le pays joué bouge selon vos
@@ -101,6 +158,28 @@ export default function Classements({ partie }) {
           <Barres liste={t.pibEuro} joue={joue} valeur={(p) => p.pib} format={(v) => `${nombre(v, 0)} Md€`} rangsDepart={departs.pibEuro} etendue={[0, t.pibEuro[0].pib]} limite={10} />
         </div>
       </div>
+
+      {c.croissances && (() => {
+        const cr = c.croissances;
+        const top = t.monde.slice(0, 10);
+        if (!top.some((p) => p.id === joue)) { const p = t.monde.find((x) => x.id === joue); if (p) top.push(p); }
+        return (
+          <div className="carte pile">
+            <h3 style={{ margin: 0 }}>Croissance du PIB, en % par an <Info texte="Croissance nominale, c'est-à-dire réelle (volume) plus inflation, la seule que le jeu suit pour les autres pays. Les pays non joués suivent une trajectoire calée sur le FMI et la Commission européenne, frappée par les chocs mondiaux de la partie et par leurs propres aléas. Première année : hypothèse de départ ; ensuite, croissance constatée d'une fin d'année à l'autre." /></h3>
+            <p className="petit muet" style={{ margin: 0 }}>Comment évolue l'environnement économique des autres pays, année après année. {nom} : croissance réelle de {nombre(partie.macro.croissanceAnnuelle, 1)} % sur un an, inflation de {nombre(partie.macro.inflation, 1)} %.</p>
+            <div className="grille-2">
+              <div>
+                <h4 style={{ margin: '0 0 0.3rem' }}>Les 10 premières économies mondiales <span className="tres-petit muet">(en dollars)</span></h4>
+                <Croissances liste={top} series={cr.monde} annees={cr.annees} joue={joue} />
+              </div>
+              <div>
+                <h4 style={{ margin: '0 0 0.3rem' }}>Zone euro <span className="tres-petit muet">(en euros, classés par PIB)</span></h4>
+                <Croissances liste={t.pibEuro} series={cr.euro} annees={cr.annees} joue={joue} />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="grille-2">
         <div className="carte">

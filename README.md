@@ -100,6 +100,7 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - sécurité et justice : prisons, narcotrafic (offensive ou légalisation du cannabis), peines planchers, exécution des OQTF, polices municipales ;
    - infrastructures : autoroutes (rachat immédiat, régie publique à la fin des concessions en 2031-2036, gratuité ou remise en concurrence), plan ferroviaire ;
    - dépense publique : ramener la dépense de 57,3 % du PIB (Insee, 2025) à 47,5 % en cinq ans puis 43 % en dix ans, à 45 % puis 40 %, ou à 43 % puis 38 % ; les économies, retraites et santé comprises, sont recalculées chaque trimestre pour suivre la trajectoire ;
+   - **fonds souverain français** : apporter les participations de l'État et réinvestir leurs dividendes (environ 4 Md€ par an), emprunter 20 Md€ par an pendant cinq ans, flécher 10 Md€ d'épargne par an (livret souverain) ou réinvestir 25 % des économies du plafond de dépense publique. Le fonds investit dans l'industrie, la transition énergétique et la défense : il soutient la demande à court terme et la croissance potentielle à long terme, et son capital (rendement de 5 % par an réinvesti) s'affiche sur le tableau de bord. Combiné au plafond de dépense, il amortit la perte de PIB : avec la trajectoire 47,5 % puis 43 %, le PIB réel de 2030 passe de 96,3 à 100 (base 100 en 2025) et le chômage de 2032 de 12,3 % à 10 %. Financé par l'emprunt, il augmente la dette mais pas le déficit (c'est une acquisition d'actifs) ;
    - organisation de l'État, inspirée de Jean-Louis Borloo : « une compétence, un seul niveau », suppression des agences qui doublonnent avec les préfets et les collectivités, **fusion des opérateurs publics par grands pôles** (un tiers en moins, et suppression des 24 agences ciblées par le Sénat), fusion des régions et des départements en provinces (révision constitutionnelle), réduction du nombre de parlementaires ;
    - modernisation et performance de l'État :
      - **IA et robotisation** : un départ à la retraite sur trois non remplacé grâce à l'automatisation (variante prudente limitée aux fonctions support : 1 sur 5). Il faut d'abord investir (environ 1,5 Md€ par an au départ), les économies nettes viennent après 4 à 5 ans ;
@@ -220,7 +221,13 @@ Pouvoirs jouables :
 
 ### Porte-avions : Charles-de-Gaulle et « France Libre »
 
-Le Charles-de-Gaulle (en service depuis 2001) a son propre programme dans l'onglet Armées : arrêt technique majeur à Toulon en 2027-2028 (rechargement des réacteurs, environ dix-huit mois sans porte-avions disponible), retrait quand son successeur est opérationnel (vers 2038), prolongation possible jusqu'en 2040. Le « France Libre » n'est jamais disponible avant 2032 ; sans décision, il entre en service vers 2038. La **loi d'accélération du porte-avions « France Libre »** (onglet Réformes) vise une mise en service en 2032 : environ 0,9 Md€ par an de surcoût (hypothèse de jeu), au moins cinq ans de chantier après le vote, un risque de glissement d'un an, puis le retrait du Charles-de-Gaulle six mois plus tard.
+Le Charles-de-Gaulle (en service depuis 2001) a son propre programme dans l'onglet Armées : arrêt technique majeur à Toulon en 2027-2028 (rechargement des réacteurs, environ dix-huit mois sans porte-avions disponible), retrait quand son successeur est opérationnel (vers 2038), prolongation possible jusqu'en 2040. Le « France Libre » n'est jamais disponible avant 2032 ; sans décision, il entre en service vers 2038.
+
+**Deux groupes aéronavals** : la France a un seul porte-avions, donc un seul groupe aéronaval, souvent indisponible pendant les arrêts techniques. Deux décisions permettent d'en avoir deux :
+- accélérer le « France Libre » (2032) **et** garder le Charles-de-Gaulle jusqu'en 2040 (onglet Armées) : deux groupes de 2032 à 2040 ;
+- choisir « deux porte-avions de nouvelle génération » (réforme porte-avions) : le second entre en service en 2042, ou dès 2036 si le programme est accéléré ; les deux groupes sont alors permanents.
+
+Tant que deux porte-avions sont en service, le surcoût d'exploitation est d'environ 0,5 Md€ par an (hypothèse de jeu). Dans l'onglet Géopolitique, chaque groupe a sa fiche, son potentiel et son propre bouton d'envoi : on peut tenir deux théâtres à la fois (Méditerranée et Indo-Pacifique, par exemple), sauf pendant l'arrêt technique d'un porte-avions. La **loi d'accélération du porte-avions « France Libre »** (onglet Réformes) vise une mise en service en 2032 : environ 0,9 Md€ par an de surcoût (hypothèse de jeu), au moins cinq ans de chantier après le vote, un risque de glissement d'un an, puis le retrait du Charles-de-Gaulle six mois plus tard.
 
 ### Négocier au G7
 
@@ -234,11 +241,11 @@ Chaque année au deuxième trimestre, le G7 se réunit chez le pays qui le prés
 
 Le G7 décide par **consensus** : un accord exige un soutien moyen suffisant et aucun membre franchement hostile. Les effets touchent les exportations, le prix de l'énergie, les recettes, la souveraineté, l'influence et les relations. En France, la politique étrangère relève du domaine réservé : seul le **président de la République** négocie ; un Premier ministre voit le sommet se dérouler avec les priorités de l'Élysée. Le chancelier allemand et le président américain négocient eux-mêmes.
 
-### Géopolitique et groupe aéronaval (France)
+### Géopolitique et groupes aéronavals (France)
 
 L'onglet « Géopolitique » (rubrique Monde) montre une **carte du monde** avec les territoires d'outre-mer et sept théâtres d'opérations : Méditerranée orientale, mer Rouge, détroit d'Ormuz, océan Indien, Indo-Pacifique, Baltique et golfe de Guinée. Chacun a un **niveau de tension** qui évolue chaque trimestre.
 
-Vous pouvez **déplacer le groupe aéronaval** (le porte-avions Charles-de-Gaulle, puis le « France Libre » s'il est mis en service) :
+Vous pouvez **déplacer le groupe aéronaval** (le porte-avions Charles-de-Gaulle, puis le « France Libre » s'il est mis en service), et un second groupe si deux porte-avions sont en service (voir plus haut) :
 - chaque trimestre de présence coûte (budget des armées), use le **potentiel** du groupe (équipages, munitions, maintenance), rapporte de l'influence, améliore les relations avec les pays de la zone et fait baisser la tension ;
 - en mer Rouge et à Ormuz, il protège les routes du commerce et du pétrole ; une escale dans l'océan Indien améliore les chances d'exporter le Rafale en Inde ;
 - quand le potentiel est épuisé, le groupe rentre à Toulon pour son entretien ; l'Indo-Pacifique, très loin, l'use plus vite.
@@ -267,7 +274,8 @@ L'onglet « Classements » montre :
 - les 10 premières économies mondiales (PIB en dollars, FMI) ;
 - le PIB des pays de la zone euro ;
 - la dette et le solde public des 21 pays de l'euro (Eurostat 2025, Bulgarie comprise depuis janvier 2026) ;
-- les budgets militaires (SIPRI 2025 : États-Unis, Chine, Russie, Allemagne… France 9e avec 68 Md$) et l'effort de défense en % du PIB, avec la cible de 3,5 % de l'OTAN.
+- les budgets militaires (SIPRI 2025 : États-Unis, Chine, Russie, Allemagne… France 9e avec 68 Md$) et l'effort de défense en % du PIB, avec la cible de 3,5 % de l'OTAN ;
+- la **croissance du PIB, en % par an**, des 10 premières économies mondiales et des pays de la zone euro : une petite courbe par pays, les cinq dernières années et la moyenne depuis le début de la partie. C'est une croissance **nominale** (volume et prix, en dollars pour le monde, en euros pour la zone euro) ; pour la France, le texte rappelle la croissance réelle et l'inflation de l'année.
 
 Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de croissance et de solde public (hypothèses calées sur le FMI et la Commission), avec les chocs mondiaux de la partie et leurs propres aléas. À politique inchangée, la France reste 2e de la zone euro mais glisse vers la 9e place mondiale en 2050, dépassée par le Brésil et l'Indonésie (taux de change constants).
 
@@ -296,6 +304,7 @@ Votre pays bouge selon vos décisions. Les autres suivent leur trajectoire de cr
 - des **options** enregistrées dans le navigateur : interface essentielle (par défaut) ou complète, thème clair, sombre ou comme l'appareil, taille du texte, animations réduites, confirmation avant de valider un trimestre s'il reste des événements à trancher ;
 - une page **« À propos »** : ce que le jeu est et n'est pas, vie privée, code source, signalement d'erreurs ;
 - une navigation simplifiée en rubriques (Tableau de bord, Gouverner, Régalien, Politique et opinion avec les institutions, Économie avec « Produire en France » et les entreprises, Monde avec la géopolitique, les classements internationaux et les grands rendez-vous, Journal et sources ; les ménages types et les sources détaillées en interface complète), avec des sous-onglets ; le jeu retient le dernier sous-onglet ouvert dans chaque rubrique ;
+- un **tableau de bord** dont les indicateurs sont rangés en quatre groupes (économie ; finances publiques, avec le fonds souverain s'il existe ; politique et société ; monde, souveraineté et climat), et des graphiques qui s'adaptent à la largeur de l'écran (textes lisibles sur téléphone) ;
 - un **conseiller** signale chaque trimestre les urgences (budget qui ne passe pas, censure, shutdown, plafond de la dette, élection proche, risque social, fleuron en difficulté) avec un bouton « Agir » qui mène au bon onglet ;
 - une **visite guidée** en neuf étapes au premier tour du mode Facile (bouton « ? » pour la relancer) ;
 - des **chiffres animés** qui clignotent en vert ou en rouge selon que la variation est favorable ;
@@ -491,6 +500,9 @@ Le chiffrage par simulation et la prévision de vote fonctionnent automatiquemen
 - Produire en France : les contextes sont des faits publics ; investissements, emplois, délais et chances d'accord sont des hypothèses de jeu.
 - Institutions : articles de la Constitution, compositions (Sénat d'octobre 2026) et précédents sont sourcés ; l'entente entre l'Élysée et Matignon, les votes du Sénat (calqués sur les groupes proches à l'Assemblée), le renouvellement sénatorial, les effets de la saisine du Conseil constitutionnel et le programme d'un gouvernement de cohabitation sont des hypothèses de jeu. En cohabitation, les événements restent tranchés par le joueur.
 - Plafond de dépense publique : la répartition des économies entre postes, leurs effets sur l'offre de travail et sur les ménages types, et le plafond de 45 % de la dépense supprimable sont des hypothèses de jeu ; le jeu applique la trajectoire comme une règle contraignante, alors qu'une loi de programmation des finances publiques ne l'est pas.
+- Fonds souverain : le rendement de 5 % par an, les effets sur la demande et sur la croissance potentielle et la part des économies réinvesties sont des hypothèses de jeu ; un vrai fonds peut perdre de la valeur (krach) et ses choix d'investissement sont discutés. Le fonds norvégien (NBIM) et Bpifrance servent de repères.
+- Croissance des pays dans les classements : croissance nominale à taux de change constants ; les écarts entre pays reflètent les hypothèses de croissance et d'inflation calées sur le FMI.
+- Deux groupes aéronavals : la date du second porte-avions de nouvelle génération (2042, ou 2036 accéléré) et le surcoût d'exploitation sont des hypothèses de jeu ; aucun second porte-avions n'est décidé à ce jour.
 - Porte-avions : les dates de l'arrêt technique majeur du Charles-de-Gaulle viennent de la presse spécialisée, non confirmées officiellement ; le coût du « France Libre » n'est pas publié (10 à 15 Md€ selon la presse) ; le calendrier accéléré à 2032 est un scénario de jeu.
 - Programmes des candidats : les programmes pour 2027 sont incomplets et les sources se contredisent parfois (âge de départ chez Édouard Philippe et Gabriel Attal, statut de la candidature de Marine Tondelier) ; Éric Zemmour est surtout représenté par son programme de 2022. Chaque mesure indique son statut.
 - Pays jouables : France, Allemagne, États-Unis. La Suède, le Danemark, le Royaume-Uni, l'Italie, l'Espagne, les Pays-Bas, le Canada et le Japon sont à ajouter selon la procédure ci-dessus.

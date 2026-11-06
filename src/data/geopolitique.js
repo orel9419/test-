@@ -56,7 +56,7 @@ export const GROUPE_AERONAVAL = {
 };
 
 /** Crises : événements injectés par le module géopolitique (jamais tirés au hasard par le moteur des événements). */
-const present = (e, t) => e.geopolitique?.gan?.position === t;
+const present = (e, t) => [e.geopolitique?.gan, e.geopolitique?.gan2].some((g) => g?.position === t);
 const jamais = () => false;
 const crise = (id, theatre, titre, description, choix) => ({ id, theatre, titre, pays: ['france'], condition: jamais, probabilite: () => 0, geopolitique: true, description, choix });
 
@@ -104,7 +104,7 @@ export const CRISES = [
   crise('crise_golfe_guinee', 'golfe_guinee', 'Golfe de Guinée : un pétrolier détourné',
     (e) => `Des pirates retiennent l'équipage d'un pétrolier, dont des marins européens.${present(e, 'golfe_guinee') ? ' Votre groupe aéronaval est au large.' : ''}`,
     [
-      { id: 'liberer', texte: 'Opération de libération', effets: (e) => (present(e, 'golfe_guinee') && e.geopolitique.gan.potentiel > 30
+      { id: 'liberer', texte: 'Opération de libération', effets: (e) => (present(e, 'golfe_guinee') && [e.geopolitique.gan, e.geopolitique.gan2].some((g) => g?.position === 'golfe_guinee' && g.potentiel > 30)
         ? { influence: 2, fierte: 1, relations: { afrique: 2 }, texte: 'Les commandos marine libèrent l\'équipage sans perte.' }
         : { influence: -1, relations: { afrique: -1 }, opinion: { salaries: -1 }, texte: 'L\'opération, montée trop vite, échoue en partie ; une rançon est versée par l\'armateur.' }) },
       { id: 'cooperation', texte: 'Appuyer les marines africaines (formation, patrouilles)', effets: () => ({ depensesExceptionnelles: 0.05, relations: { afrique: 3 }, influence: 1, texte: 'Les marines du golfe de Guinée prennent le relais, avec l\'appui français.' }) },

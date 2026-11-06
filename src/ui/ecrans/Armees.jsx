@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Info from '../composants/Info.jsx';
 import { ILLUSTRATIONS } from '../composants/Illustrations.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
-import { resumeDefense, porteAvions } from '../../engine/index.js';
+import { resumeDefense, porteAvions, flotte } from '../../engine/index.js';
 import { SOURCES_DEFENSE } from '../../data/defense.js';
 import { libelleTrimestre } from '../../engine/calendrier.js';
 import { md, nombre, pct } from '../format.js';
@@ -66,8 +66,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
         {pang && (
           <div className="tuile">
             <span className="libelle">Porte-avions</span>
-            <span className="valeur chiffres">{pa.enService ? 1 : 0}</span>
-            <span className="variation muet">{pa.nom === 'France Libre' ? '« France Libre » en service' : pa.nom ? `${pa.nom}${pa.arretTechnique ? ' (arrêt technique)' : ''} ; ${pang.etat?.abandonne ? 'successeur abandonné' : `« France Libre » vers ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}` : pang.etat?.abandonne ? 'successeur abandonné' : `« France Libre » attendu en ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}</span>
+            <span className="valeur chiffres">{flotte(partie).length}</span>
+            <span className="variation muet">{flotte(partie).length > 1 ? `${flotte(partie).map((x) => x.nom).join(' et ')} : deux groupes aéronavals` : pa.nom === 'France Libre' ? '« France Libre » en service' : pa.nom ? `${pa.nom}${pa.arretTechnique ? ' (arrêt technique)' : ''} ; ${pang.etat?.abandonne ? 'successeur abandonné' : `« France Libre » vers ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}` : pang.etat?.abandonne ? 'successeur abandonné' : `« France Libre » attendu en ${pang.jalonsEffectifs[0]?.annee ?? 2038}`}</span>
           </div>
         )}
       </div>

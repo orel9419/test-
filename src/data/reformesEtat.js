@@ -204,4 +204,65 @@ export const REFORMES_ETAT = [
     },
     chiffrage: 'Écart à combler aux prix de 2026 : environ 300 Md€ par an à cinq ans pour 47,5 %, 375 Md€ pour 45 %, 435 Md€ pour 43 % ; à dix ans, environ 435, 525 et 590 Md€. Comme la baisse de la dépense réduit aussi le PIB, il faut couper davantage : dans le jeu, de l\'ordre de 450 à 650 Md€ par an au bout de cinq ans selon la trajectoire. Les économies sont recalculées chaque trimestre ; répartition et plafond (45 % de la dépense au plus) : hypothèses de jeu.',
   },
+  {
+    id: 'fonds_souverain',
+    nom: 'Créer un fonds souverain français',
+    categorie: 'depenses', pays: FR, vehicule: 'loi',
+    resume: 'Un fonds public d\'investissement de long terme, géré de façon indépendante, qui prend des participations dans les entreprises stratégiques et innovantes (énergie, défense, santé, intelligence artificielle) pour soutenir l\'investissement, la croissance et la souveraineté.',
+    pedagogie: 'Un fonds souverain place de l\'argent public dans des entreprises plutôt que de le dépenser. Pour les comptes publics, acheter des actions à des conditions de marché est une opération financière : la dette augmente si l\'achat est emprunté, mais pas le déficit. L\'effet économique passe par l\'investissement : à court terme, il soutient l\'activité (utile pour amortir la perte de PIB d\'une forte baisse de la dépense publique) ; à long terme, il augmente le capital productif. La Norvège a accumulé plus de 1 500 Md€ grâce au pétrole et ne dépense chaque année que le rendement attendu (environ 3 %). La France a eu le Fonds stratégique d\'investissement (2008), intégré à Bpifrance, le Fonds pour l\'innovation et l\'industrie (2018, 10 Md€ issus de privatisations) et le plan France 2030 (54 Md€). Risques : emprunter à près de 5 % pour placer en actions est un pari ; un fonds trop proche du pouvoir peut soutenir des entreprises condamnées plutôt que les plus prometteuses.',
+    pour: ['Soutenir l\'investissement et la croissance de long terme', 'Garder en France le capital des entreprises stratégiques', 'Amortir le choc récessif d\'une forte baisse de la dépense publique'],
+    contre: ['Risque financier (rendement incertain, emprunt à près de 5 %)', 'Risque de choix politiques plutôt qu\'économiques', 'Dette publique plus élevée si le fonds est financé à crédit'],
+    exemples: ['Norvège : fonds souverain alimenté par le pétrole, plus de 1 500 Md€ (ordre de grandeur)', 'Singapour : Temasek et GIC', 'France : Fonds stratégique d\'investissement (2008), Fonds pour l\'innovation et l\'industrie (2018), France 2030 (54 Md€)'],
+    sources: [
+      { texte: 'Norges Bank Investment Management : le fonds souverain norvégien', url: 'https://www.nbim.no/' },
+      { texte: 'Bpifrance : la banque publique d\'investissement', url: 'https://www.bpifrance.fr/' },
+    ],
+    options: [
+      { id: 'participations', nom: 'Apporter les participations de l\'État et réinvestir leurs dividendes (environ 4 Md€ par an)' },
+      { id: 'emprunt', nom: 'Emprunter 20 Md€ par an pendant cinq ans pour investir (100 Md€)' },
+      { id: 'epargne', nom: 'Un livret souverain : flécher 10 Md€ d\'épargne des Français par an' },
+      { id: 'economies', nom: 'Réinvestir 25 % des économies du plafond de dépense publique (pour amortir la perte de PIB)' },
+    ],
+    delai: 2,
+    /** Capital du fonds : apports du trimestre, rendement de 5 % par an réinvesti (hypothèse de jeu). */
+    piloter(e, entree, age) {
+      const p = (entree.pilotage ??= { capital: 0, flux: 0, age: -1 });
+      if (p.age === age) return;
+      let flux = 0;
+      if (entree.option === 'participations') flux = e.entreprises?.dividendes ?? 4.3;
+      else if (entree.option === 'emprunt') flux = age < 20 ? 20 * prix(e) : 0;
+      else if (entree.option === 'epargne') flux = 10 * prix(e) * rampe(age, 4);
+      else if (entree.option === 'economies') flux = 0.25 * (e.reformes.actives.find((a) => a.id === 'plafond_depense_pib')?.pilotage?.economie ?? 0);
+      p.capital = p.capital * (1 + 0.05 / 4) + flux / 4;
+      p.flux = flux;
+      p.age = age;
+    },
+    effets(e, o, age, entree) {
+      const p = entree?.pilotage;
+      if (!p) return {};
+      const pib = e.macro.pibNominal;
+      const fluxPIB = (p.flux / pib) * 100;
+      const capitalPIB = (p.capital / pib) * 100;
+      // Investissement : soutien à la demande (moins fort pour une épargne seulement réorientée), puis capital productif
+      const k = o === 'epargne' ? 0.3 : 0.6;
+      const eff = {
+        chocDemande: k * fluxPIB * 0.2,
+        potentielBonus: Math.min(0.3, 0.012 * capitalPIB),
+        souverainete: Math.min(4, 0.3 * capitalPIB),
+      };
+      if (o === 'participations') eff.recettes = { fixe: -p.flux };
+      if (o === 'emprunt' || o === 'economies') eff.cessions = -p.flux / 4;
+      return eff;
+    },
+    reaction: (e, o) => ({ chocs: o === 'emprunt' ? { entrepreneurs: 2 } : { entrepreneurs: 2, salaries: 1 }, credibilite: o === 'emprunt' ? -0.05 : 0.02 }),
+    axes: { marche: 0.2, europe: -0.1 },
+    axesParOption: { emprunt: { rigueur: -0.6, marche: 0.1 }, economies: { rigueur: 0.4 } },
+    positionsGroupesParOption: {
+      participations: { DR: 0.3, UDR: 0.3, EPR: 0.4, HOR: 0.3, DEM: 0.4, RN: 0.3, LIOT: 0.2, SOC: 0.2, ECOS: 0, LFI: -0.2, GDR: -0.1 },
+      emprunt: { DR: -0.4, UDR: -0.3, EPR: -0.1, HOR: -0.4, DEM: 0, RN: 0.4, LIOT: 0, SOC: 0.3, ECOS: 0.2, LFI: 0.4, GDR: 0.4 },
+      epargne: { DR: 0.4, UDR: 0.4, EPR: 0.4, HOR: 0.3, DEM: 0.4, RN: 0.5, LIOT: 0.3, SOC: 0.2, ECOS: 0, LFI: -0.1, GDR: 0 },
+      economies: { DR: 0.5, UDR: 0.5, EPR: 0.3, HOR: 0.5, DEM: 0.2, RN: 0.1, LIOT: -0.2, SOC: -0.5, ECOS: -0.5, LFI: -0.8, GDR: -0.8 },
+    },
+    chiffrage: 'Apports : dividendes de l\'État (4,3 Md€ en 2025, APE), 20 Md€ empruntés par an pendant cinq ans, 10 Md€ d\'épargne par an, ou 25 % des économies du plafond de dépense (de 70 à 160 Md€ par an selon la trajectoire). Rendement de 5 % par an réinvesti, effets sur l\'activité et la croissance potentielle : hypothèses de jeu.',
+  },
 ];

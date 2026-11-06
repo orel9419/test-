@@ -75,12 +75,48 @@ export function initialiserClassements(e, donnees) {
   };
   e.classements = c;
   synchroniserPaysJoue(e);
+  initialiserCroissances(e);
   majDefense(e);
   c.depart = rangs(e);
   const t = classementsTries(e);
   c.rangsDepartParPays = Object.fromEntries(Object.entries(t).map(([k, l]) => [k, Object.fromEntries(l.map((p, i) => [p.id, i + 1]))]));
   c.historique.push({ trimestre: `T${e.trimestre.t} ${e.trimestre.annee}`, ...c.depart });
   return c;
+}
+
+/**
+ * Croissance annuelle des pays suivis (nominale : réelle + inflation ; en
+ * dollars pour le monde, en euros pour la zone euro, change constant).
+ * Première année : hypothèse de départ ; ensuite, croissance constatée de
+ * fin d'année en fin d'année.
+ */
+function initialiserCroissances(e) {
+  const c = e.classements;
+  const nominaleJoue = (e.macro.croissanceAnnuelle ?? 0) + (e.macro.inflation ?? 0);
+  c.croissances = {
+    annees: [e.trimestre.annee],
+    monde: Object.fromEntries(c.monde.map((p) => [p.id, [p.id === c.joue ? nominaleJoue : p.g0]])),
+    euro: Object.fromEntries(c.euro.map((p) => [p.id, [p.id === c.joue ? nominaleJoue : p.croissance]])),
+  };
+  c.pibDebutAnnee = { monde: Object.fromEntries(c.monde.map((p) => [p.id, p.pib])), euro: Object.fromEntries(c.euro.map((p) => [p.id, p.pib])) };
+}
+
+/** En fin d'année : croissance de l'année écoulée, puis nouvelle base. */
+function majCroissances(e) {
+  const c = e.classements;
+  if (!c.croissances) initialiserCroissances(e); // sauvegardes antérieures
+  if (e.trimestre.t !== 4) return;
+  const cr = c.croissances;
+  if (!cr.annees.includes(e.trimestre.annee)) {
+    cr.annees.push(e.trimestre.annee);
+    for (const [liste, cle] of [[c.monde, 'monde'], [c.euro, 'euro']]) {
+      for (const p of liste) {
+        const base = c.pibDebutAnnee[cle][p.id];
+        (cr[cle][p.id] ??= []).push(base ? (p.pib / base - 1) * 100 : null);
+      }
+    }
+  }
+  c.pibDebutAnnee = { monde: Object.fromEntries(c.monde.map((p) => [p.id, p.pib])), euro: Object.fromEntries(c.euro.map((p) => [p.id, p.pib])) };
 }
 
 /** Part du PIB consacrée à la défense, interpolée sur la trajectoire d'un pays. */
@@ -155,6 +191,7 @@ export function majClassements(e) {
   }
   c.graine = alea.etat();
   synchroniserPaysJoue(e);
+  majCroissances(e);
   majDefense(e);
   const r = rangs(e);
   c.dernier = r;

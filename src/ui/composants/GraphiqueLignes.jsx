@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { nombre } from '../format.js';
 
 const COULEURS = ['var(--serie-1)', 'var(--serie-2)', 'var(--serie-3)', 'var(--serie-4)', 'var(--serie-5)', 'var(--serie-6)', 'var(--serie-7)', 'var(--serie-8)'];
@@ -37,7 +37,17 @@ export default function GraphiqueLignes({ titre, series, etiquettes, unite = '',
   const [survol, setSurvol] = useState(null);
   const [tableau, setTableau] = useState(false);
   const svgRef = useRef(null);
-  const L = 640, H = hauteur, mg = { g: 46, d: series.length <= 4 && series.length > 1 ? 92 : 16, h: 12, b: 26 };
+  // Largeur réelle du graphique : les textes gardent leur taille quelle que soit la carte (11 px)
+  const cadre = useRef(null);
+  const [largeur, setLargeur] = useState(640);
+  useEffect(() => {
+    const el = cadre.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([x]) => { const w = Math.round(x.contentRect.width); if (w > 0) setLargeur(w); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const L = Math.max(260, largeur), H = hauteur, mg = { g: 46, d: series.length <= 4 && series.length > 1 ? 92 : 16, h: 12, b: 26 };
   const n = Math.max(...series.map((s) => s.valeurs.length), 1);
   const toutes = series.flatMap((s) => s.valeurs.filter((v) => v !== null && v !== undefined && !Number.isNaN(v)));
   if (reference) toutes.push(reference.valeur);
@@ -46,7 +56,7 @@ export default function GraphiqueLignes({ titre, series, etiquettes, unite = '',
   const x = (i) => mg.g + (n <= 1 ? 0 : (i / (n - 1)) * (L - mg.g - mg.d));
   const y = (v) => mg.h + (1 - (v - ymin) / (ymax - ymin || 1)) * (H - mg.h - mg.b);
   const couleur = (s, i) => s.couleur ?? COULEURS[i % COULEURS.length];
-  const pasEtiquettes = Math.max(1, Math.ceil(n / 6));
+  const pasEtiquettes = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(L / 95))));
 
   const surMouvement = (ev) => {
     const r = svgRef.current.getBoundingClientRect();
@@ -60,7 +70,7 @@ export default function GraphiqueLignes({ titre, series, etiquettes, unite = '',
   };
 
   return (
-    <figure className="graphique" style={{ margin: 0 }}>
+    <figure className="graphique" style={{ margin: 0 }} ref={cadre}>
       <div className="ligne espace">
         <figcaption><strong>{titre}</strong>{unite && <span className="muet petit"> ({unite})</span>}</figcaption>
         <button type="button" className="bouton petit" style={{ padding: '0.15rem 0.5rem' }} onClick={() => setTableau((t) => !t)}>{tableau ? 'Graphique' : 'Tableau'}</button>
@@ -86,7 +96,7 @@ export default function GraphiqueLignes({ titre, series, etiquettes, unite = '',
                 <text x={mg.g - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill="var(--encre-attenuee)" className="chiffres">{nombre(t, Math.abs(ymax - ymin) < 5 ? 1 : 0)}</text>
               </g>
             ))}
-            {etiquettes.map((e, i) => (i % pasEtiquettes === 0 || i === n - 1) && (
+            {etiquettes.map((e, i) => ((i % pasEtiquettes === 0 && n - 1 - i >= pasEtiquettes * 0.7) || i === n - 1) && (
               <text key={i} x={x(i)} y={H - 6} textAnchor="middle" fontSize="11" fill="var(--encre-attenuee)">{e}</text>
             ))}
             {reference && (

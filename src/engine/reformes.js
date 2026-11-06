@@ -91,6 +91,7 @@ export function bilanReformes(e) {
     if (a.id === 'temps_travail' && a.appliquee) { ligne.emploi = e.travail.offreTravail * k; ligne.chomage = e.travail.chomageStructurel * k; ligne.recettes = -e.travail.coutBudgetaire; }
     if (a.id === 'retraites_age') ligne.note = `âge légal ${e.retraites.ageLegal.toFixed(2).replace('.', ',')} ans, cible ${String(e.retraites.ageCible).replace('.', ',')}`;
     if (a.pilotage?.cible !== undefined) ligne.note = `dépense publique ${a.pilotage.ratio.toFixed(1).replace('.', ',')} % du PIB, trajectoire ${a.pilotage.cible.toFixed(1).replace('.', ',')} %`;
+    if (a.pilotage?.capital !== undefined) ligne.note = `fonds souverain : ${Math.round(a.pilotage.capital)} Md€ investis (${Math.round(a.pilotage.flux)} Md€ par an)`;
     ligne.solde = ligne.recettes - ligne.depenses;
     return ligne;
   });
