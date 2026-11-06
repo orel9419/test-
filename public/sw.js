@@ -6,7 +6,7 @@
  * - fichiers de l'application (noms uniques à chaque version) : le cache
  *   d'abord, puis le réseau.
  */
-const CACHE = 'chef-de-gouvernement-v12';
+const CACHE = 'chef-de-gouvernement-v13';
 const ESSENTIELS = ['./', './index.html', './manifest.webmanifest', './icones/icone-192.png', './icones/icone-512.png'];
 
 self.addEventListener('install', (ev) => {

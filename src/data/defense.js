@@ -23,6 +23,10 @@ export const SOURCES_DEFENSE = {
   pangNom: { titre: 'Defence Industry Europe : le porte-avions s\'appellera « France Libre »', url: 'https://defence-industry.eu/france-unveils-name-of-next-generation-nuclear-aircraft-carrier-as-pang-programme-advances-toward-build-phase/' },
   scaf: { titre: 'Le JDD : comment Dassault et Airbus ont enterré le futur avion de combat européen (juin 2026)', url: 'https://www.lejdd.fr/International/scaf-comment-dassault-et-airbus-ont-enterre-le-futur-avion-de-combat-europeen-176046' },
   dissuasion: { titre: 'Vie publique : les objectifs de la loi de programmation militaire (dissuasion : environ 13 % de la LPM)', url: 'https://www.vie-publique.fr/eclairage/284741-budget-de-la-defense-quelles-etapes-pour-le-porter-5-du-pib' },
+  mirage2000d: { titre: 'Le Journal de l\'Aviation : la flotte de Mirage 2000D rénovés à mi-vie est au complet (juillet 2026)', url: 'https://www.journal-aviation.com/actualites-defense-espace/forces-armees/la-flotte-de-mirage-2000d-renoves-a-mi-vie-est-au-complet-20260702.html' },
+  mirageUkraine: { titre: 'The Aviationist : premiers Mirage 2000-5F livrés à l\'Ukraine (6 février 2025)', url: 'https://theaviationist.com/2025/02/06/mirage-2000-delivered-ukraine/' },
+  mirageRetrait: { titre: 'Wikipédia : aéronefs en service dans les armées françaises (retrait du Mirage 2000-5F vers 2030)', url: 'https://en.wikipedia.org/wiki/List_of_active_military_aircraft_of_the_French_Armed_Forces' },
+  formatChasse: { titre: 'AeroTime : la DGA confirme l\'objectif de 225 Rafale (185 pour l\'armée de l\'Air et de l\'Espace, 40 pour la Marine)', url: 'https://www.aerotime.aero/?p=129471' },
   flancEst: { titre: 'Ministère des Armées : renforcement sur le flanc est (missions Aigle et Lynx)', url: 'https://www.defense.gouv.fr/renforcement-flanc-est' },
 };
 
@@ -52,6 +56,28 @@ export const PROGRAMMES_DEFENSE = {
       ],
       jalons: [{ id: 'rafale_f5', annee: 2033, t: 2, texte: 'Premier Rafale au standard F5, avec son drone de combat.' }],
       sources: ['rafale'],
+    },
+    {
+      id: 'mirage2000', nom: 'Mirage 2000', sousTitre: 'Mirage 2000D rénovés (attaque au sol) et 2000-5F (défense aérienne), jusqu\'au « tout Rafale »', illustration: 'chasseur', domaine: 'Air',
+      industriels: ['Dassault Aviation', 'Safran (réacteur M53)', 'Thales (électronique)', 'MBDA (missiles)'], fleurons: ['dassault', 'safran', 'thales'],
+      faits: [
+        'Le 16 juin 2026, la DGA a livré le 50e et dernier Mirage 2000D rénové à mi-vie (RMV) : un biplace d\'attaque au sol qui doit voler jusque vers 2035, quand l\'armée de l\'Air et de l\'Espace passera au « tout Rafale », à condition que de nouveaux Rafale soient commandés.',
+        'Le Mirage 2000-5F de défense aérienne doit quitter le service vers 2030 (date indicative) ; la France en cède à l\'Ukraine depuis février 2025.',
+        'Objectif confirmé par la DGA : 225 Rafale vers 2035, dont 185 pour l\'armée de l\'Air et de l\'Espace et 40 pour la Marine.',
+      ],
+      capacite: { cle: 'mirage2000d', libelle: 'Mirage 2000D rénovés en service', depart: 50 },
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Mirage 2000-5F retirés vers 2030, Mirage 2000D rénovés vers 2035 : les Rafale prennent le relais.' },
+        { id: 'prolonger', nom: 'Prolonger les Mirage 2000 de trois ans', description: '0,25 Md€ de plus par an pendant quatre ans (pièces, visites, hypothèse de jeu) : la flotte de chasse garde du volume en attendant davantage de Rafale ; tous les retraits glissent de trois ans.', cout: 0.25, duree: 16, effets: { souverainete: 1, fleurons: { dassault: 1, safran: 1 } }, retard: { jalon: 'm2000d_retrait', trimestres: 12 } },
+        { id: 'ukraine', nom: 'Céder davantage de Mirage 2000-5F à l\'Ukraine', description: 'Avions, formation des pilotes et pièces : environ 0,15 Md€ par an pendant deux ans (hypothèse de jeu). Les 2000-5F quittent l\'armée de l\'Air et de l\'Espace deux ans plus tôt ; l\'Ukraine renforce sa défense aérienne.', cout: 0.15, duree: 8, effets: { influence: 2, souverainete: -1, relations: { ukraine: 5, ue: 1 } }, avance: { jalon: 'm2000_5f_retrait', trimestres: 8 } },
+        { id: 'retirer', nom: 'Retirer les Mirage plus tôt pour financer le Rafale', description: 'Environ 0,3 Md€ d\'économie par an pendant trois ans (hypothèse de jeu), mais deux ans avec moins d\'avions de chasse : tous les retraits avancent de deux ans.', cout: -0.3, duree: 12, effets: { souverainete: -2, influence: -1, fleurons: { dassault: -1 } }, retard: { jalon: 'm2000d_retrait', trimestres: -8 } },
+      ],
+      jalons: [
+        { id: 'm2000_5f_retrait', influence: 0, annee: 2030, t: 4, texte: 'Les derniers Mirage 2000-5F de défense aérienne quittent le service.' },
+        { id: 'm2000d_retrait_1', influence: 0, annee: 2033, t: 4, capacite: -25, texte: 'Un premier groupe de Mirage 2000D rénovés est retiré, remplacé par des Rafale (étape intermédiaire : hypothèse de jeu).' },
+        { id: 'm2000d_retrait', influence: 0, annee: 2035, t: 4, capacite: -25, texte: 'Les derniers Mirage 2000D quittent le service : l\'armée de l\'Air et de l\'Espace passe au « tout Rafale ».' },
+      ],
+      sources: ['mirage2000d', 'mirageUkraine', 'mirageRetrait', 'formatChasse'],
     },
     {
       id: 'snle3g', nom: 'SNLE de 3e génération', sousTitre: 'Sous-marins nucléaires lanceurs d\'engins : la dissuasion océanique', illustration: 'snle', domaine: 'Dissuasion',

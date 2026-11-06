@@ -114,3 +114,37 @@ describe('Armée de Terre', () => {
     expect(x.defense.jalons).toEqual(expect.arrayContaining(['caesar_mk2', 'scorpion_2030', 'leclerc_160']));
   });
 });
+
+describe('Mirage 2000', () => {
+  const jusqua = (e, annee, t, premier = {}) => { let x = jouerTour(e, premier, SANS); while (x.trimestre.annee < annee || (x.trimestre.annee === annee && x.trimestre.t < t)) x = jouerTour(x, {}, SANS); return x; };
+
+  it('50 Mirage 2000D rénovés au départ, retirés en deux temps jusqu\'au « tout Rafale » fin 2035', () => {
+    const r0 = resumeDefense(nouvelle());
+    expect(r0.capacites.mirage2000d).toBe(50);
+    expect(r0.programmes.map((p) => p.id)).toContain('mirage2000');
+    const e2034 = jusqua(nouvelle(), 2034, 2);
+    expect(resumeDefense(e2034).capacites.mirage2000d).toBe(25);
+    const e2036 = jusqua(nouvelle(), 2036, 2);
+    expect(resumeDefense(e2036).capacites.mirage2000d).toBe(0);
+    expect(e2036.defense.jalons).toEqual(expect.arrayContaining(['m2000_5f_retrait', 'm2000d_retrait_1', 'm2000d_retrait']));
+  });
+
+  it('prolonger coûte et retarde les retraits ; retirer plus tôt économise et les avance', () => {
+    const prolonge = jusqua(nouvelle(), 2036, 2, { defense: { programmes: { mirage2000: 'prolonger' } } });
+    expect(resumeDefense(prolonge).capacites.mirage2000d).toBe(50);
+    const retire = jusqua(nouvelle(), 2034, 2, { defense: { programmes: { mirage2000: 'retirer' } } });
+    expect(resumeDefense(retire).capacites.mirage2000d).toBe(0);
+    const e = nouvelle();
+    deciderDefense(e, { programmes: { mirage2000: 'retirer' } }, certain);
+    expect(depensesTemporairesActives(e).defense).toBeLessThan(0);
+  });
+
+  it('céder des Mirage 2000-5F à l\'Ukraine améliore la relation et avance leur retrait de deux ans', () => {
+    const e = nouvelle();
+    const avant = e.international.relations.ukraine;
+    deciderDefense(e, { programmes: { mirage2000: 'ukraine' } }, certain);
+    expect(e.international.relations.ukraine).toBeGreaterThan(avant);
+    const p = resumeDefense(e).programmes.find((x) => x.id === 'mirage2000');
+    expect(p.jalonsEffectifs.find((j) => j.id === 'm2000_5f_retrait').annee).toBe(2028);
+  });
+});

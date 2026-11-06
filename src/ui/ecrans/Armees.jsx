@@ -5,7 +5,7 @@ import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
 /** Modèles 3D de chaque programme (plusieurs : puces pour passer de l'un à l'autre). */
 const MODELES_3D = {
-  rafale: [['rafale', 'Rafale'], ['mirage2000', 'Mirage 2000-5']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
+  rafale: [['rafale', 'Rafale']], mirage2000: [['mirage2000', 'Mirage 2000-5F']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
   leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
   scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],
 };
@@ -46,6 +46,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
   const chef = { france: 'Le président de la République est le chef des armées (article 15 de la Constitution). Le gouvernement « dispose de la force armée » et prépare le budget ; le Parlement vote la loi de programmation militaire.', allemagne: 'En temps de paix, le ministre fédéral de la Défense commande la Bundeswehr ; le chancelier en prend le commandement en cas de guerre. Toute opération extérieure armée exige un vote du Bundestag.', etatsUnis: 'Le président est commandant en chef ; le Congrès vote les crédits et, en principe, déclare la guerre (War Powers Resolution de 1973).' }[partie.pays];
   const rafale = r.capacites.rafale;
   const snle3g = r.capacites.snle3g;
+  const mirage = r.capacites.mirage2000d;
+  const retraitMirage = r.programmes.find((p) => p.id === 'mirage2000')?.jalonsEffectifs.find((j) => j.id === 'm2000d_retrait');
   const pang = r.programmes.find((p) => p.id === 'pang');
   const pa = porteAvions(partie);
   const domaines = ['Tous', ...new Set(r.programmes.flatMap((p) => p.domaine.split(' et ')))];
@@ -66,6 +68,13 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
             <span className="libelle">Rafale en service <Info texte="Armée de l'Air et de l'Espace et Marine nationale. Objectif de la loi de programmation militaire : 178 fin 2030 et 225 en 2035." /></span>
             <span className="valeur chiffres">{nombre(rafale, 0)}</span>
             <span className="variation muet">objectif LPM : 178 fin 2030, 225 en 2035</span>
+          </div>
+        )}
+        {mirage !== undefined && (
+          <div className="tuile">
+            <span className="libelle">Mirage 2000D rénovés <Info texte="50 Mirage 2000D rénovés à mi-vie (le dernier livré en juin 2026), en service jusque vers 2035 ; les Mirage 2000-5F de défense aérienne partent vers 2030. Vos décisions (prolonger, céder à l'Ukraine, retirer plus tôt) déplacent ces dates." /></span>
+            <span className="valeur chiffres">{nombre(Math.max(0, mirage), 0)}</span>
+            <span className="variation muet">{mirage > 0 && retraitMirage ? `derniers retraits : T${retraitMirage.t} ${retraitMirage.annee}` : 'tout Rafale'}</span>
           </div>
         )}
         {snle3g !== undefined && (
