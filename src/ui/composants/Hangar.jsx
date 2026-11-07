@@ -4,7 +4,8 @@ import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
 /** Matériels et lieux de pouvoir proposés dans le Hangar 3D, par famille. */
 const FAMILLES = [
-  { titre: 'Air, mer et dissuasion', modeles: [['rafale', '✈️ Rafale'], ['mirage2000', '✈️ Mirage 2000-5'], ['charlesDeGaulle', '🚢 Charles-de-Gaulle'], ['porteAvions', '🚢 France Libre'], ['snle3g', '⚓ SNLE 3G'], ['snle', '⚓ SNLE Le Triomphant']] },
+  { titre: 'Air, mer et dissuasion', modeles: [['rafale', '✈️ Rafale'], ['mirage2000', '✈️ Mirage 2000-5'], ['charlesDeGaulle', '🚢 Charles-de-Gaulle'], ['porteAvions', '🚢 France Libre'], ['snle3g', '⚓ SNLE 3G'], ['snle', '⚓ SNLE Le Triomphant'], ['sna', '⚓ SNA Suffren']] },
+  { titre: 'Bâtiments de surface', modeles: [['pha', '🚢 PHA Mistral'], ['fda', '🚢 Chevalier Paul (FDA)'], ['fremm', '🚢 FREMM'], ['brf', '🚢 Ravitailleur (BRF)'], ['monge', '📡 Monge']] },
   { titre: 'Hélicoptères et ravitailleur', modeles: [['caiman', '🚁 Caïman (Terre)'], ['caimanFS', '🚁 Caïman (forces spéciales)'], ['caimanMarine', '🚁 Caïman Marine'], ['tigre', '🚁 Tigre'], ['puma', '🚁 Puma'], ['caracal', '🚁 Caracal'], ['phenix', '✈️ A330 Phénix']] },
   { titre: 'Terre, drones et espace', modeles: [['leclerc', '🪖 Char Leclerc'], ['caesar', '💥 Canon Caesar'], ['griffon', '🛡️ Griffon'], ['jaguar', '🛡️ Jaguar'], ['patroller', '🛩️ Drone Patroller'], ['satellite', '🛰️ Satellite']] },
   { titre: 'Lieux de pouvoir', modeles: [['elysee', '🏛️ Élysée'], ['matignon', '🏛️ Matignon'], ['assemblee', '🏛️ Assemblée nationale'], ['senat', '🏛️ Sénat']] },

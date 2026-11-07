@@ -568,10 +568,10 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     T.dessus(0.85, 2.1, 0.15, '#1c242c');
     T.rect(1.0, 2.6, -0.1, 0.62, '#1c242c', 'deux', 8);
     T.rect(0.75, 1.35, -0.72, -0.22, '#1c242c', 'deux', 14);
-    T.rect(2.75, 3.4, -0.1, 0.55, '#1c242c', 'deux', 6);
-    for (const x of [6.3, 7.3]) T.rect(x, x + 0.5, 0.05, 0.45, '#1c242c', 'deux', 8);
-    T.contour(3.7, 5.9, -0.92, 0.75, 'rgba(15,15,15,0.55)', 3);
-    T.rect(4.5, 5.1, 0.1, 0.5, '#1c242c', 'deux', 8);
+    T.rect(3.95, 4.55, 0.0, 0.5, '#1c242c', 'deux', 6);
+    for (const x of [6.6]) T.rect(x, x + 0.5, 0.0, 0.5, '#1c242c', 'deux', 8);
+    T.contour(4.7, 6.4, -0.92, 0.75, 'rgba(15,15,15,0.55)', 3);
+    T.rect(5.25, 5.8, 0.05, 0.55, '#1c242c', 'deux', 8);
     if (livree === 'marine') {
       // Hublot d'observation à cadre boulonné (côté gauche), cocarde de l'aéronavale, « MARINE », numéro, bandeau orange
       T.rect(3.45, 4.15, -0.12, 0.58, '#15181b', 'gauche', 4);
@@ -593,8 +593,8 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     { x: 7.6, w: 2.7, hHaut: 1.3, hBas: 1.0, y: 1.8, n: 3.2 },
     { x: 9.1, w: 2.35, hHaut: 1.2, hBas: 0.65, y: 2.0, n: 3 },
     { x: 10.6, w: 1.25, hHaut: 0.72, hBas: 0.42, y: 2.45 },
-    { x: 14.4, w: 0.62, hHaut: 0.42, hBas: 0.3, y: 2.75 },
-    { x: 16.1, w: 0.38, hHaut: 0.3, hBas: 0.2, y: 2.95 },
+    { x: 14.4, w: 0.66, hHaut: 0.42, hBas: 0.42, y: 2.62 },
+    { x: 16.1, w: 0.42, hHaut: 0.36, hBas: 0.4, y: 2.7 },
   ], { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
   // Capot moteurs et transmission, prises d'air, échappements
   h.add(new THREE.Mesh(loft(THREE, [
@@ -613,7 +613,7 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     sponson.scale.set(1, 1, 0.8);
     h.add(sponson);
   }
-  h.add(pieces(THREE, mats.sombre, [[1.2, 2.75, 0, 0.6, 0.05, 0.08], [0.9, 0.82, 0, 0.6, 0.05, 0.08]]));
+  h.add(pieces(THREE, mats.sombre, [[1.45, 2.55, 0, 0.6, 0.05, 0.08], [0.9, 0.82, 0, 0.6, 0.05, 0.08]]));
   h.add(tube(THREE, [0.35, 1.55, 0.45], [-0.25, 1.75, 0.5], 0.025, mats.metal), tube(THREE, [-0.25, 1.75, 0.5], [-0.42, 1.62, 0.5], 0.02, mats.metal));
   // Dérive, plan horizontal (tribord), rotor de queue (bâbord)
   const derive = new THREE.Mesh(surface(THREE, [[14.0, 0], [15.2, 2.1], [16.0, 2.1], [16.2, 0]], 0.2, { plan: 'xy' }), peau);
@@ -626,22 +626,22 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     : { x: 15.65, y: 4.35, cote: 1, rayon: 1.6, pales: 4 });
   h.add(rq.support);
   // Rotor principal : quatre pales composites
-  const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 0.9, 12), mats.sombre);
-  mat.position.set(5.6, 3.95, 0);
+  const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 0.7, 12), mats.sombre);
+  mat.position.set(5.6, 3.85, 0);
   h.add(mat);
   const rp = rotor(THREE, { rayon: 8.15, pales: 4, corde: 0.6, mat: mats.pale, matMoyeu: mats.sombre, moyeu: 0.55 });
-  rp.position.set(5.6, 4.45, 0);
+  rp.position.set(5.6, 4.18, 0);
   h.add(rp);
   // Train : diabolo avant, roues principales sous les sponsons
-  h.add(tube(THREE, [2.3, 0.85, 0], [2.3, 0.35, 0], 0.07, mats.jambe));
-  for (const z of [-0.18, 0.18]) { const r = roue(THREE, 0.3, 0.16, mats.pneu, mats.jambe); r.position.set(2.3, 0.3, z); h.add(r); }
+  h.add(tube(THREE, [1.45, 0.8, 0], [1.45, 0.35, 0], 0.07, mats.jambe));
+  for (const z of [-0.18, 0.18]) { const r = roue(THREE, 0.3, 0.16, mats.pneu, mats.jambe); r.position.set(1.45, 0.3, z); h.add(r); }
   for (const s of [-1, 1]) {
     h.add(tube(THREE, [7.9, 0.75, s * 1.45], [7.9, 0.4, s * 1.55], 0.08, mats.jambe));
     const r = roue(THREE, 0.38, 0.22, mats.pneu, mats.jambe); r.position.set(7.9, 0.38, s * 1.6); h.add(r);
   }
   // Boule optronique sous le nez (Euroflir 410 sur le standard 2), mitrailleuses de sabord
   const boule = new THREE.Group();
-  boule.position.set(marine ? 0.45 : 0.9, marine ? 0.95 : 0.62, 0);
+  boule.position.set(marine ? 0.45 : 0.68, marine ? 0.95 : 0.66, 0);
   const rBoule = fs || marine ? 0.3 : 0.22;
   const sphere = new THREE.Mesh(new THREE.SphereGeometry(rBoule, 18, 12), marine ? new THREE.MeshStandardMaterial({ color: 0x9a9fa1, roughness: 0.5 }) : mats.sombre);
   const fenetre = new THREE.Mesh(new THREE.CircleGeometry(rBoule * 0.47, 16), mats.optique);

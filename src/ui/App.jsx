@@ -338,7 +338,7 @@ export default function App() {
     institutions: (decisions.questionConfiance && partie.pays === 'france' ? 1 : 0) + (decisions.congres ? 1 : 0) + (decisions.cohabitation && decisions.cohabitation !== 'promulguer' ? 1 : 0),
     relocalisation: decisions.relocalisations?.length ?? 0,
     fonds: decisions.fondsAllocation ? 1 : 0,
-    armees: decisions.defense ? Object.values(decisions.defense.programmes ?? {}).filter((o) => o !== 'nominal').length + Object.keys(decisions.defense.operations ?? {}).length + (decisions.defense.exports?.length ?? 0) : 0,
+    armees: decisions.defense ? Object.values(decisions.defense.programmes ?? {}).filter((o) => o !== 'nominal').length + Object.keys(decisions.defense.operations ?? {}).length + (decisions.defense.exports?.length ?? 0) + (decisions.defense.commandes?.length ?? 0) : 0,
     dissuasion: decisions.defense?.dissuasion ? 1 : 0,
     parlement: trimestreBudget ? 'budget' : null,
   }[id] ?? null);

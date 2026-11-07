@@ -99,6 +99,30 @@ const FICHES = {
     titre: 'Hémicycle du Sénat',
     lignes: ['348 sièges aux couleurs des groupes de votre partie, de la gauche à la droite vue du fauteuil du président du Sénat', 'Hémicycle aménagé au XIXe siècle dans le palais du Luxembourg', 'Répartition schématique des places'],
   },
+  sna: {
+    titre: 'Sous-marin nucléaire d\'attaque (classe Suffren)',
+    lignes: ['99 m de long · 8,8 m de diamètre · 5 300 t en plongée (Naval Group) · environ 65 marins · chaufferie nucléaire de TechnicAtome', 'Torpilles lourdes F21, missiles antinavires Exocet SM39, missile de croisière naval (environ 1 000 km), mines : quatre tubes de 533 mm', 'Hangar de pont amovible (environ 15 m, 43 t) pour les nageurs de combat et leurs propulseurs ; mâts optroniques au lieu de périscopes', 'Suffren, Duguay-Trouin, Tourville, De Grasse (livré le 24 juin 2026), puis Rubis et Casabianca · d\'après les infographies de Naval Group et de la Marine nationale'],
+  },
+  pha: {
+    titre: 'Porte-hélicoptères amphibie (classe Mistral)',
+    lignes: ['199 m · 32 m de large · environ 21 000 t · Mistral (L9013), Tonnerre (L9014), Dixmude (L9015)', 'Pont d\'envol à six spots, hangar pour 16 hélicoptères lourds, radier pour les engins de débarquement, 450 soldats (900 sur une courte durée)', 'Hôpital embarqué de 69 lits, poste de commandement d\'état-major : opérations amphibies, évacuations, aide humanitaire', 'Construits à Saint-Nazaire (Chantiers de l\'Atlantique) avec Naval Group · d\'après des photos'],
+  },
+  fda: {
+    titre: 'Frégate de défense aérienne Chevalier Paul (classe Horizon)',
+    lignes: ['153 m · 20 m de large · environ 7 000 t · programme franco-italien · Forbin (D620) et Chevalier Paul (D621)', 'Système PAAMS : radar multifonction sous le grand radôme et 48 missiles Aster 15 et Aster 30 pour protéger le porte-avions', 'Deux canons de 76 mm, huit Exocet MM40, torpilles MU90, un hélicoptère Caïman Marine', 'D\'après des photos · disposition simplifiée des superstructures'],
+  },
+  fremm: {
+    titre: 'Frégate multi-missions (FREMM)',
+    lignes: ['142 m · 20 m de large · environ 6 000 t · huit en service, de l\'Aquitaine (2012) à la Lorraine (2022) · construites à Lorient par Naval Group', 'Mât intégré et radar Herakles (Thales) · Sylver : Aster et missile de croisière naval · Exocet MM40 · canon de 76 mm', 'Six anti-sous-marines (sonar remorqué, Caïman Marine) et deux à défense aérienne renforcée (Alsace, Lorraine)', 'D\'après un plan trois vues (profil, dessus, face) · numéro de coque de l\'Aquitaine (D650)'],
+  },
+  brf: {
+    titre: 'Ravitailleur de forces (BRF, classe Jacques Chevallier)',
+    lignes: ['194 m · environ 31 000 t · conception dérivée du Vulcano italien (Fincantieri), construction à Saint-Nazaire', 'Quatre portiques pour ravitailler deux navires à la fois en route : gazole, carburéacteur, eau, munitions, vivres', 'Jacques Chevallier (2023), Jacques Stosskopf (service actif en mai 2026), Émile Bertin (attendu en 2027), Gustave Zédé (vers 2032)', 'D\'après une photo et une image de synthèse'],
+  },
+  monge: {
+    titre: 'Bâtiment d\'essais et de mesures Monge (A601)',
+    lignes: ['Environ 225 m · en service depuis 1992 · équipage mixte Marine nationale et DGA', 'Radars de trajectographie, antennes de télémesure et moyens optiques : il suit les tirs d\'essai du missile M51 et des lancements spatiaux', 'Unique en Europe : la France valide seule ses missiles · plateforme hélicoptère en porte-à-faux à la poupe', 'D\'après une photo · antennes et radômes simplifiés'],
+  },
   leclerc: {
     titre: 'Char Leclerc rénové (XLR)',
     lignes: ['Char de combat de l\'armée de Terre, en service depuis 1992 · 9,87 m canon compris · 3,71 m de large · environ 57 t', 'Canon de 120 mm à chargement automatique : trois hommes d\'équipage au lieu de quatre · 72 km/h sur route', 'Rénovation XLR : intégration au combat collaboratif SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030, 200 fin 2035', 'Livrée sable (opérations extérieures) ou camouflage centre-Europe · silhouette fidèle, détails simplifiés'],
@@ -111,6 +135,12 @@ const VUES = {
   snle3g: { '3/4': [-12, 8, -14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01], Arrière: [12, 6.5, 14] },
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
+  sna: { '3/4': [-11, 6.5, -13], Profil: [0, 1.2, 18], Dessus: [0, 20, 0.01], Face: [-18, 1.6, 0.01], Arrière: [11, 5.5, 13] },
+  pha: { '3/4': [-10, 6.5, 12], 'Côté île': [0, 2.3, -19], Profil: [0, 2.3, 19], Dessus: [0, 21, 0.01], Face: [-18, 3.5, 0.01] },
+  fda: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12] },
+  fremm: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12] },
+  brf: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, 12] },
+  monge: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, -12] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
   mirage2000: { '3/4': [-13.5, 0.4, 13.5], Profil: [0, -0.2, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Face: [-19, 0.4, 0.01], Haut: [-13, 4, 15], Arrière: [13, 5.5, 14] },
   phenix: { '3/4': [-17, 7, 19], Profil: [0, 1.5, 27], 'Côté droit': [0, 1.5, -27], Dessus: [0, 32, 0.01], Dessous: [0.01, -26, 8], Face: [-27, 2, 0.01], Arrière: [18, 6, 18] },
@@ -141,6 +171,7 @@ const MODULES = {
   palais: () => import('./palais.js'),
   avions: () => import('./avions.js'),
   aeronefs: () => import('./aeronefs.js'),
+  marine: () => import('./marine.js'),
 };
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
@@ -148,11 +179,15 @@ const CONSTRUCTEURS = {
   mirage2000: ['avions', 'construireMirage2000'], phenix: ['aeronefs', 'construirePhenix'],
   caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
+  sna: ['marine', 'construireSna'], pha: ['marine', 'construirePha'], fda: ['marine', 'construireFda'], fremm: ['marine', 'construireFremm'], brf: ['marine', 'construireBrf'], monge: ['marine', 'construireMonge'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
 };
 /** Modèles posés sur leur propre sol (palais, hémicycles) et modèles dans l'espace. */
 const TERRAIN = new Set(['elysee', 'matignon', 'assemblee', 'senat', 'hemicycleAN', 'hemicycleSenat']);
+/** Sous-marins (lumière sous-marine) et navires de surface (mer, horizon). */
+const SOUS = new Set(['snle', 'snle3g', 'sna']);
+const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge']);
 const ESPACE = new Set(['satellite']);
 
 /**
@@ -177,8 +212,10 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
   const [commandes, setCommandes] = useState([]);
   const [etats, setEtats] = useState({});
   const [message, setMessage] = useState(null);
-  const sous = modele === 'snle' || modele === 'snle3g';
-  const navire = modele === 'porteAvions' || modele === 'charlesDeGaulle';
+  const sous = SOUS.has(modele);
+  const navire = NAVIRES.has(modele);
+  const snle = modele === 'snle' || modele === 'snle3g';
+  const catapulte = modele === 'porteAvions' || modele === 'charlesDeGaulle';
   const terrain = TERRAIN.has(modele);
   const espace = ESPACE.has(modele);
   const cleDonnees = donnees ? JSON.stringify(donnees) : '';
@@ -353,6 +390,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         });
         pmrem.dispose();
         renderer.dispose();
+        renderer.forceContextLoss(); // libère tout de suite le contexte WebGL (les navigateurs en limitent le nombre)
         renderer.domElement.remove();
       };
     })().catch(() => setEtat('indisponible'));
@@ -382,9 +420,9 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
           <button type="button" className={`puce ${legendes ? 'active' : ''}`} aria-pressed={legendes} onClick={() => { api.current.legendes = !legendes; setLegendes(!legendes); }}>Légendes</button>
           {modele === 'rafale' && <button type="button" className={`puce ${biplace ? 'active' : ''}`} aria-pressed={biplace} onClick={() => { api.current.basculer.biplace?.(!biplace); setBiplace(!biplace); }}>{biplace ? 'Biplace (B)' : 'Monoplace (C)'}</button>}
           {modele === 'rafale' && <button type="button" className={`puce ${train ? 'active' : ''}`} aria-pressed={train} onClick={() => { api.current.basculer.train?.(!train); setTrain(!train); }}>{train ? 'Train sorti' : 'Sortir le train'}</button>}
-          {sous && <button type="button" className={`puce ${trappes ? 'active' : ''}`} aria-pressed={trappes} onClick={() => { api.current.trappes = !trappes; setTrappes(!trappes); }}>{trappes ? 'Fermer les trappes' : 'Ouvrir les trappes'}</button>}
-          {sous && <button type="button" className="puce" disabled={!trappes} onClick={() => { api.current.tir = true; }} title={trappes ? '' : 'Ouvrez d\'abord les trappes'}>🚀 Tir d'essai (simulation)</button>}
-          {navire && <button type="button" className="puce" onClick={() => { api.current.lancer = true; }}>🛫 Catapulter un Rafale</button>}
+          {snle && <button type="button" className={`puce ${trappes ? 'active' : ''}`} aria-pressed={trappes} onClick={() => { api.current.trappes = !trappes; setTrappes(!trappes); }}>{trappes ? 'Fermer les trappes' : 'Ouvrir les trappes'}</button>}
+          {snle && <button type="button" className="puce" disabled={!trappes} onClick={() => { api.current.tir = true; }} title={trappes ? '' : 'Ouvrez d\'abord les trappes'}>🚀 Tir d'essai (simulation)</button>}
+          {catapulte && <button type="button" className="puce" onClick={() => { api.current.lancer = true; }}>🛫 Catapulter un Rafale</button>}
           {modele === 'leclerc' && <button type="button" className={`puce ${tourelle ? 'active' : ''}`} aria-pressed={tourelle} onClick={() => { api.current.tourelle = !tourelle; setTourelle(!tourelle); }}>{tourelle ? 'Tourelle en veille' : 'Faire pivoter la tourelle'}</button>}
           {commandes.map((c) => (c.type === 'action'
             ? <button key={c.id} type="button" className="puce" disabled={c.requiert && !etats[c.requiert]} title={c.requiert && !etats[c.requiert] ? c.aide : ''} onClick={() => { api.current[c.id] = true; }}>{c.libelle}</button>

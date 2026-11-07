@@ -49,6 +49,8 @@ export function flotte(e) {
   const liste = [];
   if (j.includes('pang') && e.trimestre.annee >= ANNEE_MIN_FRANCE_LIBRE) liste.push({ id: 'france_libre', nom: 'France Libre', enService: true, disponible: true });
   if (j.includes('pang2')) liste.push({ id: 'pang2', nom: 'second porte-avions de nouvelle génération', enService: true, disponible: true });
+  // Porte-avions commandés en plus (commandes supplémentaires de l'écran Armées)
+  for (let i = 1; i <= Math.floor(e.defense?.capacites?.porteAvionsSupp ?? 0); i++) liste.push({ id: `pa_supp_${i}`, nom: `porte-avions supplémentaire n° ${i}`, enService: true, disponible: true });
   if (!j.includes('cdg_retrait')) {
     const atm = j.includes('cdg_atm3') && !j.includes('cdg_atm3_fin');
     liste.push({ id: 'cdg', nom: 'Charles-de-Gaulle', enService: true, disponible: !atm, arretTechnique: atm, motif: atm ? 'Le Charles-de-Gaulle est en arrêt technique majeur à Toulon (rechargement des réacteurs) jusqu\'à fin 2028 environ : pas de porte-avions disponible.' : null });

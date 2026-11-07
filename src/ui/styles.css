@@ -509,6 +509,10 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .option-programme { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.45rem 0.55rem; border: 1px solid var(--bordure); border-radius: 8px; cursor: pointer; }
 .option-programme.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .option-programme input { margin-top: 0.2rem; }
+.commandes-programme { border-top: 1px dashed var(--bordure); padding-top: 0.45rem; }
+.commande-programme { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; padding: 0.4rem 0.5rem; border: 1px solid var(--bordure); border-radius: 8px; }
+.commande-programme.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.commande-programme .bouton { white-space: normal; text-align: left; }
 .operation { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem 1rem; align-items: center; padding: 0.5rem 0; border-top: 1px solid var(--bordure); }
 @media (max-width: 760px) {
   .grille-programmes { grid-template-columns: 1fr; }
@@ -595,6 +599,8 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #f6f7f9 0%, #dfe3e8 60%, #c3c9d1 100%); }
 .visionneuse-porteAvions .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
 .visionneuse-charlesDeGaulle .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+.visionneuse-pha .visionneuse-scene, .visionneuse-fda .visionneuse-scene, .visionneuse-fremm .visionneuse-scene, .visionneuse-brf .visionneuse-scene, .visionneuse-monge .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+.visionneuse-sna .visionneuse-scene { background: linear-gradient(180deg, #2f6aa3 0%, #12395f 45%, #071a2e 100%); }
 .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f3f1e8 0%, #d9d6c4 55%, #b3ad94 100%); }
 :root[data-theme="dark"] .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45443a 0%, #2b2a24 60%, #191814 100%); }
 :root[data-theme="dark"] .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #3b4350 0%, #232a33 60%, #151a20 100%); }

@@ -6,7 +6,7 @@
  * Les coûts passent par les dépenses du poste « défense » (dépenses
  * temporaires) : ils pèsent donc sur le déficit comme le reste du budget.
  */
-import { PROGRAMMES_DEFENSE, OPERATIONS, EXPORTS, DISSUASION_EUROPE } from '../data/defense.js';
+import { PROGRAMMES_DEFENSE, OPERATIONS, EXPORTS, DISSUASION_EUROPE, INTERVALLE_COMMANDES, commandesDuProgramme } from '../data/defense.js';
 import { appliquerEffetsEntreprise } from './entreprises.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
@@ -19,9 +19,15 @@ const RANG_PANG_NOMINAL = 2038 * 4 + 2;
 const RANG_RETRAIT_CDG = 2038 * 4 + 4;
 const etatProgrammeDefaut = () => ({ option: 'nominal', debut: 1, fin: 1, retard: 0, securise: false });
 
-/** Sauvegardes antérieures : programmes ajoutés depuis (Charles-de-Gaulle...). */
+/** Sauvegardes antérieures : programmes, compteurs et commandes ajoutés depuis (Charles-de-Gaulle, SNA...). */
 function completerProgrammes(e) {
-  for (const p of programmesDuPays(e.pays)) e.defense.programmes[p.id] ??= etatProgrammeDefaut();
+  const x = e.defense;
+  x.commandes ??= {};
+  for (const p of programmesDuPays(e.pays)) {
+    x.programmes[p.id] ??= etatProgrammeDefaut();
+    if (p.capacite) x.capacites[p.capacite.cle] ??= p.capacite.depart;
+    for (const c of commandesDuProgramme(e.pays, p.id)) x.capacites[c.cle] ??= c.depart ?? 0;
+  }
 }
 
 export function programmesDuPays(pays) { return PROGRAMMES_DEFENSE[pays] ?? []; }
@@ -34,11 +40,13 @@ export function initialiserDefense(e) {
   for (const p of programmesDuPays(e.pays)) {
     programmes[p.id] = etatProgrammeDefaut();
     if (p.capacite) capacites[p.capacite.cle] = p.capacite.depart;
+    for (const c of commandesDuProgramme(e.pays, p.id)) capacites[c.cle] ??= c.depart ?? 0;
   }
   e.defense = {
     programmes,
     capacites,
     supplements: {},
+    commandes: {},
     operations: Object.fromEntries(operationsDuPays(e.pays).map((o) => [o.id, o.defaut])),
     exports: Object.fromEntries(exportsDuPays(e.pays).map((x) => [x.id, { statut: 'ouvert', derniereTentative: null }])),
     dissuasion: e.pays === 'france' ? 'statu_quo' : null,
@@ -104,6 +112,21 @@ export function deciderDefense(e, d = {}, alea) {
     const texte = `Défense — ${p.nom} : ${o.nom.charAt(0).toLowerCase()}${o.nom.slice(1)}.`;
     e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte });
     res.push({ type: 'programme', texte });
+  }
+  // Commandes supplémentaires (renouvelables tous les quatre trimestres)
+  for (const id of new Set(d.commandes ?? [])) {
+    const trouve = trouverCommande(e.pays, id);
+    if (!trouve) continue;
+    const [p, c] = trouve;
+    const etat = etatCommande(e, c);
+    if (!etat.disponible) { res.push({ type: 'erreur', texte: `${c.nom} : ${etat.motif}` }); continue; }
+    const suivi = x.commandes[id] ?? { nombre: 0, dernier: null, lots: [] };
+    x.commandes[id] = { nombre: suivi.nombre + 1, dernier: e.tour, lots: [...suivi.lots, { tour: e.tour, trimestre: lib, restant: c.quantite, debut: e.tour + c.delai }] };
+    if (c.cout) e.depensesTemporaires.push({ poste: 'defense', valeur: c.cout, fin: e.tour + c.duree, source: `commande:${id}` });
+    appliquer(e, c.effets, p.nom);
+    const texte = `Défense — ${c.nom.charAt(0).toLowerCase()}${c.nom.slice(1)} : ${c.quantite > 1 ? `${c.quantite} ${c.unite}` : `un ${c.unite}`} ${c.quantite > 1 ? 'livrés' : 'livré'} à partir du ${libelleTrimestre(trimestreDans(e, c.delai))}.`;
+    e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte });
+    res.push({ type: 'commande', texte });
   }
   // Opérations : le coût annuel suit l'option en vigueur
   for (const [id, optionId] of Object.entries(d.operations ?? {})) {
@@ -220,6 +243,7 @@ export function majDefense(e, alea) {
       e.international.bonusInfluence += j.influence ?? 1;
       e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Défense — ${j.texte}` });
     }
+    livrerCommandes(e, p, lib);
   }
   // Deux porte-avions en même temps (Charles-de-Gaulle gardé à côté du « France Libre ») : équipages et entretien
   if (x.jalons.includes('pang') && !x.jalons.includes('cdg_retrait') && e.trimestre.annee >= ANNEE_MIN_FRANCE_LIBRE) {
@@ -284,6 +308,65 @@ function accelererFranceLibre(e, maintenant, lib) {
   e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Défense — Loi d'accélération : le « France Libre » est désormais attendu au T${t} ${an} (au lieu de 2038). Chantiers en parallèle à Saint-Nazaire et chez TechnicAtome.` });
 }
 
+/** Trimestre situé n trimestres après le trimestre courant. */
+function trimestreDans(e, n) {
+  const r = rang(e.trimestre) + n;
+  return { annee: Math.floor((r - 1) / 4), t: ((r - 1) % 4) + 1 };
+}
+
+/** [programme, commande] d'après l'identifiant de la commande. */
+function trouverCommande(pays, id) {
+  for (const p of programmesDuPays(pays)) {
+    const c = commandesDuProgramme(pays, p.id).find((y) => y.id === id);
+    if (c) return [p, c];
+  }
+  return null;
+}
+
+/**
+ * État d'une commande supplémentaire : nombre déjà passé, prochaine date
+ * possible (une commande tous les quatre trimestres), plafond éventuel, lots
+ * en cours de livraison.
+ */
+export function etatCommande(e, c) {
+  const suivi = e.defense?.commandes?.[c.id] ?? { nombre: 0, dernier: null, lots: [] };
+  const prochainTour = suivi.dernier === null ? e.tour : suivi.dernier + INTERVALLE_COMMANDES;
+  const plafond = c.maxCommandes !== undefined && suivi.nombre >= c.maxCommandes;
+  const attente = prochainTour > e.tour;
+  const enCours = suivi.lots.filter((l) => l.restant > 0);
+  return {
+    nombre: suivi.nombre,
+    disponible: !plafond && !attente,
+    plafond,
+    prochain: attente ? trimestreDans(e, prochainTour - e.tour) : null,
+    motif: plafond ? `plafond atteint (${c.maxCommandes} commandes au plus)` : attente ? `une seule commande tous les ${INTERVALLE_COMMANDES} trimestres (prochaine au ${libelleTrimestre(trimestreDans(e, prochainTour - e.tour))})` : null,
+    enCours: enCours.map((l) => ({ ...l, debutTrimestre: trimestreDans(e, l.debut - e.tour) })),
+    restant: enCours.reduce((s, l) => s + l.restant, 0),
+  };
+}
+
+/**
+ * Livraisons des commandes supplémentaires : un nombre entier d'unités par
+ * trimestre, comptées comme « en plus » de la trajectoire de la loi de
+ * programmation (elles ne remplacent pas les livraisons prévues).
+ */
+function livrerCommandes(e, p, lib) {
+  const x = e.defense;
+  for (const c of commandesDuProgramme(e.pays, p.id)) {
+    for (const lot of x.commandes?.[c.id]?.lots ?? []) {
+      if (lot.restant <= 0 || e.tour < lot.debut) continue;
+      const n = Math.min(lot.restant, c.parTrimestre);
+      lot.restant -= n;
+      x.capacites[c.cle] = (x.capacites[c.cle] ?? 0) + n;
+      x.supplementsLivres = { ...(x.supplementsLivres ?? {}), [c.cle]: (x.supplementsLivres?.[c.cle] ?? 0) + n };
+      if (lot.restant === 0) {
+        const quoi = c.quantite > 1 ? `les ${c.quantite} ${c.unite} commandés au ${lot.trimestre} sont tous livrés` : `le ${c.unite} commandé au ${lot.trimestre} est livré`;
+        e.journal.push({ tour: e.tour, trimestre: lib, type: 'reforme', texte: `Défense — ${p.nom} : ${quoi}.` });
+      }
+    }
+  }
+}
+
 /** Résumé pour l'interface et les tests. */
 export function resumeDefense(e) {
   if (!e.defense) return null;
@@ -294,7 +377,7 @@ export function resumeDefense(e) {
   return {
     budget, pctPIB: budget && pib ? (budget + temporaires) / pib * 100 : null, supplementaire: temporaires,
     capacites: { ...x.capacites },
-    programmes: programmesDuPays(e.pays).map((p) => ({ ...p, etat: x.programmes[p.id] ?? etatProgrammeDefaut(), jalonsEffectifs: jalonsEffectifs(e, p) })),
+    programmes: programmesDuPays(e.pays).map((p) => ({ ...p, etat: x.programmes[p.id] ?? etatProgrammeDefaut(), jalonsEffectifs: jalonsEffectifs(e, p), commandes: commandesDuProgramme(e.pays, p.id).map((c) => ({ ...c, etat: etatCommande(e, c) })) })),
     operations: operationsDuPays(e.pays).map((o) => ({ ...o, actuelle: x.operations[o.id] })),
     exports: exportsDuPays(e.pays).map((p) => ({ ...p, ...x.exports[p.id], probabilite: probabiliteExport(e, p), disponible: x.exports[p.id]?.statut === 'ouvert' && (x.exports[p.id].derniereTentative === null || e.tour - x.exports[p.id].derniereTentative >= 4) })),
     dissuasion: x.dissuasion,

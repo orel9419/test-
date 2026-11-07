@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Info from '../composants/Info.jsx';
 import { ILLUSTRATIONS } from '../composants/Illustrations.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
@@ -9,16 +9,64 @@ const MODELES_3D = {
   helicos: [['tigre', 'Tigre'], ['caiman', 'Caïman'], ['caimanFS', 'Caïman forces spéciales'], ['caimanMarine', 'Caïman Marine'], ['puma', 'Puma']], mco: [['caracal', 'Caracal']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
   leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
   scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],
+  sna: [['sna', 'SNA Suffren']], pha: [['pha', 'PHA Mistral']], fregates: [['fda', 'Chevalier Paul (FDA)'], ['fremm', 'FREMM']], brf: [['brf', 'Ravitailleur (BRF)']], monge: [['monge', 'Monge']],
 };
 
+/** Commandes supplémentaires d'un programme : renouvelables tous les quatre trimestres. */
+function Commandes({ commandes, choisies, basculer }) {
+  return (
+    <div className="pile commandes-programme" style={{ gap: '0.35rem' }}>
+      <span className="petit"><strong>Commandes supplémentaires</strong> <span className="tres-petit muet">· une par matériel tous les 4 trimestres</span></span>
+      {commandes.map((c) => {
+        const choisie = choisies.includes(c.id);
+        const e = c.etat;
+        return (
+          <div key={c.id} className={`commande-programme ${choisie ? 'active' : ''}`}>
+            <button type="button" className={`bouton ${choisie ? 'principal' : ''}`} aria-pressed={choisie} disabled={!e.disponible && !choisie} onClick={() => basculer(c.id)}>
+              {choisie ? '✓ ' : '🛒 '}{c.nom}
+            </button>
+            <span className="tres-petit"><span className="negatif">+{md(c.cout, 2)} par an pendant {c.duree / 4} ans</span> (≈ {md(c.cout * c.duree / 4, 1)}) · {c.quantite > 1 ? `premières livraisons ${c.delai / 4} ans après, ${c.parTrimestre} par trimestre` : `livré ${c.delai / 4} ans après la commande`}</span>
+            <span className="tres-petit muet">{c.description}</span>
+            {(choisie || e.nombre > 0 || !e.disponible) && (
+              <span className="tres-petit" role="status">
+                {choisie ? 'Commande passée à la validation du trimestre. ' : ''}
+                {e.nombre > 0 ? `${e.nombre} commande${e.nombre > 1 ? 's' : ''} déjà passée${e.nombre > 1 ? 's' : ''}${e.restant > 0 ? `, ${e.restant} ${c.unite} en attente de livraison (${e.enCours.map((l) => libelleTrimestre(l.debutTrimestre)).join(', ')})` : ''}. ` : ''}
+                {!e.disponible && !choisie ? `Indisponible : ${e.motif}.` : ''}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Modèles 3D d'une carte de programme. La visionneuse n'est créée que lorsque
+ * la carte approche de l'écran, et libérée quand elle s'en éloigne : les
+ * navigateurs limitent le nombre de contextes WebGL actifs (environ 16).
+ */
 function Modeles3D({ modeles }) {
   const [actif, setActif] = useState(modeles[0][0]);
+  const [visible, setVisible] = useState(false);
+  const [hauteurBloc, setHauteurBloc] = useState(300);
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { setVisible(true); return undefined; }
+    const io = new IntersectionObserver(([x]) => {
+      if (!x.isIntersecting) setHauteurBloc((h) => Math.max(h, el.offsetHeight));
+      setVisible(x.isIntersecting);
+    }, { rootMargin: '300px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
-    <div className="pile" style={{ gap: '0.35rem' }}>
+    <div ref={ref} className="pile" style={{ gap: '0.35rem', minHeight: visible ? undefined : hauteurBloc }}>
       {modeles.length > 1 && (
         <div className="puces">{modeles.map(([id, nom]) => <button key={id} type="button" className={`puce ${actif === id ? 'active' : ''}`} aria-pressed={actif === id} onClick={() => setActif(id)}>{nom}</button>)}</div>
       )}
-      <Visionneuse3D key={actif} modele={actif} hauteur={300} />
+      {visible ? <Visionneuse3D key={actif} modele={actif} hauteur={300} /> : <div className="visionneuse-scene" style={{ height: 300, background: 'var(--surface-2)' }} aria-hidden="true" />}
     </div>
   );
 }
@@ -97,8 +145,22 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
         {snle3g !== undefined && (
           <div className="tuile">
             <span className="libelle">Sous-marins lanceurs d'engins</span>
-            <span className="valeur chiffres">4</span>
+            <span className="valeur chiffres">{4 + Math.floor(r.capacites.snleSupp ?? 0)}</span>
             <span className="variation muet">{snle3g >= 1 ? `dont ${nombre(snle3g, 0)} de 3e génération` : 'classe Le Triomphant ; SNLE 3G vers 2035'}</span>
+          </div>
+        )}
+        {r.capacites.sna !== undefined && (
+          <div className="tuile">
+            <span className="libelle">Sous-marins d'attaque (Suffren) <Info texte="SNA de la classe Suffren livrés (programme Barracuda) : quatre fin 2026, six prévus vers 2030. Vous pouvez en commander jusqu'à quatre de plus (dix au total), un tous les quatre trimestres." /></span>
+            <span className="valeur chiffres">{nombre(r.capacites.sna, 0)}</span>
+            <span className="variation muet">6 prévus vers 2030, 10 au plus</span>
+          </div>
+        )}
+        {r.capacites.pha !== undefined && (
+          <div className="tuile">
+            <span className="libelle">Grands bâtiments de surface <Info texte="Porte-hélicoptères amphibies (Mistral, Tonnerre, Dixmude), frégates de défense aérienne (Forbin, Chevalier Paul), frégates multi-missions FREMM, ravitailleurs de forces (BRF) et bâtiment d'essais et de mesures Monge. Les frégates FDI, qui complètent le format de 15 frégates de premier rang, ne sont pas détaillées ici." /></span>
+            <span className="valeur chiffres">{nombre(['pha', 'fda', 'fremm', 'brf', 'monge'].reduce((t, k) => t + (r.capacites[k] ?? 0), 0), 0)}</span>
+            <span className="variation muet">{nombre(r.capacites.pha, 0)} PHA · {nombre(r.capacites.fda, 0)} FDA · {nombre(r.capacites.fremm, 0)} FREMM · {nombre(r.capacites.brf, 0)} BRF · {nombre(r.capacites.monge, 0)} BEM</span>
           </div>
         )}
         {france && (
@@ -154,7 +216,7 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
                 <fieldset className="choix-option">
                   <legend className="petit">Votre décision</legend>
                   <div className="pile" style={{ gap: '0.3rem' }}>
-                    {p.options.map((o) => {
+                    {p.options.filter((o) => !o.remplaceePar || p.etat?.option === o.id || choisie === o.id).map((o) => {
                       const actif = (choisie ?? 'nominal') === o.id;
                       return (
                         <label key={o.id} className={`option-programme ${actif ? 'active' : ''}`}>
@@ -167,6 +229,9 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
                 </fieldset>
               ) : (
                 <p className="tres-petit muet" style={{ margin: 0 }}>{p.options[0]?.description}</p>
+              )}
+              {p.commandes?.length > 0 && (
+                <Commandes commandes={p.commandes} choisies={d.commandes ?? []} basculer={(id) => majDefense(majDecisions, (x) => ({ commandes: (x.commandes ?? []).includes(id) ? x.commandes.filter((y) => y !== id) : [...(x.commandes ?? []), id] }))} />
               )}
               {p.reforme && <button type="button" className="lien petit" onClick={() => allerA?.('reformes')}>Décider par la réforme correspondante →</button>}
               {p.note && <p className="tres-petit muet" style={{ margin: 0 }}>{p.note}</p>}

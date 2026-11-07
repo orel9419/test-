@@ -36,7 +36,65 @@ export const SOURCES_DEFENSE = {
   caimanMarineNN: { titre: 'Naval News : le NH90 NFH Caïman de la Marine nationale (27 commandés)', url: 'https://www.navalnews.com/naval-news/2020/04/video-nh90-nfh-caiman-maritime-helicopter-of-the-french-navy/' },
   disponibilite: { titre: 'Assemblée nationale : réponse ministérielle sur la disponibilité des hélicoptères (NH90, plan de transformation du MCO aéronautique)', url: 'https://www.assemblee-nationale.fr/dyn/15/questions/QANR5L15QE14094.pdf' },
   flancEst: { titre: 'Ministère des Armées : renforcement sur le flanc est (missions Aigle et Lynx)', url: 'https://www.defense.gouv.fr/renforcement-flanc-est' },
+  snaDeGrasse: { titre: 'Naval News : Naval Group livre le De Grasse, 4e SNA Barracuda (24 juin 2026)', url: 'https://www.navalnews.com/naval-news/2026/06/naval-group-delivers-4th-barracuda-type-submarine/' },
+  snaTourville: { titre: 'Ministère des Armées : livraison du SNA Tourville à la Marine nationale', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/Communiqu%C3%A9_Livraison%20du%20sous-marin%20nucl%C3%A9aire%20d%27attaque%20Tourville%20%C3%A0%20la%20Marine%20nationale.pdf' },
+  snaNavalGroup: { titre: 'Naval Group : lancement du Suffren (99 m, 8,8 m de diamètre, 5 300 t en plongée)', url: 'https://naval-group.com/en/presence-president-french-republic-naval-group-launches-suffren-latest-generation-nuclear' },
+  snaDds: { titre: 'Naval News : le Suffren en détail (hangar de pont d\'environ 15 m et 43 t)', url: 'https://www.navalnews.com/naval-news/2019/07/more-details-on-suffren-the-french-navy-next-gen-ssn-on-its-export-ssk-variants/' },
+  phaFlotte: { titre: 'Seaforces : porte-hélicoptères amphibies de la classe Mistral', url: 'https://www.seaforces.org/marint/French-Navy/Amphibious-Ship/Mistral-class.htm' },
+  phaModernisation: { titre: 'UK Defence Journal : la Marine nationale modernise ses trois porte-hélicoptères amphibies', url: 'https://ukdefencejournal.org.uk/french-navy-begins-upgrade-on-its-amphibious-carriers' },
+  phaQuatrieme: { titre: 'Assemblée nationale : question écrite sur l\'abandon d\'un quatrième PHA', url: 'https://www.assemblee-nationale.fr/dyn/15/questions/QANR5L15QE28514.pdf' },
+  fdaChevalierPaul: { titre: 'Marine nationale : remise à niveau opérationnelle de la frégate Chevalier Paul', url: 'https://www.defense.gouv.fr/marine/actualites/remise-niveau-operationnelle-entrainement-soutenu-chevalier-paul' },
+  fremmLorraine: { titre: 'Ministère des Armées : la DGA réceptionne la Lorraine, 8e et dernière FREMM (16 novembre 2022)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/17.11.2022%20La%20Direction%20g%C3%A9n%C3%A9rale%20de%20l%E2%80%99armement%20%28DGA%29%20r%C3%A9ceptionne%20la%20Lorraine%2C%20seconde%20fr%C3%A9gate%20multi-missions%20%C3%A0%20capacit%C3%A9%20de%20d%C3%A9fense%20a%C3%A9rienne%20renforc%C3%A9e..pdf' },
+  brfStosskopf: { titre: 'Theatrum Belli : admission au service actif du ravitailleur Jacques Stosskopf (mai 2026)', url: 'https://theatrum-belli.com/admission-au-service-actif-du-batiment-ravitailleur-de-forces-jacques-stosskopf/' },
+  brfBertin: { titre: 'Naval News : les Chantiers de l\'Atlantique mettent à l\'eau l\'Émile Bertin, 3e BRF (avril 2026)', url: 'https://www.navalnews.com/naval-news/2026/04/chantiers-de-latlantique-launches-3rd-brf-supply-ship-for-the-french-navy/' },
+  monge: { titre: 'Assemblée nationale : question écrite sur le bâtiment d\'essais et de mesures Monge', url: 'https://www.assemblee-nationale.fr/dyn/13/questions/QANR5L13QE49364.pdf' },
 };
+
+/** Délai minimal entre deux commandes supplémentaires du même matériel (trimestres). */
+export const INTERVALLE_COMMANDES = 4;
+
+/**
+ * Commandes supplémentaires, renouvelables tous les quatre trimestres :
+ * tranches de 30 (Rafale, Mirage, véhicules), de 10 (hélicoptères, Phénix),
+ * ou un bâtiment de plus (sous-marins, porte-avions, grands navires).
+ * `cout` en milliards par an pendant `duree` trimestres ; première livraison
+ * `delai` trimestres après la commande, puis `parTrimestre` par trimestre ;
+ * `cle` : compteur alimenté (créé à `depart` s'il n'existe pas) ;
+ * `maxCommandes` : nombre de commandes possibles au plus.
+ * Prix et délais : ordres de grandeur publics, arrondis (hypothèses de jeu).
+ */
+export const COMMANDES_DEFENSE = {
+  france: {
+    rafale: [{ id: 'rafale30', nom: 'Commander 30 Rafale de plus', unite: 'Rafale', quantite: 30, cle: 'rafale', cout: 1.0, duree: 16, delai: 8, parTrimestre: 3, description: 'Environ 4 Md€ étalés sur quatre ans, de l\'ordre de 130 M€ par avion avec son soutien ; Dassault livre 3 avions par trimestre à partir de la troisième année.', effets: { souverainete: 2, influence: 1, fleurons: { dassault: 5, safran: 2, thales: 2 } } }],
+    mirage2000: [{ id: 'mirage30', nom: 'Commander 30 Mirage 2000 de plus', unite: 'Mirage 2000', quantite: 30, cle: 'mirage2000d', cout: 1.1, duree: 20, delai: 16, parTrimestre: 3, description: 'La chaîne du Mirage 2000 est fermée depuis 2007 : il faut la rouvrir (outillage, fournisseurs, compétences). Environ 5,5 Md€ sur cinq ans et quatre ans d\'attente avant le premier avion. Un Rafale coûte à peine plus cher et sert jusqu\'en 2070.', effets: { souverainete: 1, fleurons: { dassault: 3, safran: 1, thales: 1 } } }],
+    phenix: [{ id: 'phenix10', nom: 'Commander 10 Phénix de plus', unite: 'Phénix', quantite: 10, cle: 'phenix', cout: 0.75, duree: 16, delai: 8, parTrimestre: 1, description: 'Environ 3 Md€ sur quatre ans (de l\'ordre de 300 M€ par appareil avec son soutien) : de quoi soutenir des raids lointains et ravitailler les alliés européens.', effets: { souverainete: 2, influence: 2, relations: { ue: 1 }, fleurons: { airbus: 3 } } }],
+    helicos: [
+      { id: 'caiman10', nom: 'Commander 10 Caïman de plus', unite: 'Caïman', quantite: 10, cle: 'caimanSupp', libelle: 'Caïman commandés en plus', depart: 0, cout: 0.2, duree: 16, delai: 8, parTrimestre: 1, description: 'Environ 0,8 Md€ sur quatre ans (environ 30 M€ l\'hélicoptère, plus le soutien) : transport de troupes, évacuation sanitaire, forces spéciales.', effets: { souverainete: 1, fleurons: { airbus: 2, safran: 1 } } },
+      { id: 'tigre10', nom: 'Commander 10 Tigre de plus', unite: 'Tigre', quantite: 10, cle: 'tigreSupp', libelle: 'Tigre commandés en plus', depart: 0, cout: 0.3, duree: 16, delai: 12, parTrimestre: 1, description: 'Environ 1,2 Md€ sur quatre ans : la chaîne du Tigre est à l\'arrêt, il faut la relancer chez Airbus Helicopters (Marignane), d\'où trois ans d\'attente.', effets: { souverainete: 1, influence: 1, fleurons: { airbus: 2, thales: 1, safran: 1 } } },
+      { id: 'caracal10', nom: 'Commander 10 Caracal de plus', unite: 'Caracal', quantite: 10, cle: 'caracalSupp', libelle: 'Caracal commandés en plus', depart: 0, cout: 0.25, duree: 16, delai: 8, parTrimestre: 1, description: 'Environ 1 Md€ sur quatre ans : hélicoptère lourd des forces spéciales et du sauvetage au combat, ravitaillable en vol.', effets: { souverainete: 1, fleurons: { airbus: 2, safran: 1 } } },
+    ],
+    scorpion: [
+      { id: 'griffon30', nom: 'Commander 30 Griffon de plus', unite: 'Griffon', quantite: 30, cle: 'griffonSupp', libelle: 'Griffon commandés en plus de la LPM', depart: 0, cout: 0.06, duree: 16, delai: 4, parTrimestre: 5, description: 'Environ 0,25 Md€ sur quatre ans (de l\'ordre de 8 M€ le véhicule avec son soutien) : livrés en un an et demi, à partir de l\'année suivante.', effets: { souverainete: 1, fleurons: { thales: 1 } } },
+      { id: 'jaguar30', nom: 'Commander 30 Jaguar de plus', unite: 'Jaguar', quantite: 30, cle: 'jaguarSupp', libelle: 'Jaguar commandés en plus de la LPM', depart: 0, cout: 0.12, duree: 16, delai: 6, parTrimestre: 5, description: 'Environ 0,5 Md€ sur quatre ans (de l\'ordre de 15 M€ le véhicule avec son soutien) : canon de 40 mm et missiles antichars.', effets: { souverainete: 1, influence: 1, fleurons: { thales: 1, safran: 1 } } },
+      { id: 'serval30', nom: 'Commander 30 Serval de plus', unite: 'Serval', quantite: 30, cle: 'servalSupp', libelle: 'Serval commandés en plus de la LPM', depart: 0, cout: 0.03, duree: 16, delai: 4, parTrimestre: 6, description: 'Environ 0,1 Md€ sur quatre ans : blindé léger 4×4, pour l\'infanterie, le génie et les unités de soutien.', effets: { souverainete: 1, fleurons: { thales: 1 } } },
+    ],
+    leclerc: [{ id: 'leclerc30', nom: 'Rénover 30 Leclerc de plus (XLR)', unite: 'Leclerc XLR', quantite: 30, cle: 'leclercSupp', libelle: 'Leclerc rénovés en plus des 200', depart: 0, cout: 0.12, duree: 16, delai: 8, parTrimestre: 3, description: 'Le Leclerc n\'est plus fabriqué depuis 2008 : on rénove au standard XLR des chars stockés. Environ 0,5 Md€ sur quatre ans.', effets: { souverainete: 1, influence: 1 } }],
+    artillerie: [{ id: 'caesar30', nom: 'Commander 30 Caesar MkII de plus', unite: 'Caesar MkII', quantite: 30, cle: 'caesarSupp', libelle: 'Caesar MkII commandés en plus des 109', depart: 0, cout: 0.03, duree: 16, delai: 4, parTrimestre: 5, description: 'Environ 0,12 Md€ sur quatre ans (109 Caesar MkII ont coûté environ 350 M€) : KNDS a fortement accéléré sa production depuis la guerre en Ukraine.', effets: { souverainete: 1, influence: 1, relations: { ukraine: 1 } } }],
+    snle3g: [{ id: 'snle1', nom: 'Commander un SNLE de 3e génération de plus', unite: 'SNLE', quantite: 1, cle: 'snleSupp', libelle: 'SNLE supplémentaires (au-delà de quatre)', depart: 0, cout: 0.4, duree: 40, delai: 48, parTrimestre: 1, description: 'Un cinquième SNLE : plusieurs milliards d\'euros (le coût unitaire n\'est pas publié ; hypothèse de jeu : 4 Md€ sur dix ans, missiles compris), douze ans de construction à Cherbourg. Plus de souplesse pour la permanence à la mer.', effets: { souverainete: 2, influence: 1, fleurons: { naval_group: 4 } } }],
+    pang: [{ id: 'pa1', nom: 'Commander un porte-avions de plus', unite: 'porte-avions', quantite: 1, cle: 'porteAvionsSupp', libelle: 'Porte-avions supplémentaires', depart: 0, cout: 0.8, duree: 48, delai: 48, parTrimestre: 1, description: 'Environ 10 Md€ sur douze ans, comme le « France Libre » (chaufferies nucléaires de TechnicAtome, coque à Saint-Nazaire) ; il faut aussi former un équipage d\'environ 2 000 marins et des Rafale Marine.', effets: { souverainete: 2, influence: 2, fleurons: { naval_group: 5 } } }],
+    sna: [{ id: 'sna1', nom: 'Commander un SNA de plus', unite: 'SNA', quantite: 1, cle: 'sna', cout: 0.25, duree: 24, delai: 28, parTrimestre: 1, maxCommandes: 4, description: 'Environ 1,5 Md€ sur six ans ; livré sept ans après la commande par Naval Group à Cherbourg. Au plus quatre de plus : dix SNA en tout.', effets: { souverainete: 2, influence: 1, fleurons: { naval_group: 3 } } }],
+    pha: [{ id: 'pha1', nom: 'Commander un porte-hélicoptères de plus', unite: 'PHA', quantite: 1, cle: 'pha', cout: 0.2, duree: 16, delai: 20, parTrimestre: 1, description: 'Environ 0,8 Md€ sur quatre ans (les deux Mistral vendus à l\'Égypte valaient environ 950 M€) ; cinq ans entre la commande et la livraison à Saint-Nazaire.', effets: { souverainete: 1, influence: 2, fleurons: { naval_group: 2 } } }],
+    fregates: [
+      { id: 'fda1', nom: 'Commander une frégate de défense aérienne de plus', unite: 'FDA', quantite: 1, cle: 'fda', libelle: 'Frégates de défense aérienne', depart: 2, cout: 0.25, duree: 20, delai: 24, parTrimestre: 1, description: 'Environ 1,25 Md€ sur cinq ans, livrée six ans après la commande : radar, missiles Aster 15 et 30, protection du porte-avions contre les avions et les missiles.', effets: { souverainete: 2, influence: 1, fleurons: { naval_group: 2, thales: 2 } } },
+      { id: 'fremm1', nom: 'Commander une FREMM de plus', unite: 'FREMM', quantite: 1, cle: 'fremm', libelle: 'Frégates multi-missions (FREMM)', depart: 8, cout: 0.2, duree: 20, delai: 24, parTrimestre: 1, description: 'Environ 1 Md€ sur cinq ans ; Naval Group a arrêté la FREMM à Lorient pour construire les FDI : il faut relancer la chaîne, d\'où six ans d\'attente.', effets: { souverainete: 2, influence: 1, fleurons: { naval_group: 2, thales: 1 } } },
+    ],
+    brf: [{ id: 'brf1', nom: 'Commander un ravitailleur de plus', unite: 'BRF', quantite: 1, cle: 'brf', cout: 0.15, duree: 16, delai: 20, parTrimestre: 1, description: 'Environ 0,6 Md€ sur quatre ans ; livré cinq ans après la commande : un groupe aéronaval et des frégates plus autonomes en haute mer.', effets: { souverainete: 1, influence: 1, fleurons: { naval_group: 1 } } }],
+    monge: [{ id: 'monge1', nom: 'Commander un bâtiment d\'essais et de mesures de plus', unite: 'bâtiment d\'essais', quantite: 1, cle: 'monge', cout: 0.2, duree: 16, delai: 24, parTrimestre: 1, description: 'Environ 0,8 Md€ sur quatre ans (hypothèse de jeu) : un second centre d\'essais flottant, ou le successeur du Monge mis en service avant son retrait.', effets: { souverainete: 2, fleurons: { naval_group: 1, thales: 2 } } }],
+  },
+};
+
+/** Commandes supplémentaires d'un programme. */
+export const commandesDuProgramme = (pays, id) => COMMANDES_DEFENSE[pays]?.[id] ?? [];
 
 /**
  * Programmes. Options : `cout` en milliards par an pendant `duree` trimestres
@@ -58,7 +116,7 @@ export const PROGRAMMES_DEFENSE = {
       capacite: { cle: 'rafale', libelle: 'Rafale en service', depart: 150, cibles: [{ annee: 2030, t: 4, valeur: 178 }, { annee: 2035, t: 4, valeur: 225 }] },
       options: [
         { id: 'nominal', nom: 'Suivre la loi de programmation militaire', description: 'Livraisons au rythme prévu.' },
-        { id: 'tranche', nom: 'Commander une tranche de 30 Rafale de plus', description: 'Environ 4 Md€ étalés sur quatre ans (hypothèse de jeu). Remplit les escadrons et soutient les exportations.', cout: 1.0, duree: 16, supplement: 30, effets: { souverainete: 2, influence: 1, fleurons: { dassault: 6, safran: 2, thales: 2 }, opinion: { entrepreneurs: 1 } } },
+        { id: 'tranche', remplaceePar: 'rafale30', nom: 'Commander une tranche de 30 Rafale de plus', description: 'Environ 4 Md€ étalés sur quatre ans (hypothèse de jeu). Remplit les escadrons et soutient les exportations.', cout: 1.0, duree: 16, supplement: 30, effets: { souverainete: 2, influence: 1, fleurons: { dassault: 6, safran: 2, thales: 2 }, opinion: { entrepreneurs: 1 } } },
         { id: 'f5', nom: 'Accélérer le standard F5 et le drone de combat', description: 'Environ 0,4 Md€ de plus par an pendant trois ans : l\'avion reste à niveau face aux défenses aériennes modernes.', cout: 0.4, duree: 12, effets: { souverainete: 2, potentiel: 0.005, fleurons: { dassault: 3, thales: 3 } }, avance: { jalon: 'rafale_f5', trimestres: 4 } },
         { id: 'etaler', nom: 'Étaler les livraisons pour économiser', description: '0,5 Md€ d\'économie par an pendant trois ans, puis un rattrapage plus coûteux : l\'étalement renchérit le coût de chaque avion.', cout: -0.5, duree: 12, puis: { cout: 0.65, duree: 12 }, livraisons: 0.5, effets: { souverainete: -2, fleurons: { dassault: -4 } }, retard: { jalon: 'rafale_f5', trimestres: 4 } },
       ],
@@ -76,7 +134,7 @@ export const PROGRAMMES_DEFENSE = {
       capacite: { cle: 'phenix', libelle: 'Phénix en service', depart: 13, cibles: [{ annee: 2028, t: 4, valeur: 15 }] },
       options: [
         { id: 'nominal', nom: 'Suivre la loi de programmation', description: '15 Phénix en 2028.' },
-        { id: 'tranche', nom: 'Commander 3 Phénix de plus', description: 'Environ 0,25 Md€ par an pendant quatre ans (hypothèse de jeu, de l\'ordre de 300 M€ par appareil avec son soutien) : plus d\'autonomie pour les opérations lointaines et l\'appui aux alliés européens.', cout: 0.25, duree: 16, supplement: 3, effets: { souverainete: 2, influence: 1, relations: { ue: 1 }, fleurons: { airbus: 2 } } },
+        { id: 'tranche', remplaceePar: 'phenix10', nom: 'Commander 3 Phénix de plus', description: 'Environ 0,25 Md€ par an pendant quatre ans (hypothèse de jeu, de l\'ordre de 300 M€ par appareil avec son soutien) : plus d\'autonomie pour les opérations lointaines et l\'appui aux alliés européens.', cout: 0.25, duree: 16, supplement: 3, effets: { souverainete: 2, influence: 1, relations: { ue: 1 }, fleurons: { airbus: 2 } } },
         { id: 'soutien', nom: 'Renforcer le contrat de soutien (disponibilité)', description: '0,1 Md€ par an pendant quatre ans (hypothèse de jeu) : plus de pièces et d\'équipes de maintenance, moins d\'avions immobilisés.', cout: 0.1, duree: 16, effets: { souverainete: 1, fleurons: { airbus: 1 } } },
       ],
       jalons: [{ id: 'phenix_15', influence: 0, annee: 2028, t: 4, texte: 'Le 15e A330 Phénix est livré : les C-135 sont entièrement remplacés.' }],
@@ -200,6 +258,76 @@ export const PROGRAMMES_DEFENSE = {
       ],
       note: 'Jamais disponible avant 2032, même avec la loi d\'accélération ; sans elle, mise en service vers 2038.',
       sources: ['pang', 'pangNom'],
+    },
+    {
+      id: 'sna', nom: 'Sous-marins nucléaires d\'attaque (classe Suffren)', sousTitre: 'Programme Barracuda : six SNA pour remplacer la classe Rubis', illustration: 'snle', domaine: 'Marine',
+      industriels: ['Naval Group (Cherbourg)', 'TechnicAtome (chaufferie nucléaire)', 'MBDA (missile de croisière naval, Exocet SM39)', 'Thales (sonars)'], fleurons: ['naval_group', 'thales'],
+      faits: [
+        'Le SNA escorte le porte-avions, protège la sortie des SNLE, chasse sous-marins et navires adverses, renseigne près des côtes et frappe à terre avec le missile de croisière naval (environ 1 000 km de portée).',
+        '99 m de long, 8,8 m de diamètre, 5 300 t en plongée (Naval Group) ; environ 65 marins ; torpilles lourdes F21, Exocet SM39, missiles de croisière et mines ; un hangar de pont amovible (environ 15 m, 43 t) met à l\'eau les nageurs de combat des forces spéciales.',
+        'Suffren (service actif en 2022), Duguay-Trouin (2024) et Tourville (2025) naviguent ; le De Grasse a été livré le 24 juin 2026. Rubis et Casabianca suivent d\'ici 2029-2030.',
+      ],
+      capacite: { cle: 'sna', libelle: 'SNA de la classe Suffren livrés', depart: 4 },
+      options: [{ id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Six SNA vers 2030. Avec les commandes supplémentaires, jusqu\'à dix.' }],
+      jalons: [
+        { id: 'sna_rubis', influence: 0, annee: 2028, t: 3, capacite: 1, texte: 'Le Rubis, 5e SNA de la classe Suffren, est livré (date indicative).' },
+        { id: 'sna_casabianca', influence: 0, annee: 2029, t: 4, capacite: 1, texte: 'Le Casabianca, 6e et dernier SNA du programme Barracuda, est livré : la classe Rubis est remplacée (date indicative).' },
+      ],
+      sources: ['snaDeGrasse', 'snaTourville', 'snaNavalGroup', 'snaDds'],
+    },
+    {
+      id: 'pha', nom: 'Porte-hélicoptères amphibies (classe Mistral)', sousTitre: 'Mistral, Tonnerre et Dixmude : projeter troupes, blindés et hélicoptères', illustration: 'porteAvions', domaine: 'Marine',
+      industriels: ['Chantiers de l\'Atlantique (Saint-Nazaire)', 'Naval Group', 'Thales (systèmes, modernisation)'], fleurons: ['naval_group', 'thales'],
+      faits: [
+        'Trois porte-hélicoptères amphibies : Mistral (2006), Tonnerre (2007) et Dixmude (2012). 199 m, environ 21 000 t ; jusqu\'à 16 hélicoptères lourds, 450 soldats (900 pour une courte durée), des engins de débarquement dans un radier et un hôpital de 69 lits.',
+        'Ils évacuent aussi des ressortissants et portent l\'aide humanitaire : Liban en 2006 et en 2020, Dixmude transformé en navire-hôpital au large de Gaza en 2023.',
+        'Deux autres Mistral, construits pour la Russie, ont été revendus à l\'Égypte après l\'annexion de la Crimée (2015) ; un quatrième PHA français, un temps envisagé, n\'a pas été construit.',
+      ],
+      capacite: { cle: 'pha', libelle: 'Porte-hélicoptères amphibies', depart: 3 },
+      options: [{ id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Trois PHA, modernisés (systèmes de combat et de navigation) ; leur successeur reste à définir.' }],
+      jalons: [],
+      sources: ['phaFlotte', 'phaModernisation', 'phaQuatrieme'],
+    },
+    {
+      id: 'fregates', nom: 'Frégates : Horizon (Chevalier Paul) et FREMM', sousTitre: 'Défense aérienne, lutte anti-sous-marine et frappe à terre', illustration: 'porteAvions', domaine: 'Marine',
+      industriels: ['Naval Group (Lorient)', 'MBDA (Aster, Exocet, missile de croisière naval)', 'Thales (radars, sonars)', 'Leonardo (canons de 76 mm)'], fleurons: ['naval_group', 'thales'],
+      faits: [
+        'Deux frégates de défense aérienne de la classe Horizon (programme franco-italien) : Forbin (D620) et Chevalier Paul (D621). 153 m, 7 000 t, 48 missiles Aster 15 et 30 sous le grand radôme du radar : elles protègent le porte-avions.',
+        'Huit FREMM (frégates multi-missions, 142 m, 6 000 t), de l\'Aquitaine (2012) à la Lorraine (livrée le 16 novembre 2022) : six anti-sous-marines, armées du missile de croisière naval, et deux à défense aérienne renforcée (Alsace, Lorraine).',
+        'Objectif de la loi de programmation : quinze frégates de premier rang en 2030 (2 FDA, 8 FREMM et 5 frégates de défense et d\'intervention, les FDI).',
+      ],
+      options: [{ id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Deux FDA et huit FREMM, rejointes par les FDI d\'ici 2030.' }],
+      jalons: [],
+      sources: ['fdaChevalierPaul', 'fremmLorraine'],
+    },
+    {
+      id: 'brf', nom: 'Ravitailleurs de forces (BRF)', sousTitre: 'Carburant, munitions et vivres en pleine mer pour le groupe aéronaval', illustration: 'porteAvions', domaine: 'Marine',
+      industriels: ['Chantiers de l\'Atlantique (Saint-Nazaire)', 'Naval Group (systèmes militaires)', 'Fincantieri (conception dérivée du Vulcano italien)'], fleurons: ['naval_group'],
+      faits: [
+        'Quatre BRF remplacent les pétroliers-ravitailleurs de la classe Durance : 194 m, environ 31 000 t, des portiques pour ravitailler deux navires à la fois en route, un hangar et une plateforme pour hélicoptère.',
+        'Jacques Chevallier (livré en 2023) et Jacques Stosskopf (au service actif depuis mai 2026) naviguent ; l\'Émile Bertin, mis à l\'eau le 17 avril 2026, est attendu en 2027 ; le Gustave Zédé aurait glissé vers 2032 (presse spécialisée).',
+        'Sans ravitailleur, un porte-avions et son escorte doivent rentrer au port bien plus souvent : c\'est l\'autonomie de la flotte en haute mer.',
+      ],
+      capacite: { cle: 'brf', libelle: 'Ravitailleurs de forces en service', depart: 2 },
+      options: [{ id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Quatre BRF.' }],
+      jalons: [
+        { id: 'brf_bertin', influence: 0, annee: 2027, t: 4, capacite: 1, texte: 'L\'Émile Bertin, 3e ravitailleur de forces, est livré à la Marine nationale (date indicative).' },
+        { id: 'brf_zede', influence: 0, annee: 2032, t: 2, capacite: 1, texte: 'Le Gustave Zédé, 4e et dernier ravitailleur de forces, est livré (date indicative).' },
+      ],
+      sources: ['brfStosskopf', 'brfBertin'],
+    },
+    {
+      id: 'monge', nom: 'Bâtiment d\'essais et de mesures « Monge »', sousTitre: 'Suivre en mer les essais de missiles et les lancements spatiaux', illustration: 'porteAvions', domaine: 'Marine et Dissuasion',
+      industriels: ['Chantiers de l\'Atlantique (construction)', 'DGA Essais de missiles', 'Thales (radars)'], fleurons: ['naval_group', 'thales'],
+      faits: [
+        'Le Monge (A601), en service depuis 1992, est un centre d\'essais flottant : ses radars, ses antennes de télémesure et ses moyens optiques suivent les tirs d\'essai du missile M51 de la dissuasion et des lancements spatiaux.',
+        'Environ 225 m de long : après le Charles-de-Gaulle, c\'est le plus long bâtiment de la Marine nationale. Son équipage mêle marins et ingénieurs de la DGA.',
+        'Unique en Europe, il permet à la France de valider seule ses missiles, sans dépendre d\'un allié.',
+      ],
+      capacite: { cle: 'monge', libelle: 'Bâtiments d\'essais et de mesures', depart: 1 },
+      options: [{ id: 'nominal', nom: 'Le garder en service', description: 'Le Monge continue de suivre les essais ; son remplacement n\'est pas encore programmé.' }],
+      jalons: [],
+      sources: ['monge'],
     },
     {
       id: 'successeur', nom: 'Successeur du Rafale', sousTitre: 'Après l\'abandon du chasseur commun du SCAF (juin 2026, selon la presse)', illustration: 'chasseurFutur', domaine: 'Air',

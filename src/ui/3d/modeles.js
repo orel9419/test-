@@ -108,7 +108,7 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
  * Texture procédurale de panneaux (tuiles anéchoïques d'un sous-marin) :
  * fines lignes claires sur fond sombre, répétées le long de la coque.
  */
-function texturePanneaux(THREE, { fond = '#141618', trait = 'rgba(210,215,220,0.16)', repetition = [10, 3] } = {}) {
+export function texturePanneaux(THREE, { fond = '#141618', trait = 'rgba(210,215,220,0.16)', repetition = [10, 3] } = {}) {
   const c = document.createElement('canvas');
   c.width = 1024; c.height = 512;
   const ctx = c.getContext('2d');
@@ -500,14 +500,14 @@ export function construireSnle(THREE) {
   // « Dos » du compartiment missiles, derrière le kiosque
   sub.add(new THREE.Mesh(loft(THREE, [
     { x: 40, w: 3, hHaut: 0.2, hBas: 2.5, y: R - 0.3, n: 2.2 },
-    { x: 45, w: 9.4, hHaut: 1.45, hBas: 3.5, y: R - 0.2, n: 3.2 },
-    { x: 81, w: 9.4, hHaut: 1.45, hBas: 3.5, y: R - 0.2, n: 3.2 },
+    { x: 45, w: 9.4, hHaut: 0.55, hBas: 3.5, y: R - 0.2, n: 3.2 },
+    { x: 81, w: 9.4, hHaut: 0.55, hBas: 3.5, y: R - 0.2, n: 3.2 },
     { x: 88, w: 3, hHaut: 0.2, hBas: 2.5, y: R - 0.3, n: 2.2 },
   ], { segments: 40, parSegment: 6 }).scale(s, s, s), coqueDos));
 
   // 16 tubes (2 rangées de 8) et leurs trappes, articulées côté extérieur
   const trappes = [];
-  const dessusDos = R - 0.2 + 1.45;
+  const dessusDos = R - 0.2 + 0.55;
   for (let i = 0; i < 8; i++) {
     for (const cote of [1, -1]) {
       const x = 47.5 + i * 4.4;
@@ -539,51 +539,52 @@ export function construireSnle(THREE) {
   contour.quadraticCurveTo(13.2, -0.3, 11.5, -0.7);
   contour.lineTo(4.5, -1.4);
   contour.bezierCurveTo(2.2, -1.45, 0, -1.35, 0, 0);
-  const kiosqueGeo = new THREE.ExtrudeGeometry(contour, { depth: 9.5, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.3, bevelSegments: 3, curveSegments: 16 });
+  const kiosqueGeo = new THREE.ExtrudeGeometry(contour, { depth: 7.2, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.3, bevelSegments: 3, curveSegments: 16 });
   kiosqueGeo.rotateX(-Math.PI / 2);
-  kiosqueGeo.translate(27, R - 1.2, 0);
+  kiosqueGeo.translate(31.5, R - 1.2, 0);
   kiosqueGeo.scale(s, s, s);
   sub.add(new THREE.Mesh(kiosqueGeo, coqueDos));
   const barre = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.35, 11.5), coqueDos);
-  barre.position.set(31.2 * s, (R + 4.6) * s, 0);
+  barre.position.set(35.7 * s, (R + 3.6) * s, 0);
   barre.scale.setScalar(s);
   sub.add(barre);
   // Mâts et périscopes
-  [[29.5, 1.6], [31, 2.4], [32.6, 1.9], [34.4, 1.2]].forEach(([x, h]) => {
+  [[34, 1.6], [35.5, 2.4], [37.1, 1.9], [38.9, 1.2]].forEach(([x, h]) => {
     const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, h, 12), metal);
-    mat.position.set(x * s, (R + 8.6 + h / 2) * s, 0);
+    mat.position.set(x * s, (R + 6.3 + h / 2) * s, 0);
     mat.scale.setScalar(s);
     sub.add(mat);
   });
 
   // Gouvernes en croix (avec plaques d'extrémité) et hydrojet
-  const gouverneV = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(5.2, 0), new THREE.Vector2(6.6, 5.4), new THREE.Vector2(3.0, 5.4)]);
+  // D'après le plan de profil (domaine public) : gouvernes en croix presque rectangulaires, envergure proche du diamètre
+  const gouverneV = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(3.8, 0), new THREE.Vector2(4.2, 2.9), new THREE.Vector2(0.9, 2.9)]);
   for (const sens of [1, -1]) {
     const g = new THREE.ExtrudeGeometry(gouverneV, { depth: 0.5, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 2 });
-    g.translate(119, 0, -0.25);
+    g.translate(124.2, 0, -0.25);
     const m = new THREE.Mesh(g, coque);
     m.scale.set(s, sens * s, s);
-    m.position.y = sens * (R - 2.6) * s;
+    m.position.y = sens * 3.1 * s;
     sub.add(m);
     const h = new THREE.ExtrudeGeometry(gouverneV, { depth: 0.5, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 2 });
-    h.translate(119, 0, -0.25);
+    h.translate(124.2, 0, -0.25);
     h.rotateX(Math.PI / 2);
     const mh = new THREE.Mesh(h, coque);
     mh.scale.set(s, s, sens * s);
-    mh.position.z = sens * (R - 2.6) * s;
+    mh.position.z = sens * 3.1 * s;
     sub.add(mh);
-    const plaque = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.8, 0.4), coque);
-    plaque.position.set(123.6 * s, 0, sens * (R - 2.6 + 5.4) * s);
+    const plaque = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.2, 0.35), coque);
+    plaque.position.set(126.4 * s, 0, sens * 6.0 * s);
     plaque.scale.setScalar(s);
     sub.add(plaque);
   }
-  const carenage = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.0, 4.2, 40, 1, true), coque);
+  const carenage = new THREE.Mesh(new THREE.CylinderGeometry(3.0, 2.7, 5.6, 40, 1, true), coque);
   carenage.material = coque.clone();
   carenage.material.side = THREE.DoubleSide;
   carenage.rotation.z = Math.PI / 2;
-  carenage.position.set(135.6 * s, 0, 0);
+  carenage.position.set(135.4 * s, 0, 0);
   carenage.scale.setScalar(s);
-  const moyeu = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3.5, 24), metal);
+  const moyeu = new THREE.Mesh(new THREE.ConeGeometry(1.5, 4.2, 24), metal);
   moyeu.rotation.z = -Math.PI / 2;
   moyeu.position.set(136.8 * s, 0, 0);
   moyeu.scale.setScalar(s);
@@ -610,10 +611,10 @@ export function construireSnle(THREE) {
   groupe.userData.missile = m51;
   groupe.userData.dessusDos = dessusDos * s;
   groupe.userData.legendes = [
-    { texte: 'Kiosque', point: decal(33, R + 9.5, 0) },
-    { texte: 'Barres de plongée', point: decal(31, R + 4.6, 5.8) },
+    { texte: 'Kiosque', point: decal(37.5, R + 7, 0) },
+    { texte: 'Barres de plongée', point: decal(35.7, R + 3.6, 5.8) },
     { texte: '16 tubes de missiles M51', point: decal(64, dessusDos + 0.5, 3.5) },
-    { texte: 'Gouvernes', point: decal(124, R + 1, 0) },
+    { texte: 'Gouvernes en croix', point: decal(126, 6, 0) },
     { texte: 'Hydrojet (propulsion)', point: decal(136.5, 2.4, 0) },
     { texte: 'Étrave (sonar)', point: decal(2, 0, 3) },
   ];
