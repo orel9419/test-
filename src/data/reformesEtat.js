@@ -6,6 +6,7 @@
  * Montants sans source : hypothèses de jeu, signalées comme telles.
  */
 
+import { avancerFonds, partFrance } from '../engine/fondsSouverain.js';
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const prix = (e) => e.macro.niveauPrix / 100;
 const FR = ['france'];
@@ -224,7 +225,11 @@ export const REFORMES_ETAT = [
       { id: 'economies', nom: 'Réinvestir 25 % des économies du plafond de dépense publique (pour amortir la perte de PIB)' },
     ],
     delai: 2,
-    /** Capital du fonds : apports du trimestre, rendement de 5 % par an réinvesti (hypothèse de jeu). */
+    /**
+     * Portefeuille du fonds : apports du trimestre placés sur le CAC 40, le
+     * S&P 500, le STOXX Europe 600 et les marchés émergents selon la
+     * répartition choisie ; cours et dividendes réinvestis (voir engine/fondsSouverain.js).
+     */
     piloter(e, entree, age) {
       const p = (entree.pilotage ??= { capital: 0, flux: 0, age: -1 });
       if (p.age === age) return;
@@ -233,8 +238,7 @@ export const REFORMES_ETAT = [
       else if (entree.option === 'emprunt') flux = age < 20 ? 20 * prix(e) : 0;
       else if (entree.option === 'epargne') flux = 10 * prix(e) * rampe(age, 4);
       else if (entree.option === 'economies') flux = 0.25 * (e.reformes.actives.find((a) => a.id === 'plafond_depense_pib')?.pilotage?.economie ?? 0);
-      p.capital = p.capital * (1 + 0.05 / 4) + flux / 4;
-      p.flux = flux;
+      avancerFonds(e, entree, flux);
       p.age = age;
     },
     effets(e, o, age, entree) {
@@ -243,12 +247,15 @@ export const REFORMES_ETAT = [
       const pib = e.macro.pibNominal;
       const fluxPIB = (p.flux / pib) * 100;
       const capitalPIB = (p.capital / pib) * 100;
-      // Investissement : soutien à la demande (moins fort pour une épargne seulement réorientée), puis capital productif
+      // Seule la part placée dans des entreprises françaises (CAC 40, part française du STOXX Europe 600)
+      // soutient l'investissement en France ; le reste diversifie les risques et rapporte, sans effet sur l'activité
+      const france = partFrance(p);
       const k = o === 'epargne' ? 0.3 : 0.6;
       const eff = {
-        chocDemande: k * fluxPIB * 0.2,
-        potentielBonus: Math.min(0.3, 0.012 * capitalPIB),
-        souverainete: Math.min(4, 0.3 * capitalPIB),
+        chocDemande: k * fluxPIB * 0.2 * france,
+        potentielBonus: Math.min(0.3, 0.012 * capitalPIB * france),
+        souverainete: Math.min(4, 0.3 * capitalPIB * france),
+        influence: Math.min(1.5, 0.04 * capitalPIB),
       };
       if (o === 'participations') eff.recettes = { fixe: -p.flux };
       if (o === 'emprunt' || o === 'economies') eff.cessions = -p.flux / 4;

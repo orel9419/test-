@@ -43,6 +43,7 @@ import Express from './express/Express.jsx';
 import Hangar from './composants/Hangar.jsx';
 import Geopolitique from './ecrans/Geopolitique.jsx';
 import ProduireEnFrance from './ecrans/ProduireEnFrance.jsx';
+import FondsSouverain from './ecrans/FondsSouverain.jsx';
 import Institutions from './ecrans/Institutions.jsx';
 
 const ONGLETS = [
@@ -66,6 +67,7 @@ const ONGLETS = [
   { id: 'securite', nom: 'Sécurité et justice', court: 'Sécurité', icone: '🛡️' },
   { id: 'geopolitique', nom: 'Géopolitique', court: 'Géopolitique', icone: '🗺️' },
   { id: 'relocalisation', nom: 'Produire en France', court: 'Produire', icone: '🇫🇷' },
+  { id: 'fonds', nom: 'Fonds souverain', court: 'Fonds', icone: '💰' },
   { id: 'institutions', nom: 'Institutions', court: 'Institutions', icone: '⚖️' },
 ];
 
@@ -75,13 +77,13 @@ const RUBRIQUES = [
   { id: 'gouverner', nom: 'Gouverner', court: 'Gouverner', icone: '📜', onglets: ['reformes', 'budget', 'fiscalite'] },
   { id: 'regalien', nom: 'Régalien', court: 'Régalien', icone: '🎖️', onglets: ['armees', 'dissuasion', 'securite'] },
   { id: 'politique', nom: 'Politique et opinion', court: 'Opinion', icone: '📣', onglets: ['institutions', 'communication', 'opinion', 'parlement', 'evenements'] },
-  { id: 'economie', nom: 'Économie', court: 'Économie', icone: '🏭', onglets: ['relocalisation', 'entreprises', 'menages'] },
+  { id: 'economie', nom: 'Économie', court: 'Économie', icone: '🏭', onglets: ['relocalisation', 'entreprises', 'fonds', 'menages'] },
   { id: 'monde', nom: 'Monde', court: 'Monde', icone: '🌍', onglets: ['geopolitique', 'diplomatie', 'classements', 'rendezvous'] },
   { id: 'journal', nom: 'Journal et sources', court: 'Journal', icone: '🗞️', onglets: ['journal', 'sources'] },
 ];
 const rubriqueDe = (onglet) => RUBRIQUES.find((r) => r.onglets.includes(onglet)) ?? RUBRIQUES[0];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [], gan: null, gan2: null, relocalisations: [], congres: false, cohabitation: null };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [], gan: null, gan2: null, fondsAllocation: null, relocalisations: [], congres: false, cohabitation: null };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -320,7 +322,7 @@ export default function App() {
   const nbActionsEntreprises = (decisions.entreprises?.length ?? 0) + (decisions.programmes?.length ?? 0);
   const rubrique = rubriqueDe(onglet);
   const essentielle = options.interface === 'essentielle';
-  const reserveFrance = (id) => ['geopolitique', 'relocalisation', 'institutions'].includes(id) && partie.pays !== 'france';
+  const reserveFrance = (id) => ['geopolitique', 'relocalisation', 'institutions', 'fonds'].includes(id) && partie.pays !== 'france';
   const visible = (id) => !reserveFrance(id) && (!essentielle || !ONGLETS_AVANCES.includes(id) || id === onglet);
   const rubriques = RUBRIQUES.map((r) => ({ ...r, onglets: r.onglets.filter(visible) })).filter((r) => r.onglets.length > 0);
   const ongletsRubrique = rubriques.find((r) => r.id === rubrique.id)?.onglets ?? [onglet];
@@ -335,6 +337,7 @@ export default function App() {
     geopolitique: (decisions.gan ? 1 : 0) + (decisions.gan2 ? 1 : 0),
     institutions: (decisions.questionConfiance && partie.pays === 'france' ? 1 : 0) + (decisions.congres ? 1 : 0) + (decisions.cohabitation && decisions.cohabitation !== 'promulguer' ? 1 : 0),
     relocalisation: decisions.relocalisations?.length ?? 0,
+    fonds: decisions.fondsAllocation ? 1 : 0,
     armees: decisions.defense ? Object.values(decisions.defense.programmes ?? {}).filter((o) => o !== 'nominal').length + Object.keys(decisions.defense.operations ?? {}).length + (decisions.defense.exports?.length ?? 0) : 0,
     dissuasion: decisions.defense?.dissuasion ? 1 : 0,
     parlement: trimestreBudget ? 'budget' : null,
@@ -408,6 +411,7 @@ export default function App() {
             {onglet === 'institutions' && <Institutions {...props} allerA={setOnglet} />}
             {onglet === 'geopolitique' && <Geopolitique {...props} allerA={setOnglet} />}
             {onglet === 'relocalisation' && <ProduireEnFrance {...props} />}
+            {onglet === 'fonds' && <FondsSouverain {...props} allerA={setOnglet} />}
             {onglet === 'tableau' && <TableauDeBord {...props} allerA={setOnglet} conseils={conseils} />}
             {onglet === 'budget' && <Budget {...props} />}
             {onglet === 'fiscalite' && <Fiscalite {...props} />}

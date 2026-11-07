@@ -709,3 +709,6 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-elysee .visionneuse-scene, .visionneuse-matignon .visionneuse-scene, .visionneuse-assemblee .visionneuse-scene, .visionneuse-senat .visionneuse-scene { background: linear-gradient(180deg, #8fb8de 0%, #c7dbee 60%, #dfe6ee 100%); }
 .visionneuse-hemicycleAN .visionneuse-scene, .visionneuse-hemicycleSenat .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #4a3a33 0%, #2a201c 70%, #17110f 100%); }
 :root[data-theme="dark"] .visionneuse-caesar .visionneuse-scene, :root[data-theme="dark"] .visionneuse-griffon .visionneuse-scene, :root[data-theme="dark"] .visionneuse-jaguar .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45473c 0%, #2b2c25 60%, #191a15 100%); }
+.option.repartition-fonds { display: grid; gap: 0.3rem; border-color: var(--bordure); }
+.barre-repartition { display: flex; height: 18px; border-radius: 5px; overflow: hidden; gap: 2px; background: var(--surface); }
+.barre-repartition span { display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: #fff; min-width: 0; white-space: nowrap; overflow: hidden; }

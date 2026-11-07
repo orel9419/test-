@@ -46,6 +46,7 @@ import { majSucces, SUCCES } from './succes.js';
 import { etatCapitalisationInitial, majCapitalisation, ALLOCATIONS } from './capitalisation.js';
 import { ANNEE_FIN, calendrierJusqua2050, nbToursJusqua } from './horizon.js';
 import { initialiserClassements, majClassements } from './classements.js';
+import { choisirAllocation } from './fondsSouverain.js';
 import { initialiserG7, tenirSommet, preparerSommet } from './g7.js';
 import { initialiserNotation, notesDepuisDonnees, majNotation } from './notation.js';
 import { controleConstitutionnel } from './constitution.js';
@@ -76,6 +77,7 @@ export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
 export { resumeDefense, domaineReserve } from './defense.js';
 export { resumeGeopolitique, porteAvions, flotte } from './geopolitique.js';
+export { resumeFonds, choisirAllocation, MARCHES_FONDS, ALLOCATIONS_FONDS } from './fondsSouverain.js';
 export { resumeRelocalisation } from './relocalisation.js';
 export { resumeInstitutions, configuration as configurationInstitutions, cohabitationJoueur } from './institutions.js';
 export { resumeChantiers } from './chantiers.js';
@@ -378,6 +380,8 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   // Géopolitique (France) : déplacement du groupe aéronaval, présence et tensions (aléa séparé)
   if (decisions.gan) e.resultatsTour.gan = deplacerGroupe(e, decisions.gan);
   if (decisions.gan2) e.resultatsTour.gan2 = deplacerGroupe(e, decisions.gan2, 2);
+  // Fonds souverain : répartition entre les marchés (rééquilibrage au trimestre suivant)
+  if (decisions.fondsAllocation) e.resultatsTour.fonds = choisirAllocation(e, decisions.fondsAllocation);
   if (!options.sansPolitique) majGeopolitique(e);
   // Produire en France : demandes aux grands groupes (aléa séparé)
   for (const r of decisions.relocalisations ?? []) (e.resultatsTour.relocalisations ??= []).push({ id: r.id, ...demanderProduction(e, r.id, r.levier) });

@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { creerPartie, jouerTour, flotte, resumeGeopolitique } from '../src/engine/index.js';
+import { creerPartie, jouerTour, flotte, resumeGeopolitique, resumeFonds } from '../src/engine/index.js';
 import { deplacerGroupe } from '../src/engine/geopolitique.js';
 
 const lire = (f) => JSON.parse(readFileSync(new URL(`../countries/${f}.json`, import.meta.url), 'utf8'));
@@ -27,18 +27,52 @@ describe('Fonds souverain', () => {
     expect(Math.abs(avec.finances.deficitRatio - sans.finances.deficitRatio)).toBeLessThan(0.5);
   });
 
-  it('réinvestir une partie des économies amortit la perte de PIB du plafond de dépense', () => {
+  it('réinvestir une partie des économies amortit la perte de PIB, d\'autant plus que le fonds investit en France', () => {
     const plafond = { id: 'plafond_depense_pib', option: '47_43' };
     const seul = jouer(nouvelle(), 16, { reformes: [plafond] });
-    const avecFonds = jouer(nouvelle(), 16, { reformes: [plafond, { id: 'fonds_souverain', option: 'economies' }] });
-    expect(avecFonds.macro.pibReel).toBeGreaterThan(seul.macro.pibReel + 1.5);
-    expect(avecFonds.macro.chomage).toBeLessThan(seul.macro.chomage);
-    expect(fonds(avecFonds).capital).toBeGreaterThan(100);
+    const france = jouer(nouvelle(), 16, { reformes: [plafond, { id: 'fonds_souverain', option: 'economies' }], fondsAllocation: 'france' });
+    const monde = jouer(nouvelle(), 16, { reformes: [plafond, { id: 'fonds_souverain', option: 'economies' }], fondsAllocation: 'monde' });
+    expect(france.macro.pibReel).toBeGreaterThan(seul.macro.pibReel + 1.5);
+    expect(france.macro.chomage).toBeLessThan(seul.macro.chomage);
+    expect(monde.macro.pibReel).toBeLessThan(france.macro.pibReel);
+    expect(fonds(france).capital).toBeGreaterThan(100);
   });
 
   it('sans plafond de dépense, l\'option « économies » n\'investit rien', () => {
     const e = jouer(nouvelle(), 8, { reformes: [{ id: 'fonds_souverain', option: 'economies' }] });
     expect(fonds(e).capital).toBe(0);
+  });
+});
+
+describe('Portefeuille du fonds souverain', () => {
+  it('investit dans le CAC 40, le S&P 500, le STOXX Europe 600 et les marchés émergents, avec un historique depuis sa création', () => {
+    let e = jouer(nouvelle(), 1, { reformes: [{ id: 'fonds_souverain', option: 'emprunt' }] });
+    expect(resumeFonds(e).actif).toBe(false); // loi votée, le fonds démarre après le délai d'application
+    e = jouer(e, 12);
+    const r = resumeFonds(e);
+    expect(r.actif).toBe(true);
+    expect(r.poches.map((p) => p.id)).toEqual(['cac40', 'sp500', 'stoxx600', 'emergents']);
+    expect(r.historique[0].niveaux).toEqual({ cac40: 100, sp500: 100, stoxx600: 100, emergents: 100 });
+    expect(r.historique.length).toBeGreaterThan(8);
+    // Répartition équilibrée par défaut : 30 / 30 / 25 / 15 % des apports
+    const premier = r.historique[0];
+    expect(premier.poches.cac40 / premier.capital).toBeCloseTo(0.3, 5);
+    expect(premier.poches.emergents / premier.capital).toBeCloseTo(0.15, 5);
+    // Le capital suit les apports et les marchés ; les dividendes sont réinvestis
+    expect(r.apports).toBeGreaterThan(40);
+    expect(r.dividendes).toBeGreaterThan(0);
+    expect(r.capital).toBeCloseTo(r.poches.reduce((s, p) => s + p.valeur, 0), 6);
+    expect(Math.abs(r.capital - r.apports)).toBeLessThan(r.apports * 0.6);
+  });
+
+  it('changer de répartition rééquilibre le portefeuille au trimestre suivant', () => {
+    let e = jouer(nouvelle(), 8, { reformes: [{ id: 'fonds_souverain', option: 'emprunt' }] });
+    e = jouerTour(e, { fondsAllocation: 'monde' }, SANS);
+    const r = resumeFonds(e);
+    expect(r.allocation).toBe('monde');
+    expect(r.poches.find((p) => p.id === 'sp500').part).toBeCloseTo(0.45, 5);
+    expect(r.partFrance).toBeLessThan(0.2);
+    expect(e.journal.some((j) => j.texte.includes('nouvelle répartition'))).toBe(true);
   });
 });
 
