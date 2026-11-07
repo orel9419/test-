@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Info from '../composants/Info.jsx';
-import { resumeGeopolitique } from '../../engine/index.js';
+import { resumeGeopolitique, compositionGroupes } from '../../engine/index.js';
 import { GROUPE_AERONAVAL } from '../../data/geopolitique.js';
 import { PARTENAIRES } from '../../data/diplomatie.js';
 import { md } from '../format.js';
@@ -85,6 +85,44 @@ function CarteMonde({ theatres, groupes, choisi, onChoisir }) {
   );
 }
 
+/**
+ * Vue 3D du ou des groupes aéronavals, telle que la voit le président, chef des
+ * armées : porte-avions en service et escorte disponible dans la partie.
+ */
+function VueGroupes({ partie, nomTheatre, ouvert, basculer }) {
+  const c = compositionGroupes(partie);
+  if (!c.groupes.length) return <p className="petit muet" style={{ margin: 0 }}>Aucun porte-avions en service : pas de groupe aéronaval à montrer.</p>;
+  const deux = c.groupes.length > 1;
+  const NOMS = { fda: 'frégate de défense aérienne', fremm: 'FREMM', sna: 'SNA', brf: 'ravitailleur' };
+  return (
+    <div className="pile vue-groupes" style={{ gap: '0.4rem' }}>
+      <button type="button" className={`bouton ${ouvert ? '' : 'principal'}`} onClick={basculer}>{ouvert ? 'Masquer la vue 3D' : `🎖️ Voir ${deux ? 'les deux groupes aéronavals' : 'le groupe aéronaval'} en 3D`}</button>
+      <ul className="tres-petit" style={{ margin: 0, paddingLeft: '1rem' }}>
+        {c.groupes.map((g) => (
+          <li key={g.numero}>
+            <strong>{deux ? `Groupe ${g.numero} · ` : ''}{g.nom}</strong> ({nomTheatre(g.position)}) : {Object.entries(g.escorte).filter(([, n]) => n > 0).map(([k, n]) => `${n} ${NOMS[k]}${n > 1 && k !== 'fremm' ? 's' : ''}`).join(', ') || 'sans escorte'}
+            {g.manques.length > 0 && <span className="negatif"> · il manque : {g.manques.join(', ')}</span>}
+          </li>
+        ))}
+      </ul>
+      {c.groupes.some((g) => g.manques.length) && <p className="tres-petit muet" style={{ margin: 0 }}>Environ deux bâtiments sur trois sont disponibles à un moment donné ; les autres sont en entretien ou en entraînement. Pour armer deux groupes complets, commandez des escorteurs (onglet Armées, Marine).</p>}
+    </div>
+  );
+}
+
+/** Visionneuse 3D des groupes, en pleine largeur. */
+function Groupes3D({ partie }) {
+  const c = compositionGroupes(partie);
+  if (!c.groupes.length) return null;
+  return (
+    <div className="carte pile">
+      <h3 style={{ margin: 0 }}>🎖️ {c.groupes.length > 1 ? 'Les deux groupes aéronavals' : 'Le groupe aéronaval'} vu par le chef des armées</h3>
+      <p className="tres-petit muet" style={{ margin: 0 }}>Le président de la République décide de leur déploiement (domaine réservé). Composition de votre partie ; distances resserrées pour tout voir d'un coup d'œil. Bouton « Ravitaillement à la mer » : le ravitailleur vient à couple du porte-avions.</p>
+      <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D key={JSON.stringify(c.groupes)} modele="groupeAeronaval" hauteur={420} donnees={{ groupes: c.groupes }} /></Suspense>
+    </div>
+  );
+}
+
 /** Fiche d'un groupe aéronaval : porte-avions, position, potentiel, ordre en attente. */
 function FicheGroupe({ g, numero, plusieurs, destination, nomTheatre, onAnnuler }) {
   const pa = g.porteAvions ?? {};
@@ -147,11 +185,12 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
           ))}
           {!plusieurs && <p className="tres-petit muet" style={{ margin: 0 }}>Deux groupes aéronavals : gardez le Charles-de-Gaulle jusqu'en 2040 avec un « France Libre » accéléré à 2032, ou décidez de construire deux porte-avions (onglets Armées et Réformes).</p>}
           <ul className="tres-petit muet" style={{ margin: 0, paddingLeft: '1rem' }}>{GROUPE_AERONAVAL.composition.map((c) => <li key={c}>{c}</li>)}</ul>
+          <VueGroupes partie={partie} nomTheatre={nomTheatre} ouvert={voir3d === 'groupeAeronaval'} basculer={() => setVoir3d((v) => (v === 'groupeAeronaval' ? null : 'groupeAeronaval'))} />
           <div className="ligne petit">
             {(r.flotte ?? []).some((x) => x.id === 'cdg') && <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'charlesDeGaulle' ? null : 'charlesDeGaulle'))}>{voir3d === 'charlesDeGaulle' ? 'Masquer le modèle 3D' : 'Voir le Charles-de-Gaulle en 3D'}</button>}
             <button type="button" className="lien" onClick={() => setVoir3d((v) => (v === 'porteAvions' ? null : 'porteAvions'))}>{voir3d === 'porteAvions' ? 'Masquer le modèle 3D' : pa.nom === 'France Libre' ? 'Voir le « France Libre » en 3D' : 'Voir son successeur, le « France Libre »'}</button>
           </div>
-          {voir3d && <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D key={voir3d} modele={voir3d} hauteur={280} /></Suspense>}
+          {voir3d && voir3d !== 'groupeAeronaval' && <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D key={voir3d} modele={voir3d} hauteur={280} /></Suspense>}
         </div>
 
         {selection && (
@@ -182,6 +221,8 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
           </div>
         )}
       </div>
+
+      {voir3d === 'groupeAeronaval' && <Groupes3D partie={partie} />}
 
       <div className="carte pile">
         <h3 style={{ margin: 0 }}>Tensions dans le monde</h3>

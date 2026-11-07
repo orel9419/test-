@@ -4,7 +4,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { creerPartie, jouerTour, resumeDefense, flotte } from '../src/engine/index.js';
+import { creerPartie, jouerTour, resumeDefense, flotte, compositionGroupes } from '../src/engine/index.js';
+const require_compo = () => ({ compositionGroupes });
 import { deciderDefense, etatCommande } from '../src/engine/defense.js';
 import { depensesTemporairesActives } from '../src/engine/evenements.js';
 import { COMMANDES_DEFENSE, PROGRAMMES_DEFENSE } from '../src/data/defense.js';
@@ -91,5 +92,26 @@ describe('Commandes supplémentaires', () => {
     const x = jouerTour(e, commande('griffon30'), SANS);
     expect(x.defense.capacites.sna).toBe(4);
     expect(x.defense.commandes.griffon30.nombre).toBe(1);
+  });
+});
+
+describe('Groupes aéronavals vus par le président', () => {
+  it('un groupe complet au départ, autour du Charles-de-Gaulle', () => {
+    const { compositionGroupes } = require_compo();
+    const c = compositionGroupes(nouvelle());
+    expect(c.groupes.length).toBe(1);
+    expect(c.groupes[0]).toMatchObject({ porteAvions: 'cdg', escorte: { fda: 1, fremm: 2, sna: 1, brf: 1 }, manques: [] });
+  });
+
+  it('avec un second porte-avions, l\'escorte manque : une seule FDA et un seul ravitailleur disponibles', () => {
+    const { compositionGroupes } = require_compo();
+    const e = nouvelle();
+    e.defense.capacites.porteAvionsSupp = 1;
+    const c = compositionGroupes(e);
+    expect(c.groupes.length).toBe(2);
+    expect(c.groupes.map((g) => g.porteAvions).sort()).toEqual(['cdg', 'pang']); // le plus récent d'abord
+    expect(c.groupes[1].escorte.fda).toBe(0);
+    expect(c.groupes[1].manques.join(' ')).toMatch(/défense aérienne/);
+    expect(c.groupes[1].manques.join(' ')).toMatch(/ravitailleur/);
   });
 });

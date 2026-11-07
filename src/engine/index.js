@@ -76,7 +76,7 @@ export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
 export { resumeDefense, domaineReserve } from './defense.js';
-export { resumeGeopolitique, porteAvions, flotte } from './geopolitique.js';
+export { resumeGeopolitique, porteAvions, flotte, compositionGroupes } from './geopolitique.js';
 export { resumeFonds, choisirAllocation, MARCHES_FONDS, ALLOCATIONS_FONDS } from './fondsSouverain.js';
 export { resumeRelocalisation } from './relocalisation.js';
 export { resumeInstitutions, configuration as configurationInstitutions, cohabitationJoueur } from './institutions.js';

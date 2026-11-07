@@ -599,7 +599,7 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #f6f7f9 0%, #dfe3e8 60%, #c3c9d1 100%); }
 .visionneuse-porteAvions .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
 .visionneuse-charlesDeGaulle .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
-.visionneuse-pha .visionneuse-scene, .visionneuse-fda .visionneuse-scene, .visionneuse-fremm .visionneuse-scene, .visionneuse-brf .visionneuse-scene, .visionneuse-monge .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+.visionneuse-groupeAeronaval .visionneuse-scene, .visionneuse-pha .visionneuse-scene, .visionneuse-fda .visionneuse-scene, .visionneuse-fremm .visionneuse-scene, .visionneuse-brf .visionneuse-scene, .visionneuse-monge .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
 .visionneuse-sna .visionneuse-scene { background: linear-gradient(180deg, #2f6aa3 0%, #12395f 45%, #071a2e 100%); }
 .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f3f1e8 0%, #d9d6c4 55%, #b3ad94 100%); }
 :root[data-theme="dark"] .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45443a 0%, #2b2a24 60%, #191814 100%); }
@@ -721,3 +721,10 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-phenix .visionneuse-scene { background: linear-gradient(180deg, #0f3f78 0%, #2a6bb0 60%, #5d93cf 100%); }
 .visionneuse-caiman .visionneuse-scene, .visionneuse-caimanFS .visionneuse-scene, .visionneuse-caimanMarine .visionneuse-scene, .visionneuse-tigre .visionneuse-scene, .visionneuse-puma .visionneuse-scene, .visionneuse-caracal .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #eef2f6 0%, #cfd8e2 55%, #a3b2c2 100%); }
 :root[data-theme="dark"] .visionneuse-caiman .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caimanFS .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caimanMarine .visionneuse-scene, :root[data-theme="dark"] .visionneuse-tigre .visionneuse-scene, :root[data-theme="dark"] .visionneuse-puma .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caracal .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #3b4757 0%, #222b37 60%, #141a22 100%); }
+
+/* Propositions de think tanks (réformes) */
+.etiquette.think-ifrap { background: color-mix(in srgb, #1f5aa6 14%, transparent); color: var(--encre); border-color: color-mix(in srgb, #1f5aa6 45%, transparent); }
+.etiquette.think-shift { background: color-mix(in srgb, #2e8b57 14%, transparent); color: var(--encre); border-color: color-mix(in srgb, #2e8b57 45%, transparent); }
+.think-tank.think-ifrap { border-left: 4px solid #1f5aa6; }
+.think-tank.think-shift { border-left: 4px solid #2e8b57; }
+.note-inspiration { margin: 0; padding: 0.35rem 0.55rem; border-radius: 8px; background: var(--surface-2); }

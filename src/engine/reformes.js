@@ -21,7 +21,7 @@ export function reformesDisponibles(e) {
       options: r.options, chiffrage: r.chiffrage, compensation: !!r.compensation, majoriteRenforcee: !!r.majoriteRenforcee,
       vehicule: r.vote === false ? (r.vehicule ?? 'décret') : (r.vehicule ?? 'loi'), vote: r.vote !== false,
       pour: r.pour ?? [], contre: r.contre ?? [], exemples: r.exemples ?? [], orientation: r.orientation ?? null,
-      remplace: r.remplace ?? [],
+      remplace: r.remplace ?? [], inspirations: r.inspirations ?? [], notesInspiration: r.notesInspiration ?? {},
       active: active ? active.option : null, disponible: !dejaUnique,
     };
   });

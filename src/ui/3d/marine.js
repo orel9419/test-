@@ -9,7 +9,7 @@
  * publiques et les photos, infographies ou plans de référence, puis mis à
  * l'échelle pour mesurer environ 13 unités. Formes simplifiées.
  */
-import { loft, surface, pieces, tronc, texturePeinte, texturePanneaux } from './modeles.js';
+import { loft, surface, pieces, tronc, texturePeinte, texturePanneaux, construireCharlesDeGaulle, construirePorteAvions, construireRafale } from './modeles.js';
 
 const GRIS = [0.24, 0.26, 0.28];
 const LISERE = [0.07, 0.07, 0.08];
@@ -1020,4 +1020,156 @@ export function construireMonge(THREE) {
     radarNav.rotation.y = t / 700;
   };
   return groupe;
+}
+
+// ---------------------------------------------------------------------------
+// Groupe aéronaval (un ou deux), composé selon la partie
+// ---------------------------------------------------------------------------
+
+/**
+ * Échelle et flottaison de chaque modèle dans sa propre visionneuse :
+ * s (unités par mètre) et y de la flottaison, pour les ramener tous à une
+ * échelle commune, flottaison à y = 0.
+ */
+const MODELES_GROUPE = {
+  cdg: { construire: construireCharlesDeGaulle, s: 0.05, y: 0.4 - 17.5 * 0.05, L: 261.5, B: 64, nom: 'Charles-de-Gaulle' },
+  pang: { construire: construirePorteAvions, s: 0.05, y: 0.4 - 20 * 0.05, L: 310, B: 85, nom: 'porte-avions de nouvelle génération' },
+  fda: { construire: construireFda, s: 13 / 153, y: -0.5, L: 153, B: 20, nom: 'frégate de défense aérienne' },
+  fremm: { construire: construireFremm, s: 13 / 142, y: -0.5, L: 142, B: 20, nom: 'FREMM' },
+  brf: { construire: construireBrf, s: 13 / 194, y: -0.5, L: 194, B: 27, nom: 'ravitailleur de forces' },
+  sna: { construire: construireSna, s: 0.13, y: -0.6 * 0.13, L: 99, B: 9, nom: 'SNA' },
+};
+
+/** Positions de l'escorte autour du porte-avions (mètres ; cap vers x négatif ; z négatif à tribord). Distances resserrées. */
+const POSTES = {
+  fda: [[-430, 230]],
+  fremm: [[-330, -300], [390, 330]],
+  sna: [[-660, -60]],
+  brf: [[310, -270]],
+};
+
+/** Sillage d'écume en V derrière un navire (longueur L, largeur B, en mètres). */
+function sillage(THREE, L, B) {
+  const forme = new THREE.Shape([new THREE.Vector2(0, -B * 0.45), new THREE.Vector2(L * 1.8, -B * 1.6), new THREE.Vector2(L * 1.8, B * 1.6), new THREE.Vector2(0, B * 0.45)]);
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(forme), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide }));
+  m.rotation.x = -Math.PI / 2;
+  m.renderOrder = 2; // dessiné après la mer (transparente elle aussi)
+  return m;
+}
+
+/** Construit un navire du groupe à l'échelle commune k (unités par mètre), flottaison à y = 0. */
+function navireDuGroupe(THREE, type, k) {
+  const d = MODELES_GROUPE[type];
+  const objet = d.construire(THREE, {});
+  // Une seule mer pour tout le groupe : on retire celle de chaque modèle
+  const mers = [];
+  objet.traverse((o) => { if (o.isMesh && o.geometry?.type === 'PlaneGeometry' && o.geometry.parameters.width > 1000) mers.push(o); });
+  for (const m of mers) { m.parent.remove(m); m.geometry.dispose(); m.material.dispose(); }
+  const f = k / d.s;
+  const conteneur = new THREE.Group();
+  conteneur.add(objet);
+  conteneur.scale.setScalar(f);
+  conteneur.position.y = -d.y * f;
+  return { conteneur, objet, d };
+}
+
+/**
+ * Groupe(s) aéronaval(s) : le porte-avions (Charles-de-Gaulle ou porte-avions
+ * de nouvelle génération) et son escorte telle qu'elle existe dans la partie
+ * (frégate de défense aérienne, FREMM, sous-marin d'attaque en plongée,
+ * ravitailleur), sillages et Rafale Marine en patrouille. Tous les navires
+ * sont à la même échelle ; les distances sont resserrées (en réalité, les
+ * escorteurs croisent à plusieurs kilomètres) et les avions agrandis.
+ * donnees : { groupes: [{ porteAvions: 'cdg' | 'pang', nom, position, escorte: { fda, fremm, sna, brf } }] }
+ * Commande : ravitaillement à la mer (le ravitailleur vient à couple).
+ */
+export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
+  const groupes = (donnees?.groupes?.length ? donnees.groupes : [{ porteAvions: 'cdg', nom: 'Charles-de-Gaulle', escorte: { fda: 1, fremm: 2, sna: 1, brf: 1 } }]).slice(0, 2);
+  const deux = groupes.length > 1;
+  const k = deux ? 0.0085 : 0.012;
+  const ecart = 950; // mètres entre les deux groupes
+  const racine = new THREE.Group();
+  const p = (x, y, z) => new THREE.Vector3(x * k, y * k, z * k);
+  const legendes = [];
+  const animations = [];
+  const ravitailleurs = [];
+  const avions = [];
+
+  groupes.forEach((g, i) => {
+    const z0 = deux ? (i === 0 ? ecart / 2 : -ecart / 2) : 0;
+    const typePA = g.porteAvions === 'cdg' ? 'cdg' : 'pang';
+    const pa = navireDuGroupe(THREE, typePA, k);
+    pa.conteneur.position.z = z0 * k;
+    racine.add(pa.conteneur);
+    const sPA = sillage(THREE, pa.d.L, pa.d.B);
+    sPA.scale.setScalar(k);
+    sPA.position.set((pa.d.L / 2) * k, 1.5 * k, z0 * k);
+    racine.add(sPA);
+    legendes.push({ texte: deux ? `Groupe ${i + 1} : ${g.nom ?? pa.d.nom}` : `Porte-avions ${g.nom ?? pa.d.nom}`, point: p(0, 60, z0) });
+    const esc = { fda: 1, fremm: 2, sna: 1, brf: 1, ...(g.escorte ?? {}) };
+    for (const type of ['fda', 'fremm', 'sna', 'brf']) {
+      const n = Math.min(esc[type] ?? 0, POSTES[type].length);
+      for (let j = 0; j < n; j++) {
+        const [x, z] = POSTES[type][j];
+        const nav = navireDuGroupe(THREE, type, k);
+        const profondeur = type === 'sna' ? -8 : 0; // sous-marin en plongée, kiosque affleurant
+        nav.conteneur.position.set(x * k, nav.conteneur.position.y + profondeur * k, (z0 + z) * k);
+        racine.add(nav.conteneur);
+        if (type !== 'sna') {
+          const sl = sillage(THREE, nav.d.L, nav.d.B);
+          sl.scale.setScalar(k);
+          sl.position.set((x + nav.d.L / 2) * k, 1.5 * k, (z0 + z) * k);
+          racine.add(sl);
+          if (type === 'brf') ravitailleurs.push({ conteneur: nav.conteneur, sillage: sl, x, z: z0 + z, z0, L: nav.d.L, objet: nav.objet });
+        }
+        if (nav.objet.userData.animer) animations.push(nav.objet);
+        if (i === 0 || !deux) {
+          const texte = { fda: 'Frégate de défense aérienne (missiles Aster)', fremm: j === 0 ? 'FREMM (lutte anti-sous-marine, missiles de croisière)' : 'FREMM', sna: 'Sous-marin nucléaire d\'attaque en plongée', brf: 'Ravitailleur de forces' }[type];
+          if (type !== 'fremm' || j === 0) legendes.push({ texte, point: p(x, type === 'sna' ? 5 : 35, z0 + z) });
+        }
+      }
+    }
+    // Rafale Marine en patrouille au-dessus du groupe
+    for (let j = 0; j < 2; j++) {
+      const r = construireRafale(THREE, { armement: true });
+      r.scale.setScalar(k * 2.6);
+      racine.add(r);
+      avions.push({ r, z0, phase: j * Math.PI, rayon: 300 + j * 90, altitude: 260 + j * 40 });
+    }
+    if (i === 0) legendes.push({ texte: 'Rafale Marine en patrouille (agrandis)', point: p(-300, 300, z0) });
+  });
+
+  // Mer commune, un peu transparente : on devine le sous-marin sous la surface
+  const mer = new THREE.Mesh(new THREE.PlaneGeometry(9000, 9000), new THREE.MeshStandardMaterial({ color: 0x0e3a5f, roughness: 0.45, metalness: 0, envMapIntensity: 0.3, transparent: true, opacity: 0.74 }));
+  mer.rotation.x = -Math.PI / 2;
+  mer.position.y = -0.01;
+  mer.receiveShadow = true;
+  mer.renderOrder = 1;
+  racine.add(mer);
+
+  racine.userData.legendes = legendes;
+  racine.userData.taille = 14;
+  racine.userData.mer = true;
+  racine.userData.commandes = [{ id: 'ravitailler', libelle: 'Ravitaillement à la mer', actif: 'Fin du ravitaillement' }];
+  let f = 0;
+  racine.userData.animer = (t, api) => {
+    f += ((api.ravitailler ? 1 : 0) - f) * 0.02;
+    // Le ravitailleur vient se placer à couple, à tribord du porte-avions, puis déploie ses tuyaux
+    for (const rv of ravitailleurs) {
+      const cible = { x: 20, z: rv.z0 - 78 };
+      const x = rv.x + (cible.x - rv.x) * f, z = rv.z + (cible.z - rv.z) * f;
+      rv.conteneur.position.x = x * k;
+      rv.conteneur.position.z = z * k;
+      rv.sillage.position.set((x + rv.L / 2) * k, 1.5 * k, z * k);
+      rv.objet.userData.animer?.(t, { ravitailler: f > 0.9 });
+    }
+    for (const o of animations) if (!ravitailleurs.some((rv) => rv.objet === o)) o.userData.animer(t, {});
+    for (const a of avions) {
+      const ang = t / 4200 + a.phase;
+      a.r.position.set(Math.cos(ang) * a.rayon * k, a.altitude * k, (a.z0 + Math.sin(ang) * a.rayon) * k);
+      a.r.rotation.order = 'YXZ'; // cap, puis inclinaison dans le virage
+      a.r.rotation.set(-0.35, Math.PI / 2 - ang, 0);
+    }
+  };
+  return racine;
 }

@@ -119,6 +119,10 @@ const FICHES = {
     titre: 'Ravitailleur de forces (BRF, classe Jacques Chevallier)',
     lignes: ['194 m · environ 31 000 t · conception dérivée du Vulcano italien (Fincantieri), construction à Saint-Nazaire', 'Quatre portiques pour ravitailler deux navires à la fois en route : gazole, carburéacteur, eau, munitions, vivres', 'Jacques Chevallier (2023), Jacques Stosskopf (service actif en mai 2026), Émile Bertin (attendu en 2027), Gustave Zédé (vers 2032)', 'D\'après une photo et une image de synthèse'],
   },
+  groupeAeronaval: {
+    titre: 'Groupe aéronaval',
+    lignes: ['Un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères), escorté d\'une frégate de défense aérienne, de frégates anti-sous-marines, d\'un sous-marin nucléaire d\'attaque et d\'un ravitailleur', 'Le président de la République, chef des armées, décide de son déploiement ; il peut tenir un théâtre pendant quatre à cinq mois', 'Composition tirée de votre partie : porte-avions en service et bâtiments d\'escorte disponibles · avec deux porte-avions, deux groupes', 'Tous les navires à la même échelle ; distances resserrées (en réalité plusieurs kilomètres entre les bâtiments) et avions agrandis pour rester visibles'],
+  },
   monge: {
     titre: 'Bâtiment d\'essais et de mesures Monge (A601)',
     lignes: ['Environ 225 m · en service depuis 1992 · équipage mixte Marine nationale et DGA', 'Radars de trajectographie, antennes de télémesure et moyens optiques : il suit les tirs d\'essai du missile M51 et des lancements spatiaux', 'Unique en Europe : la France valide seule ses missiles · plateforme hélicoptère en porte-à-faux à la poupe', 'D\'après une photo · antennes et radômes simplifiés'],
@@ -135,6 +139,7 @@ const VUES = {
   snle3g: { '3/4': [-12, 8, -14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01], Arrière: [12, 6.5, 14] },
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
+  groupeAeronaval: { '3/4': [-12, 8, 13], Dessus: [0, 24, 0.01], Profil: [0, 2.5, 21], 'Côté tribord': [0, 2.5, -21], Face: [-21, 3.5, 0.01] },
   sna: { '3/4': [-11, 6.5, -13], Profil: [0, 1.2, 18], Dessus: [0, 20, 0.01], Face: [-18, 1.6, 0.01], Arrière: [11, 5.5, 13] },
   pha: { '3/4': [-10, 6.5, 12], 'Côté île': [0, 2.3, -19], Profil: [0, 2.3, 19], Dessus: [0, 21, 0.01], Face: [-18, 3.5, 0.01] },
   fda: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12] },
@@ -179,6 +184,7 @@ const CONSTRUCTEURS = {
   mirage2000: ['avions', 'construireMirage2000'], phenix: ['aeronefs', 'construirePhenix'],
   caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
+  groupeAeronaval: ['marine', 'construireGroupeAeronaval'],
   sna: ['marine', 'construireSna'], pha: ['marine', 'construirePha'], fda: ['marine', 'construireFda'], fremm: ['marine', 'construireFremm'], brf: ['marine', 'construireBrf'], monge: ['marine', 'construireMonge'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
@@ -187,7 +193,7 @@ const CONSTRUCTEURS = {
 const TERRAIN = new Set(['elysee', 'matignon', 'assemblee', 'senat', 'hemicycleAN', 'hemicycleSenat']);
 /** Sous-marins (lumière sous-marine) et navires de surface (mer, horizon). */
 const SOUS = new Set(['snle', 'snle3g', 'sna']);
-const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge']);
+const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge', 'groupeAeronaval']);
 const ESPACE = new Set(['satellite']);
 
 /**

@@ -201,6 +201,14 @@ Dans l'onglet « Réformes », le panneau « Programmes des personnalités » re
 
 Les programmes 2027 étant en cours d'écriture, le jeu les simplifie et ne reprend aucune citation.
 
+### Propositions de think tanks : IFRAP et Shift Project (France)
+
+Dans l'onglet « Réformes », un filtre **📘 IFRAP / 🌍 Shift Project** isole les propositions de deux think tanks aux priorités opposées, avec une fiche de présentation et leurs documents sources. Chaque réforme concernée porte un badge et un encadré « Ce que propose… ».
+- **Fondation IFRAP** (libérale, baisse de la dépense publique), d'après sa Revue n° 263 (janvier 2025, 110 Md€ d'économies) et sa Revue n° 279 (juin 2026, règle d'or) : **plan de 180 Md€ d'économies d'ici 2035** (environ 30 Md€ la première année, 105 au bout de trois ans, 180 au bout de neuf, dans l'État, les opérateurs, les collectivités et la Sécurité sociale ; scénario central ou alternatif « 100 % dépense »), **pacte d'efficience de la dépense locale** (25,6 Md€), **absentéisme dans la fonction publique** (trois jours de carence, arrêts payés à 90 % : 1,36 Md€), **convergence des retraites publiques** vers le privé, **santé** (pertinence des soins, ARS, gestion : 17,6 Md€), **suppression de la CFE et de la C3S** (10,6 Md€), **aide au développement et subventions aux associations** (4,3 Md€), et une option « Proposition de l'IFRAP » sur l'âge de départ (64,5 ans en 2029, puis 66 ans). Seize réformes existantes qui reprennent ses propositions sont étiquetées (point d'indice, 1 607 heures, allocation sociale unique, dégressivité du chômage, règle d'or, année blanche…).
+- **The Shift Project** (décarbonation), d'après son « Plan robuste pour l'économie française » en 20 chantiers (avril 2026) : **système vélo**, **fret ferroviaire à 30 % en 2050** (9 % en 2025), **petites voitures électriques et bornes dans les zones peu denses**, **poids lourds électriques**, **pompes à chaleur** à la place des chaudières (aides, ou interdiction des chaudières fossiles neuves en 2030), **acier bas carbone**, **élevages bovins bas carbone et légumineuses**, **forêts, haies et sols** (puits de carbone). Cinq réformes existantes sont étiquetées (rénovation, plan ferroviaire, leasing social, EPR2, éolien en mer). Le Shift Project ne chiffre pas le coût de son plan : coûts et émissions évitées sont des hypothèses de jeu.
+
+Le jeu traduit ces propositions sans les reprendre à son compte : les effets sur l'économie, les émissions et l'opinion sont ceux de son modèle.
+
 ### Effets des réformes : réalistes ou accentués
 
 À l'accueil, choisissez l'intensité des effets :
@@ -267,6 +275,8 @@ Vous pouvez **déplacer le groupe aéronaval** (le porte-avions Charles-de-Gaull
 - quand le potentiel est épuisé, le groupe rentre à Toulon pour son entretien ; l'Indo-Pacifique, très loin, l'use plus vite.
 
 Quand la tension d'un théâtre devient forte, une **crise** peut éclater (attaques de navires en mer Rouge, menace de fermeture d'Ormuz, évacuation de ressortissants, incident en Baltique…). Elle arrive dans l'onglet Événements, et avoir le groupe aéronaval sur place donne de meilleures options.
+
+**Le groupe aéronaval vu par le chef des armées** : le bouton « 🎖️ Voir le groupe aéronaval en 3D » (ou « les deux groupes ») montre en 3D, à la même échelle, le porte-avions et son escorte **tels qu'ils existent dans votre partie** : frégate de défense aérienne, deux FREMM, sous-marin nucléaire d'attaque en plongée (on le devine sous la surface), ravitailleur, Rafale Marine en patrouille, sillages. Environ deux bâtiments sur trois sont disponibles à un moment donné (les autres sont en entretien ou en entraînement) : avec deux porte-avions, le second groupe manque souvent d'une frégate de défense aérienne et d'un ravitailleur, ce que la fiche signale. Bouton « Ravitaillement à la mer » : le ravitailleur vient à couple du porte-avions et déploie ses tuyaux. Distances resserrées et avions agrandis pour tout voir d'un coup d'œil ; la même scène est dans le Hangar 3D.
 
 ### Produire en France
 
