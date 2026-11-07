@@ -32,6 +32,8 @@ export const SOURCES_DEFENSE = {
   caimanStd2: { titre: 'Army Recognition : premier NH90 Caïman standard 2 livré aux forces spéciales (juillet 2026, 18 commandés)', url: 'https://www.armyrecognition.com/news/aerospace-news/2026/france-receives-first-nh90-caiman-standard-2-helicopter-for-special-forces' },
   tigreMk3: { titre: 'Ministère des Armées : fiche LPM de l\'hélicoptère Tigre (standard 3, 42 appareils français)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/Fiche%20LPM%20-%20H%C3%A9licopt%C3%A8re%20Tigre.pdf' },
   pumaGuyane: { titre: 'Ministère des Armées : le Puma tire sa révérence en Guyane après 47 ans (2026)', url: 'https://www.defense.gouv.fr/air/actualites/puma-tire-sa-reverence-guyane-47-ans-mission' },
+  caimanMarine: { titre: 'Ministère des Armées : fiche LPM du Caïman Marine (NH90 NFH)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/Fiche%20LPM%20-%20Ca%C3%AFman%20Marine%20%28NH90%20NFH%29.pdf' },
+  caimanMarineNN: { titre: 'Naval News : le NH90 NFH Caïman de la Marine nationale (27 commandés)', url: 'https://www.navalnews.com/naval-news/2020/04/video-nh90-nfh-caiman-maritime-helicopter-of-the-french-navy/' },
   disponibilite: { titre: 'Assemblée nationale : réponse ministérielle sur la disponibilité des hélicoptères (NH90, plan de transformation du MCO aéronautique)', url: 'https://www.assemblee-nationale.fr/dyn/15/questions/QANR5L15QE14094.pdf' },
   flancEst: { titre: 'Ministère des Armées : renforcement sur le flanc est (missions Aigle et Lynx)', url: 'https://www.defense.gouv.fr/renforcement-flanc-est' },
 };
@@ -87,6 +89,7 @@ export const PROGRAMMES_DEFENSE = {
         'NH90 Caïman : environ 64 au standard 1 livrés à l\'armée de Terre (le dernier début 2025) ; 18 au standard 2 commandés pour les forces spéciales, le premier livré le 30 juillet 2026, le dernier vers le printemps 2029.',
         'Tigre : rénovation au standard 3 de 42 appareils français (avec 18 espagnols) pour les connecter à SCORPION et aux drones et les garder au-delà de 2040.',
         'Puma : en service depuis les années 1970, en retrait progressif ; huit Caracal commandés en 2021 pour en remplacer, le dernier livré en juin 2026 (Guyane, Nouvelle-Calédonie).',
+        'Caïman Marine (NH90 NFH) : 27 hélicoptères de frégate des flottilles 31F (Hyères) et 33F (Lanvéoc-Poulmic), en service depuis décembre 2011 : lutte anti-sous-marine (sonar trempé, torpilles MU90), sauvetage en mer.',
       ],
       options: [
         { id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Caïman standard 2 jusqu\'en 2029, Tigre standard 3, retrait progressif des Puma.' },
@@ -99,7 +102,7 @@ export const PROGRAMMES_DEFENSE = {
         { id: 'tigre_std3', influence: 0, annee: 2030, t: 4, texte: 'Premiers Tigre au standard 3 en service (date indicative, hypothèse de jeu).' },
         { id: 'puma_retrait', influence: 0, annee: 2031, t: 4, texte: 'Les derniers Puma quittent l\'armée de Terre (date indicative, hypothèse de jeu).' },
       ],
-      sources: ['caimanStd2', 'tigreMk3', 'pumaGuyane'],
+      sources: ['caimanStd2', 'tigreMk3', 'pumaGuyane', 'caimanMarine', 'caimanMarineNN'],
     },
     {
       id: 'mco', nom: 'Maintien en condition opérationnelle', sousTitre: 'Disponibilité des matériels : pièces, mécaniciens, contrats de soutien', illustration: 'chasseur', domaine: 'Terre et Air et Marine',

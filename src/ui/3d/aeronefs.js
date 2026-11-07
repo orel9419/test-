@@ -79,12 +79,23 @@ function toileFuselage(L, { largeur = 2048, hauteur = 512, perimetre = 7.6 } = {
     }
   };
   /** Cocarde peinte (rouge, blanc, bleu) sur les deux flancs, de rayon r mètres ; perimetreLocal : tour du fuselage à cet endroit. */
-  const cocardePeinte = (x, h, r, perimetreLocal = perimetre) => {
+  const cocardePeinte = (x, h, r, perimetreLocal = perimetre, { ancre = false } = {}) => {
     const rx = r * (largeur / L), ry = r * (hauteur / perimetreLocal);
-    for (const v of [vGauche(h), vDroite(h)]) {
+    for (const [v, sens] of [[vGauche(h), 1], [vDroite(h), -1]]) {
       for (const [k, coul] of [[1, '#c00323'], [0.62, '#ffffff'], [0.28, '#284290']]) {
         ctx.fillStyle = coul;
         ctx.beginPath(); ctx.ellipse(u(x), vy(v), rx * k, ry * k, 0, 0, TOUR); ctx.fill();
+      }
+      if (ancre) {
+        // Ancre de marine noire sur la cocarde (aéronautique navale) ; à droite, la toile est retournée
+        ctx.save(); ctx.translate(u(x), vy(v)); ctx.scale(rx, ry * sens); ctx.rotate(-0.35);
+        ctx.strokeStyle = '#141414'; ctx.fillStyle = '#141414'; ctx.lineWidth = 0.09; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(0, -0.62); ctx.lineTo(0, 0.6); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-0.28, -0.42); ctx.lineTo(0.28, -0.42); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, -0.72, 0.1, 0, TOUR); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0.2, 0.42, 0.25 * Math.PI, 0.75 * Math.PI); ctx.stroke();
+        for (const s2 of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s2 * 0.3, 0.52); ctx.lineTo(s2 * 0.42, 0.42); ctx.lineTo(s2 * 0.26, 0.4); ctx.fill(); }
+        ctx.restore();
       }
     }
   };
@@ -126,7 +137,7 @@ function textureDe(THREE, canvas, repetition = null) {
 }
 
 /** Rotor : moyeu, pales vrillées et disque de flou (tourne autour de son axe y). */
-function rotor(THREE, { rayon, pales, corde = 0.55, mat, matMoyeu, epaisseur = 0.07, moyeu = 0.4, flou = 0.08 }) {
+function rotor(THREE, { rayon, pales, corde = 0.55, mat, matMoyeu, epaisseur = 0.07, moyeu = 0.4, flou = 0.08, bout: couleurBout = 0xd9c25a, longueurBout = 0.25 }) {
   const g = new THREE.Group();
   const m = new THREE.Mesh(new THREE.CylinderGeometry(moyeu * 0.8, moyeu, moyeu * 0.9, 16), matMoyeu);
   g.add(m);
@@ -136,8 +147,8 @@ function rotor(THREE, { rayon, pales, corde = 0.55, mat, matMoyeu, epaisseur = 0
     const p = new THREE.Mesh(new THREE.BoxGeometry(rayon - moyeu, epaisseur, corde), mat);
     p.position.x = moyeu + (rayon - moyeu) / 2;
     p.rotation.x = 0.08;
-    const bout = new THREE.Mesh(new THREE.BoxGeometry(0.25, epaisseur * 1.05, corde * 1.02), new THREE.MeshStandardMaterial({ color: 0xd9c25a, roughness: 0.6 }));
-    bout.position.x = rayon - 0.12;
+    const bout = new THREE.Mesh(new THREE.BoxGeometry(longueurBout, epaisseur * 1.05, corde * 1.02), new THREE.MeshStandardMaterial({ color: couleurBout, roughness: 0.6 }));
+    bout.position.x = rayon - longueurBout / 2;
     bras.add(p, bout);
     g.add(bras);
   }
@@ -525,11 +536,11 @@ function materiauxHelico(THREE) {
 }
 
 /** Rotor de queue (axe le long de z), du côté donné (1 : bâbord, -1 : tribord). */
-function rotorQueue(THREE, mats, { x, y, cote, rayon, pales }) {
+function rotorQueue(THREE, mats, { x, y, cote, rayon, pales, matPale = mats.pale, bout = 0xd9c25a, longueurBout = 0.25 }) {
   const support = new THREE.Group();
   support.position.set(x, y, cote * 0.35);
   support.rotation.x = Math.PI / 2;
-  const r = rotor(THREE, { rayon, pales, corde: 0.22, mat: mats.pale, matMoyeu: mats.sombre, epaisseur: 0.05, moyeu: 0.18, flou: 0.1 });
+  const r = rotor(THREE, { rayon, pales, corde: 0.22, mat: matPale, matMoyeu: mats.sombre, epaisseur: 0.05, moyeu: 0.18, flou: 0.1, bout, longueurBout });
   support.add(r);
   return { support, r };
 }
@@ -543,27 +554,37 @@ function rotorQueue(THREE, mats, { x, y, cote, rayon, pales }) {
  */
 export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
   const fs = modele === 'caimanFS';
+  const marine = modele === 'caimanMarine';
   const L = 16.13;
   const h = new THREE.Group();
   const mats = materiauxHelico(THREE);
-  // Toiles : camouflage centre-Europe (vert, brun, noir) ou livrée sombre des forces spéciales
-  const peindre = (forcesSpeciales) => {
+  // Toiles : camouflage centre-Europe (vert, brun, noir), livrée sombre des forces spéciales, ou gris deux tons de la Marine
+  const peindre = (livree) => {
     const T = toileFuselage(L, { largeur: 2048, hauteur: 512, perimetre: 7.6 });
-    if (forcesSpeciales) { T.ctx.fillStyle = '#3d4441'; T.ctx.fillRect(0, 0, T.largeur, T.hauteur); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.04); }
+    if (livree === 'fs') { T.ctx.fillStyle = '#3d4441'; T.ctx.fillRect(0, 0, T.largeur, T.hauteur); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.04); }
+    else if (livree === 'marine') { camoufler(T.ctx, T.largeur, T.hauteur, '#c8cacb', ['#868b8d'], { graine: 13, taille: 120, nombre: 12 }); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.03); }
     else { camoufler(T.ctx, T.largeur, T.hauteur, '#5d6b45', ['#6e4c33', '#262826'], { graine: 21, taille: 70, nombre: 22 }); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.03); }
-    // Pare-brise, fenêtres du poste et de la cabine, portes coulissantes
+    // Pare-brise, fenêtres du poste et de plancher (sous le pare-brise), fenêtres de la cabine, portes coulissantes
     T.dessus(0.85, 2.1, 0.15, '#1c242c');
-    T.rect(1.0, 2.6, -0.45, 0.62, '#1c242c', 'deux', 8);
+    T.rect(1.0, 2.6, -0.1, 0.62, '#1c242c', 'deux', 8);
+    T.rect(0.75, 1.35, -0.72, -0.22, '#1c242c', 'deux', 14);
     T.rect(2.75, 3.4, -0.1, 0.55, '#1c242c', 'deux', 6);
     for (const x of [6.3, 7.3]) T.rect(x, x + 0.5, 0.05, 0.45, '#1c242c', 'deux', 8);
     T.contour(3.7, 5.9, -0.92, 0.75, 'rgba(15,15,15,0.55)', 3);
     T.rect(4.5, 5.1, 0.1, 0.5, '#1c242c', 'deux', 8);
-    if (!forcesSpeciales) T.texte('armée de TERRE', 11.5, 0.05, 22, '#f2f2ee', 'normal');
+    if (livree === 'marine') {
+      // Hublot d'observation à cadre boulonné (côté gauche), cocarde de l'aéronavale, « MARINE », numéro, bandeau orange
+      T.rect(3.45, 4.15, -0.12, 0.58, '#15181b', 'gauche', 4);
+      T.rect(3.55, 4.05, -0.02, 0.48, '#2a3440', 'gauche', 4);
+      T.cocardePeinte(9.5, 0.12, 0.34, 6.4, { ancre: true });
+      T.texte('MARINE', 12.6, 0.05, 20, '#2d3236');
+      T.rect(14.0, 14.6, -0.35, -0.25, '#e0702c');
+    } else if (livree !== 'fs') T.texte('armée de TERRE', 11.5, 0.05, 22, '#f2f2ee', 'normal');
     return textureDe(THREE, T.c);
   };
-  const textures = { terre: peindre(false), fs: peindre(true) };
-  const peau = new THREE.MeshStandardMaterial({ map: fs ? textures.fs : textures.terre, roughness: 0.75, metalness: 0.15, envMapIntensity: 0.6 });
-  const uni = new THREE.MeshStandardMaterial({ color: fs ? 0x3d4441 : 0x5d6b45, roughness: 0.75, metalness: 0.15 });
+  const textures = marine ? { marine: peindre('marine') } : { terre: peindre('terre'), fs: peindre('fs') };
+  const peau = new THREE.MeshStandardMaterial({ map: marine ? textures.marine : fs ? textures.fs : textures.terre, roughness: marine ? 0.6 : 0.75, metalness: 0.15, envMapIntensity: 0.6 });
+  const uni = new THREE.MeshStandardMaterial({ color: marine ? 0xa9adae : fs ? 0x3d4441 : 0x5d6b45, roughness: 0.75, metalness: 0.15 });
   h.add(new THREE.Mesh(loft(THREE, [
     { x: 0, w: 0.3, hHaut: 0.25, hBas: 0.25, y: 1.25 },
     { x: 0.5, w: 1.45, hHaut: 0.65, hBas: 0.6, y: 1.3 },
@@ -593,13 +614,16 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     h.add(sponson);
   }
   h.add(pieces(THREE, mats.sombre, [[1.2, 2.75, 0, 0.6, 0.05, 0.08], [0.9, 0.82, 0, 0.6, 0.05, 0.08]]));
+  h.add(tube(THREE, [0.35, 1.55, 0.45], [-0.25, 1.75, 0.5], 0.025, mats.metal), tube(THREE, [-0.25, 1.75, 0.5], [-0.42, 1.62, 0.5], 0.02, mats.metal));
   // Dérive, plan horizontal (tribord), rotor de queue (bâbord)
   const derive = new THREE.Mesh(surface(THREE, [[14.0, 0], [15.2, 2.1], [16.0, 2.1], [16.2, 0]], 0.2, { plan: 'xy' }), peau);
   derive.position.y = 2.7;
   const stab = new THREE.Mesh(surface(THREE, [[14.6, -0.15], [14.9, -1.55], [15.5, -1.55], [15.5, -0.15]], 0.1), uni);
   stab.position.y = 3.6;
   h.add(derive, stab);
-  const rq = rotorQueue(THREE, mats, { x: 15.65, y: 4.35, cote: 1, rayon: 1.6, pales: 4 });
+  const rq = rotorQueue(THREE, mats, marine
+    ? { x: 15.65, y: 4.35, cote: 1, rayon: 1.6, pales: 4, matPale: new THREE.MeshStandardMaterial({ color: 0xc9cbcc, roughness: 0.6 }), bout: 0xd2412f, longueurBout: 0.4 }
+    : { x: 15.65, y: 4.35, cote: 1, rayon: 1.6, pales: 4 });
   h.add(rq.support);
   // Rotor principal : quatre pales composites
   const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 0.9, 12), mats.sombre);
@@ -617,10 +641,11 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
   }
   // Boule optronique sous le nez (Euroflir 410 sur le standard 2), mitrailleuses de sabord
   const boule = new THREE.Group();
-  boule.position.set(0.9, 0.62, 0);
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(fs ? 0.3 : 0.22, 18, 12), mats.sombre);
-  const fenetre = new THREE.Mesh(new THREE.CircleGeometry(fs ? 0.14 : 0.1, 16), mats.optique);
-  fenetre.position.x = -(fs ? 0.3 : 0.22) + 0.005;
+  boule.position.set(marine ? 0.45 : 0.9, marine ? 0.95 : 0.62, 0);
+  const rBoule = fs || marine ? 0.3 : 0.22;
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(rBoule, 18, 12), marine ? new THREE.MeshStandardMaterial({ color: 0x9a9fa1, roughness: 0.5 }) : mats.sombre);
+  const fenetre = new THREE.Mesh(new THREE.CircleGeometry(rBoule * 0.47, 16), mats.optique);
+  fenetre.position.x = -rBoule + 0.005;
   fenetre.rotation.y = -Math.PI / 2;
   boule.add(sphere, fenetre);
   h.add(boule);
@@ -631,6 +656,49 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
   }
   armes.visible = fs;
   h.add(armes);
+  const marineEquip = new THREE.Group();
+  const treuil = new THREE.Group();
+  const sonar = new THREE.Group();
+  let cableTreuil = null, sauveteur = null, cableSonar = null, corpsSonar = null;
+  if (marine) {
+    const grisRadome = new THREE.MeshStandardMaterial({ color: 0x7a7f81, roughness: 0.55, metalness: 0.1 });
+    const blanc = new THREE.MeshStandardMaterial({ color: 0xdfe1e0, roughness: 0.6 });
+    // Radôme du radar sous le poste de pilotage (disque plat aux bords arrondis)
+    const profil = [[0, -0.22], [0.82, -0.22], [0.95, -0.12], [0.97, 0.08], [0.88, 0.2], [0, 0.22]].map(([r, y]) => new THREE.Vector2(r, y));
+    const radome = new THREE.Mesh(new THREE.LatheGeometry(profil, 48), grisRadome);
+    radome.position.set(3.75, 0.5, 0);
+    marineEquip.add(radome, tube(THREE, [3.75, 0.7, 0], [3.75, 0.85, 0], 0.25, grisRadome));
+    // Flotteurs de secours : coffres le long des flancs (au-dessus des sponsons) et à l'avant
+    for (const s2 of [-1, 1]) {
+      const coffre = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 2.6, 6, 12), blanc);
+      coffre.rotation.z = Math.PI / 2;
+      coffre.position.set(7.6, 1.45, s2 * 1.5);
+      coffre.scale.set(1, 1, 0.75);
+      const avant = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.38, 0.22), blanc);
+      avant.position.set(1.75, 1.3, s2 * 1.12);
+      avant.rotation.y = s2 * 0.25;
+      marineEquip.add(coffre, avant);
+    }
+    // Treuil de sauvetage au-dessus de la porte droite, sauveteur au bout du câble
+    const bras = tube(THREE, [4.6, 3.05, -1.0], [4.6, 3.05, -1.75], 0.07, mats.metal);
+    const boite = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.35), blanc);
+    boite.position.set(4.6, 3.05, -1.85);
+    treuil.add(bras, boite);
+    cableTreuil = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1, 6), mats.sombre);
+    sauveteur = soldat(THREE, new THREE.MeshStandardMaterial({ color: 0xe8642c, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.6 }));
+    sauveteur.scale.setScalar(0.9);
+    treuil.add(cableTreuil, sauveteur);
+    // Sonar trempé FLASH, descendu par une trappe du plancher au bout de son câble
+    cableSonar = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1, 6), mats.sombre);
+    corpsSonar = new THREE.Group();
+    const cylindre = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.9, 16), new THREE.MeshStandardMaterial({ color: 0xe0d64a, roughness: 0.5 }));
+    const nez = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 8, 0, TOUR, Math.PI / 2, Math.PI / 2), mats.sombre);
+    nez.position.y = -0.45;
+    corpsSonar.add(cylindre, nez);
+    sonar.add(cableSonar, corpsSonar);
+    sonar.position.set(6.6, 0.8, 0);
+    h.add(marineEquip, treuil, sonar);
+  }
   // Corde lisse : quatre commandos descendent des portes latérales
   const matTenue = new THREE.MeshStandardMaterial({ color: 0x6b6a4e, roughness: 0.9 });
   const matCasque = new THREE.MeshStandardMaterial({ color: 0x4a4b3c, roughness: 0.8 });
@@ -644,21 +712,33 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     descente.push({ homme, decalage });
   }
   cordes.visible = false;
-  h.add(cordes);
+  if (!marine) h.add(cordes);
 
   const k = 0.85;
   const { groupe, p } = installer(THREE, h, k, 8.0, -2.2 + 0.35);
-  groupe.userData.legendes = [
+  groupe.userData.legendes = marine ? [
+    { texte: 'Radar de surveillance', point: p(3.75, 0.1, 0) },
+    { texte: 'Boule optronique', point: p(0.45, 0.6, 0) },
+    { texte: 'Treuil de sauvetage', point: p(4.6, 3.4, -1.85) },
+    { texte: 'Flotteurs de secours', point: p(7.6, 1.5, 1.75) },
+    { texte: 'Sonar trempé (dans la cabine)', point: p(6.6, 0.6, 0) },
+    { texte: 'Cocarde de l\'aéronavale (ancre)', point: p(9.5, 2.3, 1.2) },
+    { texte: 'Rotor de queue à bouts rouges', point: p(15.65, 4.4, 0.6) },
+  ] : [
     { texte: 'Rotor de 16,3 m (4 pales composites)', point: p(5.6, 4.6, -7.5) },
     { texte: 'Porte coulissante : 20 soldats', point: p(4.8, 1.9, 1.45) },
     { texte: fs ? 'Boule optronique Euroflir 410' : 'Boule optronique', point: p(0.9, 0.4, 0) },
     { texte: 'Rotor de queue', point: p(15.65, 4.4, 0.6) },
     ...(fs ? [{ texte: 'Mitrailleuses de sabord', point: p(3.4, 1.9, 1.75) }] : []),
   ];
-  groupe.userData.commandes = [
+  groupe.userData.commandes = marine ? [
+    { id: 'sonar', libelle: 'Tremper le sonar', actif: 'Remonter le sonar' },
+    { id: 'treuil', libelle: 'Hélitreuiller un sauveteur', actif: 'Remonter le sauveteur' },
+  ] : [
     { id: 'corde', libelle: 'Descente en corde lisse', actif: 'Remonter les commandos' },
     { id: 'livree', libelle: fs ? 'Livrée armée de Terre' : 'Livrée forces spéciales', actif: fs ? 'Livrée forces spéciales' : 'Livrée armée de Terre' },
   ];
+  let fSonar = 0, fTreuil = 0;
   let livreeFS = fs;
   groupe.userData.animer = (t, api) => {
     rp.rotation.y = t / 70;
@@ -667,6 +747,22 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     if (api.corde) for (const { homme, decalage } of descente) {
       const u = ((t / 3200) + decalage) % 1;
       homme.position.y = (2.0 - u * 4.8) - 0.2;
+    }
+    if (marine) {
+      // Sonar : descend jusqu'à 6 m sous l'hélicoptère ; treuil : le sauveteur descend de 4,5 m
+      fSonar += ((api.sonar ? 1 : 0) - fSonar) * 0.02;
+      const ds = 0.3 + fSonar * 6;
+      cableSonar.scale.y = ds; cableSonar.position.y = -ds / 2;
+      corpsSonar.position.y = -ds - 0.45;
+      // Rentré, le sonar reste dans la cabine (invisible)
+      corpsSonar.visible = cableSonar.visible = fSonar > 0.03;
+      fTreuil += ((api.treuil ? 1 : 0) - fTreuil) * 0.025;
+      const dt = 0.2 + fTreuil * 4.5;
+      cableTreuil.scale.y = dt; cableTreuil.position.set(4.6, 3.0 - dt / 2, -1.95);
+      sauveteur.position.set(4.6, 3.0 - dt - 1.55, -1.95);
+      sauveteur.visible = fTreuil > 0.05;
+      cableTreuil.visible = fTreuil > 0.02;
+      return;
     }
     const voulue = api.livree ? !fs : fs;
     if (voulue !== livreeFS) {

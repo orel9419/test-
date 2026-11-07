@@ -39,6 +39,10 @@ const FICHES = {
     titre: 'NH90 Caïman standard 2 (forces spéciales)',
     lignes: ['Version du 4e régiment d\'hélicoptères des forces spéciales (Pau) : 18 commandés, le premier livré le 30 juillet 2026, le dernier vers le printemps 2029', 'Boule optronique Safran Euroflir 410 (jour, nuit, désignation laser), mitrailleuses de sabord, équipements de vol de nuit', 'Remplace les Caracal et les Cougar des forces spéciales', 'Livrée sombre unie : couleur exacte non confirmée par une source · bouton : livrée armée de Terre'],
   },
+  caimanMarine: {
+    titre: 'NH90 Caïman Marine (NFH)',
+    lignes: ['Hélicoptère de frégate de la Marine nationale : 27 en service, flottilles 31F (Hyères) et 33F (Lanvéoc-Poulmic), en service depuis décembre 2011 (remplace les Lynx et les Super Frelon)', 'Lutte anti-sous-marine (sonar trempé FLASH, bouées acoustiques, torpilles MU90 : capacité opérationnelle en mars 2015), lutte contre les navires, sauvetage en mer', 'Radar de surveillance sous le nez, boule optronique, treuil, flotteurs de secours pour se poser sur l\'eau en cas d\'urgence', 'Livrée gris deux tons, cocarde de l\'aéronavale avec son ancre, rotor de queue à bouts rouges · d\'après une photo · sources : ministère des Armées (fiche LPM), Naval News'],
+  },
   tigre: {
     titre: 'Tigre (hélicoptère d\'appui et de destruction)',
     lignes: ['14,08 m de long, rotor de 13 m, 3,83 m de haut · deux pilotes en tandem (le pilote derrière, le tireur devant)', 'Canon de 30 mm en tourelle, roquettes de 68 mm, missiles ; viseur de toit pour observer caché derrière un relief', 'Rénovation au standard 3 prévue pour 42 Tigre français (avec 18 espagnols) : combat collaboratif SCORPION, liaison avec les drones', 'Livrée de la photo (un Tigre australien, sable, vert et noir) ou vert olive · détails simplifiés'],
@@ -112,6 +116,7 @@ const VUES = {
   phenix: { '3/4': [-17, 7, 19], Profil: [0, 1.5, 27], 'Côté droit': [0, 1.5, -27], Dessus: [0, 32, 0.01], Dessous: [0.01, -26, 8], Face: [-27, 2, 0.01], Arrière: [18, 6, 18] },
   caiman: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
   caimanFS: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
+  caimanMarine: { '3/4': [-13, 2, 15], Profil: [0, 1.2, 20], 'Côté droit': [0, 1.2, -20], Dessous: [0.01, -14, 6], Face: [-20, 1.5, 0.01], Arrière: [14, 6, 14] },
   tigre: { '3/4': [-12, 4.5, 13], Profil: [0, 1.5, 18], Dessus: [0, 21, 0.01], Face: [-18, 2, 0.01], Arrière: [13, 5, 13] },
   puma: { '3/4': [-12, 5, 14], Profil: [0, 2, 19], Dessus: [0, 22, 0.01], Face: [-19, 2.5, 0.01], Arrière: [13, 6, 13] },
   caracal: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
@@ -141,7 +146,7 @@ const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
   porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
   mirage2000: ['avions', 'construireMirage2000'], phenix: ['aeronefs', 'construirePhenix'],
-  caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
+  caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
