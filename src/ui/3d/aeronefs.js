@@ -68,7 +68,27 @@ function toileFuselage(L, { largeur = 2048, hauteur = 512, perimetre = 7.6 } = {
     ctx.save(); ctx.translate(u(x), vy(vGauche(h))); ctx.scale(etirement, 1); ctx.fillText(t, 0, 0); ctx.restore();
     ctx.save(); ctx.translate(u(x), vy(vDroite(h))); ctx.rotate(Math.PI); ctx.scale(etirement, 1); ctx.fillText(t, 0, 0); ctx.restore();
   };
-  return { c, ctx, u, vy, vGauche, vDroite, rect, dessus, contour, texte, largeur, hauteur };
+  /** Bande courbe sur les deux flancs : liste de points [x, hBas, hHaut], interpolée tous les 0,15 m. */
+  const bande = (points, couleur) => {
+    for (let i = 0; i < points.length - 1; i++) {
+      const [xa, ba, ha] = points[i], [xb, bb, hb] = points[i + 1];
+      for (let x = xa; x < xb; x += 0.15) {
+        const t = (x - xa) / (xb - xa);
+        rect(x, Math.min(x + 0.2, xb + 0.05), ba + (bb - ba) * t, ha + (hb - ha) * t, couleur);
+      }
+    }
+  };
+  /** Cocarde peinte (rouge, blanc, bleu) sur les deux flancs, de rayon r mètres ; perimetreLocal : tour du fuselage à cet endroit. */
+  const cocardePeinte = (x, h, r, perimetreLocal = perimetre) => {
+    const rx = r * (largeur / L), ry = r * (hauteur / perimetreLocal);
+    for (const v of [vGauche(h), vDroite(h)]) {
+      for (const [k, coul] of [[1, '#c00323'], [0.62, '#ffffff'], [0.28, '#284290']]) {
+        ctx.fillStyle = coul;
+        ctx.beginPath(); ctx.ellipse(u(x), vy(v), rx * k, ry * k, 0, 0, TOUR); ctx.fill();
+      }
+    }
+  };
+  return { c, ctx, u, vy, vGauche, vDroite, rect, dessus, contour, texte, bande, cocardePeinte, largeur, hauteur };
 }
 
 /** Camouflage en taches aux bords irréguliers (couleur de fond, puis taches). */
@@ -196,48 +216,68 @@ function installer(THREE, objet, k, xMilieu, y0 = 0) {
 
 /**
  * Airbus A330 MRTT « Phénix » de l'armée de l'Air et de l'Espace, d'après des
- * photos : livrée gris clair, bande grise sous les hublots, « ARMÉE DE
- * L'AIR », portes cerclées de jaune, réacteurs Rolls-Royce Trent 772,
- * winglets, nacelles de ravitaillement sous les ailes, perche rigide sous la
- * queue. 58,80 m de long, 60,30 m d'envergure, 17,40 m de haut (Airbus).
+ * photos et un schéma de livrée (DRAW Decal) : gris moyen, bande gris foncé
+ * en deux parties (avant sous les hublots, double filet arrière jusqu'à la
+ * cocarde), « ARMEE DE L'AIR » au-dessus des hublots, portes cerclées de
+ * jaune, feux de formation, barres de guidage et bande d'alignement sous le
+ * ventre, dérive à trait sombre, badge et numéro, bords d'attaque en métal
+ * nu, réacteurs Rolls-Royce Trent 772, winglets, nacelles de ravitaillement
+ * à liseré, perche rigide à gouvernes noires sous la queue. 58,80 m de long, 60,30 m d'envergure, 17,40 m de haut (Airbus).
  * Commandes : perche, tuyaux et paniers, train d'atterrissage.
  */
 export function construirePhenix(THREE) {
   const L = 58.8;
   const a = new THREE.Group();
-  const gris = new THREE.MeshStandardMaterial({ color: 0xc9cbcf, metalness: 0.3, roughness: 0.45, envMapIntensity: 0.8 });
+  const gris = new THREE.MeshStandardMaterial({ color: 0xbfc2c6, metalness: 0.3, roughness: 0.45, envMapIntensity: 0.8 });
   const grisMoyen = new THREE.MeshStandardMaterial({ color: 0xa9adb3, metalness: 0.35, roughness: 0.45 });
   const sombre = new THREE.MeshStandardMaterial({ color: 0x2b2e33, metalness: 0.3, roughness: 0.6 });
   const metal = new THREE.MeshStandardMaterial({ color: 0x8c9096, metalness: 0.85, roughness: 0.3 });
   const noir = new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.8 });
 
-  // Toile du fuselage : gris, bande grise sous les hublots, hublots, portes, inscriptions, cocarde
-  const T = toileFuselage(L, { largeur: 4096, hauteur: 512, perimetre: 17.7 });
-  T.ctx.fillStyle = '#cfd1d4';
+  // Toile du fuselage, relevée sur un schéma de livrée (DRAW Decal, « France Armée de l'Air MRTTs ») :
+  // tout en gris moyen, bande gris foncé en deux parties, hublots, portes cerclées de jaune, inscriptions
+  const T = toileFuselage(L, { largeur: 4096, hauteur: 1024, perimetre: 17.7 });
+  T.ctx.fillStyle = '#c3c6ca';
   T.ctx.fillRect(0, 0, T.largeur, T.hauteur);
-  patiner(T.ctx, T.largeur, T.hauteur, 5, 0.025);
-  // Bande grise (montante vers l'avant et vers l'arrière, comme sur les photos)
-  for (let x = 5; x < 52; x += 0.25) {
-    const montee = x < 14 ? (14 - x) * 0.035 : x > 40 ? (x - 40) * 0.045 : 0;
-    T.rect(x, x + 0.3, -0.42 + montee, -0.3 + montee, '#8d9196');
+  patiner(T.ctx, T.largeur, T.hauteur, 5, 0.02);
+  // Bande avant : fine sous le poste, elle s'épaissit et monte jusque sous les hublots, puis s'effile au-dessus de l'aile
+  T.bande([[6.0, -0.5, -0.42], [9.5, -0.37, -0.28], [12.6, -0.3, -0.11], [15.8, -0.18, 0.05], [18.9, -0.05, 0.18], [22.0, 0.03, 0.22], [26.5, 0.05, 0.22], [28.6, 0.08, 0.2], [30.6, 0.17, 0.2]], '#43464b');
+  // Bande arrière : double filet (fin au-dessus, plus épais au-dessous) qui plonge derrière l'aile puis remonte vers la cocarde
+  T.bande([[33.8, -0.3, -0.24], [37.5, -0.44, -0.35], [41.0, -0.38, -0.29], [44.0, -0.25, -0.16], [46.5, -0.1, -0.01], [48.5, 0.05, 0.14], [51.0, 0.2, 0.29], [53.5, 0.32, 0.38]], '#43464b');
+  T.bande([[34.2, -0.2, -0.17], [37.5, -0.24, -0.21], [41.0, -0.19, -0.16], [44.0, -0.05, -0.02], [46.5, 0.1, 0.13], [47.6, 0.18, 0.21]], '#8a8e94');
+  // Hublots (pas de 0,53 m) interrompus par les portes ; portes cerclées de jaune (sortie d'aile plus petite)
+  const portes = [[5.2, 1.1, -0.42, 0.42], [15.0, 1.1, -0.42, 0.42], [31.2, 0.75, -0.12, 0.42], [45.8, 1.1, -0.42, 0.42]];
+  for (let x = 7.0; x < 45.0; x += 0.53) {
+    if (portes.some(([p, l]) => x > p - 0.5 && x < p + l + 0.35)) continue;
+    T.rect(x, x + 0.25, 0.22, 0.34, '#2f353d', 'deux', 5);
   }
-  // Hublots (deux rangées interrompues par les portes)
-  const portes = [7.2, 17.5, 39.5, 48.2];
-  for (let x = 9; x < 47.5; x += 0.53) {
-    if (portes.some((p) => Math.abs(x - p - 0.6) < 1.3)) continue;
-    T.rect(x, x + 0.26, 0.12, 0.3, '#3a3f46', 'deux', 4);
+  for (const [p, l, b, h] of portes) T.contour(p, p + l, b, h, '#d8b329', 5);
+  // Poste de pilotage : pare-brise et fenêtres latérales
+  T.rect(1.6, 2.3, 0.24, 0.42, '#1d232b', 'deux', 8);
+  T.rect(2.4, 3.3, 0.24, 0.4, '#1d232b', 'deux', 8);
+  T.dessus(1.1, 1.62, 0.4, '#1d232b');
+  // Feux de formation (barres sombres cerclées de jaune) à l'avant et à l'arrière
+  for (const [x0, n] of [[7.9, 3], [41.9, 3]]) {
+    for (let i = 0; i < n; i++) {
+      const x = x0 + i * 0.95;
+      T.rect(x, x + 0.8, -0.04, 0.06, '#d8b329');
+      T.rect(x + 0.05, x + 0.75, -0.02, 0.04, '#2b2d30');
+    }
   }
-  // Portes cerclées de jaune
-  for (const p of portes) T.contour(p, p + 1.1, -0.45, 0.42, '#d8b329', 4);
-  // Fenêtres du poste de pilotage et pare-brise
-  T.rect(1.75, 2.55, 0.32, 0.6, '#1d232b', 'deux', 6);
-  T.rect(2.65, 3.35, 0.36, 0.58, '#1d232b', 'deux', 6);
-  T.dessus(1.15, 1.7, 0.5, '#1d232b');
-  // Inscriptions : « ARMÉE DE L'AIR », numéro, immatriculation
-  T.texte('ARMEE DE L\'AIR', 28.5, -0.1, 40, '#7d8187');
-  T.texte('041', 4.6, -0.2, 26, '#3a3f46');
-  T.texte('31 EARTS', 4.8, -0.42, 13, '#3a3f46');
-  T.texte('F-UJCG', 49.5, -0.48, 16, '#3a3f46');
+  // Barres lumineuses de guidage sous l'avant du fuselage, et bande d'alignement (noir, jaune, noir) sur l'axe du ventre
+  T.rect(8.6, 15.7, -0.97, -0.9, '#1c1d20');
+  T.rect(11.5, 51.0, -1, -0.992, '#1c1d20');
+  T.rect(11.5, 51.0, -0.992, -0.986, '#d8b329');
+  T.rect(11.5, 51.0, -0.986, -0.978, '#1c1d20');
+  // Barre de guidage noire sur le cône arrière
+  T.rect(56.4, 57.3, -0.3, 0.3, '#1c1d20');
+  // Inscriptions (d'après le schéma) : « ARMEE DE L'AIR » au-dessus des hublots, numéro et unité sur le nez, immatriculation
+  T.texte('ARMEE DE L\'AIR', 23.5, 0.52, 66, '#686c72');
+  T.texte('041', 4.05, -0.2, 30, '#3a3f46');
+  T.texte('31 EARTS', 4.05, -0.42, 14, '#3a3f46');
+  // Cocarde peinte sur l'arrière du fuselage, immatriculation dessous
+  T.cocardePeinte(48.6, 0.42, 0.62, 13.5);
+  T.texte('F-UJCG', 48.6, 0.08, 16, '#3a3f46');
   const peau = new THREE.MeshStandardMaterial({ map: textureDe(THREE, T.c), metalness: 0.3, roughness: 0.45, envMapIntensity: 0.8 });
   a.add(new THREE.Mesh(loft(THREE, [
     { x: 0, w: 0, h: 0, y: -0.75 },
@@ -268,6 +308,7 @@ export function construirePhenix(THREE) {
   for (const cote of [1, -1]) {
     const g = new THREE.Group();
     g.add(new THREE.Mesh(aile, gris));
+    g.add(tube(THREE, [19.8, 0, 2.6], [35.6, 0, 30.0], 0.2, metal));
     const v = new THREE.Mesh(volet, grisMoyen);
     v.position.y = -0.05;
     g.add(v);
@@ -310,6 +351,8 @@ export function construirePhenix(THREE) {
     helice.rotation.z = Math.PI / 2;
     helice.position.set(28.6, -1.15, 22.5);
     g.add(pod, pyl, helice);
+    // Liseré noir et blanc sous la nacelle (repère pour l'avion ravitaillé)
+    g.add(pieces(THREE, noir, [[31.0, -1.58, 22.5, 2.6, 0.04, 0.16]]), pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.5 }), [[31.0, -1.575, 22.33, 2.6, 0.04, 0.1], [31.0, -1.575, 22.67, 2.6, 0.04, 0.1]]));
     const tuyau = new THREE.Group();
     tuyau.position.set(33.0, -1.15, 22.5);
     const flexible = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1, 8), sombre);
@@ -328,28 +371,52 @@ export function construirePhenix(THREE) {
     a.add(g);
     nacelles.push(g);
   }
-  // Empennage horizontal et dérive, badge d'escadron et numéro
+  // Empennage horizontal (bord d'attaque en métal nu)
   for (const cote of [1, -1]) {
-    const s = new THREE.Mesh(surface(THREE, [[49.6, 1.2], [54.7, 9.7], [56.5, 9.7], [55.4, 1.2]], 0.25), gris);
-    s.scale.z = cote;
-    s.position.y = 1.1;
-    s.rotation.x = cote * 0.1;
-    a.add(s);
+    const gS = new THREE.Group();
+    gS.add(new THREE.Mesh(surface(THREE, [[49.6, 1.2], [54.7, 9.7], [56.5, 9.7], [55.4, 1.2]], 0.25), gris));
+    gS.add(tube(THREE, [49.6, 0, 1.2], [54.7, 0, 9.7], 0.13, metal));
+    gS.scale.z = cote;
+    gS.position.y = 1.1;
+    gS.rotation.x = cote * 0.1;
+    a.add(gS);
   }
-  const derive = new THREE.Mesh(surface(THREE, [[46.6, 0], [53.9, 9.2], [57.4, 9.2], [57.0, 0]], 0.38, { plan: 'xy' }), gris);
-  derive.position.y = 2.2;
-  a.add(derive);
+  // Dérive relevée sur le schéma : bord d'attaque de 44,6 m (pied) à 57 m (sommet), saumon jusqu'à 59,3 m, 9,4 m au-dessus du dos ; filet dorsal
+  const piedDerive = 2.6;
+  const derive = new THREE.Mesh(surface(THREE, [[44.6, 0.4], [57.0, 9.8], [59.3, 9.8], [56.6, 0.4]], 0.38, { plan: 'xy' }), gris);
+  derive.position.y = piedDerive;
+  const filet = new THREE.Mesh(surface(THREE, [[41.2, 0.3], [47.0, 2.25], [47.6, 0.3]], 0.3, { plan: 'xy', biseau: 0.05 }), gris);
+  filet.position.y = piedDerive;
+  a.add(derive, filet, tube(THREE, [44.6, piedDerive + 0.4, 0], [57.0, piedDerive + 9.8, 0], 0.2, metal));
+  // Marques de la dérive : trait sombre le long du bord d'attaque, feu de formation, badge d'escadron, numéro
+  const barre = (x1, y1, x2, y2, larg, mat, z) => {
+    const L2 = Math.hypot(x2 - x1, y2 - y1);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(L2, larg, 0.02), mat);
+    m.position.set((x1 + x2) / 2, (y1 + y2) / 2, z);
+    m.rotation.z = Math.atan2(y2 - y1, x2 - x1);
+    return m;
+  };
+  const jauneMat = new THREE.MeshStandardMaterial({ color: 0xd8b329, roughness: 0.5 });
+  const traitMat = new THREE.MeshStandardMaterial({ color: 0x46494e, roughness: 0.6 });
+  const numero = new THREE.MeshBasicMaterial({ map: textureNumero(THREE, '041'), transparent: true, depthWrite: false });
   const badge = new THREE.MeshBasicMaterial({ map: textureBadge(THREE), transparent: true });
   for (const cote of [1, -1]) {
-    const b = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), badge);
-    b.position.set(54.3, 7.4, cote * 0.2);
+    const z = cote * 0.25;
+    a.add(barre(50.4, 3.85, 54.3, 6.3, 0.22, traitMat, z), barre(50.4, 3.85, 52.4, 3.85, 0.22, traitMat, z));
+    a.add(barre(55.3, 6.8, 56.1, 8.2, 0.34, jauneMat, z), barre(55.3, 6.8, 56.1, 8.2, 0.22, sombre, z + cote * 0.005));
+    const b = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), badge);
+    b.position.set(57.4, 10.6, z + cote * 0.005);
     b.rotation.y = cote > 0 ? 0 : Math.PI;
-    a.add(b);
-    const c = cocarde(THREE, 0.62);
-    c.position.set(47.5, 0.4, cote * 2.62);
-    c.rotation.y = cote > 0 ? 0.12 : Math.PI - 0.12;
-    a.add(c);
+    const n = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.5), numero);
+    n.position.set(57.6, 11.6, z + cote * 0.005);
+    n.rotation.y = cote > 0 ? 0 : Math.PI;
+    a.add(b, n);
   }
+  // Carénage de la perche sous la queue
+  const carenagePerche = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 2.6, 6, 12), gris);
+  carenagePerche.rotation.z = Math.PI / 2;
+  carenagePerche.position.set(50.2, -0.75, 0);
+  a.add(carenagePerche);
   // Perche de ravitaillement rigide (A3R) sous la queue : articulée, télescopique, avec ses gouvernes en V
   const perche = new THREE.Group();
   perche.position.set(50.5, -0.9, 0);
@@ -364,7 +431,7 @@ export function construirePhenix(THREE) {
   embout.position.set(0, -3.1, 0);
   tele.add(embout);
   for (const s of [-1, 1]) {
-    const gv = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, 1.5), gris);
+    const gv = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.06, 1.5), noir);
     gv.position.set(7.0, 0.25, s * 0.7);
     gv.rotation.x = s * 0.6;
     perche.add(gv);
@@ -417,6 +484,16 @@ export function construirePhenix(THREE) {
   };
   groupe.userData.taille = 16;
   return groupe;
+}
+
+/** Numéro peint (gris foncé) pour la dérive. */
+function textureNumero(THREE, texte) {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 48;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#3a3f46'; ctx.font = 'bold 40px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(texte, 64, 26);
+  return textureDe(THREE, c);
 }
 
 /** Badge d'escadron (carré orange, motif) pour la dérive du Phénix. */
