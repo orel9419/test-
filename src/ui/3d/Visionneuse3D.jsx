@@ -13,7 +13,7 @@ const FICHES = {
   },
   snle3g: {
     titre: 'SNLE de 3e génération (L\'Invincible)',
-    lignes: ['Construction lancée le 20 mars 2024 à Cherbourg (Naval Group) · premier en service vers 2035', 'Quatre sous-marins prévus, environ un tous les cinq ans · 16 missiles M51', 'Le plus grand sous-marin jamais construit en France', 'Silhouette indicative (coque lisse, gouvernes en X, antenne sonar latérale) : les plans définitifs ne sont pas publics'],
+    lignes: ['Construction lancée le 20 mars 2024 à Cherbourg (Naval Group) · premier en service vers 2035', 'Quatre sous-marins prévus, environ un tous les cinq ans · 16 missiles M51', 'Le plus grand sous-marin jamais construit en France', 'Environ 150 m et 15 000 t en plongée, une centaine de marins (sources ouvertes, non confirmées officiellement) · nom du premier annoncé le 2 mars 2026', 'D\'après une image de présentation : kiosque avancé à congé de raccordement, trappes au ras du pont, antenne latérale, gouvernes en X et aileron du sonar remorqué, hydrojet ; les plans définitifs ne sont pas publics'],
   },
   porteAvions: {
     titre: 'Porte-avions « France Libre »',
@@ -108,7 +108,7 @@ const FICHES = {
 const VUES = {
   rafale: { '3/4': [-13, 4.5, 15], Profil: [0, 1.2, 21], Dessus: [0, 27, 0.01], Face: [-20, 1.6, 0.01], Arrière: [13, 6, 15] },
   snle: { '3/4': [11, 6.5, 13], Profil: [0, 1.5, 19], Dessus: [0, 21, 0.01], Face: [-18, 2, 0.01] },
-  snle3g: { '3/4': [12, 6.5, 14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
+  snle3g: { '3/4': [-12, 8, -14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01], Arrière: [12, 6.5, 14] },
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },

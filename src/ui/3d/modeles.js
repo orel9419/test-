@@ -649,98 +649,140 @@ function trappesMissiles(THREE, { xDebut, pas, y, s, materiaux }) {
 }
 
 /**
- * SNLE de 3e génération : silhouette indicative (coque lisse à tuiles
- * anéchoïques, kiosque avancé avec barres de plongée, antenne sonar latérale,
- * gouvernes en X, hydrojet). Plans définitifs non publics. Échelle 1/10.
+ * SNLE de 3e génération (classe L'Invincible), d'après une image de
+ * présentation du programme et les sources ouvertes (environ 150 m, environ
+ * 15 000 t en plongée) : coque noire à tuiles anéchoïques, étrave arrondie,
+ * kiosque avancé à grand congé de raccordement à l'avant et barres de
+ * plongée en flèche à mi-hauteur, trappes des 16 missiles M51 au ras du pont
+ * derrière le kiosque, longue antenne sonar sur chaque flanc, gouvernes
+ * arrière en X complétées par un aileron vertical (sonar remorqué) et
+ * hydrojet. Les plans définitifs ne sont pas publics : silhouette fidèle à
+ * l'image, détails indicatifs. Échelle 1/10 (150 m → 15 unités).
  */
 export function construireSnle3G(THREE) {
   const s = 0.1;
   const L = 150, R = 6.5;
   const sub = new THREE.Group();
-  const coque = new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#16181b', repetition: [14, 4] }), metalness: 0.15, roughness: 0.5 });
-  const kiosqueMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#191b1e', repetition: [3, 2] }), metalness: 0.15, roughness: 0.5 });
-  const antenneMat = new THREE.MeshStandardMaterial({ color: 0x23272b, metalness: 0.3, roughness: 0.32 });
+  const coque = new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#15171a', trait: 'rgba(210,215,220,0.13)', repetition: [16, 4] }), metalness: 0.15, roughness: 0.48 });
+  const kiosqueMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#17191c', trait: 'rgba(210,215,220,0.16)', repetition: [3, 2] }), metalness: 0.15, roughness: 0.48 });
+  const uni = new THREE.MeshStandardMaterial({ color: 0x17191c, metalness: 0.15, roughness: 0.48 });
+  const antenneMat = new THREE.MeshStandardMaterial({ color: 0x1d2125, metalness: 0.35, roughness: 0.25 });
   const metal = new THREE.MeshStandardMaterial({ color: 0x4a4f55, metalness: 0.7, roughness: 0.4 });
-  const materiaux = { trappe: new THREE.MeshStandardMaterial({ color: 0x24282d, metalness: 0.3, roughness: 0.55 }), tube: new THREE.MeshStandardMaterial({ color: 0x0b0c0e, roughness: 0.9 }) };
+  const materiaux = { trappe: new THREE.MeshStandardMaterial({ color: 0xffffff, map: texturePanneaux(THREE, { fond: '#15171a', trait: 'rgba(210,215,220,0.22)', repetition: [1, 1] }), metalness: 0.15, roughness: 0.48 }), tube: new THREE.MeshStandardMaterial({ color: 0x0b0c0e, roughness: 0.9 }) };
+  // Pièces construites en mètres, mises à l'échelle d'un coup
+  const m = new THREE.Group();
+  m.scale.setScalar(s);
+  sub.add(m);
 
-  sub.add(new THREE.Mesh(loft(THREE, [
-    { x: 0, w: 0, h: 0 }, { x: 1.5, w: 5.4, h: 5.4 }, { x: 4.5, w: 9.2, h: 9.2 }, { x: 9, w: 11.8, h: 11.8 },
-    { x: 15, w: 12.8, h: 12.8 }, { x: 22, w: 2 * R, h: 2 * R }, { x: 112, w: 2 * R, h: 2 * R }, { x: 122, w: 12.2, h: 12.2 },
-    { x: 131, w: 10, h: 10 }, { x: 139, w: 7.2, h: 7.2 }, { x: 145, w: 4.8, h: 4.8 }, { x: 148.5, w: 3.6, h: 3.6 },
-  ], { segments: 64, parSegment: 6 }).scale(s, s, s), coque));
-
-  // Pont légèrement aplati au-dessus des tubes, derrière le kiosque
-  sub.add(new THREE.Mesh(loft(THREE, [
-    { x: 62, w: 2, hHaut: 0.1, hBas: 2, y: R - 0.4, n: 3 },
-    { x: 66, w: 7.4, hHaut: 0.55, hBas: 2.6, y: R - 0.35, n: 4 },
-    { x: 101, w: 7.4, hHaut: 0.55, hBas: 2.6, y: R - 0.35, n: 4 },
-    { x: 106, w: 2, hHaut: 0.1, hBas: 2, y: R - 0.4, n: 3 },
-  ], { segments: 40, parSegment: 5 }).scale(s, s, s), coque));
-  const { groupe: tubes, trappes } = trappesMissiles(THREE, { xDebut: 68.5, pas: 4.5, y: R + 0.2, s, materiaux });
+  // Coque : étrave arrondie assez pleine, long cylindre, arrière effilé vers l'hydrojet
+  m.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 0, h: 0 }, { x: 1.2, w: 5.6, h: 5.6 }, { x: 4, w: 9.8, h: 9.8 }, { x: 8, w: 12.0, h: 12.0 },
+    { x: 14, w: 12.9, h: 12.9 }, { x: 20, w: 2 * R, h: 2 * R }, { x: 114, w: 2 * R, h: 2 * R }, { x: 123, w: 12.3, h: 12.3 },
+    { x: 132, w: 10.2, h: 10.2 }, { x: 140, w: 7.4, h: 7.4 }, { x: 145.5, w: 5.0, h: 5.0 }, { x: 148.5, w: 3.8, h: 3.8 },
+  ], { segments: 72, parSegment: 6 }), coque));
+  // Pont très légèrement aplati au-dessus des 16 tubes, derrière le kiosque (trappes au ras du pont)
+  m.add(new THREE.Mesh(loft(THREE, [
+    { x: 63, w: 2, hHaut: 0.1, hBas: 2, y: R - 0.4, n: 3 },
+    { x: 66, w: 7.2, hHaut: 0.5, hBas: 2.6, y: R - 0.35, n: 3.4 },
+    { x: 105, w: 7.2, hHaut: 0.5, hBas: 2.6, y: R - 0.35, n: 3.4 },
+    { x: 109, w: 2, hHaut: 0.1, hBas: 2, y: R - 0.4, n: 3 },
+  ], { segments: 40, parSegment: 5 }), coque));
+  const { groupe: tubes, trappes } = trappesMissiles(THREE, { xDebut: 68.5, pas: 4.85, y: R + 0.12, s, materiaux });
   sub.add(tubes);
 
-  // Kiosque avancé, profil droit, avec congé à l'arrière et barres de plongée à mi-hauteur
+  // Kiosque : flancs droits, avant arrondi, sommet plat à coins arrondis ; 7 m au-dessus du dos
   const contour = new THREE.Shape();
   contour.moveTo(0, 0);
-  contour.bezierCurveTo(0, 1.5, 1.6, 1.6, 3.5, 1.6);
-  contour.lineTo(13, 1.45);
-  contour.quadraticCurveTo(15.6, 1.2, 16, 0);
-  contour.quadraticCurveTo(15.6, -1.2, 13, -1.45);
-  contour.lineTo(3.5, -1.6);
-  contour.bezierCurveTo(1.6, -1.6, 0, -1.5, 0, 0);
-  const kiosqueGeo = new THREE.ExtrudeGeometry(contour, { depth: 10, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.35, bevelSegments: 4, curveSegments: 16 });
+  contour.bezierCurveTo(0, 1.45, 1.4, 1.6, 3.2, 1.6);
+  contour.lineTo(12.6, 1.4);
+  contour.quadraticCurveTo(14.4, 1.1, 14.6, 0);
+  contour.quadraticCurveTo(14.4, -1.1, 12.6, -1.4);
+  contour.lineTo(3.2, -1.6);
+  contour.bezierCurveTo(1.4, -1.6, 0, -1.45, 0, 0);
+  const kiosqueGeo = new THREE.ExtrudeGeometry(contour, { depth: 8.5, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.4, bevelSegments: 5, curveSegments: 18 });
   kiosqueGeo.rotateX(-Math.PI / 2);
-  kiosqueGeo.translate(44, R - 1.5, 0);
-  kiosqueGeo.scale(s, s, s);
-  sub.add(new THREE.Mesh(kiosqueGeo, kiosqueMat));
-  sub.add(new THREE.Mesh(loft(THREE, [
-    { x: 57, w: 3.1, hHaut: 3.2, hBas: 0.2, y: R - 0.4, n: 2.6 },
-    { x: 62, w: 2.2, hHaut: 1.2, hBas: 0.2, y: R - 0.4, n: 2.4 },
-    { x: 66, w: 0.6, hHaut: 0.1, hBas: 0.1, y: R - 0.4, n: 2 },
-  ], { segments: 24, parSegment: 5 }).scale(s, s, s), kiosqueMat));
-  const barre = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.4, 13.5), kiosqueMat);
-  barre.position.set(47.6 * s, (R + 5.2) * s, 0);
-  barre.rotation.y = 0.06;
-  barre.scale.setScalar(s);
-  sub.add(barre);
-  [[46.5, 1.4], [48, 2.2], [50, 1.7]].forEach(([x, h]) => {
-    const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, h, 12), metal);
-    mat.position.set(x * s, (R + 9 + h / 2) * s, 0);
-    mat.scale.setScalar(s);
-    sub.add(mat);
+  kiosqueGeo.translate(50.6, R - 1.5, 0);
+  m.add(new THREE.Mesh(kiosqueGeo, kiosqueMat));
+  // Grand congé de raccordement à l'avant du kiosque (il adoucit l'écoulement de l'eau) et petit congé à l'arrière
+  m.add(new THREE.Mesh(loft(THREE, [
+    { x: 42.5, w: 0.6, hHaut: 0.1, hBas: 0.3, y: R - 0.3, n: 2 },
+    { x: 45.5, w: 2.0, hHaut: 1.2, hBas: 0.4, y: R - 0.3, n: 2.2 },
+    { x: 48.5, w: 2.9, hHaut: 3.2, hBas: 0.4, y: R - 0.3, n: 2.4 },
+    { x: 51.2, w: 3.25, hHaut: 5.6, hBas: 0.4, y: R - 0.3, n: 2.6 },
+    { x: 52.4, w: 3.25, hHaut: 6.2, hBas: 0.4, y: R - 0.3, n: 2.6 },
+  ], { segments: 28, parSegment: 6 }), kiosqueMat));
+  m.add(new THREE.Mesh(loft(THREE, [
+    { x: 63.5, w: 2.7, hHaut: 2.4, hBas: 0.3, y: R - 0.3, n: 2.4 },
+    { x: 66.5, w: 1.6, hHaut: 0.8, hBas: 0.3, y: R - 0.3, n: 2.2 },
+    { x: 68.5, w: 0.4, hHaut: 0.05, hBas: 0.1, y: R - 0.3, n: 2 },
+  ], { segments: 24, parSegment: 5 }), kiosqueMat));
+  // Barres de plongée en flèche, à mi-hauteur du kiosque, bout arrondi
+  for (const cote of [1, -1]) {
+    const barre = new THREE.Mesh(surface(THREE, [[52.6, 1.45], [56.4, 8.4], [58.9, 8.4], [57.8, 1.45]].map(([x, z]) => [x, z * cote]), 0.5, { biseau: 0.18 }), kiosqueMat);
+    barre.position.y = R + 3.9;
+    m.add(barre);
+    const bout = new THREE.Mesh(new THREE.CapsuleGeometry(0.25, 2.1, 4, 10), uni);
+    bout.rotation.z = Math.PI / 2;
+    bout.position.set(57.65, R + 3.9, cote * 8.4);
+    m.add(bout);
+  }
+  // Mâts escamotables, au ras du sommet du kiosque
+  [[54, 0.2], [56.5, 0.3], [59, 0.25], [61, 0.2]].forEach(([x, h]) => {
+    const mat = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, h, 12), metal);
+    mat.position.set(x, R + 7.6 + h / 2, 0);
+    m.add(mat);
   });
 
-  // Antennes sonar latérales (longs panneaux sur les flancs)
+  // Longue antenne sonar sur chaque flanc (carénage en relief, bords arrondis)
   for (const cote of [1, -1]) {
-    const antenne = new THREE.Mesh(new THREE.BoxGeometry(62, 2.6, 0.4), antenneMat);
-    antenne.position.set(70 * s, -0.9 * s, cote * (R + 0.02) * s);
-    antenne.scale.setScalar(s);
-    sub.add(antenne);
+    m.add(new THREE.Mesh(loft(THREE, [
+      { x: 37.5, w: 0.1, hHaut: 1.1, hBas: 1.1, y: -1.1, z: cote * (R - 0.15), n: 2.4 },
+      { x: 39.5, w: 0.75, hHaut: 1.35, hBas: 1.35, y: -1.1, z: cote * (R - 0.08), n: 3.2 },
+      { x: 107.5, w: 0.75, hHaut: 1.35, hBas: 1.35, y: -1.1, z: cote * (R - 0.08), n: 3.2 },
+      { x: 109.5, w: 0.1, hHaut: 1.1, hBas: 1.1, y: -1.1, z: cote * (R - 0.15), n: 2.4 },
+    ], { segments: 24, parSegment: 4 }), antenneMat));
+    // Portes des tubes lance-torpilles à l'étrave
+    m.add(pieces(THREE, uni, [[13.5, -1.4, cote * 6.45, 3.0, 0.9, 0.12], [13.5, -2.6, cote * 6.4, 3.0, 0.9, 0.12]]));
   }
+  // Panneau d'évacuation circulaire sur le pont avant, feu de position
+  const panneau = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.12, 28), uni);
+  panneau.position.set(34, R + 0.02, 0);
+  const feu = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), new THREE.MeshBasicMaterial({ color: 0xc8312a }));
+  feu.position.set(82, R + 0.62, 0);
+  m.add(panneau, feu);
 
-  // Gouvernes en X et hydrojet
-  const forme = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(7.5, 0), new THREE.Vector2(8.2, 5.6), new THREE.Vector2(4.6, 5.6)]);
+  // Gouvernes arrière en X, aileron vertical supérieur (sonar remorqué) et hydrojet
+  const forme = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(6.8, 0), new THREE.Vector2(7.6, 5.4), new THREE.Vector2(4.2, 5.4)]);
   for (const angle of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
     const g = new THREE.ExtrudeGeometry(forme, { depth: 0.5, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 2 });
-    g.translate(134, 3.2, -0.25);
-    const m = new THREE.Mesh(g, coque);
+    g.translate(135, 3.0, -0.25);
     const pivot = new THREE.Group();
     pivot.rotation.x = angle;
-    pivot.add(m);
-    pivot.scale.setScalar(s);
-    sub.add(pivot);
+    pivot.add(new THREE.Mesh(g, coque));
+    m.add(pivot);
   }
+  const aileron = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(5.6, 0), new THREE.Vector2(5.4, 6.6), new THREE.Vector2(2.6, 6.6)]), { depth: 0.6, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 2 });
+  aileron.translate(131.5, 3.2, -0.3);
+  m.add(new THREE.Mesh(aileron, coque));
+  const distributeur = new THREE.Mesh(new THREE.CapsuleGeometry(0.45, 2.4, 4, 12), uni);
+  distributeur.rotation.z = Math.PI / 2;
+  distributeur.position.set(135.4, 9.9, 0);
+  m.add(distributeur);
   const carenageMat = coque.clone();
   carenageMat.side = THREE.DoubleSide;
-  const carenage = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.05, 4.4, 40, 1, true), carenageMat);
+  const carenage = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.1, 4.6, 40, 1, true), carenageMat);
   carenage.rotation.z = Math.PI / 2;
-  carenage.position.set(150 * s, 0, 0);
-  carenage.scale.setScalar(s);
+  carenage.position.set(150, 0, 0);
   const moyeu = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3.6, 24), metal);
   moyeu.rotation.z = -Math.PI / 2;
-  moyeu.position.set(151.2 * s, 0, 0);
-  moyeu.scale.setScalar(s);
-  sub.add(carenage, moyeu);
+  moyeu.position.set(151.2, 0, 0);
+  // Stator : aubes entre le carénage et le moyeu
+  const aubes = [];
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2;
+    aubes.push([149.2, Math.sin(a) * 1.65, Math.cos(a) * 1.65, 0.6, 0.12, 1.0]);
+  }
+  m.add(carenage, moyeu, pieces(THREE, metal, aubes));
 
   // Missile M51 (tir d'essai)
   const m51 = new THREE.Group();
@@ -764,12 +806,13 @@ export function construireSnle3G(THREE) {
   groupe.userData.missile = m51;
   groupe.userData.dessusDos = (R + 0.2) * s;
   groupe.userData.legendes = [
-    { texte: 'Kiosque', point: decal(52, R + 10, 0) },
-    { texte: 'Barres de plongée', point: decal(47.6, R + 5.2, 6.8) },
-    { texte: '16 tubes de missiles M51', point: decal(84, R + 0.8, 3.5) },
-    { texte: 'Antenne sonar latérale', point: decal(70, -0.9, R + 0.3) },
-    { texte: 'Gouvernes en X', point: decal(140, 7, 3) },
-    { texte: 'Hydrojet (propulsion)', point: decal(151, 2.4, 0) },
+    { texte: 'Kiosque et son congé de raccordement', point: decal(52, R + 8, 0) },
+    { texte: 'Barres de plongée', point: decal(57.6, R + 3.9, -8.4) },
+    { texte: '16 missiles M51 (trappes au ras du pont)', point: decal(86, R + 0.8, -3.5) },
+    { texte: 'Antenne sonar latérale', point: decal(75, -1.1, -(R + 0.4)) },
+    { texte: 'Gouvernes en X', point: decal(140, -5, -5) },
+    { texte: 'Aileron du sonar remorqué', point: decal(135, 10.6, 0) },
+    { texte: 'Hydrojet (propulsion silencieuse)', point: decal(151, 2.6, 0) },
   ];
   groupe.userData.taille = 15;
   return groupe;
