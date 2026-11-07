@@ -1047,6 +1047,13 @@ const POSTES = {
   sna: [[-660, -60]],
   brf: [[310, -270]],
 };
+/** À quai à Toulon : le porte-avions le long du quai, l'escorte amarrée de l'autre côté de la jetée. */
+const POSTES_PORT = {
+  fda: [[-260, 84]],
+  fremm: [[-90, 84], [75, 84]],
+  brf: [[260, 88]],
+  sna: [[420, 70]],
+};
 
 /** Sillage d'écume en V derrière un navire (longueur L, largeur B, en mètres). */
 function sillage(THREE, L, B) {
@@ -1098,24 +1105,45 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
   groupes.forEach((g, i) => {
     const z0 = deux ? (i === 0 ? ecart / 2 : -ecart / 2) : 0;
     const typePA = g.porteAvions === 'cdg' ? 'cdg' : 'pang';
+    const enMer = g.enMer !== false;
     const pa = navireDuGroupe(THREE, typePA, k);
     pa.conteneur.position.z = z0 * k;
     racine.add(pa.conteneur);
-    const sPA = sillage(THREE, pa.d.L, pa.d.B);
-    sPA.scale.setScalar(k);
-    sPA.position.set((pa.d.L / 2) * k, 1.5 * k, z0 * k);
-    racine.add(sPA);
-    legendes.push({ texte: deux ? `Groupe ${i + 1} : ${g.nom ?? pa.d.nom}` : `Porte-avions ${g.nom ?? pa.d.nom}`, point: p(0, 60, z0) });
+    if (enMer) {
+      const sPA = sillage(THREE, pa.d.L, pa.d.B);
+      sPA.scale.setScalar(k);
+      sPA.position.set((pa.d.L / 2) * k, 1.5 * k, z0 * k);
+      racine.add(sPA);
+    } else {
+      // Jetée de la base navale de Toulon, hangars et grues
+      const quai = new THREE.MeshStandardMaterial({ color: 0xa7a59d, roughness: 0.9 });
+      const jetee = new THREE.Mesh(new THREE.BoxGeometry(1350, 6, 44), quai);
+      jetee.scale.setScalar(k);
+      jetee.position.set(60 * k, 1 * k, (z0 + (pa.d.B / 2) + 26) * k);
+      racine.add(jetee);
+      const batiments = [];
+      for (const x of [-520, -470, 520, 570]) batiments.push([x, 12, z0 + pa.d.B / 2 + 26, 40, 18, 30]);
+      racine.add(pieces(THREE, new THREE.MeshStandardMaterial({ color: 0xd8d4c8, roughness: 0.85 }), batiments.map(([x, y, z, l, h, pr]) => [x * k, y * k, z * k, l * k, h * k, pr * k])));
+      const grue = new THREE.MeshStandardMaterial({ color: 0xd9a03a, roughness: 0.7 });
+      for (const x of [-380, 380]) {
+        racine.add(pieces(THREE, grue, [[x * k, 22 * k, (z0 + pa.d.B / 2 + 26) * k, 4 * k, 40 * k, 4 * k], [(x - 12) * k, 42 * k, (z0 + pa.d.B / 2 + 18) * k, 32 * k, 3 * k, 3 * k]]));
+      }
+    }
+    const lieu = g.theatre ? (enMer ? ` · en mission : ${g.theatre}` : ' · à quai à Toulon') : '';
+    legendes.push({ texte: `${deux ? `Groupe ${i + 1} : ` : 'Porte-avions '}${g.nom ?? pa.d.nom}${lieu}`, point: p(0, 60, z0) });
     const esc = { fda: 1, fremm: 2, sna: 1, brf: 1, ...(g.escorte ?? {}) };
     for (const type of ['fda', 'fremm', 'sna', 'brf']) {
-      const n = Math.min(esc[type] ?? 0, POSTES[type].length);
+      const postes = enMer ? POSTES[type] : POSTES_PORT[type];
+      const n = Math.min(esc[type] ?? 0, postes.length);
       for (let j = 0; j < n; j++) {
-        const [x, z] = POSTES[type][j];
+        const [x, zr] = postes[j];
+        // À quai, l'escorte est amarrée de l'autre côté de la jetée
+        const z = enMer ? zr : pa.d.B / 2 + zr;
         const nav = navireDuGroupe(THREE, type, k);
-        const profondeur = type === 'sna' ? -8 : 0; // sous-marin en plongée, kiosque affleurant
+        const profondeur = type === 'sna' && enMer ? -8 : 0; // sous-marin en plongée (kiosque affleurant), en surface au port
         nav.conteneur.position.set(x * k, nav.conteneur.position.y + profondeur * k, (z0 + z) * k);
         racine.add(nav.conteneur);
-        if (type !== 'sna') {
+        if (type !== 'sna' && enMer) {
           const sl = sillage(THREE, nav.d.L, nav.d.B);
           sl.scale.setScalar(k);
           sl.position.set((x + nav.d.L / 2) * k, 1.5 * k, (z0 + z) * k);
@@ -1124,19 +1152,19 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
         }
         if (nav.objet.userData.animer) animations.push(nav.objet);
         if (i === 0 || !deux) {
-          const texte = { fda: 'Frégate de défense aérienne (missiles Aster)', fremm: j === 0 ? 'FREMM (lutte anti-sous-marine, missiles de croisière)' : 'FREMM', sna: 'Sous-marin nucléaire d\'attaque en plongée', brf: 'Ravitailleur de forces' }[type];
+          const texte = { fda: 'Frégate de défense aérienne (missiles Aster)', fremm: j === 0 ? 'FREMM (lutte anti-sous-marine, missiles de croisière)' : 'FREMM', sna: enMer ? 'Sous-marin nucléaire d\'attaque en plongée' : 'Sous-marin nucléaire d\'attaque', brf: 'Ravitailleur de forces' }[type];
           if (type !== 'fremm' || j === 0) legendes.push({ texte, point: p(x, type === 'sna' ? 5 : 35, z0 + z) });
         }
       }
     }
-    // Rafale Marine en patrouille au-dessus du groupe
-    for (let j = 0; j < 2; j++) {
+    // Rafale Marine en patrouille au-dessus du groupe (en mission seulement)
+    for (let j = 0; j < (enMer ? 2 : 0); j++) {
       const r = construireRafale(THREE, { armement: true });
       r.scale.setScalar(k * 2.6);
       racine.add(r);
       avions.push({ r, z0, phase: j * Math.PI, rayon: 300 + j * 90, altitude: 260 + j * 40 });
     }
-    if (i === 0) legendes.push({ texte: 'Rafale Marine en patrouille (agrandis)', point: p(-300, 300, z0) });
+    if (enMer && !legendes.some((l) => l.texte.startsWith('Rafale'))) legendes.push({ texte: 'Rafale Marine en patrouille (agrandis)', point: p(-300, 300, z0) });
   });
 
   // Mer commune, un peu transparente : on devine le sous-marin sous la surface
@@ -1150,7 +1178,7 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
   racine.userData.legendes = legendes;
   racine.userData.taille = 14;
   racine.userData.mer = true;
-  racine.userData.commandes = [{ id: 'ravitailler', libelle: 'Ravitaillement à la mer', actif: 'Fin du ravitaillement' }];
+  racine.userData.commandes = ravitailleurs.length ? [{ id: 'ravitailler', libelle: 'Ravitaillement à la mer', actif: 'Fin du ravitaillement' }] : [];
   let f = 0;
   racine.userData.animer = (t, api) => {
     f += ((api.ravitailler ? 1 : 0) - f) * 0.02;

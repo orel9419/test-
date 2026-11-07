@@ -38,6 +38,7 @@ import Classements from './ecrans/Classements.jsx';
 import Communication from './ecrans/Communication.jsx';
 import Armees from './ecrans/Armees.jsx';
 import Dissuasion from './ecrans/Dissuasion.jsx';
+import GroupeAeronaval from './ecrans/GroupeAeronaval.jsx';
 import Securite from './ecrans/Securite.jsx';
 import Express from './express/Express.jsx';
 import Hangar from './composants/Hangar.jsx';
@@ -63,6 +64,7 @@ const ONGLETS = [
   { id: 'sources', nom: 'Données et sources', court: 'Sources', icone: '🔎' },
   { id: 'communication', nom: 'Communication', court: 'Communication', icone: '🎤' },
   { id: 'armees', nom: 'Armées', court: 'Armées', icone: '🎖️' },
+  { id: 'gan', nom: 'Groupe aéronaval', court: 'Groupe aéronaval', icone: '🚢' },
   { id: 'dissuasion', nom: 'Dissuasion', court: 'Dissuasion', icone: '⚓' },
   { id: 'securite', nom: 'Sécurité et justice', court: 'Sécurité', icone: '🛡️' },
   { id: 'geopolitique', nom: 'Géopolitique', court: 'Géopolitique', icone: '🗺️' },
@@ -75,7 +77,7 @@ const ONGLETS = [
 const RUBRIQUES = [
   { id: 'accueil', nom: 'Tableau de bord', court: 'Accueil', icone: '📊', onglets: ['tableau'] },
   { id: 'gouverner', nom: 'Gouverner', court: 'Gouverner', icone: '📜', onglets: ['reformes', 'budget', 'fiscalite'] },
-  { id: 'regalien', nom: 'Régalien', court: 'Régalien', icone: '🎖️', onglets: ['armees', 'dissuasion', 'securite'] },
+  { id: 'regalien', nom: 'Régalien', court: 'Régalien', icone: '🎖️', onglets: ['armees', 'gan', 'dissuasion', 'securite'] },
   { id: 'politique', nom: 'Politique et opinion', court: 'Opinion', icone: '📣', onglets: ['institutions', 'communication', 'opinion', 'parlement', 'evenements'] },
   { id: 'economie', nom: 'Économie', court: 'Économie', icone: '🏭', onglets: ['relocalisation', 'entreprises', 'fonds', 'menages'] },
   { id: 'monde', nom: 'Monde', court: 'Monde', icone: '🌍', onglets: ['geopolitique', 'diplomatie', 'classements', 'rendezvous'] },
@@ -322,7 +324,7 @@ export default function App() {
   const nbActionsEntreprises = (decisions.entreprises?.length ?? 0) + (decisions.programmes?.length ?? 0);
   const rubrique = rubriqueDe(onglet);
   const essentielle = options.interface === 'essentielle';
-  const reserveFrance = (id) => ['geopolitique', 'relocalisation', 'institutions', 'fonds'].includes(id) && partie.pays !== 'france';
+  const reserveFrance = (id) => ['geopolitique', 'gan', 'relocalisation', 'institutions', 'fonds'].includes(id) && partie.pays !== 'france';
   const visible = (id) => !reserveFrance(id) && (!essentielle || !ONGLETS_AVANCES.includes(id) || id === onglet);
   const rubriques = RUBRIQUES.map((r) => ({ ...r, onglets: r.onglets.filter(visible) })).filter((r) => r.onglets.length > 0);
   const ongletsRubrique = rubriques.find((r) => r.id === rubrique.id)?.onglets ?? [onglet];
@@ -335,6 +337,7 @@ export default function App() {
     entreprises: nbActionsEntreprises,
     communication: decisions.communication ? 1 : 0,
     geopolitique: (decisions.gan ? 1 : 0) + (decisions.gan2 ? 1 : 0),
+    gan: (decisions.gan ? 1 : 0) + (decisions.gan2 ? 1 : 0),
     institutions: (decisions.questionConfiance && partie.pays === 'france' ? 1 : 0) + (decisions.congres ? 1 : 0) + (decisions.cohabitation && decisions.cohabitation !== 'promulguer' ? 1 : 0),
     relocalisation: decisions.relocalisations?.length ?? 0,
     fonds: decisions.fondsAllocation ? 1 : 0,
@@ -401,6 +404,7 @@ export default function App() {
             )}
             {onglet === 'communication' && <Communication {...props} allerA={setOnglet} />}
             {onglet === 'armees' && <Armees {...props} allerA={setOnglet} />}
+            {onglet === 'gan' && <GroupeAeronaval {...props} allerA={setOnglet} />}
             {onglet === 'dissuasion' && <Dissuasion {...props} allerA={setOnglet} />}
             {onglet === 'securite' && <Securite {...props} allerA={setOnglet} />}
             {cohabitationJoueur(partie) && ['budget', 'fiscalite', 'reformes', 'entreprises', 'relocalisation'].includes(onglet) && (
