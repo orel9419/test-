@@ -197,8 +197,9 @@ export function majDefense(e, alea) {
         x.capacites[cle] += livre;
       }
       const s = x.supplements[cle];
-      if (s && s.restant > 0 && e.tour >= s.debut) {
-        const n = Math.min(s.restant, s.rythme);
+      if (s && Math.abs(s.restant) > 1e-9 && e.tour >= s.debut) {
+        // Supplément positif (commande, plan de disponibilité) ou négatif (baisse de l'entretien)
+        const n = s.restant > 0 ? Math.min(s.restant, s.rythme) : Math.max(s.restant, s.rythme);
         s.restant -= n; x.capacites[cle] += n;
         x.supplementsLivres = { ...(x.supplementsLivres ?? {}), [cle]: (x.supplementsLivres?.[cle] ?? 0) + n };
       }

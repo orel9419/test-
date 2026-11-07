@@ -5,7 +5,8 @@ import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
 /** Modèles 3D de chaque programme (plusieurs : puces pour passer de l'un à l'autre). */
 const MODELES_3D = {
-  rafale: [['rafale', 'Rafale']], mirage2000: [['mirage2000', 'Mirage 2000-5F']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
+  rafale: [['rafale', 'Rafale']], mirage2000: [['mirage2000', 'Mirage 2000-5F']], phenix: [['phenix', 'A330 Phénix']],
+  helicos: [['tigre', 'Tigre'], ['caiman', 'Caïman'], ['caimanFS', 'Caïman forces spéciales'], ['puma', 'Puma']], mco: [['caracal', 'Caracal']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
   leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
   scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],
 };
@@ -47,6 +48,8 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
   const rafale = r.capacites.rafale;
   const snle3g = r.capacites.snle3g;
   const mirage = r.capacites.mirage2000d;
+  const phenix = r.capacites.phenix;
+  const dispo = r.capacites.disponibilite;
   const retraitMirage = r.programmes.find((p) => p.id === 'mirage2000')?.jalonsEffectifs.find((j) => j.id === 'm2000d_retrait');
   const pang = r.programmes.find((p) => p.id === 'pang');
   const pa = porteAvions(partie);
@@ -68,6 +71,20 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
             <span className="libelle">Rafale en service <Info texte="Armée de l'Air et de l'Espace et Marine nationale. Objectif de la loi de programmation militaire : 178 fin 2030 et 225 en 2035." /></span>
             <span className="valeur chiffres">{nombre(rafale, 0)}</span>
             <span className="variation muet">objectif LPM : 178 fin 2030, 225 en 2035</span>
+          </div>
+        )}
+        {phenix !== undefined && (
+          <div className="tuile">
+            <span className="libelle">Ravitailleurs Phénix <Info texte="A330 MRTT Phénix de l'armée de l'Air et de l'Espace : 15 prévus en 2028 (ministère des Armées). Sans ravitailleurs, les Rafale ne peuvent ni frapper loin ni rester longtemps en l'air." /></span>
+            <span className="valeur chiffres">{nombre(phenix, 0)}</span>
+            <span className="variation muet">objectif : 15 en 2028</span>
+          </div>
+        )}
+        {dispo !== undefined && (
+          <div className="tuile">
+            <span className="libelle">Disponibilité des hélicoptères <Info texte="Indice de jeu : part moyenne des hélicoptères en état de voler. Les taux publiés varient selon les flottes (environ 36 % pour le NH90 de l'armée de Terre en 2018, objectif de 55 % pour celui de la Marine). Programme « Maintien en condition opérationnelle » pour l'améliorer." /></span>
+            <span className={`valeur chiffres ${dispo >= 55 ? 'positif' : dispo < 40 ? 'negatif' : ''}`}>{nombre(dispo, 0)} %</span>
+            <span className="variation muet">{dispo >= 55 ? 'bonne' : dispo >= 45 ? 'moyenne' : 'insuffisante'}</span>
           </div>
         )}
         {mirage !== undefined && (

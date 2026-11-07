@@ -535,7 +535,7 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-scene canvas:active { cursor: grabbing; }
 .visionneuse-attente { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 0.9rem; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); }
 .visionneuse-legendes { position: absolute; inset: 0; pointer-events: none; }
-.legende-3d { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.72rem; font-weight: 600; color: #fff; background: rgba(15, 25, 40, 0.72); padding: 0.1rem 0.4rem; border-radius: 6px; margin: -0.6rem 0 0 0.4rem; border-left: 2px solid #f2c94c; }
+.legende-3d { display: none; position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 0.72rem; font-weight: 600; color: #fff; background: rgba(15, 25, 40, 0.72); padding: 0.1rem 0.4rem; border-radius: 6px; margin: -0.6rem 0 0 0.4rem; border-left: 2px solid #f2c94c; }
 .visionneuse-commandes { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 
 /* --- Mode Express ------------------------------------------------------------------------ */
@@ -712,3 +712,6 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .option.repartition-fonds { display: grid; gap: 0.3rem; border-color: var(--bordure); }
 .barre-repartition { display: flex; height: 18px; border-radius: 5px; overflow: hidden; gap: 2px; background: var(--surface); }
 .barre-repartition span { display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: #fff; min-width: 0; white-space: nowrap; overflow: hidden; }
+.visionneuse-phenix .visionneuse-scene { background: linear-gradient(180deg, #0f3f78 0%, #2a6bb0 60%, #5d93cf 100%); }
+.visionneuse-caiman .visionneuse-scene, .visionneuse-caimanFS .visionneuse-scene, .visionneuse-tigre .visionneuse-scene, .visionneuse-puma .visionneuse-scene, .visionneuse-caracal .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #eef2f6 0%, #cfd8e2 55%, #a3b2c2 100%); }
+:root[data-theme="dark"] .visionneuse-caiman .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caimanFS .visionneuse-scene, :root[data-theme="dark"] .visionneuse-tigre .visionneuse-scene, :root[data-theme="dark"] .visionneuse-puma .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caracal .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #3b4757 0%, #222b37 60%, #141a22 100%); }

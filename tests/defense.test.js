@@ -148,3 +148,36 @@ describe('Mirage 2000', () => {
     expect(p.jalonsEffectifs.find((j) => j.id === 'm2000_5f_retrait').annee).toBe(2028);
   });
 });
+
+describe('Phénix, hélicoptères et disponibilité des matériels', () => {
+  const jusqua = (e, annee, t, premier = {}) => { let x = jouerTour(e, premier, SANS); while (x.trimestre.annee < annee || (x.trimestre.annee === annee && x.trimestre.t < t)) x = jouerTour(x, {}, SANS); return x; };
+
+  it('15 Phénix fin 2028, 18 de plus avec une tranche de 3', () => {
+    const r0 = resumeDefense(nouvelle());
+    expect(r0.capacites.phenix).toBe(13);
+    expect(r0.programmes.map((p) => p.id)).toEqual(expect.arrayContaining(['phenix', 'helicos', 'mco']));
+    expect(Math.round(resumeDefense(jusqua(nouvelle(), 2029, 1)).capacites.phenix)).toBe(15);
+    expect(Math.round(resumeDefense(jusqua(nouvelle(), 2033, 1, { defense: { programmes: { phenix: 'tranche' } } })).capacites.phenix)).toBe(18);
+  });
+
+  it('le plan de disponibilité coûte et relève la disponibilité ; réduire l\'entretien économise et la fait baisser', () => {
+    expect(resumeDefense(nouvelle()).capacites.disponibilite).toBe(45);
+    const plus = jusqua(nouvelle(), 2033, 1, { defense: { programmes: { mco: 'renforcer' } } });
+    expect(Math.round(resumeDefense(plus).capacites.disponibilite)).toBe(57);
+    const moins = jusqua(nouvelle(), 2033, 1, { defense: { programmes: { mco: 'reduire' } } });
+    expect(Math.round(resumeDefense(moins).capacites.disponibilite)).toBe(35);
+    const e = nouvelle();
+    deciderDefense(e, { programmes: { mco: 'reduire' } }, certain);
+    expect(depensesTemporairesActives(e).defense).toBeLessThan(0);
+  });
+
+  it('commander des Caïman avance le retrait des Puma ; les prolonger le retarde', () => {
+    const date = (option) => {
+      const e = nouvelle();
+      deciderDefense(e, { programmes: { helicos: option } }, certain);
+      return resumeDefense(e).programmes.find((p) => p.id === 'helicos').jalonsEffectifs.find((j) => j.id === 'puma_retrait').annee;
+    };
+    expect(date('caiman')).toBe(2029);
+    expect(date('puma')).toBe(2033);
+  });
+});

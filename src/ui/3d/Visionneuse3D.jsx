@@ -27,6 +27,30 @@ const FICHES = {
     titre: 'Mirage 2000-5F',
     lignes: ['Avion de défense aérienne de Dassault Aviation · longueur 14,36 m · envergure 9,13 m · hauteur 5,20 m', 'Réacteur M53-P2 (95 kN avec postcombustion) · Mach 2,2 · aile delta à commandes de vol électriques, sans plans canard mobiles', 'Version -5 : radar RDY et missiles MICA ; la France a livré des Mirage 2000-5F à l\'Ukraine à partir de février 2025', 'Configuration affichée : 2 réservoirs de 1 700 litres et 2 MICA, camouflage deux tons de gris'],
   },
+  phenix: {
+    titre: 'Airbus A330 MRTT « Phénix »',
+    lignes: ['Ravitailleur et avion de transport stratégique : 58,80 m de long, 60,30 m d\'envergure, 17,40 m de haut (Airbus)', 'Jusqu\'à 110 t de carburant dans les ailes : il ravitaille deux chasseurs à la fois (tuyaux et paniers) ou un avion lourd par sa perche rigide', 'Transport de troupes et évacuation sanitaire (jusqu\'à 272 passagers ou des blessés couchés) · deux pilotes', '15 Phénix prévus en 2028, en remplacement des C-135 · 31e escadre aérienne de ravitaillement et de transport stratégiques (Istres) · sources : ministère des Armées, Airbus'],
+  },
+  caiman: {
+    titre: 'NH90 Caïman (armée de Terre)',
+    lignes: ['Hélicoptère de manœuvre : fuselage de 16,13 m, rotor de 16,30 m, environ 5,3 m de haut (Airbus, NHIndustries)', 'Deux pilotes et jusqu\'à 20 soldats, porte coulissante de chaque côté, rampe arrière', 'Environ 64 Caïman standard 1 livrés à l\'armée de Terre, le dernier début 2025', 'Camouflage centre-Europe · bouton : livrée forces spéciales · descente en corde lisse'],
+  },
+  caimanFS: {
+    titre: 'NH90 Caïman standard 2 (forces spéciales)',
+    lignes: ['Version du 4e régiment d\'hélicoptères des forces spéciales (Pau) : 18 commandés, le premier livré le 30 juillet 2026, le dernier vers le printemps 2029', 'Boule optronique Safran Euroflir 410 (jour, nuit, désignation laser), mitrailleuses de sabord, équipements de vol de nuit', 'Remplace les Caracal et les Cougar des forces spéciales', 'Livrée sombre unie : couleur exacte non confirmée par une source · bouton : livrée armée de Terre'],
+  },
+  tigre: {
+    titre: 'Tigre (hélicoptère d\'appui et de destruction)',
+    lignes: ['14,08 m de long, rotor de 13 m, 3,83 m de haut · deux pilotes en tandem (le pilote derrière, le tireur devant)', 'Canon de 30 mm en tourelle, roquettes de 68 mm, missiles ; viseur de toit pour observer caché derrière un relief', 'Rénovation au standard 3 prévue pour 42 Tigre français (avec 18 espagnols) : combat collaboratif SCORPION, liaison avec les drones', 'Livrée de la photo (un Tigre australien, sable, vert et noir) ou vert olive · détails simplifiés'],
+  },
+  puma: {
+    titre: 'SA330 Puma',
+    lignes: ['Hélicoptère de manœuvre conçu par Sud-Aviation, en service en France depuis le début des années 1970', 'Deux turbines Turmo, rotor à quatre pales d\'environ 15 m, 16 à 20 soldats', 'En retrait progressif : remplacé par le Caïman dans l\'armée de Terre et par le Caracal dans l\'armée de l\'Air et de l\'Espace (Guyane en 2026, Nouvelle-Calédonie)', 'Camouflage vert, brun et noir de l\'armée de Terre · dimensions approximatives'],
+  },
+  caracal: {
+    titre: 'H225M Caracal',
+    lignes: ['Hélicoptère de transport et de recherche et sauvetage au combat : rotor à cinq pales de 16,20 m (Airbus)', 'Ravitaillable en vol grâce à sa perche, grands réservoirs dans les sponsons : plusieurs heures d\'autonomie', 'Armée de l\'Air et de l\'Espace et forces spéciales ; huit Caracal commandés en 2021 pour remplacer des Puma, le dernier livré en juin 2026', 'Livrée gris bleuté · porte ouverte avec deux tireurs de sabord, comme sur la photo'],
+  },
   caesar: {
     titre: 'Canon Caesar MkII',
     lignes: ['Camion équipé d\'un système d\'artillerie : canon de 155 mm (52 calibres) sur châssis 6×6 Arquus, cabine blindée à quatre portes, moteur de 460 ch', 'Portée d\'environ 40 km (plus de 50 km avec des obus à propulsion additionnelle) · 6 coups par minute · 18 coups à bord', 'Mise en batterie en moins d\'une minute : il tire puis repart avant la riposte · 5 artilleurs · transportable par A400M', '109 Caesar MkII commandés par la France en 2024, premières livraisons en 2026 · livrée brune du rendu KNDS (bouton : camouflage) · sources : KNDS, ministère des Armées'],
@@ -84,7 +108,13 @@ const VUES = {
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
-  mirage2000: { '3/4': [-13.5, 0.4, 13.5], Profil: [0, 0.2, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Face: [-19, 0.4, 0.01], Haut: [-13, 4, 15], Arrière: [13, 5.5, 14] },
+  mirage2000: { '3/4': [-13.5, 0.4, 13.5], Profil: [0, -0.2, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Face: [-19, 0.4, 0.01], Haut: [-13, 4, 15], Arrière: [13, 5.5, 14] },
+  phenix: { '3/4': [-17, 7, 19], Profil: [0, 1.5, 27], Dessus: [0, 32, 0.01], Face: [-27, 2, 0.01], Arrière: [18, 6, 18] },
+  caiman: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
+  caimanFS: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
+  tigre: { '3/4': [-12, 4.5, 13], Profil: [0, 1.5, 18], Dessus: [0, 21, 0.01], Face: [-18, 2, 0.01], Arrière: [13, 5, 13] },
+  puma: { '3/4': [-12, 5, 14], Profil: [0, 2, 19], Dessus: [0, 22, 0.01], Face: [-19, 2.5, 0.01], Arrière: [13, 6, 13] },
+  caracal: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
   caesar: { '3/4': [-12, 6, 13], Profil: [0, 1.5, 19], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
   griffon: { '3/4': [-11, 5.5, 13], Profil: [0, 1.2, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.8, 0.01] },
   jaguar: { '3/4': [-11, 5.5, 13], Profil: [0, 1.2, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.8, 0.01] },
@@ -105,11 +135,13 @@ const MODULES = {
   materiels: () => import('./materiels.js'),
   palais: () => import('./palais.js'),
   avions: () => import('./avions.js'),
+  aeronefs: () => import('./aeronefs.js'),
 };
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
   porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
-  mirage2000: ['avions', 'construireMirage2000'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
+  mirage2000: ['avions', 'construireMirage2000'], phenix: ['aeronefs', 'construirePhenix'],
+  caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],

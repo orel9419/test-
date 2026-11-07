@@ -27,6 +27,12 @@ export const SOURCES_DEFENSE = {
   mirageUkraine: { titre: 'The Aviationist : premiers Mirage 2000-5F livrés à l\'Ukraine (6 février 2025)', url: 'https://theaviationist.com/2025/02/06/mirage-2000-delivered-ukraine/' },
   mirageRetrait: { titre: 'Wikipédia : aéronefs en service dans les armées françaises (retrait du Mirage 2000-5F vers 2030)', url: 'https://en.wikipedia.org/wiki/List_of_active_military_aircraft_of_the_French_Armed_Forces' },
   formatChasse: { titre: 'AeroTime : la DGA confirme l\'objectif de 225 Rafale (185 pour l\'armée de l\'Air et de l\'Espace, 40 pour la Marine)', url: 'https://www.aerotime.aero/?p=129471' },
+  phenix: { titre: 'Ministère des Armées : quinze A330 Phénix prévus en 2028', url: 'https://www.defense.gouv.fr/sites/default/files/air/Fiche%20technique%20A330.pdf' },
+  phenixAirbus: { titre: 'Airbus : fiche technique de l\'A330 MRTT (58,80 m, 17,40 m, 60,30 m)', url: 'https://www.airbus.com/sites/g/files/jlcbta136/files/2023-08/TMMP0015_01_2023_A330%20MRTT%20Dataposter_ENG_Low.pdf' },
+  caimanStd2: { titre: 'Army Recognition : premier NH90 Caïman standard 2 livré aux forces spéciales (juillet 2026, 18 commandés)', url: 'https://www.armyrecognition.com/news/aerospace-news/2026/france-receives-first-nh90-caiman-standard-2-helicopter-for-special-forces' },
+  tigreMk3: { titre: 'Ministère des Armées : fiche LPM de l\'hélicoptère Tigre (standard 3, 42 appareils français)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/Fiche%20LPM%20-%20H%C3%A9licopt%C3%A8re%20Tigre.pdf' },
+  pumaGuyane: { titre: 'Ministère des Armées : le Puma tire sa révérence en Guyane après 47 ans (2026)', url: 'https://www.defense.gouv.fr/air/actualites/puma-tire-sa-reverence-guyane-47-ans-mission' },
+  disponibilite: { titre: 'Assemblée nationale : réponse ministérielle sur la disponibilité des hélicoptères (NH90, plan de transformation du MCO aéronautique)', url: 'https://www.assemblee-nationale.fr/dyn/15/questions/QANR5L15QE14094.pdf' },
   flancEst: { titre: 'Ministère des Armées : renforcement sur le flanc est (missions Aigle et Lynx)', url: 'https://www.defense.gouv.fr/renforcement-flanc-est' },
 };
 
@@ -56,6 +62,61 @@ export const PROGRAMMES_DEFENSE = {
       ],
       jalons: [{ id: 'rafale_f5', annee: 2033, t: 2, texte: 'Premier Rafale au standard F5, avec son drone de combat.' }],
       sources: ['rafale'],
+    },
+    {
+      id: 'phenix', nom: 'Ravitailleurs A330 Phénix', sousTitre: 'Ravitaillement en vol et transport stratégique', illustration: 'chasseur', domaine: 'Air',
+      industriels: ['Airbus', 'Rolls-Royce (réacteurs)', 'Safran et Thales (équipements)'], fleurons: ['airbus'],
+      faits: [
+        'L\'A330 MRTT Phénix remplace les C-135 : il ravitaille les Rafale de la dissuasion et des opérations, transporte troupes et blessés (jusqu\'à 272 passagers) et emporte jusqu\'à 110 t de carburant.',
+        'Environ 12 à 13 en service fin 2026 selon les sources ; le ministère des Armées en prévoit 15 en 2028.',
+        'Sans ravitailleurs, un Rafale ne peut ni frapper loin ni rester longtemps en l\'air : c\'est un « multiplicateur de forces ». L\'Europe dépend encore beaucoup des ravitailleurs américains.',
+      ],
+      capacite: { cle: 'phenix', libelle: 'Phénix en service', depart: 13, cibles: [{ annee: 2028, t: 4, valeur: 15 }] },
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation', description: '15 Phénix en 2028.' },
+        { id: 'tranche', nom: 'Commander 3 Phénix de plus', description: 'Environ 0,25 Md€ par an pendant quatre ans (hypothèse de jeu, de l\'ordre de 300 M€ par appareil avec son soutien) : plus d\'autonomie pour les opérations lointaines et l\'appui aux alliés européens.', cout: 0.25, duree: 16, supplement: 3, effets: { souverainete: 2, influence: 1, relations: { ue: 1 }, fleurons: { airbus: 2 } } },
+        { id: 'soutien', nom: 'Renforcer le contrat de soutien (disponibilité)', description: '0,1 Md€ par an pendant quatre ans (hypothèse de jeu) : plus de pièces et d\'équipes de maintenance, moins d\'avions immobilisés.', cout: 0.1, duree: 16, effets: { souverainete: 1, fleurons: { airbus: 1 } } },
+      ],
+      jalons: [{ id: 'phenix_15', influence: 0, annee: 2028, t: 4, texte: 'Le 15e A330 Phénix est livré : les C-135 sont entièrement remplacés.' }],
+      sources: ['phenix', 'phenixAirbus'],
+    },
+    {
+      id: 'helicos', nom: 'Hélicoptères : Tigre, Caïman, Puma, Caracal', sousTitre: 'Aviation légère de l\'armée de Terre, forces spéciales et armée de l\'Air et de l\'Espace', illustration: 'chasseur', domaine: 'Terre et Air',
+      industriels: ['Airbus Helicopters', 'NHIndustries (NH90)', 'Safran (moteurs, optronique)', 'Thales (électronique)'], fleurons: ['airbus', 'safran', 'thales'],
+      faits: [
+        'NH90 Caïman : environ 64 au standard 1 livrés à l\'armée de Terre (le dernier début 2025) ; 18 au standard 2 commandés pour les forces spéciales, le premier livré le 30 juillet 2026, le dernier vers le printemps 2029.',
+        'Tigre : rénovation au standard 3 de 42 appareils français (avec 18 espagnols) pour les connecter à SCORPION et aux drones et les garder au-delà de 2040.',
+        'Puma : en service depuis les années 1970, en retrait progressif ; huit Caracal commandés en 2021 pour en remplacer, le dernier livré en juin 2026 (Guyane, Nouvelle-Calédonie).',
+      ],
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation', description: 'Caïman standard 2 jusqu\'en 2029, Tigre standard 3, retrait progressif des Puma.' },
+        { id: 'caiman', nom: 'Commander 12 Caïman de plus pour remplacer les derniers Puma', description: 'Environ 0,15 Md€ par an pendant quatre ans (hypothèse de jeu) : les Puma partent deux ans plus tôt, la flotte est plus homogène, donc plus simple à entretenir.', cout: 0.15, duree: 16, effets: { souverainete: 1, fleurons: { airbus: 2, safran: 1 } }, avance: { jalon: 'puma_retrait', trimestres: 8 } },
+        { id: 'tigre', nom: 'Rénover tous les Tigre au standard 3 (environ 67 au lieu de 42)', description: 'Environ 0,3 Md€ par an pendant quatre ans (hypothèse de jeu) : plus d\'hélicoptères d\'attaque modernes, appréciés face aux drones et aux blindés.', cout: 0.3, duree: 16, effets: { souverainete: 2, influence: 1, fleurons: { airbus: 2, thales: 2, safran: 1 } } },
+        { id: 'puma', nom: 'Prolonger les Puma de deux ans', description: 'Environ 0,05 Md€ par an pendant trois ans (hypothèse de jeu) : du volume en attendant, mais un entretien de plus en plus coûteux pour des appareils de plus de 50 ans.', cout: 0.05, duree: 12, effets: { souverainete: -1 }, retard: { jalon: 'puma_retrait', trimestres: 8 } },
+      ],
+      jalons: [
+        { id: 'nh90_std2', influence: 0, annee: 2029, t: 2, texte: 'Le 18e et dernier Caïman standard 2 est livré au 4e régiment d\'hélicoptères des forces spéciales.' },
+        { id: 'tigre_std3', influence: 0, annee: 2030, t: 4, texte: 'Premiers Tigre au standard 3 en service (date indicative, hypothèse de jeu).' },
+        { id: 'puma_retrait', influence: 0, annee: 2031, t: 4, texte: 'Les derniers Puma quittent l\'armée de Terre (date indicative, hypothèse de jeu).' },
+      ],
+      sources: ['caimanStd2', 'tigreMk3', 'pumaGuyane'],
+    },
+    {
+      id: 'mco', nom: 'Maintien en condition opérationnelle', sousTitre: 'Disponibilité des matériels : pièces, mécaniciens, contrats de soutien', illustration: 'chasseur', domaine: 'Terre et Air et Marine',
+      industriels: ['Airbus Helicopters', 'Dassault Aviation', 'Safran', 'Service industriel de l\'aéronautique (SIAé)', 'Naval Group'], fleurons: ['airbus', 'safran', 'dassault'],
+      faits: [
+        'Un matériel n\'est utile que s\'il est disponible : en 2018, environ 36 % des NH90 de l\'armée de Terre étaient disponibles ; un plan de transformation visait par exemple 55 % au lieu de 44 % pour le NH90 de la Marine.',
+        'Les causes : pièces de rechange en retard, flottes trop variées, manque de mécaniciens, contrats éclatés entre de nombreux industriels. Les contrats « verticalisés » confient à un seul industriel la disponibilité d\'une flotte entière.',
+        'L\'indice affiché ici est une moyenne de jeu pour les hélicoptères : il ne correspond pas à une statistique officielle unique.',
+      ],
+      capacite: { cle: 'disponibilite', libelle: 'Disponibilité des hélicoptères (indice de jeu)', depart: 45, cibles: [] },
+      options: [
+        { id: 'nominal', nom: 'Suivre la loi de programmation', description: 'La disponibilité reste autour de son niveau actuel.' },
+        { id: 'renforcer', nom: 'Plan de disponibilité : pièces, mécaniciens, contrats verticalisés', description: '0,6 Md€ de plus par an pendant quatre ans (hypothèse de jeu) : la disponibilité monte progressivement d\'une douzaine de points entre la troisième et la sixième année (le temps de reconstituer les stocks de pièces et de former des mécaniciens).', cout: 0.6, duree: 16, supplement: 12, effets: { souverainete: 2, influence: 1, fleurons: { airbus: 2, safran: 1, dassault: 1 } } },
+        { id: 'reduire', nom: 'Réduire les crédits d\'entretien', description: '0,4 Md€ d\'économie par an pendant trois ans (hypothèse de jeu) : la disponibilité baisse progressivement d\'une dizaine de points, plus d\'appareils cloués au sol.', cout: -0.4, duree: 12, supplement: -10, effets: { souverainete: -2, influence: -1 } },
+      ],
+      jalons: [],
+      sources: ['disponibilite'],
     },
     {
       id: 'mirage2000', nom: 'Mirage 2000', sousTitre: 'Mirage 2000D rénovés (attaque au sol) et 2000-5F (défense aérienne), jusqu\'au « tout Rafale »', illustration: 'chasseur', domaine: 'Air',

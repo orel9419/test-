@@ -40,7 +40,7 @@ function densifier(cles, parSegment = 6) {
  * Surface « loftée » : une suite de sections (super-ellipses) le long de x.
  * Section : { x, w (largeur), hHaut, hBas (demi-hauteurs), y (centre), z, n (exposant : 2 = ellipse, plus = plus carré) }.
  */
-export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true, couleur = null } = {}) {
+export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true, couleur = null, debut = 0 } = {}) {
   const sections = densifier(cles.map((s) => ({ hHaut: s.h / 2, hBas: s.h / 2, y: 0, z: 0, n: 2, ...s })), parSegment);
   const pos = [];
   const idx = [];
@@ -48,10 +48,13 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
   const col = [];
   const x0 = sections[0].x, x1 = sections[sections.length - 1].x;
   const ajouterCouleur = (x, y, z) => { if (couleur) col.push(...couleur(x, y, z)); };
+  // Chaque anneau compte segments + 1 sommets : le dernier double le premier (couture), pour que la
+  // texture ne soit ni comprimée ni retournée à la jointure. « debut » place la couture (0 : flanc gauche).
+  const S = segments + 1;
   for (const s of sections) {
     const e = 2 / s.n;
-    for (let j = 0; j < segments; j++) {
-      const t = (j / segments) * Math.PI * 2;
+    for (let j = 0; j <= segments; j++) {
+      const t = debut + (j / segments) * Math.PI * 2;
       const c = Math.cos(t), si = Math.sin(t);
       const dz = (s.w / 2) * Math.sign(c) * Math.pow(Math.abs(c), e);
       const dy = (si >= 0 ? s.hHaut : s.hBas) * Math.sign(si) * Math.pow(Math.abs(si), e);
@@ -63,9 +66,9 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
   const n = sections.length;
   for (let i = 0; i < n - 1; i++) {
     for (let j = 0; j < segments; j++) {
-      const a = i * segments + j, b = i * segments + ((j + 1) % segments);
-      const c = (i + 1) * segments + j, d = (i + 1) * segments + ((j + 1) % segments);
-      idx.push(a, b, c, b, d, c);
+      const a = i * S + j, b = a + 1;
+      const c = (i + 1) * S + j, d = c + 1;
+      idx.push(a, c, b, b, c, d); // sens direct vu de l'extérieur : normales vers l'extérieur
     }
   }
   if (fermer) {
@@ -78,8 +81,8 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
       uv.push(i === 0 ? 0 : 1, 0.5);
       ajouterCouleur(s.x, s.y, s.z);
       for (let j = 0; j < segments; j++) {
-        const a = i * segments + j, b = i * segments + ((j + 1) % segments);
-        if (sens < 0) idx.push(centre, b, a); else idx.push(centre, a, b);
+        const a = i * S + j, b = a + 1;
+        if (sens < 0) idx.push(centre, a, b); else idx.push(centre, b, a);
       }
     }
   }
@@ -89,6 +92,15 @@ export function loft(THREE, cles, { segments = 48, parSegment = 6, fermer = true
   if (couleur) g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setIndex(idx);
   g.computeVertexNormals();
+  // Couture : même normale de part et d'autre, pour un ombrage continu
+  const nor = g.attributes.normal;
+  for (let i = 0; i < n; i++) {
+    const a = i * S, b = i * S + segments;
+    const v = new THREE.Vector3(nor.getX(a) + nor.getX(b), nor.getY(a) + nor.getY(b), nor.getZ(a) + nor.getZ(b)).normalize();
+    nor.setXYZ(a, v.x, v.y, v.z);
+    nor.setXYZ(b, v.x, v.y, v.z);
+  }
+  nor.needsUpdate = true;
   return g;
 }
 
