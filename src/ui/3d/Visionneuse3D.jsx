@@ -23,6 +23,18 @@ const FICHES = {
     titre: 'Porte-avions « Charles-de-Gaulle »',
     lignes: ['261,5 m de long · 64,4 m de large · mis en service en mai 2001 · port d\'attache : base navale de Toulon', '2 réacteurs nucléaires et 2 groupes turbo-réducteurs : 61 MW (83 000 ch) · 27 nœuds (50 km/h)', 'Équipage : 1 900 marins · 40 aéronefs, dont 24 Rafale Marine · 2 catapultes de 75 m', '8e porte-avions français · seul bâtiment de combat de surface à propulsion nucléaire en Europe · source : Marine nationale'],
   },
+  f35a: {
+    titre: 'F-35A Lightning II (version de l\'armée de l\'air)',
+    lignes: ['Lockheed Martin · 15,67 m de long · 10,67 m d\'envergure · 4,38 m de haut · un réacteur Pratt & Whitney F135 (191 kN avec postcombustion) · Mach 1,6', 'Furtivité : armes en soute, formes à facettes et arêtes alignées, joints en dents de scie, revêtement absorbant les ondes radar ; capteurs fusionnés (radar, EOTS, six caméras DAS)', 'Canon interne de 25 mm · jusqu\'à 8,2 t d\'armement (18 000 livres) · rayon d\'action d\'environ 1 100 km · ravitaillé par perche rigide (réceptacle sur le dos)', 'En Europe : Allemagne (35 commandés fin 2022 pour la dissuasion partagée de l\'OTAN), Belgique, Pays-Bas, Norvège, Danemark, Italie, Pologne, Finlande, Suisse… Concurrent américain du Rafale à l\'export · sources : Lockheed Martin, US Air Force'],
+  },
+  f35b: {
+    titre: 'F-35B (décollage court et atterrissage vertical)',
+    lignes: ['15,61 m · 10,67 m d\'envergure · 4,36 m · même réacteur F135, relié par un arbre à une soufflante de sustentation placée derrière le pilote', 'En vol vertical : grande trappe dorsale et trappes ventrales ouvertes, tuyère orientée vers le sol (trois segments pivotants), buses de roulis sous les ailes pour l\'équilibre', 'Pas de canon interne · 6,8 t d\'armement (15 000 livres) · rayon d\'action d\'environ 830 km · ravitaillé par perche', 'Corps des Marines américain, Royaume-Uni (porte-avions Queen Elizabeth et Prince of Wales), Italie (porte-aéronefs Cavour), Japon · sources : Lockheed Martin, US Marine Corps'],
+  },
+  f35c: {
+    titre: 'F-35C (version embarquée de l\'US Navy)',
+    lignes: ['15,70 m · 13,11 m d\'envergure (bouts d\'aile repliables pour le hangar) · 4,48 m', 'Aile et empennages agrandis pour apponter plus lentement, train renforcé, roue avant double avec barre de catapultage, crosse d\'appontage', '8,2 t d\'armement (18 000 livres) · rayon d\'action d\'environ 1 100 km · ravitaillé par perche', 'US Navy et Marines sur les porte-avions nucléaires américains ; son équivalent français est le Rafale Marine du Charles-de-Gaulle · sources : Lockheed Martin, US Navy'],
+  },
   mirage2000: {
     titre: 'Mirage 2000-5F',
     lignes: ['Avion de défense aérienne de Dassault Aviation · longueur 14,36 m · envergure 9,13 m · hauteur 5,20 m', 'Réacteur M53-P2 (95 kN avec postcombustion) · Mach 2,2 · aile delta à commandes de vol électriques, sans plans canard mobiles', 'Version -5 : radar RDY et missiles MICA ; la France a livré des Mirage 2000-5F à l\'Ukraine à partir de février 2025', 'Configuration affichée : 2 réservoirs de 1 700 litres et 2 MICA, camouflage deux tons de gris'],
@@ -147,6 +159,9 @@ const VUES = {
   brf: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, 12] },
   monge: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, -12] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
+  f35a: { '3/4': [-13, 2.5, 14], Face: [-20, 0.3, 0.01], Profil: [0, 0.3, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Arrière: [13, 4.5, 14] },
+  f35b: { '3/4': [-13, 2.5, 14], Face: [-20, 0.3, 0.01], Profil: [0, 0.3, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Arrière: [13, 4.5, 14] },
+  f35c: { '3/4': [-13, 2.5, 15], Face: [-21, 0.3, 0.01], Profil: [0, 0.3, 21], Dessus: [0, 28, 0.01], Dessous: [0.01, -15, 6], Arrière: [13, 4.5, 15] },
   mirage2000: { '3/4': [-13.5, 0.4, 13.5], Profil: [0, -0.2, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Face: [-19, 0.4, 0.01], Haut: [-13, 4, 15], Arrière: [13, 5.5, 14] },
   phenix: { '3/4': [-17, 7, 19], Profil: [0, 1.5, 27], 'Côté droit': [0, 1.5, -27], Dessus: [0, 32, 0.01], Dessous: [0.01, -26, 8], Face: [-27, 2, 0.01], Arrière: [18, 6, 18] },
   caiman: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
@@ -177,11 +192,12 @@ const MODULES = {
   avions: () => import('./avions.js'),
   aeronefs: () => import('./aeronefs.js'),
   marine: () => import('./marine.js'),
+  f35: () => import('./f35.js'),
 };
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
   porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
-  mirage2000: ['avions', 'construireMirage2000'], phenix: ['aeronefs', 'construirePhenix'],
+  mirage2000: ['avions', 'construireMirage2000'], f35a: ['f35', 'construireF35'], f35b: ['f35', 'construireF35'], f35c: ['f35', 'construireF35'], phenix: ['aeronefs', 'construirePhenix'],
   caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   groupeAeronaval: ['marine', 'construireGroupeAeronaval'],

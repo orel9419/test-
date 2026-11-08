@@ -5,7 +5,7 @@ import Visionneuse3D from '../3d/Visionneuse3D.jsx';
 
 /** Modèles 3D de chaque programme (plusieurs : puces pour passer de l'un à l'autre). */
 const MODELES_3D = {
-  rafale: [['rafale', 'Rafale']], mirage2000: [['mirage2000', 'Mirage 2000-5F']], phenix: [['phenix', 'A330 Phénix']],
+  rafale: [['rafale', 'Rafale']], f35: [['f35a', 'F-35A'], ['f35b', 'F-35B (comparaison)'], ['f35c', 'F-35C (comparaison)']], mirage2000: [['mirage2000', 'Mirage 2000-5F']], phenix: [['phenix', 'A330 Phénix']],
   helicos: [['tigre', 'Tigre'], ['caiman', 'Caïman'], ['caimanFS', 'Caïman forces spéciales'], ['caimanMarine', 'Caïman Marine'], ['puma', 'Puma']], mco: [['caracal', 'Caracal']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
   leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
   scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],

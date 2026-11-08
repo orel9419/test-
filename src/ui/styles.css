@@ -540,6 +540,8 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse { margin: 0; display: grid; gap: 0.5rem; }
 .visionneuse-scene { position: relative; border-radius: 14px; overflow: hidden; touch-action: none; }
 .visionneuse-rafale .visionneuse-scene, .visionneuse-mirage2000 .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f4f8fd 0%, #cfdbea 55%, #9fb3cc 100%); }
+.visionneuse-f35a .visionneuse-scene, .visionneuse-f35b .visionneuse-scene, .visionneuse-f35c .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #eef2f7 0%, #c9d4e0 55%, #95a5b8 100%); }
+:root[data-theme="dark"] .visionneuse-f35a .visionneuse-scene, :root[data-theme="dark"] .visionneuse-f35b .visionneuse-scene, :root[data-theme="dark"] .visionneuse-f35c .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #3b4757 0%, #222b37 60%, #141a22 100%); }
 .visionneuse-snle .visionneuse-scene { background: linear-gradient(180deg, #2f6aa3 0%, #12395f 45%, #071a2e 100%); }
 :root[data-theme="dark"] .visionneuse-rafale .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #3b4757 0%, #222b37 60%, #141a22 100%); }
 .visionneuse-scene canvas { display: block; width: 100%; height: 100%; cursor: grab; }
