@@ -6,8 +6,8 @@
  * - fichiers de l'application (noms uniques à chaque version) : le cache
  *   d'abord, puis le réseau.
  */
-const CACHE = 'chef-de-gouvernement-v24';
-const ESSENTIELS = ['./', './index.html', './manifest.webmanifest', './icones/icone-192.png', './icones/icone-512.png'];
+const CACHE = 'chef-de-gouvernement-v25';
+const ESSENTIELS = ['./', './index.html', './theme-initial.js', './manifest.webmanifest', './icones/icone-192.png', './icones/icone-512.png'];
 
 self.addEventListener('install', (ev) => {
   ev.waitUntil(caches.open(CACHE).then((c) => c.addAll(ESSENTIELS)).catch(() => {}));
@@ -27,14 +27,18 @@ self.addEventListener('fetch', (ev) => {
   if (req.mode === 'navigate') {
     ev.respondWith(
       fetch(req)
-        .then((rep) => { const copie = rep.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copie)); return rep; })
+        .then((rep) => {
+          // Seule une vraie page du site (réponse 200, même origine) remplace la copie hors ligne
+          if (rep.ok && rep.type === 'basic') { const copie = rep.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copie)); }
+          return rep;
+        })
         .catch(() => caches.match('./index.html')),
     );
     return;
   }
   ev.respondWith(
     caches.match(req).then((enCache) => enCache || fetch(req).then((rep) => {
-      if (rep.ok) { const copie = rep.clone(); caches.open(CACHE).then((c) => c.put(req, copie)); }
+      if (rep.ok && rep.type === 'basic') { const copie = rep.clone(); caches.open(CACHE).then((c) => c.put(req, copie)); }
       return rep;
     })),
   );

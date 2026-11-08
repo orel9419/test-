@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { urlSure } from '../securite.js';
 import { PAYS, contexte } from '../donnees.js';
 import { PARAMETRES } from '../../model/parametres.js';
 
@@ -67,7 +68,7 @@ export default function Sources({ partie }) {
             <tr key={i}>
               <td>{l.chemin}</td>
               <td style={{ maxWidth: 260 }}>{valeurLisible(l)}{l.note && <div className="tres-petit muet">{l.note}</div>}</td>
-              <td>{l.url ? <a href={l.url} target="_blank" rel="noreferrer">{l.source ?? 'lien'}</a> : (l.source ?? '—')}</td>
+              <td>{urlSure(l.url) ? <a href={urlSure(l.url)} target="_blank" rel="noopener noreferrer">{l.source ?? 'lien'}</a> : (l.source ?? '—')}</td>
               <td className="chiffres">{l.date ?? l.periode ?? '—'}</td>
               <td><span className={`badge ${l.statut}`}>{STATUTS[l.statut] ?? l.statut}</span></td>
             </tr>

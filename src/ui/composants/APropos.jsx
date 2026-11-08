@@ -20,7 +20,8 @@ export default function APropos({ onFermer, codePartie }) {
         </div>
         <div>
           <h3>Vie privée</h3>
-          <p style={{ margin: 0 }}>Aucun compte, aucun cookie publicitaire, aucune mesure d'audience. Votre partie et vos réglages restent dans votre navigateur ; vous pouvez les exporter (menu « Sauvegarder ») ou les effacer à tout moment.</p>
+          <p style={{ margin: 0 }}>Aucun compte, aucun cookie publicitaire, aucune mesure d'audience. Votre partie et vos réglages restent dans votre navigateur ; vous pouvez les exporter (menu « Sauvegarder ») ou les effacer à tout moment. Pendant que vous jouez, le jeu ne contacte aucun serveur et ne charge rien depuis d'autres sites.</p>
+          <p style={{ margin: '0.4rem 0 0' }}><strong>Sécurité.</strong> N'importez que des sauvegardes de personnes de confiance : le jeu les contrôle avant de les charger (taille, structure, liens) et refuse celles qui paraissent modifiées ou endommagées.</p>
         </div>
         <div>
           <h3>Code source et contributions</h3>

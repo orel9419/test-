@@ -91,6 +91,10 @@ Le dépôt est public et le workflow `.github/workflows/publier-application.yml`
 
 Le partage d'un lien affiche un aperçu (titre, description, image `public/apercu-partage.jpg`).
 
+## Sécurité
+
+Le jeu n'a ni serveur ni compte : rien ne quitte le navigateur du joueur. La page publiée applique une politique de sécurité du contenu (seuls les scripts du site s'exécutent, aucune ressource extérieure), les sauvegardes importées sont contrôlées avant d'être chargées (taille, structure, liens, pollution de prototype) et la publication automatique est verrouillée (actions épinglées, droits minimaux, audit des dépendances). Détails, limites et signalement d'une faille : [SECURITY.md](SECURITY.md).
+
 ## Comment jouer
 
 Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimestres, du T4 2026 au T4 2050). Vous pouvez aussi jouer un seul mandat : 20 trimestres pour la France, 16 pour l'Allemagne, 9 pour les États-Unis (jusqu'à la présidentielle de novembre 2028). À chaque tour, vous pouvez :

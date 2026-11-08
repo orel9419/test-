@@ -22,8 +22,11 @@
     "world-atlas": "2.0.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^5.4.11",
-    "vitest": "^2.1.8"
+    "@vitejs/plugin-react": "^5.1.4",
+    "vite": "^7.3.7",
+    "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

@@ -1,7 +1,11 @@
 /**
  * Sauvegarde locale (localStorage) et export / import en JSON.
- * L'état d'une partie est entièrement sérialisable.
+ * L'état d'une partie est entièrement sérialisable. Toute sauvegarde relue
+ * (fichier, texte collé ou stockage du navigateur) passe par les contrôles
+ * de src/ui/securite.js avant d'être confiée au moteur.
  */
+import { lireJSONNonFiable, validerSauvegarde, SauvegardeInvalide } from './securite.js';
+
 const CLE = 'chef-de-gouvernement:partie';
 const VERSION = 1;
 
@@ -18,8 +22,7 @@ export function chargerLocal() {
   try {
     const brut = localStorage.getItem(CLE);
     if (!brut) return null;
-    const s = JSON.parse(brut);
-    return s.version === VERSION ? s : null;
+    return validerSauvegarde(lireJSONNonFiable(brut), VERSION);
   } catch {
     return null;
   }
@@ -46,11 +49,9 @@ export function texteSauvegarde(partie, decisions) {
   return JSON.stringify({ version: VERSION, date: new Date().toISOString(), partie, decisions });
 }
 
-/** Lit une sauvegarde collée sous forme de texte. */
+/** Lit une sauvegarde collée sous forme de texte (taille, structure et liens contrôlés). */
 export function lireSauvegardeTexte(texte) {
-  const s = JSON.parse(texte);
-  if (s.version !== VERSION || !s.partie?.pays || !s.partie?.macro) throw new Error('Sauvegarde incompatible.');
-  return s;
+  return validerSauvegarde(lireJSONNonFiable(texte), VERSION);
 }
 
 /** Télécharge la partie au format JSON. */
@@ -65,7 +66,8 @@ export function exporterJSON(partie, decisions) {
   URL.revokeObjectURL(url);
 }
 
-/** Lit un fichier JSON exporté. Rejette les fichiers incompatibles. */
+/** Lit un fichier JSON exporté. Rejette les fichiers incompatibles, trop gros ou malformés. */
 export async function importerJSON(fichier) {
+  if (!fichier || fichier.size > 5_000_000) throw new SauvegardeInvalide('Fichier trop volumineux (5 Mo au plus).');
   return lireSauvegardeTexte(await fichier.text());
 }

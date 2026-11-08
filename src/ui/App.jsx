@@ -235,7 +235,15 @@ export default function App() {
   const validerTour = useCallback(() => {
     if (!partie || partie.termine) return;
     const avant = partie;
-    const apres = jouerTour(partie, decisions);
+    let apres;
+    try {
+      apres = jouerTour(partie, decisions);
+    } catch (err) {
+      // Partie endommagée (sauvegarde modifiée à la main, par exemple) : le jeu reste utilisable
+      console.error(err);
+      setMessage('Ce trimestre n\'a pas pu être calculé : la partie semble endommagée. Chargez une autre sauvegarde ou commencez une nouvelle partie.');
+      return;
+    }
     const suivantes = decisionsInitiales(apres);
     if (MODES[normaliserMode(avant.mode)]?.annulerTour) setPrecedent({ partie: avant, decisions });
     setPartie(apres);

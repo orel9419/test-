@@ -95,11 +95,14 @@ async function mettreAJour(nomPays) {
       if (t.serieComplete) {
         const annee = new Date().getFullYear();
         const valeurs = Object.fromEntries(serie.filter((x) => Number(x.periode) >= annee - 2 && Number(x.periode) <= annee + 4).map((x) => [x.periode, x.valeur]));
+        // Données venues d'Internet : seules des valeurs numériques entrent dans les fichiers du jeu
+        if (Object.entries(valeurs).some(([k, v]) => !/^\d{4}$/.test(k) || !Number.isFinite(v))) throw new Error('valeur non numérique');
         if (!simulation) ecrire(donnees, t.chemin, { valeur: valeurs, unite: t.unite, periode: Object.keys(valeurs).join('-'), source: t.source, url: t.url, date: aujourdhui, statut: 'prevision_officielle' });
         console.log(`  ✓ ${t.chemin} = ${JSON.stringify(valeurs)}`);
       } else {
         const d = derniere(serie);
         const valeur = Math.round((t.transformer ? t.transformer(d.valeur) : d.valeur) * 100) / 100;
+        if (!Number.isFinite(valeur)) throw new Error('valeur non numérique');
         if (t.simple) { if (!simulation) ecrireSimple(donnees, t.chemin, valeur); }
         else if (!simulation) ecrire(donnees, t.chemin, { valeur, unite: t.unite, periode: d.periode, source: t.source, url: t.url, date: aujourdhui, statut: 'officiel' });
         console.log(`  ✓ ${t.chemin} = ${valeur} (${d.periode})`);
