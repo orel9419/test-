@@ -727,4 +727,8 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .etiquette.think-shift { background: color-mix(in srgb, #2e8b57 14%, transparent); color: var(--encre); border-color: color-mix(in srgb, #2e8b57 45%, transparent); }
 .think-tank.think-ifrap { border-left: 4px solid #1f5aa6; }
 .think-tank.think-shift { border-left: 4px solid #2e8b57; }
+.etiquette.think-lfi { background: color-mix(in srgb, #c2185b 14%, transparent); color: var(--encre); border-color: color-mix(in srgb, #c2185b 45%, transparent); font-weight: 600; }
+.think-tank.think-lfi { border-left: 4px solid #c2185b; }
+.bilan-source { display: grid; gap: 0.2rem; padding: 0.5rem 0.65rem; border-radius: 8px; background: var(--surface-2); }
+.bilan-source .total { border-top: 1px solid var(--bordure, rgba(127,127,127,0.35)); padding-top: 0.2rem; }
 .note-inspiration { margin: 0; padding: 0.35rem 0.55rem; border-radius: 8px; background: var(--surface-2); }

@@ -79,9 +79,30 @@ export const RISQUES_CONSTITUTIONNELS = {
       precedent: 'Les lois pénales et de procédure pénale sont fréquemment censurées en partie.',
     },
   },
+  lfi_ultra_riches: {
+    france: {
+      options: { annonce: 0.35, prudent: 0.35 }, type: 'partielle',
+      motif: 'Taxe Zucman : caractère confiscatoire et égalité devant les charges publiques (article 13 de la Déclaration de 1789), surtout si les biens professionnels sont taxés ; la réforme des successions est moins exposée.',
+      precedent: 'En décembre 2012, le Conseil a censuré la taxe à 75 % sur les très hauts revenus (décision n° 2012-662 DC).',
+    },
+  },
+  lfi_fiscalite_2017: {
+    france: {
+      options: { annonce: 0.15, prudent: 0.15 }, type: 'partielle',
+      motif: 'Un impôt sur la fortune renforcé, sans plafonnement en fonction des revenus, peut devenir confiscatoire.',
+      precedent: 'Le Conseil a plusieurs fois rappelé cette exigence de plafonnement lors des réformes de l\'ISF (notamment en 2012).',
+    },
+  },
+  lfi_grandes_entreprises: {
+    france: {
+      options: { annonce: 0.2, prudent: 0.2 }, type: 'partielle',
+      motif: 'Égalité devant l\'impôt : une taxe sur les multinationales assise sur leur activité mondiale doit reposer sur des critères objectifs et rationnels.',
+      precedent: 'En octobre 2017, le Conseil a censuré la contribution de 3 % sur les dividendes (décision n° 2017-660 QPC) : son remboursement a coûté environ 10 Md€ à l\'État.',
+    },
+  },
   blocage_prix: {
     france: {
-      options: { blocage: 0.3 }, type: 'partielle',
+      options: { blocage: 0.3, carburant: 0.15 }, type: 'partielle',
       motif: 'Liberté d\'entreprendre (article 4 de la Déclaration de 1789) : un blocage général et durable des prix serait disproportionné.',
       precedent: 'Le Conseil admet des encadrements de prix limités et justifiés par l\'intérêt général ; un blocage général n\'a jamais été jugé.',
     },

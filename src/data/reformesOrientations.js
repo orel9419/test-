@@ -281,7 +281,7 @@ export const REFORMES_SOCIALES = [
     id: 'smic_hausse', orientation: S,
     nom: 'Augmenter le SMIC',
     categorie: 'travail', pays: FR, vehicule: 'décret', vote: false,
-    resume: 'Donner un « coup de pouce » au SMIC au-delà de la revalorisation automatique, ou le porter à 1 600 € net comme le demande la gauche.',
+    resume: 'Donner un « coup de pouce » au SMIC au-delà de la revalorisation automatique, ou le porter à 1 600 € net comme le demande la gauche, voire à 1 700 € net comme le propose La France insoumise pour 2027.',
     pedagogie: 'Le SMIC est revalorisé chaque 1er janvier selon l\'inflation et la moitié du gain de pouvoir d\'achat du salaire horaire ouvrier ; le gouvernement peut aller au-delà par décret. Un coup de pouce augmente le revenu des salariés modestes, mais aussi le coût du travail peu qualifié et le coût des allègements de cotisations.',
     pour: ['Pouvoir d\'achat des travailleurs modestes', 'Le travail doit payer'],
     contre: ['Risque pour l\'emploi peu qualifié', 'Tassement des salaires autour du SMIC'],
@@ -289,15 +289,20 @@ export const REFORMES_SOCIALES = [
     options: [
       { id: 'coup_de_pouce', nom: 'Coup de pouce de 3 %' },
       { id: 'mille_six_cents', nom: 'SMIC à 1 600 € net (environ +10 %)' },
+      { id: 'mille_sept_cents', nom: 'SMIC à 1 700 € net (environ +18 %)', description: 'Proposition de La France insoumise (orientations budgétaires 2027), avec une conférence exceptionnelle sur les salaires.' },
     ],
     delai: 1,
     effets: (e, o, age) => {
+      if (o === 'mille_sept_cents') return { chomageStructurel: 0.6 * rampe(age, 6), recettes: { cotisations: -7 * prix(e) }, chocPrix: age < 4 ? 0.14 : 0, menages: { smic: [{ montant: 250, texte: 'SMIC à 1 700 € net' }], jeune: [{ montant: 170, texte: 'SMIC à 1 700 € net' }] } };
       const fort = o === 'mille_six_cents';
       return { chomageStructurel: (fort ? 0.35 : 0.08) * rampe(age, 6), recettes: { cotisations: -(fort ? 4 : 1.2) * prix(e) }, chocPrix: age < 4 ? (fort ? 0.08 : 0.02) : 0, menages: { smic: [{ montant: fort ? 150 : 45, texte: 'Hausse du SMIC' }], jeune: [{ montant: fort ? 100 : 30, texte: 'Hausse du SMIC' }] } };
     },
-    reaction: (e, o) => ({ chocs: { salaries: o === 'mille_six_cents' ? 6 : 3, jeunes: o === 'mille_six_cents' ? 5 : 2, entrepreneurs: o === 'mille_six_cents' ? -8 : -3, agriculteurs: -2 }, credibilite: o === 'mille_six_cents' ? -0.05 : 0 }),
+    reaction: (e, o) => (o === 'mille_sept_cents'
+      ? { chocs: { salaries: 8, jeunes: 7, entrepreneurs: -12, agriculteurs: -4 }, credibilite: -0.08 }
+      : { chocs: { salaries: o === 'mille_six_cents' ? 6 : 3, jeunes: o === 'mille_six_cents' ? 5 : 2, entrepreneurs: o === 'mille_six_cents' ? -8 : -3, agriculteurs: -2 }, credibilite: o === 'mille_six_cents' ? -0.05 : 0 }),
     axes: { social: 0.7, marche: -0.5 },
-    chiffrage: 'Hypothèses de jeu : coût des allègements de cotisations de 1,2 à 4 Md€ par an ; +0,08 à +0,35 point de chômage structurel.',
+    axesParOption: { mille_sept_cents: { social: 0.9, marche: -0.8 } },
+    chiffrage: 'Hypothèses de jeu : coût des allègements de cotisations de 1,2 à 4 Md€ par an (7 Md€ pour 1 700 €) ; +0,08 à +0,35 point de chômage structurel (+0,6 point pour 1 700 €). Le SMIC net est d\'environ 1 443 € par mois en 2026.',
   },
   {
     id: 'encadrement_loyers', orientation: S,

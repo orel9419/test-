@@ -29,6 +29,7 @@ import { REFORMES_CONCRETES } from './reformesConcretes.js';
 import { REFORMES_PROGRAMMES } from './reformesProgrammes.js';
 import { REFORMES_ETAT } from './reformesEtat.js';
 import { REFORMES_THINK_TANKS, INSPIRATIONS_EXISTANTES } from './reformesThinkTanks.js';
+import { REFORMES_LFI, INSPIRATIONS_LFI } from './reformesLFI.js';
 
 const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const indicePrix = (e) => e.macro.niveauPrix / 100;
@@ -846,10 +847,10 @@ const ORIENTATIONS = {
 };
 for (const [orientation, ids] of Object.entries(ORIENTATIONS)) for (const r of [...REFORMES_COMMUNES, ...REFORMES_FRANCE]) if (ids.includes(r.id)) r.orientation = orientation;
 
-export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES, ...REFORMES_CONCRETES, ...REFORMES_PROGRAMMES, ...REFORMES_ETAT, ...REFORMES_THINK_TANKS];
+export const REFORMES = [...REFORMES_COMMUNES, ...REFORMES_FRANCE, ...REFORMES_LIBERALES, ...REFORMES_SOCIALES, ...REFORMES_CONCRETES, ...REFORMES_PROGRAMMES, ...REFORMES_ETAT, ...REFORMES_THINK_TANKS, ...REFORMES_LFI];
 
-/** Réformes existantes qui reprennent une proposition de l'IFRAP ou du Shift Project : étiquette et précision. */
-for (const [source, notes] of Object.entries(INSPIRATIONS_EXISTANTES)) {
+/** Réformes existantes qui reprennent une proposition de l'IFRAP, du Shift Project ou de LFI : étiquette et précision. */
+for (const [source, notes] of Object.entries({ ...INSPIRATIONS_EXISTANTES, lfi: INSPIRATIONS_LFI })) {
   for (const [id, note] of Object.entries(notes)) {
     const r = REFORMES.find((x) => x.id === id);
     if (!r) continue;

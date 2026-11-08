@@ -10,6 +10,8 @@ const rampe = (age, n) => Math.min(1, Math.max(0, (age + 1) / n));
 const prix = (e) => e.macro.niveauPrix / 100;
 const FR = ['france'];
 const ans = (age) => Math.max(0, age) / 4;
+/** Indice mondial de l'énergie au départ de la partie (ENERGIE_DEPART, src/engine/monde.js). */
+const INDICE_ENERGIE_DEPART = 0.6 * (117 / 73) * 100 + 0.4 * (97.15 / 32) * 100;
 
 /** Répartit une économie (négative) sur les postes de dépense, hors retraites, défense, police et justice. */
 function repartirEconomie(e, montant) {
@@ -25,27 +27,37 @@ export const REFORMES_PROGRAMMES = [
     nom: 'Bloquer les prix des produits de première nécessité',
     categorie: 'protection_sociale', pays: FR, vehicule: 'loi',
     resume: 'Geler les prix de l\'alimentation de base, de l\'énergie et des produits d\'hygiène, ou y supprimer la TVA.',
-    pedagogie: 'Le blocage protège immédiatement le pouvoir d\'achat, mais il comprime les marges des producteurs et des distributeurs : risque de pénuries, de baisse de qualité ou de rattrapage à la sortie du blocage. Supprimer la TVA sur ces produits coûte au budget et ne se répercute pas toujours entièrement sur les prix. La France a déjà encadré des prix (bouclier tarifaire sur l\'énergie en 2022-2023).',
+    pedagogie: 'Le blocage protège immédiatement le pouvoir d\'achat, mais il comprime les marges des producteurs et des distributeurs : risque de pénuries, de baisse de qualité ou de rattrapage à la sortie du blocage. Supprimer la TVA sur ces produits coûte au budget et ne se répercute pas toujours entièrement sur les prix. La France a déjà encadré des prix (bouclier tarifaire sur l\'énergie en 2022-2023). Bloquer le carburant à 1,70 € le litre, comme le propose La France insoumise, ferait porter l\'essentiel du coût sur les raffineurs et les distributeurs, au risque de fermetures de stations indépendantes ; en 2022, l\'État avait préféré une remise à la pompe financée par le budget.',
     pour: ['Effet immédiat sur le pouvoir d\'achat des ménages modestes', 'Lutte contre les marges jugées excessives'],
     contre: ['Pénuries et effets pervers sur l\'offre', 'Coût budgétaire (TVA à 0 %)', 'Rattrapage des prix à la sortie'],
     exemples: ['Hongrie : plafonnement des prix de produits alimentaires en 2022, suivi de pénuries et d\'une inflation alimentaire record', 'Espagne : TVA à 0 % sur les produits de base en 2023-2024'],
     options: [
       { id: 'blocage', nom: 'Bloquer les prix (alimentation de base, énergie, hygiène)' },
       { id: 'tva_zero', nom: 'TVA à 0 % sur un panier de produits de première nécessité' },
+      { id: 'carburant', nom: 'Bloquer le prix des carburants à 1,70 € le litre (décret)', description: 'Proposition de La France insoumise dans le cadre d\'un « état d\'urgence sociale » (orientations budgétaires 2027).' },
     ],
     positionsGroupesParOption: {
+      carburant: { LFI: 1, GDR: 1, RN: 0.5, UDR: 0.3, ECOS: -0.2, SOC: 0.2, LIOT: 0, DEM: -0.5, EPR: -0.7, HOR: -0.8, DR: -0.6 },
       blocage: { LFI: 1, GDR: 1, ECOS: 0.6, SOC: 0.4, RN: 0.2, DR: -0.8, HOR: -0.8, EPR: -0.6, DEM: -0.4 },
       tva_zero: { LFI: 0.8, GDR: 0.8, RN: 0.6, UDR: 0.4, ECOS: 0.3, SOC: 0.3, DR: -0.5, HOR: -0.6, EPR: -0.5 },
     },
     delai: 1,
     effets(e, o, age) {
+      if (o === 'carburant') {
+        // Écart entre le prix à la pompe et 1,70 € : environ 15 centimes au départ (hypothèse), davantage si l'énergie flambe.
+        // Le blocage pèse surtout sur les marges des raffineurs et distributeurs ; l'État aide les stations indépendantes.
+        const ecart = Math.max(0, 0.15 + 0.6 * (e.monde.energie / INDICE_ENERGIE_DEPART - 1));
+        return { depenses: { economieFinances: 50 * ecart * 0.2 * prix(e) }, chocPrix: age === 0 ? -0.3 * ecart / 0.15 : 0, potentielBonus: -0.01, menages: { smic: [{ montant: 25, texte: 'Carburant bloqué à 1,70 € le litre' }], couple: [{ montant: 35, texte: 'Carburant bloqué à 1,70 € le litre' }], agriculteur: [{ montant: 40, texte: 'Carburant bloqué à 1,70 € le litre' }], retraite: [{ montant: 15, texte: 'Carburant bloqué à 1,70 € le litre' }] } };
+      }
       if (o === 'tva_zero') return { recettes: { tva: -8 * prix(e) }, chocPrix: age === 0 ? -0.6 : 0, menages: { smic: [{ montant: 20, texte: 'TVA à 0 % sur les produits de première nécessité' }], couple: [{ montant: 30, texte: 'TVA à 0 % sur les produits de première nécessité' }], retraite: [{ montant: 15, texte: 'TVA à 0 % sur les produits de première nécessité' }] } };
       return { depenses: { economieFinances: 1.5 * prix(e) }, chocPrix: age === 0 ? -0.5 : 0, potentielBonus: -0.01, menages: { smic: [{ montant: 15, texte: 'Blocage des prix' }], retraite: [{ montant: 10, texte: 'Blocage des prix' }] } };
     },
-    reaction: (e, o) => ({ chocs: { salaries: 4, retraites: 3, jeunes: 2, entrepreneurs: o === 'blocage' ? -6 : -1, agriculteurs: o === 'blocage' ? -4 : 0 }, credibilite: o === 'blocage' ? -0.05 : -0.08 }),
+    reaction: (e, o) => (o === 'carburant'
+      ? { chocs: { salaries: 5, retraites: 3, jeunes: 3, agriculteurs: 4, entrepreneurs: -5 }, credibilite: -0.05 }
+      : { chocs: { salaries: 4, retraites: 3, jeunes: 2, entrepreneurs: o === 'blocage' ? -6 : -1, agriculteurs: o === 'blocage' ? -4 : 0 }, credibilite: o === 'blocage' ? -0.05 : -0.08 }),
     axes: { social: 0.8, marche: -0.8 },
-    axesParOption: { tva_zero: { social: 0.6, marche: -0.2, rigueur: -0.5 } },
-    chiffrage: 'Hypothèses de jeu : blocage, 1,5 Md€ par an d\'aides aux petits producteurs et commerçants ; TVA à 0 %, environ 8 Md€ par an. Baisse ponctuelle des prix d\'environ 0,5 point.',
+    axesParOption: { tva_zero: { social: 0.6, marche: -0.2, rigueur: -0.5 }, carburant: { social: 0.6, marche: -0.8, ecologie: -0.5 } },
+    chiffrage: 'Hypothèses de jeu : blocage, 1,5 Md€ par an d\'aides aux petits producteurs et commerçants ; TVA à 0 %, environ 8 Md€ par an. Baisse ponctuelle des prix d\'environ 0,5 point. Carburant à 1,70 € : environ 50 milliards de litres vendus par an ; l\'État compense un cinquième du manque à gagner (stations indépendantes), soit 1,5 Md€ par an au prix de départ, davantage si l\'énergie flambe.',
   },
   {
     id: 'ir_progressif',

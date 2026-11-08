@@ -6,7 +6,11 @@ import Capitalisation from './Capitalisation.jsx';
 import Programmes from './Programmes.jsx';
 import Info from '../composants/Info.jsx';
 import { THINK_TANKS } from '../../data/reformesThinkTanks.js';
+import { SOURCE_LFI } from '../../data/reformesLFI.js';
 import { signe, classeVariation, devise } from '../format.js';
+
+/** Sources des propositions : deux think tanks et un programme présidentiel. */
+const SOURCES = { ...THINK_TANKS, ...SOURCE_LFI };
 
 /** Thèmes, dans l'ordre d'affichage. */
 const THEMES = {
@@ -20,6 +24,7 @@ const VEHICULES = {
   PLFSS: { nom: 'Financement de la Sécu', aide: 'Projet de loi de financement de la Sécurité sociale : le 49.3 y est utilisable sans limite.' },
   loi: { nom: 'Loi ordinaire', aide: 'Loi ordinaire : il faut une majorité ; un seul 49.3 par session pour les textes non financiers.' },
   'décret': { nom: 'Décret', aide: 'Décret ou mesure réglementaire : pas de vote au Parlement, application rapide.' },
+  'initiative européenne': { nom: 'Initiative européenne', aide: 'Démarche auprès des partenaires européens ou de la BCE : pas de vote au Parlement, mais le résultat ne dépend pas de la France seule.' },
   'loi constitutionnelle': { nom: 'Révision constitutionnelle', aide: 'Révision de la Constitution : trois cinquièmes des suffrages exprimés au Congrès, pas de 49.3 possible.' },
 };
 
@@ -179,13 +184,13 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
           </div>
         )}
         {fr && (
-          <div className="puces" role="tablist" aria-label="Propositions de think tanks">
-            {[['toutes', 'Toutes les sources'], ...Object.entries(THINK_TANKS).map(([id, t]) => [id, `${t.icone} ${t.court}`])].map(([id, nom]) => (
+          <div className="puces" role="tablist" aria-label="Sources des propositions">
+            {[['toutes', 'Toutes les sources'], ...Object.entries(SOURCES).map(([id, t]) => [id, `${t.icone} ${t.court}`])].map(([id, nom]) => (
               <button key={id} type="button" role="tab" aria-selected={source === id} className={`puce ${source === id ? 'active' : ''}`} onClick={() => setSource(id)}>
                 {nom}{id !== 'toutes' && ` (${liste.filter((r) => r.inspirations.includes(id)).length})`}
               </button>
             ))}
-            <Info texte="Propositions de deux think tanks aux priorités opposées : la Fondation IFRAP (libérale, baisse de la dépense publique) et The Shift Project (décarbonation de l'économie). Le jeu les traduit en réformes chiffrées, sans les reprendre à son compte." />
+            <Info texte="Propositions de deux think tanks aux priorités opposées, la Fondation IFRAP (libérale, baisse de la dépense publique) et The Shift Project (décarbonation de l'économie), et programme présidentiel de La France insoumise (hausse des impôts des plus riches, dépenses d'urgence, pôle public bancaire). Le jeu les traduit en réformes chiffrées, sans les reprendre à son compte." />
           </div>
         )}
         <div className="puces" role="tablist" aria-label="Thèmes">
@@ -196,12 +201,25 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
         </div>
       </div>
 
-      {fr && source !== 'toutes' && THINK_TANKS[source] && (
+      {fr && source !== 'toutes' && SOURCES[source] && (
         <div className={`carte pile think-tank think-${source}`}>
-          <h3 style={{ margin: 0 }}>{THINK_TANKS[source].icone} Les propositions de {source === 'ifrap' ? 'la ' : ''}{THINK_TANKS[source].nom}</h3>
-          <p className="petit" style={{ margin: 0 }}>{THINK_TANKS[source].description}</p>
-          <p className="tres-petit muet" style={{ margin: 0 }}>Un think tank défend une vision : ses chiffrages sont les siens et sont discutés par d'autres économistes. Le jeu les traduit en réformes ; les effets sur l'économie et l'opinion sont ceux du modèle du jeu. Comparez avec les réformes de l'autre think tank : l'IFRAP raisonne d'abord en milliards d'euros de dépense publique, le Shift Project en tonnes de CO2, en énergie et en matières.</p>
-          <p className="tres-petit" style={{ margin: 0 }}>Sources : {THINK_TANKS[source].documents.map((d, i) => <span key={d.url}>{i > 0 && ' · '}<a href={d.url} target="_blank" rel="noreferrer">{d.texte}</a></span>)}</p>
+          <h3 style={{ margin: 0 }}>{SOURCES[source].icone} Les propositions {SOURCES[source].deNom}</h3>
+          <p className="petit" style={{ margin: 0 }}>{SOURCES[source].description}</p>
+          {SOURCES[source].bilan && (
+            <div className="bilan-source">
+              {SOURCES[source].bilan.map((l) => (
+                <div key={l.libelle} className={`ligne espace petit ${l.total ? 'total' : ''} ${l.horsBudget ? 'muet' : ''}`}>
+                  <span>{l.libelle}</span>
+                  <strong className={l.horsBudget ? '' : classeVariation(l.montant)}>{l.horsBudget ? '' : signe(l.montant, 1)}{l.horsBudget ? `${String(l.montant).replace('.', ',')} Md€ par an` : ' Md€'}</strong>
+                </div>
+              ))}
+              <p className="tres-petit muet" style={{ margin: 0 }}>Montants annoncés pour 2027. Le jeu les répartit en six réformes (filtre ci-dessous) et passe par les réformes existantes pour les retraites et l'assurance chômage (12 Md€). Les options « prudentes » retiennent la moitié des recettes annoncées : comparez les deux pour mesurer ce qui se joue sur le déficit.</p>
+            </div>
+          )}
+          <p className="tres-petit muet" style={{ margin: 0 }}>{source === 'lfi'
+            ? 'Un programme électoral défend un projet : ses chiffrages sont ceux du parti et sont discutés par des économistes. Le jeu les traduit en réformes ; les effets sur l\'économie et l\'opinion sont ceux du modèle du jeu. Comparez avec les propositions de l\'IFRAP : deux façons opposées de réduire le déficit, par les impôts des plus aisés ou par la baisse de la dépense.'
+            : 'Un think tank défend une vision : ses chiffrages sont les siens et sont discutés par d\'autres économistes. Le jeu les traduit en réformes ; les effets sur l\'économie et l\'opinion sont ceux du modèle du jeu. Comparez avec les réformes de l\'autre think tank : l\'IFRAP raisonne d\'abord en milliards d\'euros de dépense publique, le Shift Project en tonnes de CO2, en énergie et en matières.'}</p>
+          <p className="tres-petit" style={{ margin: 0 }}>Sources : {SOURCES[source].documents.map((d, i) => <span key={d.url}>{i > 0 && ' · '}<a href={d.url} target="_blank" rel="noreferrer">{d.texte}</a></span>)}</p>
         </div>
       )}
 
@@ -225,7 +243,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                   <strong>{r.nom}</strong>
                   <span className="ligne">
                     {r.orientation && <span className={`etiquette orientation-${r.orientation}`}>{r.orientation === 'liberale' ? 'Libérale' : 'Sociale'}</span>}
-                    {r.inspirations.map((id) => THINK_TANKS[id] && <span key={id} className={`etiquette think-${id}`} title={r.notesInspiration[id] ?? `Proposition de ${THINK_TANKS[id].nom}`}>{THINK_TANKS[id].icone} {THINK_TANKS[id].court}</span>)}
+                    {r.inspirations.map((id) => SOURCES[id] && <span key={id} className={`etiquette think-${id}`} title={r.notesInspiration[id] ?? `Proposition ${SOURCES[id].deNom}`}>{SOURCES[id].icone} {SOURCES[id].court}</span>)}
                     {v && <span className="etiquette" title={v.aide}>{v.nom}</span>}
                     {pr && <span className={`pronostic ${pr.classe}`} title="Pronostic du vote à l'Assemblée pour cette réforme seule, avec l'option choisie">{pr.texte}</span>}
                     {(() => { const op = effetOpinionReforme(partie, r.id, option); return Math.abs(op) >= 0.5 ? <span className={`etiquette ${op > 0 ? 'populaire' : 'impopulaire'}`} title="Effet estimé sur votre popularité à l'adoption (chocs d'opinion et opinion durable, moins une partie des griefs)">{op > 0 ? '👍' : '👎'} {op > 0 ? '+' : '−'}{Math.abs(op).toFixed(1).replace('.', ',')} pt</span> : null; })()}
@@ -236,7 +254,7 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                   </span>
                 </div>
                 <p className="petit">{r.resume}</p>
-                {Object.entries(r.notesInspiration).map(([id, note]) => THINK_TANKS[id] && <p key={id} className="petit note-inspiration">{THINK_TANKS[id].icone} <strong>Ce que propose {id === 'ifrap' ? 'l\'IFRAP' : 'le Shift Project'} :</strong> {note}</p>)}
+                {Object.entries(r.notesInspiration).map(([id, note]) => SOURCES[id] && <p key={id} className={`petit note-inspiration note-${id}`}>{SOURCES[id].icone} <strong>Ce que propose {SOURCES[id].article} :</strong> {note}</p>)}
                 {r.remplace.map((id) => liste.find((x) => x.id === id && x.active)).filter(Boolean).map((x) => (
                   <p key={x.id} className="petit alerte">Adopter cette réforme remplace « {x.nom} », en vigueur.</p>
                 ))}

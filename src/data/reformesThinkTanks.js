@@ -46,6 +46,8 @@ export const THINK_TANKS = {
     nom: 'Fondation IFRAP',
     icone: '📘',
     court: 'IFRAP',
+    article: 'l\'IFRAP',
+    deNom: 'de la Fondation IFRAP',
     description: 'Think tank libéral dirigé par Agnès Verdier-Molinié, spécialisé dans l\'évaluation des administrations et des politiques publiques. Il défend une baisse forte de la dépense publique, sans hausse d\'impôts, et un rapprochement des règles du public et du privé (retraites, temps de travail, absentéisme).',
     documents: [
       { texte: 'IFRAP, Revue n° 279 (juin 2026) : comment adopter une règle d\'or des finances publiques (180 Md€ d\'économies d\'ici 2035)', url: 'https://www.ifrap.org/sites/default/files/documents/2026-07/etude_ifrap_equilibre_des_comptes_publics.pdf' },
@@ -56,6 +58,8 @@ export const THINK_TANKS = {
     nom: 'The Shift Project',
     icone: '🌍',
     court: 'Shift Project',
+    article: 'le Shift Project',
+    deNom: 'de The Shift Project',
     description: 'Think tank de la décarbonation fondé par Jean-Marc Jancovici. Son « Plan robuste pour l\'économie française » (14 avril 2026) propose 20 chantiers pour atteindre la neutralité carbone en 2050, raisonnés surtout en flux physiques (énergie, matières, emplois) : son coût n\'est pas chiffré.',
     documents: [
       { texte: 'The Shift Project : « Réussir la transition dans l\'incertitude », premier volet du Plan robuste pour l\'économie française (avril 2026)', url: 'https://theshiftproject.org/publications/reussir-la-transition-dans-lincertitude/' },
