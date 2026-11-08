@@ -21,7 +21,8 @@
  * Repère : x de l'avant vers l'arrière (nez en x = 0), y vers le haut, z vers
  * la gauche de l'appareil (côté droit en z négatif). Échelle 1 (mètres).
  */
-import { loft, surface, missile } from './modeles.js';
+import { loft, missile } from './modeles.js';
+import { coqueArretes, prismeFacettes, voilure, tubeEntre } from './formes.js';
 
 const VERSIONS = {
   f35a: {
@@ -134,87 +135,6 @@ function textureInsigne(THREE) {
   return t;
 }
 
-/** Interpolation cubique (Catmull-Rom) de sections clés : chaque champ numérique est lissé le long de x. */
-function densifierSections(cles, parSegment) {
-  const champs = Object.keys(cles[0]);
-  const cr = (p0, p1, p2, p3, t) => 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
-  const res = [];
-  for (let i = 0; i < cles.length - 1; i++) {
-    const p0 = cles[Math.max(0, i - 1)], p1 = cles[i], p2 = cles[i + 1], p3 = cles[Math.min(cles.length - 1, i + 2)];
-    for (let k = 0; k < parSegment; k++) {
-      const s = {};
-      for (const c of champs) s[c] = cr(p0[c], p1[c], p2[c], p3[c], k / parSegment);
-      s.zArete = Math.max(0, s.zArete);
-      res.push(s);
-    }
-  }
-  res.push({ ...cles[cles.length - 1] });
-  return res;
-}
-
-/**
- * Coque à arêtes vives (« chines ») : chaque section a un dessus, du sommet à
- * l'arête latérale, et un dessous, de l'arête au bas, deux arcs de Bézier
- * quadratiques ; les sommets sont dédoublés sur l'arête pour la garder vive.
- * Section : { x, yHaut, yBas, zArete, yArete, zH, yH (contrôle du dessus), zB, yB (contrôle du dessous) }.
- */
-function coqueArretes(THREE, cles, { points = 10, parSegment = 6 } = {}) {
-  const sections = densifierSections(cles, parSegment);
-  const n = points;
-  const x0 = sections[0].x, x1 = sections[sections.length - 1].x;
-  const bez = (a, c, b, t) => (1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b;
-  const pos = [], uv = [], idx = [];
-  // Quatre bandes : dessus et dessous, côté gauche (z > 0) et côté droit (z < 0)
-  const bandes = [[true, 1], [false, 1], [true, -1], [false, -1]];
-  bandes.forEach(([dessus, cote], b) => {
-    const debut = pos.length / 3;
-    for (const s of sections) {
-      for (let k = 0; k <= n; k++) {
-        const t = k / n;
-        const z = dessus ? bez(0, s.zH, s.zArete, t) : bez(s.zArete, s.zB, 0, t);
-        const y = dessus ? bez(s.yHaut, s.yH, s.yArete, t) : bez(s.yArete, s.yB, s.yBas, t);
-        pos.push(s.x, y, cote * z);
-        uv.push((s.x - x0) / (x1 - x0), (b + t) / 4);
-      }
-    }
-    for (let i = 0; i < sections.length - 1; i++) {
-      for (let k = 0; k < n; k++) {
-        const a = debut + i * (n + 1) + k, bb = a + 1, c = a + n + 1, d = c + 1;
-        if (cote > 0) idx.push(a, bb, c, bb, d, c); else idx.push(a, c, bb, bb, c, d);
-      }
-    }
-  });
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-  g.setIndex(idx);
-  g.computeVertexNormals();
-  return g;
-}
-
-/**
- * Prisme à facettes planes : sections polygonales (même nombre de sommets,
- * listés en tournant) reliées entre elles, sans bouchons. Option de
- * cisaillement de x selon (x, y), pour incliner une lèvre d'entrée d'air.
- */
-function prismeFacettes(THREE, sections, { cisaillement = null, inverser = false } = {}) {
-  const pos = [];
-  const m = sections[0][1].length;
-  const point = (x, [z, y]) => [x + (cisaillement ? cisaillement(x, y) : 0), y, z];
-  for (let i = 0; i < sections.length - 1; i++) {
-    const [xa, pa] = sections[i], [xb, pb] = sections[i + 1];
-    for (let k = 0; k < m; k++) {
-      const k2 = (k + 1) % m;
-      const a = point(xa, pa[k]), b = point(xa, pa[k2]), c = point(xb, pb[k]), d = point(xb, pb[k2]);
-      if (inverser) pos.push(...a, ...b, ...c, ...b, ...d, ...c); else pos.push(...a, ...c, ...b, ...b, ...c, ...d);
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.computeVertexNormals();
-  return g;
-}
-
 /** Abscisse du bord d'un trapèze d'aile [racine BA, extrémité BA, extrémité BF, racine BF] à l'ordonnée z. */
 function bordA(aile, z, fuite) {
   const [a, b] = fuite ? [aile[3], aile[2]] : [aile[0], aile[1]];
@@ -294,6 +214,15 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
     { x: 5.6, w: 0.64, hHaut: 0.2, hBas: 0.02, y: dos(5.6) - 0.01 },
     { x: 6.0, w: 0.36, hHaut: 0.05, hBas: 0.02, y: dos(6.0) - 0.01 },
   ], { segments: 44, parSegment: 6 }), verre);
+  // Cadre de la verrière (joint sombre le long de l'appui)
+  const cadre = new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.6, metalness: 0.3 });
+  const appui = [[2.0, 0.55], [2.5, 0.82], [3.1, 0.98], [3.8, 1.02], [4.5, 0.98], [5.1, 0.84], [5.6, 0.64], [6.0, 0.36]];
+  for (const cote of [1, -1]) {
+    for (let k = 0; k < appui.length - 1; k++) {
+      const [xa, wa] = appui[k], [xb, wb] = appui[k + 1];
+      avion.add(tubeEntre(THREE, [xa, dos(xa) + 0.005, cote * wa / 2], [xb, dos(xb) + 0.005, cote * wb / 2], 0.028, cadre, 6));
+    }
+  }
   const matSiege = new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.8 });
   const matCasque = new THREE.MeshStandardMaterial({ color: 0x3d4247, roughness: 0.45, metalness: 0.2 });
   ajouter(new THREE.BoxGeometry(0.3, 0.66, 0.48), matSiege, 4.35, dos(4.35) + 0.3, 0);
@@ -328,22 +257,21 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
     if (v.pliage) {
       const zp = v.pliage;
       const baP = bordA(v.aile, zp, false), bfP = bordA(v.aile, zp, true);
-      aile.add(new THREE.Mesh(surface(THREE, [v.aile[0], [baP, zp], [bfP, zp], v.aile[3]], 0.2), gris));
+      aile.add(new THREE.Mesh(voilure(THREE, [v.aile[0], [baP, zp], [bfP, zp], v.aile[3]], { relative: [0.05, 0.045] }), gris));
       // Partie repliable : charnière le long de la corde, à 4,74 m de l'axe
       const pivot = new THREE.Group();
       pivot.position.set(0, 0.0, zp);
-      const ext = new THREE.Mesh(surface(THREE, [[baP, 0], [v.aile[1][0], v.aile[1][1] - zp], [v.aile[2][0], v.aile[2][1] - zp], [bfP, 0]], 0.12), gris);
+      const ext = new THREE.Mesh(voilure(THREE, [[baP, 0], [v.aile[1][0], v.aile[1][1] - zp], [v.aile[2][0], v.aile[2][1] - zp], [bfP, 0]], { relative: [0.045, 0.04] }), gris);
       pivot.add(ext);
       aile.add(pivot);
       pliages.push(pivot);
     } else {
-      aile.add(new THREE.Mesh(surface(THREE, v.aile, 0.2), gris));
+      aile.add(new THREE.Mesh(voilure(THREE, v.aile, { relative: [0.05, 0.04] }), gris));
     }
     // Flaperon (bord de fuite intérieur), un peu plus foncé
     const z1 = 1.9, z2 = Math.min(3.9, (v.pliage ?? 5) - 0.2);
     const f1 = bordA(v.aile, z1, true), f2 = bordA(v.aile, z2, true);
-    const flap = new THREE.Mesh(surface(THREE, [[f1 - 0.7, z1], [f2 - 0.6, z2], [f2, z2], [f1, z1]], 0.1, { biseau: 0.015 }), grisFonce);
-    flap.position.y = 0.025;
+    const flap = new THREE.Mesh(voilure(THREE, [[f1 - 0.7, z1], [f2 - 0.6, z2], [f2 + 0.01, z2], [f1 + 0.01, z1]], { relative: [0.11, 0.1] }), grisFonce);
     aile.add(flap);
     if (v.stovl) {
       // Buse de roulis sous l'aile (trappe ouverte en vol vertical)
@@ -355,13 +283,18 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
       aile.add(trappe);
       roulis.push(trappe);
     }
+    const bout = v.aile[1][1];
+    const feu = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshStandardMaterial({ color: cote > 0 ? 0xd02020 : 0x20b040, emissive: cote > 0 ? 0x701010 : 0x105a20, roughness: 0.3 }));
+    feu.position.set((v.aile[1][0] + v.aile[2][0]) / 2, 0, bout - 0.04);
+    (pliages.at(-1) ?? aile).add(feu);
+    if (v.pliage) feu.position.z = bout - v.pliage - 0.04;
     aile.scale.z = cote;
     aile.rotation.x = -cote * 0.035; // léger dièdre négatif
     aile.position.y = 0.0;
     avion.add(aile);
 
     // Gouvernes de profondeur monobloc, sur les poutres arrière
-    const stab = new THREE.Mesh(surface(THREE, v.stab, 0.1, { biseau: 0.02 }), gris);
+    const stab = new THREE.Mesh(voilure(THREE, v.stab, { relative: [0.05, 0.035] }), gris);
     stab.scale.z = cote;
     stab.position.y = 0.05;
     avion.add(stab);
@@ -374,10 +307,9 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
 
     // Dérives inclinées vers l'extérieur, gouverne de direction
     const derive = new THREE.Group();
-    derive.add(new THREE.Mesh(surface(THREE, v.derive, 0.12, { plan: 'xy' }), gris));
+    derive.add(new THREE.Mesh(voilure(THREE, v.derive, { plan: 'xy', relative: [0.05, 0.04] }), gris));
     const [, , d2, d3] = v.derive;
-    const gouv = new THREE.Mesh(surface(THREE, [[d3[0] - 0.55, 0.2], [d2[0] - 0.5, d2[1] - 0.25], [d2[0] - 0.02, d2[1] - 0.25], [d3[0] - 0.02, 0.2]], 0.1, { plan: 'xy', biseau: 0.012 }), grisFonce);
-    gouv.position.z = 0.012;
+    const gouv = new THREE.Mesh(voilure(THREE, [[d3[0] - 0.55, 0.2], [d2[0] - 0.5, d2[1] - 0.25], [d2[0] - 0.01, d2[1] - 0.25], [d3[0] - 0.01, 0.2]], { plan: 'xy', relative: [0.11, 0.1] }), grisFonce);
     derive.add(gouv);
     derive.position.set(0, Y_DERIVES, cote * 1.2);
     derive.rotation.x = cote * ANGLE_DERIVES;

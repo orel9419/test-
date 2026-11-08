@@ -56,8 +56,8 @@ const FICHES = {
     lignes: ['Hélicoptère de frégate de la Marine nationale : 27 en service, flottilles 31F (Hyères) et 33F (Lanvéoc-Poulmic), en service depuis décembre 2011 (remplace les Lynx et les Super Frelon)', 'Lutte anti-sous-marine (sonar trempé FLASH, bouées acoustiques, torpilles MU90 : capacité opérationnelle en mars 2015), lutte contre les navires, sauvetage en mer', 'Radar de surveillance sous le nez, boule optronique, treuil, flotteurs de secours pour se poser sur l\'eau en cas d\'urgence', 'Livrée gris deux tons, cocarde de l\'aéronavale avec son ancre, rotor de queue à bouts rouges · d\'après une photo · sources : ministère des Armées (fiche LPM), Naval News'],
   },
   tigre: {
-    titre: 'Tigre (hélicoptère d\'appui et de destruction)',
-    lignes: ['14,08 m de long, rotor de 13 m, 3,83 m de haut · deux pilotes en tandem (le pilote derrière, le tireur devant)', 'Canon de 30 mm en tourelle, roquettes de 68 mm, missiles ; viseur de toit pour observer caché derrière un relief', 'Rénovation au standard 3 prévue pour 42 Tigre français (avec 18 espagnols) : combat collaboratif SCORPION, liaison avec les drones', 'Livrée de la photo (un Tigre australien, sable, vert et noir) ou vert olive · détails simplifiés'],
+    titre: 'Tigre HAD (hélicoptère d\'appui et de destruction)',
+    lignes: ['Airbus Helicopters · fuselage de 14,08 m, rotor de 13 m, 3,83 m de haut · deux turbines MTR390 · fuselage étroit (environ 1 m) pour offrir une cible minimale', 'Deux pilotes en tandem : le pilote devant, le tireur derrière et plus haut ; viseur de toit pour observer et tirer caché derrière un relief', 'Canon de 30 mm en tourelle sous le nez, roquettes de 68 mm, missiles air-sol · rénovation au standard 3 prévue pour 42 Tigre français : combat collaboratif SCORPION, liaison avec les drones', 'Relevé sur des plans (dessus, face) et des photos · camouflage trois tons de l\'armée de Terre (brun, vert, noir), code « BJD » ; bouton : livrée vert olive'],
   },
   puma: {
     titre: 'SA330 Puma',
@@ -167,7 +167,7 @@ const VUES = {
   caiman: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
   caimanFS: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
   caimanMarine: { '3/4': [-13, 2, 15], Profil: [0, 1.2, 20], 'Côté droit': [0, 1.2, -20], Dessous: [0.01, -14, 6], Face: [-20, 1.5, 0.01], Arrière: [14, 6, 14] },
-  tigre: { '3/4': [-12, 4.5, 13], Profil: [0, 1.5, 18], Dessus: [0, 21, 0.01], Face: [-18, 2, 0.01], Arrière: [13, 5, 13] },
+  tigre: { '3/4': [-12, 3.5, 13], 'Côté droit': [0, 1.2, -19], Profil: [0, 1.2, 19], Dessus: [0, 23, 0.01], Face: [-19, 1.2, 0.01], 'Avant droit': [-13, 1.0, -10], Arrière: [13, 5, 13] },
   puma: { '3/4': [-12, 5, 14], Profil: [0, 2, 19], Dessus: [0, 22, 0.01], Face: [-19, 2.5, 0.01], Arrière: [13, 6, 13] },
   caracal: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
   caesar: { '3/4': [-12, 6, 13], Profil: [0, 1.5, 19], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01] },
@@ -193,12 +193,13 @@ const MODULES = {
   aeronefs: () => import('./aeronefs.js'),
   marine: () => import('./marine.js'),
   f35: () => import('./f35.js'),
+  tigre: () => import('./tigre.js'),
 };
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
   porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
   mirage2000: ['avions', 'construireMirage2000'], f35a: ['f35', 'construireF35'], f35b: ['f35', 'construireF35'], f35c: ['f35', 'construireF35'], phenix: ['aeronefs', 'construirePhenix'],
-  caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['aeronefs', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
+  caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['tigre', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   groupeAeronaval: ['marine', 'construireGroupeAeronaval'],
   sna: ['marine', 'construireSna'], pha: ['marine', 'construirePha'], fda: ['marine', 'construireFda'], fremm: ['marine', 'construireFremm'], brf: ['marine', 'construireBrf'], monge: ['marine', 'construireMonge'],
