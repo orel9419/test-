@@ -2,7 +2,9 @@
  * Lockheed Martin F-35 Lightning II, en trois versions, relevé sur des plans
  * trois vues (face, dessus, profil ; cotes prises sur le profil à l'échelle
  * de la hauteur officielle) et d'après des photos (vues de face au sol et en
- * vol, comparaison F-35A / F-35C) et une infographie des versions :
+ * vol, comparaison F-35A / F-35C, F-35A belge au roulage vu de trois quarts
+ * avant, qui a servi à recaler la hauteur du fuselage, la teinte, la verrière,
+ * les entrées d'air et les trappes) et une infographie des versions :
  *  - F-35A (armée de l'air) : 15,67 m de long, 10,67 m d'envergure, 4,38 m de
  *    haut ; canon interne de 25 mm, réceptacle pour perche rigide, roue avant simple ;
  *  - F-35B (décollage court et atterrissage vertical) : 15,61 m, 10,67 m,
@@ -54,55 +56,64 @@ const X_TRAIN_AVANT = 3.9, X_TRAIN_PRINCIPAL = 9.9;
 const DEMI_VOIE = 2.15;
 
 /**
- * Sections du fuselage (relevées sur les plans trois vues) :
+ * Sections du fuselage (plans trois vues pour les longueurs et largeurs ; hauteurs recalées
+ * sur une photo au sol d'un F-35A belge, ventre à environ 1,2 m du sol) :
  * [x, haut, bas, z de l'arête, y de l'arête, contrôle du dessus (z, y), contrôle du dessous (z, y)].
- * Les arêtes vont en ligne droite du nez à l'aile ; dos haut et plat jusqu'aux dérives ; ventre plat.
+ * Fuselage épais (soutes et conduits d'air) ; arêtes du nez à l'aile ; dos large ; ventre plat.
  */
 const SECTIONS_CORPS = [
-  [0, -0.05, -0.05, 0, -0.05, 0, -0.05, 0, -0.05],
-  [0.6, 0.11, -0.2, 0.3, -0.06, 0.18, 0.11, 0.24, -0.2],
-  [1.4, 0.28, -0.38, 0.62, -0.05, 0.36, 0.28, 0.48, -0.38],
-  [2.2, 0.42, -0.48, 0.82, -0.03, 0.48, 0.42, 0.64, -0.48],
-  [3.2, 0.52, -0.55, 0.98, 0.0, 0.56, 0.52, 0.76, -0.55],
-  [4.2, 0.62, -0.57, 1.04, 0.03, 0.64, 0.62, 0.84, -0.57],
-  [5.2, 0.8, -0.58, 1.14, 0.06, 0.8, 0.8, 0.95, -0.58],
-  [6.3, 0.92, -0.58, 1.58, 0.06, 1.1, 0.9, 1.4, -0.58],
-  [7.4, 0.95, -0.58, 1.75, 0.05, 1.2, 0.93, 1.6, -0.58],
-  [9.6, 0.86, -0.58, 1.75, 0.04, 1.2, 0.84, 1.6, -0.58],
-  [11.4, 0.72, -0.55, 1.72, 0.05, 1.15, 0.7, 1.58, -0.55],
-  [12.8, 0.58, -0.5, 1.58, 0.07, 1.0, 0.56, 1.45, -0.5],
-  [13.9, 0.52, -0.46, 1.32, 0.08, 0.8, 0.5, 1.2, -0.46],
+  [0, -0.02, -0.02, 0, -0.02, 0, -0.02, 0, -0.02],
+  [0.25, 0.15, -0.19, 0.27, -0.02, 0.16, 0.15, 0.22, -0.19],
+  [0.7, 0.33, -0.39, 0.5, -0.01, 0.31, 0.33, 0.41, -0.39],
+  [1.4, 0.46, -0.52, 0.64, 0.0, 0.42, 0.46, 0.52, -0.52],
+  [2.2, 0.62, -0.64, 0.82, 0.04, 0.52, 0.62, 0.66, -0.64],
+  [3.2, 0.74, -0.72, 0.98, 0.1, 0.6, 0.74, 0.8, -0.72],
+  [4.2, 0.84, -0.76, 1.04, 0.14, 0.68, 0.84, 0.88, -0.76],
+  [5.2, 1.0, -0.8, 1.16, 0.16, 0.84, 1.0, 1.0, -0.8],
+  [6.3, 1.12, -0.8, 1.6, 0.14, 1.15, 1.1, 1.45, -0.8],
+  [7.4, 1.14, -0.8, 1.76, 0.1, 1.25, 1.12, 1.62, -0.8],
+  [9.6, 1.02, -0.78, 1.76, 0.06, 1.25, 1.0, 1.62, -0.78],
+  [11.4, 0.84, -0.68, 1.72, 0.06, 1.18, 0.82, 1.58, -0.66],
+  [12.8, 0.66, -0.56, 1.58, 0.07, 1.0, 0.64, 1.45, -0.54],
+  [13.9, 0.55, -0.48, 1.32, 0.08, 0.8, 0.53, 1.2, -0.47],
   [14.6, 0.62, -0.5, 1.0, 0.06, 0.66, 0.6, 0.9, -0.48],
 ];
 /** Dos plus haut du F-35B (soufflante de sustentation), par section. */
-const BOSSE_B = [0, 0, 0, 0, 0, 0, 0.02, 0.06, 0.08, 0.04, 0, 0, 0, 0];
+const BOSSE_B = [0, 0, 0, 0, 0, 0, 0, 0.02, 0.06, 0.08, 0.04, 0, 0, 0, 0];
 
-/** Toile du revêtement : gris foncé, lignes de panneaux en dents de scie (furtivité). */
+/** Toile du revêtement : gris moyen satiné, légères marbrures du revêtement absorbant, joints discrets. */
 function textureRevetement(THREE) {
   if (typeof document === 'undefined') return null;
   const c = document.createElement('canvas');
   c.width = 2048; c.height = 512;
   const ctx = c.getContext('2d');
-  ctx.fillStyle = '#3c4147';
+  ctx.fillStyle = '#56595d';
   ctx.fillRect(0, 0, c.width, c.height);
-  // Légères variations du revêtement absorbant
   let g = 11;
   const h = () => { g = (g * 16807) % 2147483647; return g / 2147483647; };
-  for (let k = 0; k < 60; k++) {
-    ctx.fillStyle = `rgba(${h() < 0.5 ? '255,255,255' : '0,0,0'},${0.015 + h() * 0.02})`;
-    ctx.fillRect(h() * c.width, h() * c.height, 80 + h() * 300, 40 + h() * 120);
+  // Marbrures : zones un peu plus claires ou plus foncées (retouches du revêtement)
+  for (let k = 0; k < 90; k++) {
+    ctx.fillStyle = `rgba(${h() < 0.5 ? '255,255,255' : '0,0,0'},${0.012 + h() * 0.022})`;
+    ctx.fillRect(h() * c.width, h() * c.height, 60 + h() * 260, 30 + h() * 90);
   }
-  // Joints de panneaux en dents de scie, plus clairs (bords traités)
-  ctx.strokeStyle = 'rgba(150,158,166,0.38)';
-  ctx.lineWidth = 3;
+  // Joints de panneaux fins et sombres
+  ctx.strokeStyle = 'rgba(38,42,46,0.32)';
+  ctx.lineWidth = 2;
   for (const u of [0.13, 0.35, 0.47, 0.6, 0.74, 0.88]) {
-    ctx.beginPath();
-    for (let y = 0; y <= c.height; y += 12) ctx.lineTo(u * c.width + ((y / 12) % 2 ? 7 : -7), y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(u * c.width, 0); ctx.lineTo(u * c.width, c.height); ctx.stroke();
   }
-  ctx.strokeStyle = 'rgba(150,158,166,0.22)';
   for (const v of [0.18, 0.32, 0.68, 0.82]) {
     ctx.beginPath(); ctx.moveTo(0, v * c.height); ctx.lineTo(c.width, v * c.height); ctx.stroke();
+  }
+  // Trappes de visite à bords en dents de scie (furtivité), un peu plus claires
+  ctx.strokeStyle = 'rgba(150,156,162,0.3)';
+  for (let k = 0; k < 14; k++) {
+    const x0 = 0.2 * c.width + h() * 0.6 * c.width, y0 = h() * c.height, w = 40 + h() * 70, hh = 20 + h() * 30;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 8) ctx.lineTo(x0 + x, y0 + ((x / 8) % 2 ? 4 : 0));
+    ctx.lineTo(x0 + w, y0 + hh);
+    for (let x = w; x >= 0; x -= 8) ctx.lineTo(x0 + x, y0 + hh + ((x / 8) % 2 ? 4 : 0));
+    ctx.closePath(); ctx.stroke();
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -151,13 +162,17 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   const v = VERSIONS[modele] ?? VERSIONS.f35a;
   const avion = new THREE.Group();
   const toile = textureRevetement(THREE);
-  const peau = new THREE.MeshStandardMaterial({ color: toile ? 0xa8a8a8 : 0x2f3337, map: toile, metalness: 0.2, roughness: 0.58, envMapIntensity: 0.4 });
-  const gris = new THREE.MeshStandardMaterial({ color: 0x2f3337, metalness: 0.2, roughness: 0.58, envMapIntensity: 0.4 });
-  const grisClair = new THREE.MeshStandardMaterial({ color: 0x353a3f, metalness: 0.2, roughness: 0.52, envMapIntensity: 0.4 });
-  const grisFonce = new THREE.MeshStandardMaterial({ color: 0x272a2e, metalness: 0.2, roughness: 0.62, envMapIntensity: 0.4 });
+  // Gris moyen satiné du revêtement furtif (plus clair qu'il n'y paraît sur les photos en vol)
+  const peau = new THREE.MeshStandardMaterial({ color: toile ? 0xffffff : 0x56595d, map: toile, metalness: 0.15, roughness: 0.6, envMapIntensity: 0.35 });
+  const gris = new THREE.MeshStandardMaterial({ color: 0x585b5f, metalness: 0.15, roughness: 0.6, envMapIntensity: 0.35 });
+  const grisClair = new THREE.MeshStandardMaterial({ color: 0x5c5f63, metalness: 0.15, roughness: 0.55, envMapIntensity: 0.35 });
+  const grisFonce = new THREE.MeshStandardMaterial({ color: 0x4c4f53, metalness: 0.15, roughness: 0.65, envMapIntensity: 0.35 });
+  const interieur = new THREE.MeshStandardMaterial({ color: 0xc9cdd1, metalness: 0.1, roughness: 0.6 }); // faces internes des trappes
+  const jante = new THREE.MeshStandardMaterial({ color: 0xc4c8cc, metalness: 0.5, roughness: 0.4 });
   const noir = new THREE.MeshStandardMaterial({ color: 0x0e1012, metalness: 0.2, roughness: 0.85 });
   const ceramique = new THREE.MeshStandardMaterial({ color: 0x8e9296, metalness: 0.55, roughness: 0.45 });
-  const verre = new THREE.MeshPhysicalMaterial({ color: 0x8a6a2c, metalness: 0.6, roughness: 0.04, transparent: true, opacity: 0.62, clearcoat: 1, clearcoatRoughness: 0.02 });
+  // Verrière : revêtement à l'oxyde d'indium-étain, reflets dorés et rosés, pilote visible au travers
+  const verre = new THREE.MeshPhysicalMaterial({ color: 0xd9a888, metalness: 0.35, roughness: 0.05, transparent: true, opacity: 0.48, clearcoat: 1, clearcoatRoughness: 0.02, depthWrite: false });
   const saphir = new THREE.MeshStandardMaterial({ color: 0x2f4a6a, metalness: 0.9, roughness: 0.08, flatShading: true });
   const matJambe = new THREE.MeshStandardMaterial({ color: 0xd3d6da, metalness: 0.6, roughness: 0.35 });
   const matPneu = new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.9 });
@@ -169,7 +184,7 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   // ---- Fuselage à arêtes vives (plans trois vues) : arêtes droites du nez à l'aile, dos haut, ventre plat
   // (le F-35B a le dos un peu plus haut : il loge la soufflante de sustentation)
   const corps = SECTIONS_CORPS.map(([x, yHaut, yBas, zArete, yArete, zH, yH, zB, yB], k) => {
-    const b = v.stovl ? BOSSE_B[k] : 0;
+    const b = v.stovl ? BOSSE_B[k] ?? 0 : 0;
     return { x, yHaut: yHaut + b, yBas, zArete, yArete, zH, yH: yH + b, zB, yB };
   });
   /** Hauteur du dos (axe) à l'abscisse x, par interpolation des sections. */
@@ -187,55 +202,60 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   // leur arête extérieure prolonge celle du nez jusqu'au bord d'attaque de l'aile ; bosse DSI au bord intérieur
   for (const cote of [1, -1]) {
     const conduit = prismeFacettes(THREE, [
-      [4.15, [[1.0, 0.5], [1.4, 0.38], [1.34, -0.36], [1.0, -0.45]]],
-      [5.2, [[1.08, 0.66], [1.6, 0.44], [1.54, -0.42], [1.08, -0.53]]],
-      [6.3, [[1.25, 0.62], [1.68, 0.36], [1.64, -0.38], [1.25, -0.52]]],
-      [7.2, [[1.4, 0.42], [1.74, 0.2], [1.72, -0.2], [1.4, -0.42]]],
+      [4.15, [[1.0, 0.6], [1.5, 0.42], [1.44, -0.6], [1.0, -0.7]]],
+      [5.2, [[1.1, 0.8], [1.68, 0.5], [1.62, -0.64], [1.1, -0.78]]],
+      [6.3, [[1.25, 0.74], [1.74, 0.38], [1.7, -0.58], [1.25, -0.78]]],
+      [7.2, [[1.4, 0.5], [1.78, 0.2], [1.76, -0.34], [1.4, -0.62]]],
     ].map(([x, poly]) => [x, poly.map(([z, y]) => [z * cote, y])]), { inverser: cote < 0, cisaillement: (x, y) => Math.min(1, Math.max(0, (5.0 - x) / 0.85)) * -0.6 * (y - 0.05) });
     ajouter(conduit, peau);
     // Bouche : fond noir un peu en retrait de la lèvre
-    const forme = new THREE.Shape([[1.03, 0.46], [1.37, 0.35], [1.31, -0.33], [1.03, -0.41]].map(([z, y]) => new THREE.Vector2(z * cote, y)));
+    const forme = new THREE.Shape([[1.03, 0.56], [1.47, 0.4], [1.41, -0.56], [1.03, -0.66]].map(([z, y]) => new THREE.Vector2(z * cote, y)));
     const bouche = new THREE.ShapeGeometry(forme);
     bouche.rotateY(-Math.PI / 2);
     bouche.applyMatrix4(new THREE.Matrix4().set(1, -0.6, 0, 0.03, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
     ajouter(bouche, new THREE.MeshStandardMaterial({ color: 0x0e1012, roughness: 0.9, side: THREE.DoubleSide }), 4.2, 0, 0);
-    const dsi = ajouter(new THREE.SphereGeometry(1, 24, 14), gris, 4.3, 0.03, cote * 1.0);
-    dsi.scale.set(0.55, 0.26, 0.12);
+    const dsi = ajouter(new THREE.SphereGeometry(1, 24, 14), gris, 4.45, -0.05, cote * 1.0);
+    dsi.scale.set(0.8, 0.45, 0.17);
   }
 
-  // ---- Verrière d'une seule pièce, sans arceau, teintée d'or (de 2 m à 6 m du nez) ; siège éjectable et pilote
+  // ---- Verrière d'une seule pièce, sans arceau, teintée d'or et de rose (de 1,8 m à 5 m du nez) ; siège éjectable et pilote
   ajouter(loft(THREE, [
-    { x: 2.0, w: 0.55, hHaut: 0.0, hBas: 0.02, y: dos(2.0) - 0.01 },
-    { x: 2.5, w: 0.82, hHaut: 0.3, hBas: 0.02, y: dos(2.5) - 0.01 },
-    { x: 3.1, w: 0.98, hHaut: 0.6, hBas: 0.02, y: dos(3.1) - 0.01 },
-    { x: 3.8, w: 1.02, hHaut: 0.72, hBas: 0.02, y: dos(3.8) - 0.01 },
-    { x: 4.5, w: 0.98, hHaut: 0.6, hBas: 0.02, y: dos(4.5) - 0.01 },
-    { x: 5.1, w: 0.84, hHaut: 0.4, hBas: 0.02, y: dos(5.1) - 0.01 },
-    { x: 5.6, w: 0.64, hHaut: 0.2, hBas: 0.02, y: dos(5.6) - 0.01 },
-    { x: 6.0, w: 0.36, hHaut: 0.05, hBas: 0.02, y: dos(6.0) - 0.01 },
+    { x: 1.8, w: 0.46, hHaut: 0.0, hBas: 0.02, y: dos(1.8) - 0.01 },
+    { x: 2.2, w: 0.78, hHaut: 0.22, hBas: 0.02, y: dos(2.2) - 0.01 },
+    { x: 2.9, w: 0.98, hHaut: 0.5, hBas: 0.02, y: dos(2.9) - 0.01 },
+    { x: 3.6, w: 1.04, hHaut: 0.68, hBas: 0.02, y: dos(3.6) - 0.01 },
+    { x: 4.3, w: 1.02, hHaut: 0.7, hBas: 0.02, y: dos(4.3) - 0.01 },
+    { x: 5.0, w: 0.9, hHaut: 0.54, hBas: 0.02, y: dos(5.0) - 0.01 },
   ], { segments: 44, parSegment: 6 }), verre);
-  // Cadre de la verrière (joint sombre le long de l'appui)
-  const cadre = new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.6, metalness: 0.3 });
-  const appui = [[2.0, 0.55], [2.5, 0.82], [3.1, 0.98], [3.8, 1.02], [4.5, 0.98], [5.1, 0.84], [5.6, 0.64], [6.0, 0.36]];
+  // Arrière de la verrière, opaque (couleur du fuselage), qui se fond dans le dos
+  ajouter(loft(THREE, [
+    { x: 4.9, w: 0.95, hHaut: 0.57, hBas: 0.02, y: dos(4.9) - 0.01 },
+    { x: 5.45, w: 0.82, hHaut: 0.38, hBas: 0.02, y: dos(5.45) - 0.01 },
+    { x: 5.95, w: 0.6, hHaut: 0.16, hBas: 0.02, y: dos(5.95) - 0.01 },
+    { x: 6.4, w: 0.3, hHaut: 0.01, hBas: 0.01, y: dos(6.4) - 0.01 },
+  ], { segments: 36, parSegment: 5 }), peau);
+  // Cadre de la verrière (joint gris le long de l'appui)
+  const cadre = new THREE.MeshStandardMaterial({ color: 0x4d5258, roughness: 0.55, metalness: 0.3 });
+  const appui = [[1.8, 0.46], [2.2, 0.78], [2.9, 0.98], [3.6, 1.04], [4.3, 1.02], [5.0, 0.9]];
   for (const cote of [1, -1]) {
     for (let k = 0; k < appui.length - 1; k++) {
       const [xa, wa] = appui[k], [xb, wb] = appui[k + 1];
-      avion.add(tubeEntre(THREE, [xa, dos(xa) + 0.005, cote * wa / 2], [xb, dos(xb) + 0.005, cote * wb / 2], 0.028, cadre, 6));
+      avion.add(tubeEntre(THREE, [xa, dos(xa) + 0.01, cote * wa / 2], [xb, dos(xb) + 0.01, cote * wb / 2], 0.035, cadre, 6));
     }
   }
   const matSiege = new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.8 });
   const matCasque = new THREE.MeshStandardMaterial({ color: 0x3d4247, roughness: 0.45, metalness: 0.2 });
-  ajouter(new THREE.BoxGeometry(0.3, 0.66, 0.48), matSiege, 4.35, dos(4.35) + 0.3, 0);
-  const casque = ajouter(new THREE.SphereGeometry(0.15, 18, 12), matCasque, 4.08, dos(4.08) + 0.47, 0);
+  ajouter(new THREE.BoxGeometry(0.28, 0.56, 0.42), matSiege, 4.4, dos(4.4) + 0.24, 0);
+  const casque = ajouter(new THREE.SphereGeometry(0.15, 18, 12), matCasque, 4.05, dos(4.05) + 0.42, 0);
   casque.scale.set(1.1, 1, 0.95);
-  ajouter(new THREE.BoxGeometry(0.8, 0.06, 0.72), new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.9 }), 3.0, dos(3.0) + 0.06, 0); // planche de bord (un grand écran tactile)
+  ajouter(new THREE.BoxGeometry(0.6, 0.05, 0.6), new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.9 }), 2.95, dos(2.95) + 0.02, 0); // planche de bord (un grand écran tactile)
 
   // ---- Capteurs : EOTS à facettes sous le nez, ouvertures du système DAS
   const eots = new THREE.CylinderGeometry(0.17, 0.22, 0.52, 7, 1, false);
   eots.rotateZ(Math.PI / 2);
-  const mEots = ajouter(eots, saphir, 2.05, -0.44, 0);
+  const mEots = ajouter(eots, saphir, 2.05, -0.62, 0);
   mEots.scale.set(1, 0.62, 1);
-  for (const [x, y, z, rx, rz] of [[1.85, 0.37, 0, -Math.PI / 2, 0], [6.4, dos(6.4) - 0.02, 0.45, -Math.PI / 2, 0], [6.4, dos(6.4) - 0.02, -0.45, -Math.PI / 2, 0], [3.2, -0.56, 0.32, Math.PI / 2, 0]]) {
+  for (const [x, y, z, rx, rz] of [[1.85, 0.37, 0, -Math.PI / 2, 0], [6.4, dos(6.4) - 0.02, 0.45, -Math.PI / 2, 0], [6.4, dos(6.4) - 0.02, -0.45, -Math.PI / 2, 0], [3.2, -0.735, 0.32, Math.PI / 2, 0]]) {
     const d = ajouter(new THREE.PlaneGeometry(0.16, 0.16), saphir, x, y, z);
     d.rotation.set(rx, 0, rz);
   }
@@ -371,7 +391,7 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   const lS = sx1 - sx0;
   const portes = [];
   const ouvertures = [];
-  const ySoute = -0.595;
+  const ySoute = -0.815;
   for (const cote of [1, -1]) {
     const soute = new THREE.Group();
     soute.scale.z = cote;
@@ -419,12 +439,12 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   if (v.canon) {
     // Canon GAU-22/A de 25 mm dans l'épaule gauche, au-dessus de l'entrée d'air
     ajouter(loft(THREE, [
-      { x: 6.2, w: 0.02, h: 0.02, y: 0.76, z: 1.0 },
-      { x: 6.6, w: 0.22, hHaut: 0.1, hBas: 0.06, y: 0.76, z: 1.0 },
-      { x: 8.6, w: 0.24, hHaut: 0.1, hBas: 0.06, y: 0.74, z: 1.0 },
-      { x: 9.2, w: 0.02, h: 0.02, y: 0.72, z: 0.98 },
+      { x: 6.2, w: 0.02, h: 0.02, y: 0.9, z: 1.0 },
+      { x: 6.6, w: 0.22, hHaut: 0.1, hBas: 0.06, y: 0.9, z: 1.0 },
+      { x: 8.6, w: 0.24, hHaut: 0.1, hBas: 0.06, y: 0.86, z: 1.0 },
+      { x: 9.2, w: 0.02, h: 0.02, y: 0.82, z: 0.98 },
     ], { segments: 16, parSegment: 4 }), peau);
-    ajouter(new THREE.BoxGeometry(0.08, 0.06, 0.12), noir, 6.52, 0.79, 1.0);
+    ajouter(new THREE.BoxGeometry(0.08, 0.06, 0.12), noir, 6.52, 0.93, 1.0);
   }
   if (v.receptacle) {
     // Réceptacle pour la perche rigide des ravitailleurs (A330 Phénix, KC-46…)
@@ -441,7 +461,7 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   if (v.perche) {
     // Perche de ravitaillement escamotable, côté droit devant la verrière
     const pivot = new THREE.Group();
-    pivot.position.set(2.95, 0.4, -0.4);
+    pivot.position.set(2.95, 0.62, -0.4);
     const tige = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 1.35, 12), grisClair);
     tige.rotation.z = Math.PI / 2;
     tige.position.x = -0.675;
@@ -450,7 +470,7 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
     embout.position.x = -1.38;
     pivot.add(tige, embout);
     avion.add(pivot);
-    const trappe = ajouter(new THREE.BoxGeometry(1.3, 0.02, 0.1), grisFonce, 2.3, 0.42, -0.5);
+    const trappe = ajouter(new THREE.BoxGeometry(1.3, 0.02, 0.1), grisFonce, 2.3, 0.6, -0.48);
     trappe.rotation.x = 0.6;
     animes.perche = { pivot, trappe };
   }
@@ -482,7 +502,7 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
     const ventrales = [];
     for (const cote of [1, -1]) {
       const pv = new THREE.Group();
-      pv.position.set(6.25, -0.6, cote * 0.48);
+      pv.position.set(6.25, -0.805, cote * 0.48);
       const pp = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.025, 0.45), gris);
       pp.position.z = -cote * 0.225;
       pv.add(pp);
@@ -500,7 +520,7 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   if (v.crosse) {
     // Crosse d'appontage renforcée, sous l'arrière du fuselage
     const pivot = new THREE.Group();
-    pivot.position.set(13.0, -0.46, 0);
+    pivot.position.set(13.0, -0.52, 0);
     const bras = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.08, 0.1), grisClair);
     bras.position.x = 0.85;
     const crochet = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 0.14), new THREE.MeshStandardMaterial({ color: 0xd8d8d0, metalness: 0.5, roughness: 0.4 }));
@@ -515,17 +535,38 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   const sommet = Y_DERIVES + v.derive[1][1] * Math.cos(ANGLE_DERIVES) + 0.07;
   const ySol = sommet - v.hauteur;
   const train = new THREE.Group();
-  const roue = (r, l) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 24), matPneu); m.rotation.x = Math.PI / 2; return m; };
+  /** Roue : pneu et jante claire (moyeu) des deux côtés. */
+  const roue = (r, l) => {
+    const g = new THREE.Group();
+    const pneu = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 28), matPneu);
+    pneu.rotation.x = Math.PI / 2;
+    const moyeu = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.58, r * 0.58, l + 0.02, 20), jante);
+    moyeu.rotation.x = Math.PI / 2;
+    g.add(pneu, moyeu);
+    return g;
+  };
+  /** Trappe : une face couleur du fuselage, l'autre claire, tournée vers z = -cote × infini (vers l'axe si cote est le côté de la trappe). */
+  const trappeTrain = (lx, ly, cote) => {
+    const g = new THREE.Group();
+    const a = new THREE.Mesh(new THREE.BoxGeometry(lx, ly, 0.02), gris);
+    const b = new THREE.Mesh(new THREE.PlaneGeometry(lx * 0.96, ly * 0.94), interieur);
+    b.position.z = -cote * 0.012;
+    b.rotation.y = cote > 0 ? Math.PI : 0;
+    g.add(a, b);
+    return g;
+  };
+  const yVentre = -0.78;
   const rAvant = v.roueDouble ? 0.3 : 0.29;
   const xa = X_TRAIN_AVANT;
-  const jambeAvant = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.075, -0.5 - (ySol + rAvant), 12), matJambe);
-  jambeAvant.position.set(xa, (-0.5 + ySol + rAvant) / 2, 0);
+  const jambeAvant = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.08, yVentre - (ySol + rAvant), 12), matJambe);
+  jambeAvant.position.set(xa, (yVentre + ySol + rAvant) / 2, 0);
   train.add(jambeAvant);
   // Compas et vérin de la jambe avant
-  const compas = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.05), matJambe);
-  compas.position.set(xa + 0.22, ySol + rAvant + 0.45, 0);
+  const compas = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.06, 0.05), matJambe);
+  compas.position.set(xa + 0.2, ySol + rAvant + 0.3, 0);
   compas.rotation.z = -0.7;
   train.add(compas);
+  train.add(tubeEntre(THREE, [xa + 0.7, yVentre + 0.02, 0], [xa + 0.05, ySol + rAvant + 0.45, 0], 0.035, matJambe, 8));
   if (v.roueDouble) {
     for (const z of [0.15, -0.15]) { const r = roue(rAvant, 0.17); r.position.set(xa + 0.06, ySol + rAvant, z); train.add(r); }
     // Barre de catapultage
@@ -536,32 +577,35 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   } else {
     const r = roue(rAvant, 0.2); r.position.set(xa + 0.06, ySol + rAvant, 0); train.add(r);
   }
-  for (const z of [0.25, -0.25]) {
-    const t = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.025), gris);
-    t.position.set(xa - 0.05, -0.92, z);
+  // Trappes du train avant, pendantes, bords en dents de scie
+  for (const cote of [1, -1]) {
+    const t = trappeTrain(1.5, 0.55, cote);
+    t.position.set(xa - 0.35, yVentre - 0.26, cote * 0.3);
+    t.rotation.x = -cote * 0.12;
     train.add(t);
   }
-  const rP = v.roueDouble ? 0.42 : 0.38;
+  const rP = v.roueDouble ? 0.42 : 0.4;
   const xp = X_TRAIN_PRINCIPAL;
   for (const cote of [1, -1]) {
-    const haut = new THREE.Vector3(xp - 0.1, -0.2, cote * 1.75);
-    const bas = new THREE.Vector3(xp, ySol + rP, cote * (DEMI_VOIE - 0.1));
+    const haut = new THREE.Vector3(xp - 0.1, -0.45, cote * 1.7);
+    const bas = new THREE.Vector3(xp, ySol + rP, cote * (DEMI_VOIE - 0.12));
     const dir = new THREE.Vector3().subVectors(bas, haut);
-    const jambe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, dir.length(), 12), matJambe);
+    const jambe = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.1, dir.length(), 12), matJambe);
     jambe.position.copy(haut).addScaledVector(dir, 0.5);
     jambe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
     // Contrefiche oblique vers l'emplanture
-    const h2 = new THREE.Vector3(xp - 0.9, -0.15, cote * 1.85);
-    const b2 = new THREE.Vector3(xp - 0.05, ySol + rP + 0.6, cote * (DEMI_VOIE - 0.12));
+    const h2 = new THREE.Vector3(xp - 0.9, -0.4, cote * 1.75);
+    const b2 = new THREE.Vector3(xp - 0.05, ySol + rP + 0.45, cote * (DEMI_VOIE - 0.14));
     const d2 = new THREE.Vector3().subVectors(b2, h2);
-    const contrefiche = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, d2.length(), 8), matJambe);
+    const contrefiche = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, d2.length(), 8), matJambe);
     contrefiche.position.copy(h2).addScaledVector(d2, 0.5);
     contrefiche.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d2.clone().normalize());
-    const r = roue(rP, 0.26); r.position.set(xp, ySol + rP, cote * DEMI_VOIE);
-    // Grande trappe de train à bords dentelés, pendante et ouverte vers l'extérieur
-    const trappe = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.85, 0.03), gris);
-    trappe.position.set(xp - 0.2, -0.85, cote * (DEMI_VOIE + 0.35));
-    trappe.rotation.x = -cote * 0.3;
+    const r = roue(rP, 0.28); r.position.set(xp, ySol + rP, cote * DEMI_VOIE);
+    // Grande trappe du train principal, articulée côté axe et rabattue au-delà de la verticale :
+    // sa face interne claire regarde vers l'extérieur (photo au sol)
+    const trappe = trappeTrain(2.2, 0.6, -cote);
+    trappe.position.set(xp - 1.55, yVentre - 0.3, cote * 1.42);
+    trappe.rotation.x = -cote * 0.22;
     train.add(jambe, contrefiche, r, trappe);
   }
   avion.add(train);
@@ -578,19 +622,19 @@ export function construireF35(THREE, { modele = 'f35a' } = {}) {
   groupe.userData.taille = 16;
   groupe.userData.dimensions = { longueur: L, envergure: 2 * v.aile[1][1], hauteur: v.hauteur };
   groupe.userData.legendes = [
-    { texte: 'Verrière d\'une seule pièce', point: p(3.8, 1.35, 0) },
+    { texte: 'Verrière d\'une seule pièce', point: p(3.8, 1.55, 0) },
     { texte: 'Entrée d\'air sans piège à couche limite (DSI)', point: p(4.2, 0.25, 1.45) },
-    { texte: 'Capteur optronique EOTS', point: p(2.05, -0.55, 0) },
-    { texte: 'Soutes à armement', point: p((sx0 + sx1) / 2, -0.7, 0.7) },
+    { texte: 'Capteur optronique EOTS', point: p(2.05, -0.75, 0) },
+    { texte: 'Soutes à armement', point: p((sx0 + sx1) / 2, -0.92, 0.7) },
     { texte: 'Dérives inclinées', point: p(14.1, 2.3, 1.9) },
     { texte: 'Réacteur F135', point: p(v.sortie, 0.05, 0) },
     { texte: 'Gouvernes de profondeur', point: p(15.0, 0.1, 3.0) },
-    ...(v.canon ? [{ texte: 'Canon de 25 mm', point: p(7.4, 0.88, 1.0) }] : []),
-    ...(v.receptacle ? [{ texte: 'Réceptacle de ravitaillement', point: p(7.3, 1.05, 0) }] : []),
-    ...(v.stovl ? [{ texte: 'Soufflante de sustentation', point: p(6.15, 1.3, 0) }, { texte: 'Tuyère orientable', point: p(15.0, 0.05, 0) }, { texte: 'Buses de roulis', point: p(9.6, -0.2, 3.3) }] : []),
+    ...(v.canon ? [{ texte: 'Canon de 25 mm', point: p(7.4, 1.02, 1.0) }] : []),
+    ...(v.receptacle ? [{ texte: 'Réceptacle de ravitaillement', point: p(7.3, 1.25, 0) }] : []),
+    ...(v.stovl ? [{ texte: 'Soufflante de sustentation', point: p(6.15, 1.45, 0) }, { texte: 'Tuyère orientable', point: p(15.0, 0.05, 0) }, { texte: 'Buses de roulis', point: p(9.6, -0.2, 3.3) }] : []),
     ...(v.pliage ? [{ texte: 'Bouts d\'aile repliables', point: p(10.2, 0.1, 5.6) }] : []),
     ...(v.crosse ? [{ texte: 'Crosse d\'appontage', point: p(13.8, -0.7, 0) }] : []),
-    ...(v.perche ? [{ texte: 'Perche de ravitaillement', point: p(2.2, 0.55, -0.7) }] : []),
+    ...(v.perche ? [{ texte: 'Perche de ravitaillement', point: p(2.2, 0.8, -0.7) }] : []),
   ];
   groupe.userData.commandes = [
     { id: 'rentrer', libelle: 'Rentrer le train', actif: 'Sortir le train' },

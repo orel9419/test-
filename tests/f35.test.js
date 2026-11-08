@@ -61,8 +61,9 @@ describe('F-35 en 3D', () => {
   it('les soutes s\'ouvrent et dévoilent l\'armement ; le train se rentre', () => {
     const a = construireF35(THREE, { modele: 'f35a' });
     const h = taille(a).y;
-    animer(a, { soutes: true, rentrer: true });
+    animer(a, { rentrer: true });
     expect(taille(a).y).toBeLessThan(h - 0.8); // plus de train sous l'avion
+    animer(a, { soutes: true, rentrer: true });
     let armes = 0;
     a.traverseVisible((o) => { if (o.isMesh && o.material?.color?.getHex() === 0x6b6f4e) armes++; });
     expect(armes).toBe(2); // une bombe guidée par soute
