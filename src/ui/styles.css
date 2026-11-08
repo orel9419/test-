@@ -17,6 +17,7 @@
   --axe: #c3c2b7;
   --bordure: rgba(11, 11, 11, 0.10);
   --accent: #2a78d6;
+  --accent-fond: #2a78d6;
   --accent-encre: #ffffff;
   --serie-1: #2a78d6; --serie-2: #eb6834; --serie-3: #1baf7a; --serie-4: #eda100;
   --serie-5: #e87ba4; --serie-6: #008300; --serie-7: #6250d6; --serie-8: #e34948;
@@ -32,27 +33,32 @@
   background: var(--plan);
 }
 :root[data-theme="dark"] {
+  /* Bleu nuit plutôt que noir pur : plus doux pour les yeux, et des surfaces
+     nettement étagées (fond < carte < encart < piste) pour garder le relief. */
   color-scheme: dark;
-  --plan: #0d0d0d;
-  --surface: #1a1a19;
-  --surface-2: #232321;
-  --surface-3: #2e2e2b;
-  --encre: #f0efec;
-  --encre-2: #c3c2b7;
-  --encre-attenuee: #898781;
-  --grille: #2c2c2a;
-  --axe: #383835;
-  --bordure: rgba(255, 255, 255, 0.10);
-  --accent: #3987e5;
+  --plan: #0f1319;
+  --surface: #171c24;
+  --surface-2: #1e2530;
+  --surface-3: #29323e;
+  --encre: #eef2f6;
+  --encre-2: #c3cbd5;
+  --encre-attenuee: #939eab;
+  --grille: #262f3a;
+  --axe: #3b4653;
+  --bordure: rgba(255, 255, 255, 0.12);
+  --accent: #5a9bef;
+  --accent-fond: #2f7bd8;
   --serie-1: #3987e5; --serie-2: #d95926; --serie-3: #199e70; --serie-4: #c98500;
   --serie-5: #d55181; --serie-6: #008300; --serie-7: #9085e9; --serie-8: #e66767;
-  --texte-bon: #0ca30c; --texte-critique: #e66767;
-  --divergent-neg: #e66767; --divergent-pos: #3987e5; --divergent-milieu: #383835;
-  --ombre: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --texte-bon: #3fbf62; --texte-critique: #f07c7c;
+  --divergent-neg: #e66767; --divergent-pos: #3987e5; --divergent-milieu: #3b4653;
+  --ombre: 0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.22);
+  --carte-ocean: #12263d; --carte-terre: #3a4655; --carte-frontiere: #1b2430;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; }
+html { background: var(--plan); }
+html body { margin: 0; background: var(--plan); color: var(--encre); font: inherit; }
 h1, h2, h3, h4 { margin: 0 0 0.5em; line-height: 1.2; }
 h1 { font-size: 1.6rem; }
 h2 { font-size: 1.25rem; }
@@ -81,7 +87,7 @@ input[type="number"] { background: var(--surface); border: 1px solid var(--axe);
 }
 .bouton:hover { background: var(--surface-2); }
 .bouton:focus-visible, .onglet:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.bouton.principal { background: var(--accent); color: var(--accent-encre); border-color: transparent; font-weight: 600; }
+.bouton.principal { background: var(--accent-fond); color: var(--accent-encre); border-color: transparent; font-weight: 600; }
 .bouton.principal:hover { filter: brightness(1.08); }
 .bouton.danger { color: var(--texte-critique); }
 .bouton:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -196,6 +202,7 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 .carte-pays .drapeau { font-size: 2.2rem; }
 .journal-ligne { display: grid; grid-template-columns: 70px 1fr; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px solid var(--grille); font-size: 0.9rem; }
 .hemicycle text { font-size: 11px; }
+.carre-groupe { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .sr-seul { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* --- Effets et animations ------------------------------------------------------
@@ -254,7 +261,7 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 .calendrier-transition { display: flex; align-items: center; justify-content: center; gap: 0.8rem; font-weight: 700; perspective: 400px; }
 .calendrier-transition span { padding: 0.35rem 0.8rem; border-radius: 8px; background: var(--surface-2); }
 .calendrier-transition .ancien { opacity: 0.55; }
-.calendrier-transition .nouveau { background: var(--accent); color: var(--accent-encre); animation: bascule 0.6s ease-out 0.15s both; }
+.calendrier-transition .nouveau { background: var(--accent-fond); color: var(--accent-encre); animation: bascule 0.6s ease-out 0.15s both; }
 .succes-badge { display: inline-flex; gap: 0.3rem; align-items: center; padding: 0.25rem 0.6rem; border-radius: 999px; background: color-mix(in srgb, var(--attention) 22%, transparent); font-weight: 600; font-size: 0.85rem; animation: entree-modale 0.4s ease-out both; }
 
 /* En-tête : modes et avancement du mandat */
@@ -303,7 +310,7 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
 .puces { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .puce { border: 1px solid var(--bordure); background: var(--surface); border-radius: 999px; padding: 0.25rem 0.7rem; font-size: 0.82rem; cursor: pointer; color: var(--encre-2); }
 .puce:hover { background: var(--surface-2); color: var(--encre); }
-.puce.active { background: var(--accent); border-color: var(--accent); color: var(--accent-encre); font-weight: 600; }
+.puce.active { background: var(--accent-fond); border-color: var(--accent-fond); color: var(--accent-encre); font-weight: 600; }
 .champ-recherche { flex: 1 1 240px; min-width: 0; background: var(--surface); border: 1px solid var(--axe); border-radius: 8px; padding: 0.4rem 0.6rem; }
 .pronostic { font-size: 0.72rem; padding: 0.1rem 0.5rem; border-radius: 6px; font-weight: 600; }
 .pronostic.bon { background: color-mix(in srgb, var(--bon) 16%, transparent); color: var(--texte-bon); }
@@ -378,7 +385,7 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .sous-onglets { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--bordure); }
 .sous-onglet { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid var(--bordure); background: var(--surface); color: var(--encre); font: inherit; font-size: 0.92rem; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
 .sous-onglet:hover { border-color: var(--accent); }
-.sous-onglet.actif { background: var(--accent); border-color: var(--accent); color: var(--accent-encre); font-weight: 600; }
+.sous-onglet.actif { background: var(--accent-fond); border-color: var(--accent-fond); color: var(--accent-encre); font-weight: 600; }
 .sous-onglet .etiquette, .sous-onglet .pastille { margin-left: 0.2rem; }
 
 /* Carte « Solidité du pouvoir » */
@@ -608,8 +615,8 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 /* ===== Géopolitique : carte du monde, groupe aéronaval, tensions ===== */
 .carte-monde { display: block; width: 100%; height: auto; border-radius: 8px; }
 .carte-monde.attente { aspect-ratio: 960 / 500; display: grid; place-items: center; background: var(--surface-2); color: var(--encre-attenuee); font-size: 0.85rem; }
-.carte-ocean { fill: color-mix(in srgb, var(--accent) 9%, var(--surface)); stroke: var(--bordure); }
-.carte-pays { fill: var(--surface-3); stroke: var(--surface); stroke-width: 0.6; }
+.carte-ocean { fill: var(--carte-ocean, color-mix(in srgb, var(--accent) 9%, var(--surface))); stroke: var(--bordure); }
+.carte-pays { fill: var(--carte-terre, var(--surface-3)); stroke: var(--carte-frontiere, var(--surface)); stroke-width: 0.6; }
 .carte-pays.france { fill: var(--accent); }
 .carte-outre-mer { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; }
 .carte-route { fill: none; stroke: var(--encre-2); stroke-width: 2; stroke-linecap: round; opacity: 0.55; }
@@ -717,7 +724,7 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 :root[data-theme="dark"] .visionneuse-caesar .visionneuse-scene, :root[data-theme="dark"] .visionneuse-griffon .visionneuse-scene, :root[data-theme="dark"] .visionneuse-jaguar .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45473c 0%, #2b2c25 60%, #191a15 100%); }
 .option.repartition-fonds { display: grid; gap: 0.3rem; border-color: var(--bordure); }
 .barre-repartition { display: flex; height: 18px; border-radius: 5px; overflow: hidden; gap: 2px; background: var(--surface); }
-.barre-repartition span { display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: #fff; min-width: 0; white-space: nowrap; overflow: hidden; }
+.barre-repartition span { display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); min-width: 0; white-space: nowrap; overflow: hidden; }
 .visionneuse-phenix .visionneuse-scene { background: linear-gradient(180deg, #0f3f78 0%, #2a6bb0 60%, #5d93cf 100%); }
 .visionneuse-caiman .visionneuse-scene, .visionneuse-caimanFS .visionneuse-scene, .visionneuse-caimanMarine .visionneuse-scene, .visionneuse-tigre .visionneuse-scene, .visionneuse-puma .visionneuse-scene, .visionneuse-caracal .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #eef2f6 0%, #cfd8e2 55%, #a3b2c2 100%); }
 :root[data-theme="dark"] .visionneuse-caiman .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caimanFS .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caimanMarine .visionneuse-scene, :root[data-theme="dark"] .visionneuse-tigre .visionneuse-scene, :root[data-theme="dark"] .visionneuse-puma .visionneuse-scene, :root[data-theme="dark"] .visionneuse-caracal .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #3b4757 0%, #222b37 60%, #141a22 100%); }
@@ -732,3 +739,17 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .bilan-source { display: grid; gap: 0.2rem; padding: 0.5rem 0.65rem; border-radius: 8px; background: var(--surface-2); }
 .bilan-source .total { border-top: 1px solid var(--bordure, rgba(127,127,127,0.35)); padding-top: 0.2rem; }
 .note-inspiration { margin: 0; padding: 0.35rem 0.55rem; border-radius: 8px; background: var(--surface-2); }
+
+/* ===== Mode sombre : relief et lisibilité ===== */
+/* Cartes : léger reflet en haut pour les détacher du fond */
+:root[data-theme="dark"] .carte { box-shadow: var(--ombre), inset 0 1px 0 rgba(255, 255, 255, 0.04); }
+:root[data-theme="dark"] .entete { background: color-mix(in srgb, var(--surface) 94%, #1f5aa6); }
+:root[data-theme="dark"] .modale { box-shadow: 0 0 0 1px var(--bordure), 0 16px 48px rgba(0, 0, 0, 0.6); }
+:root[data-theme="dark"] .voile { background: rgba(3, 6, 10, 0.7); }
+/* Sièges des hémicycles : un liseré clair garde visibles les couleurs foncées (RN, LR, UDR) */
+:root[data-theme="dark"] .hemicycle circle { stroke: rgba(255, 255, 255, 0.4); stroke-width: 0.5; }
+:root[data-theme="dark"] .carre-groupe { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4); }
+/* Champs de saisie et curseurs */
+:root[data-theme="dark"] select, :root[data-theme="dark"] input[type="number"], :root[data-theme="dark"] input[type="text"], :root[data-theme="dark"] textarea { background: var(--surface-2); border-color: var(--axe); color: var(--encre); }
+:root[data-theme="dark"] input[type="range"] { accent-color: var(--accent); }
+:root[data-theme="dark"] ::selection { background: rgba(90, 155, 239, 0.35); }

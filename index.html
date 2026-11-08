@@ -16,12 +16,22 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Chef de gouvernement : gouvernez un pays réel jusqu'en 2050" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#1f5aa6" />
+    <meta name="theme-color" content="#1f5aa6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1319" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Chef de gouv." />
     <title>Chef de gouvernement</title>
+    <script>
+      // Thème appliqué avant le premier affichage (évite un éclair blanc en mode sombre)
+      try {
+        var o = JSON.parse(localStorage.getItem('cdg:options') || '{}') || {};
+        var t = o.theme === 'sombre' ? 'dark' : o.theme === 'clair' ? 'light' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = t;
+      } catch (e) { /* stockage indisponible : le jeu appliquera le thème au démarrage */ }
+    </script>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="./icones/favicon-32.png" />
     <link rel="icon" type="image/svg+xml" href="./icones/icone.svg" />

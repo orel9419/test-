@@ -67,7 +67,7 @@ export default function Hemicycle({ pays, groupes, majorite }) {
       <div className="legende">
         {tries.map((g) => (
           <span key={g.id} onPointerEnter={() => setSurvol(g.id)} onPointerLeave={() => setSurvol(null)} style={{ fontWeight: survol === g.id ? 600 : 400 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: g.couleur, display: 'inline-block' }} />
+            <span className="carre-groupe" style={{ background: g.couleur }} />
             {nomCourt(pays, g)} {g.sieges}
           </span>
         ))}
