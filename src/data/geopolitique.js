@@ -51,7 +51,7 @@ export const THEATRES = {
 
 /** Groupe aéronaval : composition (affichage). */
 export const GROUPE_AERONAVAL = {
-  composition: ['un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères)', 'deux à trois frégates de défense aérienne et anti-sous-marine', 'un sous-marin nucléaire d\'attaque', 'un bâtiment ravitailleur'],
+  composition: ['un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères)', 'deux à trois frégates : défense aérienne, et anti-sous-marine (FREMM à sonar remorqué, avec son hélicoptère Caïman Marine à sonar trempé)', 'un sous-marin nucléaire d\'attaque', 'un bâtiment ravitailleur', 'en renfort, un porte-hélicoptères amphibie (troupes, hélicoptères, hôpital), qui conduit d\'ordinaire son propre groupe amphibie'],
   pedagogie: 'Le Charles-de-Gaulle (261 m, 42 000 t, en service depuis 2001) est le seul porte-avions à propulsion nucléaire en service hors des États-Unis. Un déploiement dure en général quatre à cinq mois ; il faut ensuite plusieurs semaines d\'entretien à Toulon, et un arrêt technique majeur environ tous les dix ans.',
 };
 

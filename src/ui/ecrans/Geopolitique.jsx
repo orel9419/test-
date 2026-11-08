@@ -93,7 +93,7 @@ function VueGroupes({ partie, nomTheatre, ouvert, basculer }) {
   const c = compositionGroupes(partie);
   if (!c.groupes.length) return <p className="petit muet" style={{ margin: 0 }}>Aucun porte-avions en service : pas de groupe aéronaval à montrer.</p>;
   const deux = c.groupes.length > 1;
-  const NOMS = { fda: 'frégate de défense aérienne', fremm: 'FREMM', sna: 'SNA', brf: 'ravitailleur' };
+  const NOMS = { fda: 'frégate de défense aérienne', fremm: 'FREMM (dont une anti-sous-marine et son Caïman Marine)', sna: 'SNA', brf: 'ravitailleur', pha: 'porte-hélicoptères' };
   return (
     <div className="pile vue-groupes" style={{ gap: '0.4rem' }}>
       <button type="button" className={`bouton ${ouvert ? '' : 'principal'}`} onClick={basculer}>{ouvert ? 'Masquer la vue 3D' : `🎖️ Voir ${deux ? 'les deux groupes aéronavals' : 'le groupe aéronaval'} en 3D`}</button>

@@ -5,7 +5,7 @@ import { GROUPE_AERONAVAL } from '../../data/geopolitique.js';
 import { md } from '../format.js';
 
 const Visionneuse3D = lazy(() => import('../3d/Visionneuse3D.jsx'));
-const NOMS = { fda: 'frégate de défense aérienne', fremm: 'FREMM', sna: 'sous-marin nucléaire d\'attaque', brf: 'ravitailleur' };
+const NOMS = { fda: 'frégate de défense aérienne', fremm: 'FREMM (dont une anti-sous-marine avec son Caïman Marine)', sna: 'sous-marin nucléaire d\'attaque', brf: 'ravitailleur', pha: 'porte-hélicoptères amphibie' };
 
 /**
  * Le ou les groupes aéronavals du chef des armées (France) : vue 3D composée

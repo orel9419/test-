@@ -115,3 +115,14 @@ describe('Groupes aéronavals vus par le président', () => {
     expect(c.groupes[1].manques.join(' ')).toMatch(/ravitailleur/);
   });
 });
+
+describe('Porte-hélicoptères et lutte anti-sous-marine dans le groupe', () => {
+  it('le porte-hélicoptères accompagne le groupe s\'il est disponible, sans être indispensable', () => {
+    const e = nouvelle();
+    expect(compositionGroupes(e).groupes[0].escorte.pha).toBe(1);
+    e.defense.capacites.pha = 0;
+    const c = compositionGroupes(e);
+    expect(c.groupes[0].escorte.pha).toBe(0);
+    expect(c.groupes[0].manques).toEqual([]);
+  });
+});

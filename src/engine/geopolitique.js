@@ -59,12 +59,15 @@ export function flotte(e) {
 }
 
 /** Escorte type d'un groupe aéronaval (frégate de défense aérienne, FREMM, SNA, ravitailleur). */
-export const ESCORTE_TYPE = { fda: 1, fremm: 2, sna: 1, brf: 1 };
-const NOMS_ESCORTE = { fda: 'frégate de défense aérienne', fremm: 'frégate multi-missions', sna: 'sous-marin nucléaire d\'attaque', brf: 'ravitailleur' };
+export const ESCORTE_TYPE = { fda: 1, fremm: 2, sna: 1, brf: 1, pha: 1 };
+/** Renfort facultatif : le porte-hélicoptères amphibie accompagne le groupe s'il est disponible, sans être indispensable. */
+const FACULTATIFS = new Set(['pha']);
+const NOMS_ESCORTE = { fda: 'frégate de défense aérienne', fremm: 'frégate multi-missions', sna: 'sous-marin nucléaire d\'attaque', brf: 'ravitailleur', pha: 'porte-hélicoptères amphibie' };
 
 /**
  * Composition des groupes aéronavals pour la vue 3D du président : porte-avions
- * en service et escorte prélevée sur les bâtiments disponibles (environ deux
+ * en service et escorte (dont une FREMM anti-sous-marine et son Caïman Marine,
+ * et un porte-hélicoptères en renfort) prélevée sur les bâtiments disponibles (environ deux
  * sur trois : les autres sont en entretien ou en entraînement), groupe 1 servi
  * en premier. Indique ce qui manque au second groupe.
  */
@@ -81,7 +84,7 @@ export function compositionGroupes(e) {
     for (const [k, besoin] of Object.entries(ESCORTE_TYPE)) {
       escorte[k] = Math.min(besoin, reste[k]);
       reste[k] -= escorte[k];
-      if (escorte[k] < besoin) manques.push(`${besoin - escorte[k] > 1 ? `${besoin - escorte[k]} ` : ''}${NOMS_ESCORTE[k]}${besoin - escorte[k] > 1 ? 's' : ''}`);
+      if (escorte[k] < besoin && !FACULTATIFS.has(k)) manques.push(`${besoin - escorte[k] > 1 ? `${besoin - escorte[k]} ` : ''}${NOMS_ESCORTE[k]}${besoin - escorte[k] > 1 ? 's' : ''}`);
     }
     const position = i === 0 ? e.geopolitique?.gan?.position : e.geopolitique?.gan2?.position;
     return { numero: i + 1, porteAvions: pa.id === 'cdg' ? 'cdg' : 'pang', nom: pa.id === 'france_libre' ? 'France Libre' : pa.nom, position: position ?? 'toulon', escorte, manques };

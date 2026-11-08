@@ -10,6 +10,7 @@
  * l'échelle pour mesurer environ 13 unités. Formes simplifiées.
  */
 import { loft, surface, pieces, tronc, texturePeinte, texturePanneaux, construireCharlesDeGaulle, construirePorteAvions, construireRafale } from './modeles.js';
+import { construireCaiman } from './aeronefs.js';
 
 const GRIS = [0.24, 0.26, 0.28];
 const LISERE = [0.07, 0.07, 0.08];
@@ -1038,6 +1039,7 @@ const MODELES_GROUPE = {
   fremm: { construire: construireFremm, s: 13 / 142, y: -0.5, L: 142, B: 20, nom: 'FREMM' },
   brf: { construire: construireBrf, s: 13 / 194, y: -0.5, L: 194, B: 27, nom: 'ravitailleur de forces' },
   sna: { construire: construireSna, s: 0.13, y: -0.6 * 0.13, L: 99, B: 9, nom: 'SNA' },
+  pha: { construire: construirePha, s: 13 / 199, y: -0.5, L: 199, B: 32, nom: 'porte-hélicoptères amphibie' },
 };
 
 /** Positions de l'escorte autour du porte-avions (mètres ; cap vers x négatif ; z négatif à tribord). Distances resserrées. */
@@ -1046,6 +1048,7 @@ const POSTES = {
   fremm: [[-330, -300], [390, 330]],
   sna: [[-660, -60]],
   brf: [[310, -270]],
+  pha: [[700, 10]],
 };
 /** À quai à Toulon : le porte-avions le long du quai, l'escorte amarrée de l'autre côté de la jetée. */
 const POSTES_PORT = {
@@ -1053,6 +1056,7 @@ const POSTES_PORT = {
   fremm: [[-90, 84], [75, 84]],
   brf: [[260, 88]],
   sna: [[420, 70]],
+  pha: [[-500, 72]],
 };
 
 /** Sillage d'écume en V derrière un navire (longueur L, largeur B, en mètres). */
@@ -1081,17 +1085,60 @@ function navireDuGroupe(THREE, type, k) {
 }
 
 /**
+ * Caïman Marine (NH90 NFH) en vol stationnaire à 45 m, agrandi comme les
+ * avions de la scène, avec son sonar trempé : le câble descend sous la
+ * surface quand on « trempe » le sonar. Position en mètres (x, z).
+ */
+function caimanAsm(THREE, k, racine, x, z) {
+  const helo = construireCaiman(THREE, { modele: 'caimanMarine' });
+  const echelleModele = 0.85, baseModele = -2.2 + 0.35; // voir construireCaiman (installer)
+  const fH = (k * 2.2) / echelleModele;
+  const altitude = 45;
+  const enveloppe = new THREE.Group();
+  enveloppe.add(helo);
+  enveloppe.scale.setScalar(fH);
+  const y0 = altitude * k - baseModele * fH;
+  enveloppe.position.set(x * k, y0, z * k);
+  racine.add(enveloppe);
+  // Point d'attache du sonar (6,6 m de l'avant, 0,8 m de haut dans le modèle)
+  const attache = { x: (6.6 - 8) * echelleModele * fH, y: (0.8 * echelleModele + baseModele) * fH };
+  const matCable = new THREE.MeshStandardMaterial({ color: 0x1d1f22, roughness: 0.6 });
+  const cable = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 6), matCable);
+  const sonar = new THREE.Mesh(new THREE.CapsuleGeometry(1, 2.2, 4, 10), new THREE.MeshStandardMaterial({ color: 0xe0a32a, roughness: 0.5 }));
+  sonar.scale.setScalar(0.9 * k * 2.2);
+  racine.add(cable, sonar);
+  const fond = -32 * k; // profondeur d'immersion du sonar
+  let fS = 0;
+  return {
+    animer(t, plonger) {
+      helo.userData.animer?.(t, {});
+      const yH = y0 + Math.sin(t / 900) * 0.6 * k; // vol stationnaire, léger balancement
+      enveloppe.position.y = yH;
+      fS += ((plonger ? 1 : 0) - fS) * 0.02;
+      const haut = yH + attache.y;
+      const bas = haut - 0.02 - (haut - fond) * fS;
+      const longueur = Math.max(0.001, haut - bas);
+      cable.visible = sonar.visible = fS > 0.02;
+      cable.scale.set(0.6 * k, longueur, 0.6 * k);
+      cable.position.set(x * k + attache.x, (haut + bas) / 2, z * k);
+      sonar.position.set(x * k + attache.x, bas - 1.5 * k, z * k);
+    },
+  };
+}
+
+/**
  * Groupe(s) aéronaval(s) : le porte-avions (Charles-de-Gaulle ou porte-avions
  * de nouvelle génération) et son escorte telle qu'elle existe dans la partie
- * (frégate de défense aérienne, FREMM, sous-marin d'attaque en plongée,
- * ravitailleur), sillages et Rafale Marine en patrouille. Tous les navires
+ * (frégate de défense aérienne, FREMM anti-sous-marine et son Caïman Marine à
+ * sonar trempé, autre FREMM, sous-marin d'attaque en plongée, ravitailleur,
+ * porte-hélicoptères amphibie en renfort), sillages et Rafale Marine en patrouille. Tous les navires
  * sont à la même échelle ; les distances sont resserrées (en réalité, les
  * escorteurs croisent à plusieurs kilomètres) et les avions agrandis.
- * donnees : { groupes: [{ porteAvions: 'cdg' | 'pang', nom, position, escorte: { fda, fremm, sna, brf } }] }
- * Commande : ravitaillement à la mer (le ravitailleur vient à couple).
+ * donnees : { groupes: [{ porteAvions: 'cdg' | 'pang', nom, enMer, theatre, escorte: { fda, fremm, sna, brf, pha } }] }
+ * Commandes : sonar trempé du Caïman Marine, ravitaillement à la mer.
  */
 export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
-  const groupes = (donnees?.groupes?.length ? donnees.groupes : [{ porteAvions: 'cdg', nom: 'Charles-de-Gaulle', escorte: { fda: 1, fremm: 2, sna: 1, brf: 1 } }]).slice(0, 2);
+  const groupes = (donnees?.groupes?.length ? donnees.groupes : [{ porteAvions: 'cdg', nom: 'Charles-de-Gaulle', escorte: { fda: 1, fremm: 2, sna: 1, brf: 1, pha: 1 } }]).slice(0, 2);
   const deux = groupes.length > 1;
   const k = deux ? 0.0085 : 0.012;
   const ecart = 950; // mètres entre les deux groupes
@@ -1101,6 +1148,7 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
   const animations = [];
   const ravitailleurs = [];
   const avions = [];
+  const helicos = []; // Caïman Marine de lutte anti-sous-marine, sonar trempé
 
   groupes.forEach((g, i) => {
     const z0 = deux ? (i === 0 ? ecart / 2 : -ecart / 2) : 0;
@@ -1131,8 +1179,8 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
     }
     const lieu = g.theatre ? (enMer ? ` · en mission : ${g.theatre}` : ' · à quai à Toulon') : '';
     legendes.push({ texte: `${deux ? `Groupe ${i + 1} : ` : 'Porte-avions '}${g.nom ?? pa.d.nom}${lieu}`, point: p(0, 60, z0) });
-    const esc = { fda: 1, fremm: 2, sna: 1, brf: 1, ...(g.escorte ?? {}) };
-    for (const type of ['fda', 'fremm', 'sna', 'brf']) {
+    const esc = { fda: 1, fremm: 2, sna: 1, brf: 1, pha: 1, ...(g.escorte ?? {}) };
+    for (const type of ['fda', 'fremm', 'sna', 'brf', 'pha']) {
       const postes = enMer ? POSTES[type] : POSTES_PORT[type];
       const n = Math.min(esc[type] ?? 0, postes.length);
       for (let j = 0; j < n; j++) {
@@ -1151,9 +1199,12 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
           if (type === 'brf') ravitailleurs.push({ conteneur: nav.conteneur, sillage: sl, x, z: z0 + z, z0, L: nav.d.L, objet: nav.objet });
         }
         if (nav.objet.userData.animer) animations.push(nav.objet);
+        // Frégate anti-sous-marine : son Caïman Marine en vol stationnaire devant elle, sonar trempé
+        if (type === 'fremm' && j === 0 && enMer) helicos.push(caimanAsm(THREE, k, racine, x - 90, z0 + z + 70));
         if (i === 0 || !deux) {
-          const texte = { fda: 'Frégate de défense aérienne (missiles Aster)', fremm: j === 0 ? 'FREMM (lutte anti-sous-marine, missiles de croisière)' : 'FREMM', sna: enMer ? 'Sous-marin nucléaire d\'attaque en plongée' : 'Sous-marin nucléaire d\'attaque', brf: 'Ravitailleur de forces' }[type];
+          const texte = { fda: 'Frégate de défense aérienne (missiles Aster)', fremm: 'FREMM anti-sous-marine (sonar remorqué)', sna: enMer ? 'Sous-marin nucléaire d\'attaque en plongée' : 'Sous-marin nucléaire d\'attaque', brf: 'Ravitailleur de forces', pha: 'Porte-hélicoptères amphibie (renfort)' }[type];
           if (type !== 'fremm' || j === 0) legendes.push({ texte, point: p(x, type === 'sna' ? 5 : 35, z0 + z) });
+          if (type === 'fremm' && j === 0 && enMer) legendes.push({ texte: 'Caïman Marine : sonar trempé (lutte anti-sous-marine)', point: p(x - 90, 95, z0 + z + 70) });
         }
       }
     }
@@ -1178,9 +1229,13 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
   racine.userData.legendes = legendes;
   racine.userData.taille = 14;
   racine.userData.mer = true;
-  racine.userData.commandes = ravitailleurs.length ? [{ id: 'ravitailler', libelle: 'Ravitaillement à la mer', actif: 'Fin du ravitaillement' }] : [];
+  racine.userData.commandes = [
+    ...(helicos.length ? [{ id: 'sonar', libelle: 'Tremper le sonar (lutte anti-sous-marine)', actif: 'Remonter le sonar' }] : []),
+    ...(ravitailleurs.length ? [{ id: 'ravitailler', libelle: 'Ravitaillement à la mer', actif: 'Fin du ravitaillement' }] : []),
+  ];
   let f = 0;
   racine.userData.animer = (t, api) => {
+    for (const h of helicos) h.animer(t, !!api.sonar);
     f += ((api.ravitailler ? 1 : 0) - f) * 0.02;
     // Le ravitailleur vient se placer à couple, à tribord du porte-avions, puis déploie ses tuyaux
     for (const rv of ravitailleurs) {
