@@ -8,8 +8,8 @@
  *    en tandem sous des verrières à vitres planes étagées (pilote devant,
  *    tireur derrière et plus haut), viseur de toit au-dessus du poste arrière ;
  *  - rotor principal à quatre pales de 13 m, moyeu aplati, mât à 5,05 m du nez ;
- *    deux turbines MTR390 de part et d'autre du mât, entrées d'air grillagées,
- *    échappements relevés vers l'arrière ;
+ *    deux turbines MTR390 en nacelles de part et d'autre du mât, entrées d'air
+ *    grillagées, échappements carénés en goutte d'eau sur le dos ;
  *  - ailerons à léger dièdre négatif, deux pylônes chacun (panier de
  *    roquettes de 68 mm, lanceur de missiles) ;
  *  - tourelle de canon de 30 mm sous le nez ; train principal à 3,3 m du nez
@@ -42,11 +42,11 @@ const SECTIONS = [
   [2.0, 1.62, 0.66, 0.51, 1.15, 0.5, 1.62, 0.32, 0.66],
   [2.9, 1.88, 0.63, 0.52, 1.2, 0.51, 1.88, 0.34, 0.63],
   [3.8, 2.45, 0.6, 0.54, 1.3, 0.5, 2.45, 0.38, 0.6],
-  [4.6, 2.95, 0.56, 0.55, 1.4, 0.48, 2.95, 0.42, 0.56],
-  [5.6, 3.1, 0.53, 0.54, 1.45, 0.47, 3.1, 0.44, 0.53],
-  [6.8, 3.0, 0.56, 0.5, 1.5, 0.44, 3.0, 0.42, 0.56],
-  [8.0, 2.55, 0.64, 0.42, 1.55, 0.36, 2.55, 0.36, 0.64],
-  [9.2, 2.18, 0.76, 0.32, 1.55, 0.28, 2.18, 0.28, 0.76],
+  [4.6, 3.12, 0.56, 0.55, 1.4, 0.48, 3.12, 0.42, 0.56],
+  [5.6, 3.3, 0.53, 0.54, 1.45, 0.47, 3.3, 0.44, 0.53],
+  [6.8, 3.15, 0.56, 0.5, 1.5, 0.44, 3.15, 0.42, 0.56],
+  [8.0, 2.45, 0.64, 0.42, 1.55, 0.36, 2.45, 0.36, 0.64],
+  [9.2, 2.12, 0.76, 0.32, 1.55, 0.28, 2.12, 0.28, 0.76],
   [10.5, 2.0, 0.9, 0.26, 1.5, 0.22, 2.0, 0.22, 0.9],
   [11.8, 1.97, 1.02, 0.23, 1.5, 0.2, 1.97, 0.2, 1.02],
   [12.75, 1.95, 1.2, 0.16, 1.58, 0.14, 1.95, 0.14, 1.2],
@@ -168,33 +168,33 @@ export function construireTigre(THREE) {
   vitre.rotation.y = -Math.PI / 2;
   ajouter(new THREE.CylinderGeometry(0.2, 0.26, 0.32, 16), noir, 3.98, 2.8, 0);
 
-  // ---- Turbines MTR390 : nacelles de part et d'autre du mât, entrées grillagées, échappements relevés
+  // ---- Turbines MTR390 (vue de face : entrées de 0,36 × 0,64 m, centrées à 0,64 m de l'axe et 2,58 m du sol ;
+  // vue de dessus : nacelles du mât à 2,8 m derrière lui, puis deux carénages d'échappement en goutte d'eau sur le dos)
+  const fuseau = (profil, demiH, demiL, m, x, y, z) => {
+    const o = ajouter(new THREE.LatheGeometry(profil.map(([r, a]) => new THREE.Vector2(r, a)), 28), m, x, y, z);
+    o.rotation.z = -Math.PI / 2; // axe du tour (y) le long de x
+    o.scale.set(demiH, 1, demiL);
+    return o;
+  };
+  const grilleMat = new THREE.MeshStandardMaterial({ color: 0x6f7568, roughness: 0.55, metalness: 0.5 });
   for (const s of [1, -1]) {
-    const nacelle = prismeFacettes(THREE, [
-      [4.25, [[0.3, 2.95], [0.72, 2.92], [0.75, 2.5], [0.3, 2.45]]],
-      [5.0, [[0.3, 3.08], [0.8, 3.02], [0.82, 2.42], [0.3, 2.38]]],
-      [7.0, [[0.28, 3.0], [0.76, 2.95], [0.78, 2.45], [0.28, 2.42]]],
-      [7.7, [[0.25, 2.85], [0.62, 2.82], [0.64, 2.55], [0.25, 2.52]]],
-    ].map(([x, p]) => [x, p.map(([z, y]) => [z * s, y])]), { inverser: s > 0, fermer: true });
-    ajouter(nacelle, s > 0 ? brun : vert);
-    // Entrée d'air ronde et grille bombée (filtre à sable)
-    const anneau = ajouter(new THREE.TorusGeometry(0.21, 0.04, 8, 24), sombre, 4.24, 2.72, s * 0.53);
+    const yN = 2.58, zN = s * 0.64, demiH = 0.38, demiL = 0.24;
+    fuseau([[0, 0], [0.8, 0], [0.92, 0.06], [0.99, 0.25], [1, 0.6], [1, 1.9], [0.9, 2.45], [0.7, 2.8], [0.35, 2.95], [0, 3.0]], demiH, demiL, brun, X_MAT - 0.05, yN, zN);
+    // Entrée d'air : cadre sombre et filtre à sable bombé
+    const anneau = ajouter(new THREE.TorusGeometry(1, 0.09, 8, 28), sombre, X_MAT - 0.06, yN, zN);
     anneau.rotation.y = Math.PI / 2;
-    const grille = ajouter(new THREE.SphereGeometry(0.21, 20, 12, 0, TOUR, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x9aa3a6, roughness: 0.35, metalness: 0.6, transparent: true, opacity: 0.8 }), 4.24, 2.72, s * 0.53);
+    anneau.scale.set(demiL * 0.84, demiH * 0.84, 1);
+    const grille = ajouter(new THREE.SphereGeometry(1, 24, 10, 0, TOUR, 0, Math.PI / 2), grilleMat, X_MAT - 0.04, yN, zN);
     grille.rotation.z = Math.PI / 2;
-    grille.scale.y = 0.55;
-    // Échappement : conduit qui se relève vers l'arrière et l'extérieur
-    const carenage = prismeFacettes(THREE, [
-      [7.65, [[0.26, 2.84], [0.62, 2.82], [0.64, 2.56], [0.26, 2.53]]],
-      [8.3, [[0.3, 2.9], [0.6, 2.88], [0.6, 2.72], [0.3, 2.7]]],
-    ].map(([x, p]) => [x, p.map(([z, y]) => [z * s, y])]), { inverser: s > 0, fermer: true });
-    ajouter(carenage, vert);
-    const bouche = ajouter(new THREE.CircleGeometry(1, 20), new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 1 }), 8.31, 2.81, s * 0.45);
-    bouche.scale.set(0.15, 0.08, 1);
-    bouche.rotation.y = Math.PI / 2;
+    grille.scale.set(demiH * 0.8, 0.09, demiL * 0.8);
+    // Carénage d'échappement en goutte d'eau, contre l'axe ; bouche sombre sur le flanc extérieur
+    fuseau([[0, 0], [0.55, 0.05], [0.85, 0.2], [1, 0.45], [0.95, 0.8], [0.65, 1.2], [0.25, 1.5], [0, 1.55]], 0.32, 0.27, vert, X_MAT + 2.5, 2.45, s * 0.3);
+    const bouche = ajouter(new THREE.CircleGeometry(1, 20), new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 1 }), X_MAT + 3.35, 2.55, s * 0.565);
+    bouche.scale.set(0.3, 0.1, 1);
+    bouche.rotation.y = s > 0 ? 0.25 : Math.PI - 0.25;
   }
   // Carénage du mât et de la boîte de transmission
-  ajouter(new THREE.CylinderGeometry(0.26, 0.42, 0.42, 20), vert, X_MAT, 3.15, 0);
+  ajouter(new THREE.CylinderGeometry(0.3, 0.45, 0.3, 20), vert, X_MAT, 3.42, 0);
 
   // ---- Rotor principal : moyeu aplati (vert), quatre pales de 6,5 m à saumon parabolique
   const rotor = new THREE.Group();
@@ -344,7 +344,7 @@ export function construireTigre(THREE) {
     { texte: 'Canon de 30 mm en tourelle', point: p(-0.9, 0.55, 0) },
     { texte: 'Viseur de toit', point: p(3.98, 3.5, 0) },
     { texte: 'Pilote (devant) et tireur (derrière)', point: p(2.6, 2.95, 0.5) },
-    { texte: 'Turbines MTR390', point: p(5.8, 3.15, 0.8) },
+    { texte: 'Turbines MTR390', point: p(6.2, 2.95, 0.9) },
     { texte: 'Roquettes de 68 mm', point: p(4.0, 1.25, 1.3) },
     { texte: 'Missiles', point: p(4.0, 1.25, -1.95) },
     { texte: 'Rotor de queue', point: p(13.3, 3.3, 0.5) },
