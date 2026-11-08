@@ -12,6 +12,11 @@ const MODELES_3D = {
   sna: [['sna', 'SNA Suffren']], pha: [['pha', 'PHA Mistral']], fregates: [['fda', 'Chevalier Paul (FDA)'], ['fremm', 'FREMM']], brf: [['brf', 'Ravitailleur (BRF)']], monge: [['monge', 'Monge']],
 };
 
+/** Variantes par pays (les États-Unis utilisent les trois versions du F-35). */
+const MODELES_3D_PAYS = {
+  etatsUnis: { f35: [['f35a', 'F-35A (Air Force)'], ['f35b', 'F-35B (Marine Corps)'], ['f35c', 'F-35C (Navy)']] },
+};
+
 /** Commandes supplémentaires d'un programme : renouvelables tous les quatre trimestres. */
 function Commandes({ commandes, choisies, basculer }) {
   return (
@@ -196,9 +201,10 @@ export default function Armees({ partie, decisions, majDecisions, allerA }) {
           const choisie = d.programmes?.[p.id];
           const enCours = p.etat && p.etat.option !== 'nominal' && partie.tour < p.etat.fin;
           const optionEnCours = p.options.find((o) => o.id === p.etat?.option);
+          const modeles = MODELES_3D_PAYS[partie.pays]?.[p.id] ?? MODELES_3D[p.id];
           return (
             <article key={p.id} className="carte pile programme">
-              {MODELES_3D[p.id] ? <Modeles3D modeles={MODELES_3D[p.id]} />
+              {modeles ? <Modeles3D modeles={modeles} />
                 : Illustration && <Illustration legende={false} coupe={false} />}
               <div className="ligne espace">
                 <div><h4 style={{ margin: 0 }}>{p.nom}</h4><span className="tres-petit muet">{p.sousTitre}</span></div>

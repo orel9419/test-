@@ -165,7 +165,7 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - **Dissuasion** : SNLE en vue en coupe (16 missiles M51, chaufferie nucléaire), composante aéroportée, et dimension européenne de la dissuasion, **domaine réservé du président** (en tant que Premier ministre, vous ne pouvez pas trancher).
    - **Sécurité et justice** : les réformes régaliennes (police, prisons, narcotrafic, immigration, renseignement) à proposer directement, avec leur effet sur l'opinion et leur risque constitutionnel.
 
-   L'Allemagne (F-35A, bouclier antimissile Arrow 3, brigade en Lituanie) et les États-Unis (B-21, sous-marins Columbia, Golden Dome) ont leurs propres programmes.
+   L'Allemagne (F-35A, bouclier antimissile Arrow 3, brigade en Lituanie) et les États-Unis (F-35 dans ses trois versions, avec sa modélisation 3D ; B-21, sous-marins Columbia, Golden Dome) ont leurs propres programmes.
 9. **Suivre l'opinion et les élections** (onglet « Opinion et élections ») : baromètre de satisfaction sur dix thèmes, intentions de vote, projection « si l'élection avait lieu aujourd'hui », résultats. Les élections intermédiaires (régionales, Länder, européennes, mi-mandat américain) et nationales découlent de vos décisions. Vous pouvez déclencher un **référendum** (France, article 11), une **dissolution** (France) ou une **question de confiance** (Allemagne).
 10. **Préparer les grands rendez-vous** (onglet « Grands rendez-vous ») : COP31, G20 de Miami, G7 2027 et 2029, OTAN à Tirana, JO de Los Angeles 2028, JO d'hiver des Alpes françaises 2030, candidature olympique de Munich (avec référendum local), sommets Choose France. Budget, sécurité et héritage décident du succès.
 

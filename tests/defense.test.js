@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { creerPartie, jouerTour, resumeDefense } from '../src/engine/index.js';
 import { deciderDefense } from '../src/engine/defense.js';
+import { SOURCES_DEFENSE } from '../src/data/defense.js';
 import { depensesTemporairesActives } from '../src/engine/evenements.js';
 
 const lire = (f) => JSON.parse(readFileSync(new URL(`../countries/${f}.json`, import.meta.url), 'utf8'));
@@ -88,6 +89,20 @@ describe('Opérations, exportations et dissuasion', () => {
     delete e.defense;
     const x = jouerTour(e, {}, SANS);
     expect(resumeDefense(x).capacites.rafale).toBeGreaterThan(150);
+  });
+
+  it('les États-Unis ont aussi le F-35, dans ses trois versions, avec des faits sourcés', () => {
+    const f35 = resumeDefense(nouvelle('etatsUnis')).programmes.find((p) => p.id === 'f35');
+    expect(f35.sousTitre).toMatch(/F-35A.*F-35B.*F-35C/);
+    expect(f35.options.map((o) => o.id)).toEqual(['nominal', 'plus', 'soutien', 'reduire']);
+    for (const s of f35.sources) expect(SOURCES_DEFENSE[s]?.url).toMatch(/^https:\/\//);
+    // Commander plus d'avions coûte, réduire les achats fait économiser
+    const plus = nouvelle('etatsUnis');
+    deciderDefense(plus, { programmes: { f35: 'plus' } }, certain);
+    expect(depensesTemporairesActives(plus).defense).toBeGreaterThan(0);
+    const moins = nouvelle('etatsUnis');
+    deciderDefense(moins, { programmes: { f35: 'reduire' } }, certain);
+    expect(depensesTemporairesActives(moins).defense).toBeLessThan(0);
   });
 });
 

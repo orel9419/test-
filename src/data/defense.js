@@ -48,6 +48,10 @@ export const SOURCES_DEFENSE = {
   brfStosskopf: { titre: 'Theatrum Belli : admission au service actif du ravitailleur Jacques Stosskopf (mai 2026)', url: 'https://theatrum-belli.com/admission-au-service-actif-du-batiment-ravitailleur-de-forces-jacques-stosskopf/' },
   brfBertin: { titre: 'Naval News : les Chantiers de l\'Atlantique mettent à l\'eau l\'Émile Bertin, 3e BRF (avril 2026)', url: 'https://www.navalnews.com/naval-news/2026/04/chantiers-de-latlantique-launches-3rd-brf-supply-ship-for-the-french-navy/' },
   monge: { titre: 'Assemblée nationale : question écrite sur le bâtiment d\'essais et de mesures Monge', url: 'https://www.assemblee-nationale.fr/dyn/13/questions/QANR5L13QE49364.pdf' },
+  f35Crs: { titre: 'Congressional Research Service : le programme F-35 (2 456 avions prévus pour les États-Unis : 1 763 F-35A, 353 F-35B, 340 F-35C)', url: 'https://sgp.fas.org/crs/weapons/RL30563.pdf' },
+  f35Gao: { titre: 'GAO : coûts de soutien du F-35 (1 580 Md$ sur la durée de vie, flotte jusqu\'en 2088 ; avril 2024)', url: 'https://www.gao.gov/products/gao-24-106703' },
+  f35Tr3: { titre: 'Defense News : reprise des livraisons de F-35 après un an de pause (mise à niveau TR-3, juillet 2024)', url: 'https://www.defensenews.com/air/2024/07/21/f-35-deliveries-resume-but-upgrade-delays-have-ripple-effects/' },
+  f35Budget2026: { titre: 'Breaking Defense : budget 2026 du Pentagone, 47 F-35 demandés (24 F-35A, 11 F-35B, 12 F-35C)', url: 'https://breakingdefense.com/2025/06/pentagon-procurement-budget-fy26-reconciliation-f35-bombs-f15ex-army-navy-air-force-space-force-trump/' },
 };
 
 /** Délai minimal entre deux commandes supplémentaires du même matériel (trimestres). */
@@ -437,6 +441,23 @@ export const PROGRAMMES_DEFENSE = {
     },
   ],
   etatsUnis: [
+    {
+      id: 'f35', nom: 'F-35 Lightning II', sousTitre: 'Avion de combat furtif des trois armées : F-35A (Air Force), F-35B (Marine Corps), F-35C (Navy)', illustration: 'chasseur', domaine: 'Air et Marine',
+      industriels: ['Lockheed Martin (Fort Worth, Texas)', 'Pratt & Whitney (réacteur F135)', 'Northrop Grumman (fuselage central)', 'BAE Systems (fuselage arrière)'], fleurons: ['lockheed'],
+      faits: [
+        '2 456 avions prévus pour les seules forces américaines : 1 763 F-35A pour l\'Air Force, 353 F-35B pour les Marines, 340 F-35C pour la Navy et les Marines ; plus d\'un millier déjà livrés dans le monde, partenaires compris.',
+        'Le programme d\'armement le plus cher de l\'histoire : environ 442 Md$ d\'acquisition et 1 580 Md$ de soutien sur toute la durée de vie, la flotte devant voler jusqu\'en 2088 (GAO, avril 2024).',
+        'Livraisons suspendues de juillet 2023 à juillet 2024, faute de certification de la mise à niveau TR-3 (base du « Block 4 ») ; 110 avions livrés en 2024.',
+        'Budget 2026 : 47 F-35 demandés (24 A, 11 B, 12 C) au lieu de 68 l\'année précédente, au profit des drones et du futur chasseur F-47 ; la commission de la Chambre a proposé d\'en financer 69.',
+      ],
+      options: [
+        { id: 'nominal', nom: 'Suivre la demande budgétaire', description: 'Environ 47 avions par an ; modernisation Block 4 au rythme actuel.' },
+        { id: 'plus', nom: 'Revenir à environ 70 avions par an', description: 'Environ 2,5 Md$ de plus par an pendant quatre ans (hypothèse de jeu, de l\'ordre de 110 M$ l\'avion avec son soutien initial) : les F-16 et F/A-18 sont remplacés plus vite, la chaîne de Fort Worth tourne à pleine cadence.', cout: 2.5, duree: 16, effets: { influence: 1, relations: { japon: 1, chine: -1 }, fleurons: { lockheed: 4 }, opinion: { entrepreneurs: 0.5 } } },
+        { id: 'soutien', nom: 'Priorité au soutien et au Block 4', description: '1,5 Md$ de plus par an pendant quatre ans (hypothèse de jeu) : pièces, mécaniciens et logiciels, pour relever une disponibilité que la GAO juge insuffisante.', cout: 1.5, duree: 16, effets: { influence: 1, fleurons: { lockheed: 2 } } },
+        { id: 'reduire', nom: 'Réduire les achats au profit des drones et du F-47', description: '2 Md$ d\'économie par an pendant quatre ans (hypothèse de jeu) ; avec moins de volume, les pays partenaires (Royaume-Uni, Japon, Européens) paient leurs avions un peu plus cher.', cout: -2, duree: 16, effets: { influence: -1, relations: { royaumeUni: -1, japon: -1, ue: -1 }, fleurons: { lockheed: -4 } } },
+      ],
+      jalons: [], sources: ['f35Crs', 'f35Gao', 'f35Tr3', 'f35Budget2026'],
+    },
     {
       id: 'b21', nom: 'B-21 Raider', sousTitre: 'Bombardier furtif à long rayon d\'action', illustration: 'bombardier', domaine: 'Air',
       industriels: ['Northrop Grumman'], fleurons: [],
