@@ -189,6 +189,7 @@ const REFORMES_COMMUNES = [
     nom: 'Durée légale du travail et heures supplémentaires',
     categorie: 'travail',
     pays: ['france'],
+    remplace: ['semaine_42h'], // même levier que la semaine de 42 h : l'une remplace l'autre
     resume: 'Travailler plus pour produire plus, mais qui paie les heures en plus, et qui y perd ?',
     pedagogie: 'Selon l\'Insee, les salariés à temps complet travaillent déjà 38,8 h par semaine en moyenne (cadres 42 h, employés 37,3 h). Passer à 39 h change donc surtout le seuil des heures majorées de 25 %. Les salariés à 35 h gagnent à travailler plus si les heures sont payées ; ceux qui faisaient déjà des heures supplémentaires peuvent y perdre (fin de la majoration). Exonérer les heures en plus d\'impôt et de cotisations augmente le pouvoir d\'achat, mais coûte au budget. À 40 h, la France rejoindrait la norme légale de l\'Espagne (où le Parlement a rejeté en septembre 2025 un passage à 37,5 h), de l\'Italie ou du Portugal ; la directive européenne plafonne de son côté la durée à 48 h en moyenne.',
     sources: [
@@ -237,6 +238,34 @@ const REFORMES_COMMUNES = [
     axes: { travail: 1 },
     axesParOption: { heures_sup_libres: { travail: 0.4, fiscal: -0.3 }, '39h_non_payees': { travail: 1, social: -0.7 }, '39h_exo2': { travail: 0.8, fiscal: -0.3 }, '39h_exo4': { travail: 0.8, fiscal: -0.5 }, '40h_normal': { travail: 1.2 }, '40h_exo5': { travail: 1, fiscal: -0.7 }, '40h_non_payees': { travail: 1.3, social: -1 } },
     chiffrage: 'Modèle : 39 h ferait gagner de l\'ordre de 0,5 à 0,8 % de PIB potentiel à terme, selon l\'adhésion. Les exonérations coûtent environ 1 à 3 Md€ par an. Les heures supplémentaires défiscalisées actuelles coûtent environ 2 Md€ par an (franceinfo). 40 h : un peu plus d\'heures que 39 h pour les salariés à 35-37 h, rien ne change pour les cadres déjà à 42 h ; 5 h exonérées coûtent de l\'ordre de 6 à 7 Md€ par an (calcul du modèle). Paradoxe instructif : 40 h payées 35 baissent le coût du travail et le chômage, mais améliorent moins le déficit que 40 h payées 40, car la masse salariale (donc les cotisations et l\'impôt) baisse.',
+  },
+  {
+    id: 'semaine_42h',
+    nom: 'Semaine de 42 h : 5 h exonérées, 2 h pour rembourser la dette',
+    categorie: 'travail',
+    pays: ['france'],
+    vehicule: 'loi',
+    remplace: ['temps_travail'], // même levier que la durée légale : l'une remplace l'autre
+    resume: 'Porter la durée légale à 42 h : de la 36e à la 40e heure, payées et exonérées d\'impôt ; les 41e et 42e heures, travaillées sans hausse de salaire, servent uniquement à rembourser la dette.',
+    pedagogie: 'Le mécanisme des deux dernières heures reprend celui de la journée de solidarité (2004) : une journée travaillée sans salaire en plus, contre laquelle l\'employeur verse une contribution qui finance la perte d\'autonomie, environ 3,4 Md€ par an. Ici, ce serait l\'équivalent de deux heures par semaine, versées à une caisse d\'amortissement de la dette, comme la Cades qui rembourse depuis 1996 la dette de la Sécurité sociale. Les cinq premières heures, payées et exonérées d\'impôt sur le revenu et de cotisations salariales (comme les heures supplémentaires aujourd\'hui), rendent la mesure acceptable pour les salariés, mais coûtent au budget. Seuls les salariés à temps complet sous les 42 h sont concernés : les cadres au forfait y sont déjà en moyenne (Insee). La directive européenne sur le temps de travail plafonne la durée à 48 h en moyenne : 42 h y est conforme.',
+    sources: [
+      { texte: 'Insee, durée du travail des salariés à temps complet (2024)', url: 'https://www.insee.fr/fr/statistiques/8733071' },
+      { texte: 'CNSA : la journée de solidarité rapporte environ 3,4 Md€ par an', url: 'https://www.cnsa.fr/sites/default/files/2025-06/CP_CNSACPJourneedeesolidarite03062025.pdf' },
+      { texte: 'Directive européenne 2003/88 sur le temps de travail (48 h au plus en moyenne)', url: 'https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32003L0088' },
+    ],
+    options: [
+      { id: '42h', nom: '42 h : 5 h payées et exonérées d\'impôt, 2 h versées au désendettement', description: 'De la 36e à la 40e heure : payées au taux normal, sans impôt sur le revenu ni cotisations salariales. 41e et 42e heures : travaillées sans hausse de salaire ; l\'employeur en verse la valeur à une caisse d\'amortissement de la dette, qui ne finance aucune autre dépense.' },
+    ],
+    delai: 2,
+    appliquer(e) {
+      Object.assign(e.travail, { trimestreDebut: e.tour, heuresSupLibres: false, dureeReference: 42, traitement: 'dette', heuresExonerees: 5, cumulDette: 0 });
+    },
+    annuler(e) { Object.assign(e.travail, { traitement: null, heuresSupLibres: false, dureeReference: 35, trimestreDebut: null }); },
+    effets: () => ({}), // calculés par le sous-modèle du temps de travail
+    reaction: () => ({ chocs: { salaries: -8, fonctionnaires: -4, jeunes: -3, entrepreneurs: 5, retraites: 1 }, grief: { salaries: 12, jeunes: 3 }, credibilite: 0.1, instabilite: 0.03 }),
+    axes: { travail: 1.3, rigueur: 0.6, fiscal: -0.4 },
+    positionsGroupes: { RN: -0.4, UDR: 0.5, DR: 0.2, EPR: -0.1, HOR: 0.2, DEM: -0.2, SOC: -0.9, LIOT: -0.3, LFI: -1, GDR: -1, ECOS: -0.9 },
+    chiffrage: 'Calcul du modèle, à pleine montée en charge (six trimestres de négociations de branche) : environ 7 salariés sur 10 sous les 42 h font les heures ; les heures exonérées coûtent de l\'ordre de 6 à 7 Md€ par an, la contribution de désendettement rapporte environ 12 Md€ par an (près de quatre journées de solidarité), soit un gain net d\'environ 5 Md€ par an, auquel s\'ajoutent l\'impôt et les cotisations sur la production en plus. Les heures en plus relèvent aussi le PIB potentiel (environ 2 %, avec un rendement des heures réduit de moitié pour la fatigue et l\'organisation).',
   },
   {
     id: 'fonction_publique_temps',

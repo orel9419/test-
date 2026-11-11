@@ -20,6 +20,23 @@ const entre = (e, debut, fin) => borne((e.trimestre.annee + (e.trimestre.t - 1) 
 /** Années écoulées depuis l'entrée en vigueur. */
 const ans = (age) => Math.max(0, age) / 4;
 
+/** Diplomatie : recul (ou progrès) des relations selon le choix sur l'OTAN ; la moitié du recul est durable. */
+const DIPLOMATIE_OTAN = {
+  rester: { etatsUnis: 4, pologne: 4, ue: 2, ukraine: 2 },
+  commandement: { etatsUnis: -10, pologne: -12, allemagne: -6, royaumeUni: -6, ue: -5, ukraine: -6, norvege: -5 },
+  alliance: { etatsUnis: -25, pologne: -30, allemagne: -18, royaumeUni: -18, ue: -12, ukraine: -20, norvege: -15, italie: -8, espagne: -8, chine: 5 },
+};
+const SOURCES_OTAN = [
+  { texte: 'OTAN : le traité de l\'Atlantique Nord (article 5 : défense mutuelle ; article 13 : retrait un an après notification aux États-Unis)', url: 'https://www.nato.int/cps/fr/natohq/official_texts_17120.htm' },
+  { texte: 'OTAN : le financement de l\'Alliance (budgets civil, militaire et d\'investissement communs)', url: 'https://www.nato.int/cps/en/natohq/topics_67655.htm' },
+  { texte: 'Élysée : discours du 11 mars 2009 sur le retour de la France dans le commandement intégré', url: 'https://www.elysee.fr/nicolas-sarkozy/2009/03/11/declaration-de-m-nicolas-sarkozy-president-de-la-republique-sur-le-retour-de-la-france-dans-le-commandement-integre-de-lotan-et-la-defense-europeenne-a-paris-le-11-mars-2009' },
+  { texte: 'Assemblée nationale : audition de 2009 (environ 900 militaires français dans les structures de l\'OTAN après le retour, contre une centaine)', url: 'https://www.assemblee-nationale.fr/13/pdf/cr-cdef/08-09/c0809035.pdf' },
+];
+const SOURCES_JOBS_ETUDIANTS = [
+  { texte: 'impots.gouv.fr : salaires des étudiants exonérés dans la limite de 3 SMIC mensuels (5 405 € pour les revenus de 2025), jusqu\'à 25 ans', url: 'https://www.impots.gouv.fr/particulier/questions/mon-enfant-est-etudiant-les-revenus-quil-percus-sont-ils-imposables' },
+  { texte: 'Observatoire national de la vie étudiante : 44 % des étudiants ont une activité rémunérée pendant l\'année (enquête 2023)', url: 'https://www.ove-national.education.fr/wp-content/uploads/2025/12/Fiche-CDV2023-Activite-remuneree.pdf' },
+];
+
 const SOURCES_EPR = [
   { texte: 'World Nuclear News : EDF estime le programme EPR2 à 72,8 Md€ (décembre 2025)', url: 'https://wnn.world-nuclear.org/articles/edf-estimates-epr2-programme-costs-at-eur728-billion' },
   { texte: 'Banque des territoires : première mise en service des EPR2 « d\'ici 2038 »', url: 'https://www.banquedesterritoires.fr/nucleaire-lelysee-evoque-une-premiere-mise-en-service-des-reacteurs-epr2-dici-2038' },
@@ -260,6 +277,60 @@ export const REFORMES_CONCRETES = [
     axesParOption: { otan: { securite: 1, rigueur: -0.5 } },
     positionsGroupes: { RN: 0.4, UDR: 0.4, DR: 0.6, EPR: 0.5, HOR: 0.6, DEM: 0.4, SOC: 0.2, LIOT: 0.2, LFI: -0.6, GDR: -0.5, ECOS: -0.2 },
     chiffrage: 'Calcul du jeu : écart entre la part visée et la part de départ, multiplié par le PIB. 3,5 % du PIB en 2035 représente plusieurs dizaines de milliards d\'euros de plus par an.',
+  },
+  {
+    id: 'otan',
+    nom: 'La France dans l\'OTAN',
+    categorie: 'defense', pays: FR, vehicule: 'loi',
+    resume: 'Rester dans l\'Alliance atlantique et son commandement militaire intégré, quitter seulement le commandement intégré comme en 1966, ou quitter l\'Alliance.',
+    pedagogie: 'L\'OTAN, ce sont deux choses : une alliance, le traité de Washington de 1949 dont l\'article 5 engage chaque membre à assister celui qui est attaqué, et une organisation militaire intégrée (états-majors communs, plans de défense, exercices). En 1966, le général de Gaulle a retiré la France du commandement intégré sans quitter l\'Alliance ; Nicolas Sarkozy l\'y a fait revenir en 2009, sauf au groupe des plans nucléaires : la dissuasion française reste strictement nationale. Le retour devait porter à environ 900 le nombre de militaires français dans les états-majors de l\'OTAN, contre une centaine auparavant. Quitter l\'Alliance se fait par une notification aux États-Unis, effective un an plus tard (article 13) : la France perdrait la garantie de l\'article 5 et compterait sur ses propres forces, sa dissuasion et la clause d\'assistance mutuelle entre Européens (article 42.7 du traité sur l\'Union européenne). Les budgets communs de l\'OTAN représentent environ 4,5 Md€ par an, dont la France paie de l\'ordre de 10 %. En pratique, ces choix relèvent du président de la République ; en 2009, le gouvernement avait engagé sa responsabilité devant l\'Assemblée (article 49-1).',
+    sources: SOURCES_OTAN,
+    pour: ['Indépendance de décision, comme entre 1966 et 2009', 'Ne pas être entraîné dans les choix américains', 'Petite économie sur les contributions communes'],
+    contre: ['Perte de la garantie de défense mutuelle (si l\'on quitte l\'Alliance)', 'Défiance des alliés européens de l\'Est, en pleine menace russe', 'Moins de poids dans les décisions et les commandements alliés', 'Capacités jusque-là partagées à financer seul (renseignement, avions radar, défense antimissile)'],
+    exemples: ['France, 1966 : retrait du commandement intégré, départ des bases américaines en 1967', 'Finlande et Suède : adhésion en 2023 et 2024 après l\'invasion de l\'Ukraine'],
+    options: [
+      { id: 'rester', nom: 'Rester dans l\'OTAN et son commandement intégré, en y renforçant le pilier européen' },
+      { id: 'commandement', nom: 'Quitter le commandement militaire intégré, rester dans l\'Alliance (comme en 1966)' },
+      { id: 'alliance', nom: 'Quitter l\'Alliance atlantique (notification aux États-Unis, effective un an plus tard)' },
+    ],
+    delai: 4,
+    appliquer(e, o) {
+      const i = e.international;
+      if (!i) return;
+      const durable = {};
+      for (const [p, v] of Object.entries(DIPLOMATIE_OTAN[o] ?? {})) {
+        if (i.relations[p] === undefined) continue;
+        i.relations[p] = borne(i.relations[p] + v, -100, 100);
+        durable[p] = v / 2;
+        i.relationsInitiales[p] = (i.relationsInitiales[p] ?? 0) + durable[p];
+      }
+      i.decalageOtan = durable;
+    },
+    annuler(e) {
+      const i = e.international;
+      if (!i?.decalageOtan) return;
+      for (const [p, v] of Object.entries(i.decalageOtan)) i.relationsInitiales[p] -= v;
+      i.decalageOtan = null;
+    },
+    effets(e, o, age) {
+      if (o === 'rester') return { influence: 1 };
+      if (o === 'commandement') return { depenses: { defense: -0.3 * prix(e) }, influence: -2, souverainete: 1.5 };
+      // Hors de l'Alliance : plus de contributions, mais il faut financer seul ce qui était partagé (environ 0,1 point de PIB)
+      return { depenses: { defense: -0.45 * prix(e) + 0.001 * e.macro.pibNominal * rampe(age, 8) }, influence: -5, souverainete: 2.5 };
+    },
+    reaction: (e, o) => ({
+      rester: { chocs: { retraites: 1, entrepreneurs: 1 }, credibilite: 0.01 },
+      commandement: { chocs: { retraites: -2, entrepreneurs: -2, jeunes: 1 }, grief: { retraites: 2 }, credibilite: -0.02, instabilite: 0.02 },
+      alliance: { chocs: { retraites: -5, entrepreneurs: -4, salaries: -1, jeunes: 1 }, grief: { retraites: 5, entrepreneurs: 3 }, credibilite: -0.06, instabilite: 0.05 },
+    }[o]),
+    axes: { securite: 0.2 },
+    axesParOption: { rester: { europe: 0.4, securite: 0.4 }, commandement: { souverainete: 0.6, europe: -0.2 }, alliance: { souverainete: 1, europe: -0.5, securite: -0.4 } },
+    positionsGroupesParOption: {
+      rester: { RN: 0.2, UDR: 0.3, DR: 0.8, EPR: 0.9, HOR: 0.9, DEM: 0.9, SOC: 0.6, LIOT: 0.5, LFI: -0.8, GDR: -0.6, ECOS: 0.3 },
+      commandement: { RN: 0.4, UDR: 0.2, DR: -0.5, EPR: -0.9, HOR: -0.9, DEM: -0.8, SOC: -0.6, LIOT: -0.3, LFI: 0.9, GDR: 0.8, ECOS: -0.2 },
+      alliance: { RN: -0.5, UDR: -0.6, DR: -0.9, EPR: -1, HOR: -1, DEM: -1, SOC: -0.9, LIOT: -0.7, LFI: 0.8, GDR: 0.7, ECOS: -0.6 },
+    },
+    chiffrage: 'Hypothèses de jeu : quitter le commandement intégré économise environ 0,3 Md€ par an (contributions aux budgets militaires communs) ; quitter l\'Alliance économise environ 0,45 Md€ de contributions, mais coûte environ 0,1 point de PIB par an (près de 3 Md€) pour financer seul le renseignement, les avions radar, le ravitaillement et la défense antimissile jusque-là partagés. Relations : recul net avec les États-Unis, la Pologne, l\'Allemagne, le Royaume-Uni et l\'Ukraine, dont la moitié est durable.',
   },
   {
     id: 'porte_avions',
@@ -644,5 +715,36 @@ export const REFORMES_CONCRETES = [
     reaction: (e, o) => (o === 'abandonner' ? { chocs: { fonctionnaires: 2, retraites: -1 } } : { chocs: { fonctionnaires: -2, retraites: 1 } }),
     axes: { social: -0.1 },
     chiffrage: 'Hypothèses de jeu : 0,5 Md€ par an ; effet sur la croissance potentielle seulement après une dizaine d\'années.',
+  },
+  {
+    id: 'jobs_etudiants',
+    nom: 'Exonérer d\'impôt les jobs étudiants',
+    categorie: 'fiscalite', pays: FR, vehicule: 'PLF',
+    resume: 'Le salaire d\'un étudiant de 25 ans au plus n\'est aujourd\'hui exonéré d\'impôt sur le revenu que jusqu\'à trois SMIC mensuels par an (5 405 € pour les revenus de 2025). Supprimer ce plafond, la limite d\'âge, ou aussi les cotisations salariales.',
+    pedagogie: 'L\'exonération existe déjà en grande partie : un étudiant qui gagne moins de 5 405 € par an ne paie pas d\'impôt sur ce salaire. Elle compte surtout pour les familles qui rattachent leur enfant à leur foyer fiscal, car son salaire s\'ajoute sinon à leurs revenus imposables. Supprimer le plafond profite aux étudiants qui travaillent beaucoup ; supprimer la limite d\'âge, aux étudiants plus âgés (reprise d\'études, doctorants). Exonérer aussi les cotisations salariales augmenterait le salaire net d\'environ un quart, mais réduirait les droits à la retraite si l\'État ne les compense pas. Selon l\'Observatoire national de la vie étudiante, 44 % des étudiants ont une activité rémunérée pendant l\'année ; un emploi très prenant fait concurrence aux études, alors qu\'un petit job peut aider à construire un projet professionnel.',
+    sources: SOURCES_JOBS_ETUDIANTS,
+    pour: ['Récompenser le travail des étudiants', 'Plus de pouvoir d\'achat pour les étudiants et leurs familles', 'Main-d\'œuvre pour la restauration, le commerce et l\'animation'],
+    contre: ['Mesure en partie déjà en vigueur', 'Peut inciter à trop travailler pendant les études', 'Sans cotisations, moins de droits à la retraite'],
+    options: [
+      { id: 'plafond', nom: 'Supprimer le plafond de trois SMIC (étudiants de 25 ans au plus)' },
+      { id: 'tous', nom: 'Sans plafond ni limite d\'âge : tous les étudiants' },
+      { id: 'cotisations', nom: 'Sans plafond ni limite d\'âge, et sans cotisations salariales jusqu\'à trois SMIC' },
+    ],
+    delai: 2,
+    effets(e, o, age) {
+      const k = rampe(age, 2) * prix(e);
+      if (o === 'plafond') return { recettes: { impotRevenu: -0.15 * k } };
+      if (o === 'tous') return { recettes: { impotRevenu: -0.35 * k } };
+      return { recettes: { impotRevenu: -0.35 * k, cotisations: -1.4 * k }, offreTravail: 0.03 * rampe(age, 4) };
+    },
+    reaction: (e, o) => ({
+      plafond: { chocs: { jeunes: 3, salaries: 0.5 } },
+      tous: { chocs: { jeunes: 4, salaries: 0.5 } },
+      cotisations: { chocs: { jeunes: 6, salaries: 1, entrepreneurs: 1 }, credibilite: -0.01 },
+    }[o]),
+    axes: { fiscal: -0.3, social: 0.2, travail: 0.2 },
+    positionsGroupes: { RN: 0.7, UDR: 0.6, DR: 0.6, EPR: 0.5, HOR: 0.5, DEM: 0.5, SOC: 0.3, LIOT: 0.5, LFI: 0.2, GDR: 0.2, ECOS: 0.2 },
+    positionsGroupesParOption: { cotisations: { SOC: 0, LFI: -0.3, GDR: -0.3, ECOS: -0.1 } },
+    chiffrage: 'Hypothèses de jeu : environ 1,3 million d\'étudiants travaillent (44 % d\'environ 3 millions). Supprimer le plafond : environ 0,15 Md€ par an ; sans limite d\'âge : environ 0,35 Md€ ; sans cotisations salariales en plus (environ 22 % d\'un salaire moyen de 5 000 € par an) : environ 1,75 Md€ par an au total.',
   },
 ];

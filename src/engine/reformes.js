@@ -88,7 +88,8 @@ export function bilanReformes(e) {
       emissions: (r.emissionsEvitees ?? 0) * k, influence: (r.influence ?? 0) * k, souverainete: (r.souverainete ?? 0) * k,
     };
     // Réformes pilotées par un sous-modèle : temps de travail et âge de départ
-    if (a.id === 'temps_travail' && a.appliquee) { ligne.emploi = e.travail.offreTravail * k; ligne.chomage = e.travail.chomageStructurel * k; ligne.recettes = -e.travail.coutBudgetaire; }
+    if ((a.id === 'temps_travail' || a.id === 'semaine_42h') && a.appliquee) { ligne.emploi = e.travail.offreTravail * k; ligne.chomage = e.travail.chomageStructurel * k; ligne.recettes = -e.travail.coutBudgetaire; }
+    if (a.id === 'semaine_42h' && a.appliquee) ligne.note = `caisse d'amortissement de la dette : ${Math.round(e.travail.contributionDette ?? 0)} Md€ par an, ${Math.round(e.travail.cumulDette ?? 0)} Md€ versés depuis l'entrée en vigueur`;
     if (a.id === 'retraites_age') ligne.note = `âge légal ${e.retraites.ageLegal.toFixed(2).replace('.', ',')} ans, cible ${String(e.retraites.ageCible).replace('.', ',')}`;
     if (a.pilotage?.cible !== undefined) ligne.note = `dépense publique ${a.pilotage.ratio.toFixed(1).replace('.', ',')} % du PIB, trajectoire ${a.pilotage.cible.toFixed(1).replace('.', ',')} %`;
     if (a.pilotage?.capital !== undefined) ligne.note = `fonds souverain : ${Math.round(a.pilotage.capital)} Md€ investis (${Math.round(a.pilotage.flux)} Md€ par an)`;

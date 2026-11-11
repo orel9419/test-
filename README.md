@@ -106,11 +106,13 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
 3. **Fixer les impôts** (TVA, impôt sur le revenu, impôt sur les sociétés, CSG, cotisations, taxes sur l'énergie, successions), la part de dette émise à court terme, et annoncer une **trajectoire de déficit** (la tenir renforce la crédibilité, la manquer coûte cher).
 4. **Proposer des réformes**, par exemple :
    - retraites : âge (de 62 à 68 ans, à deux rythmes possibles pour 68 ans), indexation, compensations sur la pénibilité, le minimum de pension, les carrières longues ;
-   - temps de travail : 35, 37, 39 ou 40 h, heures payées, exonérées ou non payées ;
+   - temps de travail : 35, 37, 39 ou 40 h, heures payées, exonérées ou non payées ; ou **semaine de 42 h**, dont 5 h payées et exonérées d'impôt et 2 h dont la valeur est versée par l'employeur à une caisse d'amortissement de la dette (sur le modèle de la journée de solidarité) ;
+   - **jobs étudiants** exonérés d'impôt sans plafond, sans limite d'âge, ou aussi sans cotisations salariales ;
+   - **la France dans l'OTAN** : y rester en renforçant le pilier européen, quitter le commandement intégré (comme en 1966) ou quitter l'Alliance (préavis d'un an), avec leurs effets sur les relations avec les alliés, l'influence et le budget de la défense ;
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **125 réformes** (dont 34 d'inspiration libérale et 30 d'inspiration sociale, filtrables) couvrent 20 thèmes : retraites, capitalisation, travail, fonction publique, baisse des dépenses, règles budgétaires, fiscalité, santé, énergie, éducation, sécurité, défense, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   En France, **154 réformes** (dont 42 d'inspiration libérale et 38 d'inspiration sociale, filtrables) couvrent 20 thèmes : retraites, capitalisation, travail, fonction publique, baisse des dépenses, règles budgétaires, fiscalité, santé, énergie, éducation, sécurité, défense, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.

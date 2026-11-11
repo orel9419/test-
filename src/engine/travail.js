@@ -14,6 +14,10 @@
  *     'exonere'  payées au taux normal, exonérées d'impôt sur le revenu et
  *                de cotisations salariales (sur un nombre d'heures choisi) ;
  *     'non_paye' sans hausse de salaire (travailler plus pour le même salaire) ;
+ *     'dette'    jusqu'au seuil de 40 h, payées et exonérées (comme 'exonere') ;
+ *                au-delà (41e et 42e heures), travaillées sans hausse de salaire,
+ *                l'employeur versant leur valeur à une caisse d'amortissement
+ *                de la dette (sur le modèle de la journée de solidarité) ;
  * - et/ou la défiscalisation totale des heures supplémentaires.
  *
  * Distribution des salariés à temps complet (hypothèse calée sur 38,8 h) :
@@ -39,7 +43,9 @@ const MASSE_SALARIALE_TC = { france: 600, allemagne: 950 };
 /** Taux de prélèvement salarial moyen évité par l'exonération (cotisations salariales + impôt sur le revenu). */
 const TAUX_PRELEVEMENT_SALARIE = { france: 0.28, allemagne: 0.35 };
 /** Part des salariés concernés qui font effectivement les heures en plus, selon le traitement. */
-const ADHESION = { normal: 0.6, exonere: 0.7, non_paye: 0.9 };
+const ADHESION = { normal: 0.6, exonere: 0.7, non_paye: 0.9, dette: 0.7 };
+/** Traitement 'dette' : au-delà de ce seuil, les heures sont versées au désendettement. */
+const SEUIL_DETTE = 40;
 /** Rendement des heures supplémentaires sur la production (fatigue, organisation) : hypothèse. */
 const EFFICACITE_HEURES = 0.5;
 /** Effet du coût horaire du travail sur le chômage structurel (pt par % de coût). */
@@ -53,6 +59,8 @@ export function etatTravailInitial(p, pays) {
     traitement: null,
     heuresExonerees: 0,
     heuresSupLibres: false,
+    contributionDette: 0,   // Md€ par an versés à la caisse d'amortissement (traitement 'dette')
+    cumulDette: 0,          // Md€ versés depuis l'entrée en vigueur
     trimestreDebut: null,
     rampe: 0,
     deltaHeures: 0,
@@ -69,12 +77,26 @@ function effetCategorie(c, L, traitement, adhesion, heuresExonerees) {
   const dh = nouvellesHeures - c.heures;
   // Heures supplémentaires actuelles comprises entre 35 h et L : elles deviennent des heures « normales »
   const converties = Math.min(c.heuresSup, Math.max(0, L - 35));
+  if (traitement === 'dette') {
+    // Part « adhesion » des salariés qui font toutes les heures : jusqu'au seuil, payées (et exonérées
+    // dans la limite choisie) ; au-delà, versées à la caisse d'amortissement de la dette
+    const vise = Math.max(0, L - c.heures);
+    const versDette = Math.max(0, L - Math.max(c.heures, SEUIL_DETTE));
+    const payees = vise - versDette;
+    return {
+      dh, converties,
+      dPaie: adhesion * payees - 0.25 * converties,
+      heuresExo: adhesion * Math.min(payees, heuresExonerees),
+      heuresDette: adhesion * versDette,
+      paieInitiale: Math.min(c.heures, 35) + 1.25 * c.heuresSup + Math.max(0, c.heures - 35 - c.heuresSup),
+    };
+  }
   let dPaie; // variation de la paie brute, en heures payées au taux normal
   if (traitement === 'non_paye') dPaie = -1.25 * converties;
   else dPaie = dh - 0.25 * converties;
   // Heures exonérées (traitement 'exonere') : seules les nouvelles heures entre 35 h et L le sont, dans la limite choisie
   const heuresExo = traitement === 'exonere' ? Math.min(dh, heuresExonerees) : 0;
-  return { dh, dPaie, converties, heuresExo, paieInitiale: Math.min(c.heures, 35) + 1.25 * c.heuresSup + Math.max(0, c.heures - 35 - c.heuresSup) };
+  return { dh, dPaie, converties, heuresExo, heuresDette: 0, paieInitiale: Math.min(c.heures, 35) + 1.25 * c.heuresSup + Math.max(0, c.heures - 35 - c.heuresSup) };
 }
 
 /**
@@ -85,7 +107,7 @@ export function majTempsTravail(e) {
   const t = e.travail;
   const dist = DISTRIBUTION[t.pays] ?? DISTRIBUTION.france;
   const neutre = { offreTravail: 0, variationMasseSalariale: 0, recettes: 0, chomageStructurel: 0 };
-  if (!t.traitement && !t.heuresSupLibres) { Object.assign(t, { deltaHeures: 0, ...neutre, coutBudgetaire: 0 }); return neutre; }
+  if (!t.traitement && !t.heuresSupLibres) { Object.assign(t, { deltaHeures: 0, ...neutre, coutBudgetaire: 0, contributionDette: 0 }); return neutre; }
 
   const age = t.trimestreDebut !== null ? e.tour - t.trimestreDebut : 0;
   t.rampe = Math.min(1, Math.max(0, age / 6)); // montée en charge sur 6 trimestres (négociations de branche)
@@ -93,7 +115,7 @@ export function majTempsTravail(e) {
   const traitement = t.traitement ?? 'normal';
   const adhesion = ADHESION[traitement];
 
-  let heures0 = 0, dh = 0, paie0 = 0, dPaie = 0, heuresExo = 0, converties = 0;
+  let heures0 = 0, dh = 0, paie0 = 0, dPaie = 0, heuresExo = 0, converties = 0, heuresDette = 0;
   for (const c of dist) {
     heures0 += c.part * c.heures;
     paie0 += c.part * effetCategorie(c, 35, 'normal', 0, 0).paieInitiale;
@@ -102,13 +124,14 @@ export function majTempsTravail(e) {
       dh += c.part * r.dh;
       dPaie += c.part * r.dPaie;
       heuresExo += c.part * r.heuresExo;
+      heuresDette += c.part * r.heuresDette;
       converties += c.part * r.converties;
     }
   }
   // Défiscalisation totale des heures supplémentaires : incitation modeste (+0,3 h pour les non-cadres)
   if (t.heuresSupLibres) { dh += 0.55 * 0.3; dPaie += 0.55 * 0.3 * 1.25; }
 
-  dh *= t.rampe; dPaie *= t.rampe; heuresExo *= t.rampe; converties *= t.rampe;
+  dh *= t.rampe; dPaie *= t.rampe; heuresExo *= t.rampe; converties *= t.rampe; heuresDette *= t.rampe;
   const masse = MASSE_SALARIALE_TC[t.pays] ?? 600;
   const taux = TAUX_PRELEVEMENT_SALARIE[t.pays] ?? 0.28;
 
@@ -118,14 +141,19 @@ export function majTempsTravail(e) {
   // Rapportée à toute la masse salariale : les temps complets du privé en représentent environ 55 % (hypothèse)
   t.variationMasseSalariale = dPaie / paie0 * 100 * 0.55;
 
-  // Coût horaire du travail pour les employeurs : variation de la paie moins variation des heures
-  const variationCoutHoraire = dPaie / paie0 * 100 - variationHeures;
+  // Coût horaire du travail pour les employeurs : variation de la paie (et des versements à la caisse
+  // d'amortissement, qui sont aussi à leur charge) moins variation des heures
+  const variationCoutHoraire = (dPaie + heuresDette) / paie0 * 100 - variationHeures;
   t.chomageStructurel = ELASTICITE_CHOMAGE_COUT * variationCoutHoraire;
 
   // Budget : coût des exonérations, gain de la fin d'exonération sur les heures sup « converties » (traitement normal)
   let recettes = 0;
   const valeurHeure = masse / paie0; // Md€/an par heure hebdomadaire payée en moyenne
-  if (traitement === 'exonere') recettes -= heuresExo * valeurHeure * taux;
+  if (traitement === 'exonere' || traitement === 'dette') recettes -= heuresExo * valeurHeure * taux;
+  // Heures versées au désendettement : l'employeur en verse la valeur (salaire brut) à la caisse d'amortissement
+  t.contributionDette = traitement === 'dette' ? heuresDette * valeurHeure : 0;
+  recettes += t.contributionDette;
+  t.cumulDette = (t.cumulDette ?? 0) + t.contributionDette / 4;
   if (t.traitement === 'normal') {
     const partHeuresSupConverties = converties / dist.reduce((s, c) => s + c.part * c.heuresSup, 0);
     recettes += (e.statique.travail.coutHeuresSupDefisc ?? 0) * Math.min(1, partHeuresSupConverties) * 0.8;
@@ -156,6 +184,12 @@ export function effetMenageTempsTravail(e, menage) {
     const dh = L - menage.heures;
     if (traitement === 'non_paye') {
       morceaux.push(`${dh.toFixed(1)} h de plus par semaine sans hausse de salaire`);
+    } else if (traitement === 'dette') {
+      const versDette = Math.max(0, L - Math.max(menage.heures, SEUIL_DETTE));
+      const payees = dh - versDette;
+      const exo = Math.min(payees, t.heuresExonerees);
+      montant += (payees - exo) * brutHoraire * semaines * netSurBrut + exo * brutHoraire * semaines;
+      morceaux.push(`+${dh.toFixed(1)} h/semaine, dont ${payees.toFixed(1)} h payées${exo ? ` (${exo.toFixed(1)} h exonérées)` : ''}${versDette ? ` et ${versDette.toFixed(1)} h versées au désendettement` : ''}`);
     } else {
       const exo = traitement === 'exonere' ? Math.min(dh, t.heuresExonerees) : 0;
       const gainNormal = (dh - exo) * brutHoraire * semaines * netSurBrut;
