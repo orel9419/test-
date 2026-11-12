@@ -116,7 +116,10 @@ export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
         {apercu && <span className="muet"> Vos décisions en préparation : déficit à un an {signe(-apercu.unAn.deficitPct, 2)} pt de PIB, chômage {signe(apercu.unAn.chomage, 2)} pt.</span>}
       </div>
 
-      <div className="grille-2">
+      {h.length < 2 && (
+        <p className="petit muet carte" style={{ margin: 0 }}>Les courbes (dette, déficit, conjoncture, taux, popularité par groupe, émissions) apparaîtront ici après votre premier trimestre.</p>
+      )}
+      {h.length >= 2 && <div className="grille-2">
         <div className="carte"><GraphiqueLignes titre="Dette publique" unite="% du PIB" series={[{ id: 'dette', nom: 'Dette', valeurs: serie('dette') }]} etiquettes={etiquettes} /></div>
         <div className="carte"><GraphiqueLignes titre="Déficit public" unite="% du PIB" series={[{ id: 'deficit', nom: 'Déficit', valeurs: serie('deficit') }]} etiquettes={etiquettes} reference={partie.statique.regles.ue ? { valeur: 3, libelle: 'Seuil européen : 3 %' } : undefined} /></div>
         <div className="carte"><GraphiqueLignes titre="Conjoncture" unite="%" series={[
@@ -130,7 +133,7 @@ export default function TableauDeBord({ partie, apercu, allerA, conseils }) {
         ]} etiquettes={etiquettes} /></div>
         <div className="carte"><GraphiqueLignes titre="Popularité par groupe" unite="%" decimales={0} series={Object.keys(GROUPES).map((g) => ({ id: g, nom: GROUPES[g].nom, valeurs: h.map((x) => x.groupes[g]) }))} etiquettes={etiquettes} /></div>
         <div className="carte"><GraphiqueLignes titre="Émissions de gaz à effet de serre" unite="MtCO2e" decimales={0} series={[{ id: 'em', nom: 'Émissions', valeurs: serie('emissions') }]} etiquettes={etiquettes} reference={partie.climat.objectif2030 ? { valeur: partie.climat.objectif2030, libelle: `Objectif 2030 : ${partie.climat.objectif2030} Mt` } : undefined} /></div>
-      </div>
+      </div>}
     </div>
   );
 }

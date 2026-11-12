@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { reformesDisponibles, chiffrerReforme, voterTexte, effetOpinionReforme, risqueConstitutionnel } from '../../engine/index.js';
+import { reformesDisponibles, chiffrerReforme, voterTexte, effetOpinionReforme, risqueConstitutionnel, suggestionsReformes } from '../../engine/index.js';
 import { GROUPES } from '../../model/ministeres.js';
 import Apercu from './Apercu.jsx';
 import Capitalisation from './Capitalisation.jsx';
@@ -78,6 +78,16 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
   const proposees = decisions.reformes;
   const fr = partie.pays === 'france';
   const us = partie.pays === 'etatsUnis';
+  // « Pour commencer » : trois pistes selon la situation (calcul léger, une fois par trimestre)
+  const suggestions = useMemo(() => { try { return suggestionsReformes(partie); } catch { return []; } }, [partie]);
+  // Thèmes dépliés (vue « Tous » sans recherche : chaque thème est replié, sauf ceux où une réforme est proposée)
+  const [ouverts, setOuverts] = useState(() => new Set(decisions.reformes.map((p) => liste.find((x) => x.id === p.id)?.categorie).filter(Boolean)));
+  const basculer = (cat, ouvert) => setOuverts((o) => { const n = new Set(o); if (ouvert) n.add(cat); else n.delete(cat); return n; });
+  /** Déplie le thème d'une réforme et fait défiler jusqu'à sa carte. */
+  const montrer = (r) => {
+    setOuverts((o) => new Set([...o, r.categorie]));
+    setTimeout(() => { try { document.getElementById(`reforme-${r.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { /* sans défilement */ } }, 60);
+  };
 
   const proposer = (r) => {
     const option = options[r.id] ?? r.options[0].id;
@@ -108,6 +118,10 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
   const parTheme = {};
   for (const r of visibles) (parTheme[r.categorie] ??= []).push(r);
   const pt = prevision?.texte;
+  const themesAffiches = Object.keys(THEMES).filter((t) => parTheme[t]);
+  // Plusieurs thèmes sans recherche : sections repliables, pour ne pas dérouler 150 cartes d'un coup
+  const replier = !filtre && themesAffiches.length > 1;
+  const estOuvert = (cat) => !replier || ouverts.has(cat);
 
   return (
     <div className="pile">
@@ -165,6 +179,41 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
             ))}
           </ul>
         </details>
+      )}
+
+      {replier && theme === 'tous' && suggestions.length > 0 && (
+        <div className="carte pile pour-commencer">
+          <div className="ligne espace">
+            <h3 style={{ margin: 0 }}><span aria-hidden="true">🧭</span> Pour commencer</h3>
+            <span className="tres-petit muet">Trois pistes selon la situation, pas un programme : à vous de choisir.</span>
+          </div>
+          <div className="suggestions">
+            {suggestions.map((sg) => {
+              const r = liste.find((x) => x.id === sg.id);
+              if (!r) return null;
+              const o = r.options.find((x) => x.id === sg.option) ?? r.options[0];
+              const pr = pronostic(partie, r, o.id);
+              const dejaProposee = proposees.some((p) => p.id === r.id);
+              return (
+                <div key={sg.id} className="suggestion">
+                  <strong className="petit">{r.nom}</strong>
+                  {r.options.length > 1 && <span className="tres-petit muet">{o.nom}</span>}
+                  <span className="tres-petit">{sg.raison}</span>
+                  <span className="ligne" style={{ gap: '0.3rem' }}>
+                    {Math.abs(sg.opinion) >= 0.5 && <span className={`etiquette ${sg.opinion > 0 ? 'populaire' : 'impopulaire'}`}>{sg.opinion > 0 ? '👍' : '👎'} {sg.opinion > 0 ? '+' : '−'}{Math.abs(sg.opinion).toFixed(1).replace('.', ',')} pt</span>}
+                    {pr && <span className={`pronostic ${pr.classe}`}>{pr.texte.replace(/ \(.*\)$/, '')}</span>}
+                  </span>
+                  <span className="ligne">
+                    <button type="button" className="bouton petit" onClick={() => montrer(r)}>Voir le détail</button>
+                    {dejaProposee
+                      ? <span className="etiquette">proposée ce trimestre</span>
+                      : <button type="button" className="bouton petit principal" onClick={() => { setOptions((x) => ({ ...x, [r.id]: o.id })); majDecisions((d) => ({ reformes: [...d.reformes.filter((x) => x.id !== r.id), { id: r.id, option: o.id }] })); }}>Ajouter au programme</button>}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <div className="carte pile filtres-reformes">
@@ -228,17 +277,35 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
       {fr && (theme === 'tous' || theme === 'capitalisation' || theme === 'retraites') && !filtre && <Capitalisation partie={partie} decisions={decisions} majDecisions={majDecisions} />}
 
       {visibles.length === 0 && <div className="carte petit muet">Aucune réforme ne correspond à ces filtres.</div>}
-      {Object.keys(THEMES).filter((t) => parTheme[t]).map((cat) => (
-        <section key={cat} className="pile">
-          <h3>{THEMES[cat]}</h3>
-          {parTheme[cat].map((r) => {
+      {replier && (
+        <div className="ligne espace">
+          <span className="petit muet">{themesAffiches.length} thèmes, {visibles.length} réformes : dépliez un thème pour voir ses mesures.</span>
+          <span className="ligne" style={{ gap: '0.3rem' }}>
+            <button type="button" className="bouton petit" onClick={() => setOuverts(new Set(themesAffiches))}>Tout déplier</button>
+            <button type="button" className="bouton petit" onClick={() => setOuverts(new Set())}>Tout replier</button>
+          </span>
+        </div>
+      )}
+      {themesAffiches.map((cat) => {
+        const nbProposees = parTheme[cat].filter((r) => proposees.some((p) => p.id === r.id)).length;
+        const nbActives = parTheme[cat].filter((r) => r.active).length;
+        const resume = (
+          <>
+            <h3>{THEMES[cat]}</h3>
+            <span className="petit muet">{parTheme[cat].length} réforme{parTheme[cat].length > 1 ? 's' : ''}</span>
+            {nbProposees > 0 && <span className="etiquette populaire">{nbProposees} proposée{nbProposees > 1 ? 's' : ''}</span>}
+            {nbActives > 0 && <span className="etiquette">{nbActives} en vigueur</span>}
+            {!estOuvert(cat) && <span className="tres-petit muet apercu-theme">{parTheme[cat].slice(0, 4).map((r) => r.nom).join(' · ')}{parTheme[cat].length > 4 ? ' · …' : ''}</span>}
+          </>
+        );
+        const cartes = estOuvert(cat) && parTheme[cat].map((r) => {
             const option = options[r.id] ?? r.options[0].id;
             const cle = `${r.id}:${option}`;
             const proposee = proposees.find((p) => p.id === r.id);
             const pr = pronostic(partie, r, option);
             const v = VEHICULES[r.vehicule];
             return (
-              <div key={r.id} className={`carte pile ${proposee ? 'reforme-proposee' : ''}`}>
+              <div key={r.id} id={`reforme-${r.id}`} className={`carte pile ${proposee ? 'reforme-proposee' : ''}`}>
                 <div className="ligne espace">
                   <strong>{r.nom}</strong>
                   <span className="ligne">
@@ -302,9 +369,11 @@ export default function Reformes({ partie, decisions, majDecisions, apercu, prev
                 </div>
               </div>
             );
-          })}
-        </section>
-      ))}
+          });
+        return replier
+          ? <details key={cat} className="theme-reformes" open={ouverts.has(cat)} onToggle={(ev) => basculer(cat, ev.currentTarget.open)}><summary>{resume}</summary><div className="contenu-theme">{cartes}</div></details>
+          : <section key={cat} className="pile"><div className="ligne" style={{ alignItems: 'baseline' }}>{resume}</div>{cartes}</section>;
+      })}
       <p className="tres-petit muet">Les chiffrages par simulation ne tiennent pas compte des votes ni des élections. Montants sans source : hypothèses de jeu.</p>
     </div>
   );

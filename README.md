@@ -112,7 +112,7 @@ Un tour = un trimestre. Par défaut, la partie dure **jusqu'en 2050** (97 trimes
    - fonction publique, assurance chômage, TVA sociale, impôt sur les très hauts patrimoines, bouclier énergétique ;
    - pour l'Allemagne : âge de la retraite, cotisation de 2028, frein à l'endettement, revenu citoyen.
 
-   En France, **154 réformes** (dont 42 d'inspiration libérale et 38 d'inspiration sociale, filtrables) couvrent 20 thèmes : retraites, capitalisation, travail, fonction publique, baisse des dépenses, règles budgétaires, fiscalité, santé, énergie, éducation, sécurité, défense, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
+   Un encadré **« Pour commencer »** suggère trois pistes selon la situation (une mesure populaire qui peut passer, une qui réduit le déficit, une adaptée à l'urgence du moment), avec la raison du choix ; les thèmes sont **repliés** par défaut, pour ne pas dérouler toutes les cartes d'un coup. En France, **154 réformes** (dont 42 d'inspiration libérale et 38 d'inspiration sociale, filtrables) couvrent 20 thèmes : retraites, capitalisation, travail, fonction publique, baisse des dépenses, règles budgétaires, fiscalité, santé, énergie, éducation, sécurité, défense, immigration, logement, agriculture, outre-mer, institutions… Chacune indique :
    - son **véhicule législatif** (loi de finances, financement de la Sécurité sociale, loi ordinaire, décret) ;
    - un **pronostic de vote** à l'Assemblée et le vote prévu de chaque groupe ;
    - les arguments des partisans et des opposants, et des exemples étrangers.

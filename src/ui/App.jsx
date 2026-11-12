@@ -213,7 +213,7 @@ export default function App() {
     setPrecedent(null);
     sauvegarderLocal(p, decisionsInitiales(p));
     if (p.mode === 'facile' && !lirePreference('cdg:visite')) setVisite(true);
-    notifier([{ type: 'info', icone: p.statique.drapeau, titre: `Vous prenez vos fonctions : ${p.statique.chefGouvernement.titre}`, texte: `${libelleTrimestre(p.trimestre)} · mode ${MODES[p.mode].nom}. ${p.evenements.enAttente.length ? `${p.evenements.enAttente.length} dossier(s) vous attendent déjà.` : ''}` }]);
+    notifier([{ type: 'info', duree: 9000, icone: p.statique.drapeau, titre: `Vous prenez vos fonctions : ${p.statique.chefGouvernement.titre}`, texte: `${libelleTrimestre(p.trimestre)} · mode ${MODES[p.mode].nom}. ${p.evenements.enAttente.length ? `${p.evenements.enAttente.length} dossier(s) vous attendent déjà.` : ''}` }]);
   }, [notifier]);
 
   const reprendre = useCallback((s) => {
@@ -316,7 +316,7 @@ export default function App() {
         {fenetre === 'options' && <Options options={options} onChange={setOptions} onFermer={() => setFenetre(null)} />}
         {fenetre === 'apropos' && <APropos onFermer={() => setFenetre(null)} />}
         {hangar && <Hangar onFermer={() => setHangar(false)} />}
-        <Notifications liste={notifications} onFermer={fermerNotification} />
+        <Notifications liste={notifications} onFermer={fermerNotification} masquees={!!(fenetre || hangar || sauvegarde)} />
         {sauvegarde && <ModaleSauvegarde mode="import" onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage(null); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
       </>
     );
@@ -510,7 +510,7 @@ export default function App() {
           </div>
         </div>
       )}
-      <Notifications liste={notifications} onFermer={fermerNotification} />
+      <Notifications liste={notifications} onFermer={fermerNotification} masquees={!!(bilan || fenetre || sauvegarde || quitter || visite)} />
       <Confettis declencheur={fete} />
     </div>
   );

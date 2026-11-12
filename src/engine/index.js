@@ -72,6 +72,7 @@ export { ALLOCATIONS, fluxAnnuels, doubleCharge, projeterCapitalisation, paramet
 export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politique.js';
 export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
 export { bilanReformes, effetOpinionReforme } from './reformes.js';
+export { suggestionsReformes } from './suggestions.js';
 export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';

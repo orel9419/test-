@@ -238,7 +238,8 @@ details > summary { cursor: pointer; color: var(--accent); font-size: 0.88rem; }
   border: 1px solid var(--bordure); border-left: 4px solid var(--accent); border-radius: 10px; padding: 0.6rem 0.7rem; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
   animation: glisse-gauche 0.3s ease-out;
 }
-.notification.succes { border-left-color: var(--attention); }
+/* (la classe générique .succes, celle de la liste des succès, est plus bas : on la neutralise pour le toast) */
+.notification.succes { display: grid; gap: 0.6rem; align-items: start; padding: 0.6rem 0.7rem; border-radius: 10px; border: 1px solid var(--bordure); border-left: 4px solid var(--attention); opacity: 1; }
 .notification.bon, .notification.election { border-left-color: var(--bon); }
 .notification.alerte { border-left-color: var(--critique); }
 .notification-icone { font-size: 1.4rem; line-height: 1; }
@@ -755,3 +756,27 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 :root[data-theme="dark"] select, :root[data-theme="dark"] input[type="number"], :root[data-theme="dark"] input[type="text"], :root[data-theme="dark"] textarea { background: var(--surface-2); border-color: var(--axe); color: var(--encre); }
 :root[data-theme="dark"] input[type="range"] { accent-color: var(--accent); }
 :root[data-theme="dark"] ::selection { background: rgba(90, 155, 239, 0.35); }
+
+/* Notifications : masquées (sans s'arrêter) pendant qu'une fenêtre ou la visite est ouverte ; compteur des plus anciennes */
+.notifications { transition: opacity 0.2s, transform 0.2s; }
+.notifications.masquees { opacity: 0; pointer-events: none; transform: translateY(8px); }
+.notifications-reste { align-self: flex-end; }
+
+/* Réformes : « Pour commencer » et thèmes repliables */
+.pour-commencer { border-top: 3px solid var(--bon); }
+.pour-commencer .suggestions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem; }
+.pour-commencer .suggestion { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.7rem 0.8rem; border: 1px solid var(--bordure); border-radius: 10px; background: var(--surface-2); }
+.pour-commencer .suggestion strong { line-height: 1.25; }
+.pour-commencer .suggestion .ligne { margin-top: auto; }
+.theme-reformes { border: 1px solid var(--bordure); border-radius: 12px; background: var(--surface); }
+.theme-reformes > summary { cursor: pointer; list-style: none; padding: 0.75rem 1rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.8rem; }
+.theme-reformes > summary::-webkit-details-marker { display: none; }
+.theme-reformes > summary::before { content: '▸'; color: var(--encre-2); margin-right: 0.2rem; transition: transform 0.15s; display: inline-block; }
+.theme-reformes[open] > summary::before { transform: rotate(90deg); }
+.theme-reformes > summary h3 { margin: 0; font-size: 1.05rem; }
+.theme-reformes > summary .apercu-theme { flex-basis: 100%; }
+.theme-reformes > .contenu-theme { padding: 0 1rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+.theme-reformes > summary:hover { background: var(--surface-2); border-radius: 12px; }
+.theme-reformes[open] > summary:hover { border-radius: 12px 12px 0 0; }
+/* « Voir le détail » : la carte visée s'arrête sous l'en-tête fixe */
+.carte.pile[id^="reforme-"] { scroll-margin-top: 84px; }
