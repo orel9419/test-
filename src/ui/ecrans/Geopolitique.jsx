@@ -161,6 +161,7 @@ function FicheGroupe({ g, numero, plusieurs, destination, nomTheatre, onAnnuler 
  * françaises ou alliées, comme le groupe aéronaval.
  */
 function Deploiements({ d, decisions, majDecisions }) {
+  const [vue3d, setVue3d] = useState(null); // unité montrée en 3D
   const ordres = decisions.deploiements ?? {};
   const donner = (unite, base) => majDecisions((x) => ({ deploiements: { ...(x.deploiements ?? {}), [unite]: base } }));
   const nomBase = (id) => d.bases.find((b) => b.id === id)?.court ?? id;
@@ -192,10 +193,24 @@ function Deploiements({ d, decisions, majDecisions }) {
                 </select>
               </label>
               {ordre && <span className="tres-petit alerte bonne">Ordre donné : {ordre === 'metropole' ? 'retour en métropole' : `déploiement vers ${nomBase(ordre)}`} (à la validation). <button type="button" className="lien" onClick={() => donner(u.id, null)}>Annuler</button></span>}
+              <button type="button" className={`bouton petit ${vue3d === u.id ? 'principal' : ''}`} onClick={() => setVue3d((v) => (v === u.id ? null : u.id))}>{vue3d === u.id ? 'Masquer la vue 3D' : '🎖️ Voir en 3D'}</button>
             </div>
           );
         })}
       </div>
+      {vue3d && (() => {
+        const u = d.unites.find((x) => x.id === vue3d);
+        const b = d.bases.find((x) => x.id === u.position);
+        const deploye = !b.metropole;
+        const donnees = { deploye, base: b.court, terrain: b.terrain ?? 'desert', interception: !!b.interception };
+        return (
+          <div className="pile" style={{ gap: '0.3rem' }}>
+            <strong className="petit">{u.icone} {u.nom} · {deploye ? `en mission : ${b.court}` : 'en métropole'}</strong>
+            <span className="tres-petit muet">La scène suit votre partie : en métropole, l'unité est à sa base ; déployée, elle est en mission dans le décor de la région. Engins à la même échelle, distances resserrées.</span>
+            <Suspense fallback={<p className="petit muet">Chargement…</p>}><Visionneuse3D key={`${u.scene}:${JSON.stringify(donnees)}`} modele={u.scene} hauteur={420} donnees={donnees} /></Suspense>
+          </div>
+        );
+      })()}
       <details>
         <summary>Les bases et leurs conditions d'accès</summary>
         <ul className="tres-petit" style={{ paddingLeft: '1rem' }}>

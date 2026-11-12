@@ -790,3 +790,9 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .unite-deployable { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.65rem 0.75rem; border: 1px solid var(--bordure); border-radius: 10px; background: var(--surface-2); }
 .unite-deployable.deployee { border-color: var(--accent); }
 .unite-deployable select { font-size: 0.85rem; }
+
+/* Scènes des unités en mission : ciel au-dessus du terrain, ciel d'altitude pour les avions */
+.visionneuse-gtia .visionneuse-scene, .visionneuse-forcesSpeciales .visionneuse-scene { background: linear-gradient(180deg, #7fadd8 0%, #c6d9ea 45%, #dfe3e2 62%, #dfe3e2 100%); }
+.visionneuse-policeDuCiel .visionneuse-scene, .visionneuse-ravitaillement .visionneuse-scene { background: linear-gradient(180deg, #4f8fd0 0%, #9cc3e8 55%, #cfe2f3 100%); }
+:root[data-theme="dark"] .visionneuse-gtia .visionneuse-scene, :root[data-theme="dark"] .visionneuse-forcesSpeciales .visionneuse-scene { background: linear-gradient(180deg, #33506e 0%, #6f8aa3 55%, #8a8473 100%); }
+:root[data-theme="dark"] .visionneuse-policeDuCiel .visionneuse-scene, :root[data-theme="dark"] .visionneuse-ravitaillement .visionneuse-scene { background: linear-gradient(180deg, #1f3f66 0%, #47709c 60%, #7d9cba 100%); }

@@ -135,6 +135,22 @@ const FICHES = {
     titre: 'Groupe aéronaval',
     lignes: ['Un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères), escorté d\'une frégate de défense aérienne, de frégates anti-sous-marines, d\'un sous-marin nucléaire d\'attaque et d\'un ravitailleur', 'Le président de la République, chef des armées, décide de son déploiement ; il peut tenir un théâtre pendant quatre à cinq mois', 'Composition tirée de votre partie : porte-avions en service et bâtiments d\'escorte disponibles · avec deux porte-avions, deux groupes', 'Tous les navires à la même échelle ; distances resserrées (en réalité plusieurs kilomètres entre les bâtiments) et avions agrandis pour rester visibles'],
   },
+  gtia: {
+    titre: 'Groupement tactique interarmes (GTIA)',
+    lignes: ['Environ un millier de soldats réunis pour une mission : infanterie sur Griffon, Jaguar de reconnaissance et de combat, artillerie Caesar, génie et soutien', 'En mission : les Jaguar en tête, les Griffon et leurs sections au centre, les Caesar en batterie à l\'arrière, un Tigre en appui', 'En métropole : les engins alignés en garnison ; livrée sable pour le désert, camouflage centre-Europe ailleurs', 'Engins à la même échelle, distances resserrées, effectifs réduits à quelques véhicules pour rester lisible'],
+  },
+  forcesSpeciales: {
+    titre: 'Détachement des forces spéciales',
+    lignes: ['Commandement des opérations spéciales (COS) : commandos des trois armées et leurs hélicoptères (4e régiment d\'hélicoptères des forces spéciales, escadron « Pyrénées »)', 'Scène type : un Caïman dépose des commandos en corde lisse sur le toit de l\'objectif, un Caracal posé débarque le groupe d\'assaut, un Tigre assure l\'appui feu', 'Véhicules légers armés pour l\'approche et le recueil', 'Scénario et décor imaginaires ; engins à la même échelle, distances resserrées'],
+  },
+  policeDuCiel: {
+    titre: 'Police du ciel : deux Rafale en interception',
+    lignes: ['Posture permanente de sûreté aérienne : des chasseurs armés décollent en quelques minutes pour identifier tout aéronef suspect', 'Le leader se place à gauche de l\'appareil intercepté, à vue de son pilote ; l\'ailier reste en retrait, en couverture', 'Battre des ailes signifie « suivez-moi » (signaux internationaux d\'interception de l\'OACI)', 'Dans les pays baltes, qui n\'ont pas d\'aviation de chasse, les alliés de l\'OTAN se relaient à Šiauliai · aéronef intercepté générique, distances resserrées'],
+  },
+  ravitaillement: {
+    titre: 'Ravitaillement en vol : A330 Phénix et Rafale',
+    lignes: ['L\'A330 Phénix transporte jusqu\'à 111 tonnes de carburant : il allonge le rayon d\'action des chasseurs et des raids nucléaires', 'Deux nacelles sous les ailes déroulent chacune un tuyau terminé par un panier ; le Rafale y engage sa perche', 'Une perche rigide centrale sert aux avions à réceptacle (F-16, F-35A, avions radar)', 'Avions à la même échelle ; l\'avion radar du détachement n\'est pas modélisé'],
+  },
   monge: {
     titre: 'Bâtiment d\'essais et de mesures Monge (A601)',
     lignes: ['Environ 225 m · en service depuis 1992 · équipage mixte Marine nationale et DGA', 'Radars de trajectographie, antennes de télémesure et moyens optiques : il suit les tirs d\'essai du missile M51 et des lancements spatiaux', 'Unique en Europe : la France valide seule ses missiles · plateforme hélicoptère en porte-à-faux à la poupe', 'D\'après une photo · antennes et radômes simplifiés'],
@@ -152,6 +168,10 @@ const VUES = {
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
   groupeAeronaval: { '3/4': [-12, 8, 13], Dessus: [0, 24, 0.01], Profil: [0, 2.5, 21], 'Côté tribord': [0, 2.5, -21], Face: [-21, 3.5, 0.01] },
+  gtia: { '3/4': [-14, 7, 15], 'De l\'avant': [-22, 4, 4], Dessus: [0, 26, 0.01], Profil: [0, 3, 22], Arrière: [16, 6, -13] },
+  forcesSpeciales: { '3/4': [-12, 8, 15], 'Toit': [-7, 5, 8], Dessus: [0, 25, 0.01], 'Côté Caracal': [15, 4, 15], Profil: [0, 3, 22] },
+  policeDuCiel: { '3/4': [-12, 5, 15], 'Leader': [-9, 2.5, 13], Dessus: [0, 24, 0.01], 'Sous l\'appareil': [-8, -5, 12], Arrière: [15, 5, 10] },
+  ravitaillement: { '3/4': [-12, 5, 16], 'Au contact': [12, 1.5, 12], Dessus: [0, 25, 0.01], 'Dessous': [-6, -6, 14], Arrière: [18, 4, 0.01] },
   sna: { '3/4': [-11, 6.5, -13], Profil: [0, 1.2, 18], Dessus: [0, 20, 0.01], Face: [-18, 1.6, 0.01], Arrière: [11, 5.5, 13] },
   pha: { '3/4': [-10, 6.5, 12], 'Côté île': [0, 2.3, -19], Profil: [0, 2.3, 19], Dessus: [0, 21, 0.01], Face: [-18, 3.5, 0.01] },
   fda: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12] },
@@ -194,6 +214,7 @@ const MODULES = {
   marine: () => import('./marine.js'),
   f35: () => import('./f35.js'),
   tigre: () => import('./tigre.js'),
+  unites: () => import('./unites.js'),
 };
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
@@ -202,6 +223,7 @@ const CONSTRUCTEURS = {
   caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['tigre', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   groupeAeronaval: ['marine', 'construireGroupeAeronaval'],
+  gtia: ['unites', 'construireGtia'], forcesSpeciales: ['unites', 'construireForcesSpeciales'], policeDuCiel: ['unites', 'construirePoliceDuCiel'], ravitaillement: ['unites', 'construireRavitaillement'],
   sna: ['marine', 'construireSna'], pha: ['marine', 'construirePha'], fda: ['marine', 'construireFda'], fremm: ['marine', 'construireFremm'], brf: ['marine', 'construireBrf'], monge: ['marine', 'construireMonge'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
@@ -290,7 +312,10 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
 
       const objet = modeles[CONSTRUCTEURS[modele][1]](THREE, { modele, donnees });
       scene.add(objet);
-      if (!navire && !terrain && !espace) {
+      // Scènes composées (unités en mission) : sol ou ciel propres, brume à leur couleur
+      const solPropre = !!objet.userData.sol, ciel = !!objet.userData.ciel;
+      if (objet.userData.brume) scene.fog = new THREE.Fog(...objet.userData.brume);
+      if (!navire && !terrain && !espace && !solPropre && !ciel) {
         // Ombre portée douce sous l'appareil (sol invisible)
         const sol = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({ opacity: sous ? 0.25 : 0.18 }));
         sol.rotation.x = -Math.PI / 2;
@@ -306,9 +331,9 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       controles.maxDistance = 60;
       controles.autoRotate = true;
       controles.autoRotateSpeed = 0.9;
-      if (navire || terrain) controles.maxPolarAngle = Math.PI / 2 - 0.06; // ne pas passer sous la mer ni sous le sol
-      if (terrain) controles.maxDistance = 45;
-      controles.target.set(0, sous ? 0.3 : 0.2, 0);
+      if (navire || terrain || solPropre) controles.maxPolarAngle = Math.PI / 2 - 0.06; // ne pas passer sous la mer ni sous le sol
+      if (terrain || solPropre) controles.maxDistance = 45;
+      controles.target.set(0, sous ? 0.3 : solPropre ? 1.2 : 0.2, 0);
       const placer = (nom) => {
         const k = recul(camera.aspect);
         const [x, y, z] = VUES[modele][nom];

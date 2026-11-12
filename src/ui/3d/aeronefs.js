@@ -182,7 +182,7 @@ function tube(THREE, a, b, r, mat) {
 }
 
 /** Soldat stylisé (tenue camouflée, casque), debout, bras levés vers la corde. */
-function soldat(THREE, matTenue, matCasque, assis = false) {
+export function soldat(THREE, matTenue, matCasque, assis = false) {
   const g = new THREE.Group();
   const buste = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.45, 4, 8), matTenue);
   buste.position.y = assis ? 0.45 : 1.15;
