@@ -53,6 +53,7 @@ import { controleConstitutionnel } from './constitution.js';
 import { initialiserDefense, deciderDefense, majDefense } from './defense.js';
 import { attribuerLot, majChantiers } from './chantiers.js';
 import { initialiserGeopolitique, majGeopolitique, deplacerGroupe, injecterCrises } from './geopolitique.js';
+import { deployerUnite, majDeploiements } from './deploiements.js';
 import { initialiserRelocalisation, demanderProduction, majRelocalisation, injecterPenuries } from './relocalisation.js';
 import { initialiserInstitutions, majInstitutions, gouvernementCohabitation, neutraliserDecisions, reactionAuxReformes, propositionGouvernement, accordPresident, injecterEvenementsInstitutions } from './institutions.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
@@ -73,6 +74,7 @@ export { voterTexte, texteFinancier, PROFILS_PREMIER_MINISTRE } from './politiqu
 export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classements.js';
 export { bilanReformes, effetOpinionReforme } from './reformes.js';
 export { suggestionsReformes } from './suggestions.js';
+export { resumeDeploiements, accesBase } from './deploiements.js';
 export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
@@ -383,7 +385,11 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   if (decisions.gan2) e.resultatsTour.gan2 = deplacerGroupe(e, decisions.gan2, 2);
   // Fonds souverain : répartition entre les marchés (rééquilibrage au trimestre suivant)
   if (decisions.fondsAllocation) e.resultatsTour.fonds = choisirAllocation(e, decisions.fondsAllocation);
-  if (!options.sansPolitique) majGeopolitique(e);
+  // Déploiements (France) : forces terrestres et aériennes vers des bases françaises ou alliées
+  for (const [unite, base] of Object.entries(decisions.deploiements ?? {})) {
+    if (base) (e.resultatsTour.deploiements ??= []).push({ unite, ...deployerUnite(e, unite, base) });
+  }
+  if (!options.sansPolitique) { majGeopolitique(e); majDeploiements(e); }
   // Produire en France : demandes aux grands groupes (aléa séparé)
   for (const r of decisions.relocalisations ?? []) (e.resultatsTour.relocalisations ??= []).push({ id: r.id, ...demanderProduction(e, r.id, r.levier) });
   // Chantiers des grands événements : attribution des lots

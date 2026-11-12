@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Info from '../composants/Info.jsx';
-import { resumeGeopolitique, compositionGroupes } from '../../engine/index.js';
+import { resumeGeopolitique, compositionGroupes, resumeDeploiements } from '../../engine/index.js';
 import { GROUPE_AERONAVAL } from '../../data/geopolitique.js';
 import { PARTENAIRES } from '../../data/diplomatie.js';
 import { md } from '../format.js';
@@ -17,7 +17,7 @@ const L = 960, H = 500;
 const niveau = (t) => (t >= 65 ? { classe: 'critique', texte: 'forte' } : t >= 40 ? { classe: 'attention', texte: 'moyenne' } : { classe: 'bon', texte: 'faible' });
 
 /** Carte du monde (Natural Earth) chargée à la demande, avec les théâtres et le groupe aéronaval. */
-function CarteMonde({ theatres, groupes, choisi, onChoisir }) {
+function CarteMonde({ theatres, groupes, choisi, onChoisir, bases = [] }) {
   const [carte, setCarte] = useState(null);
   // Largeur affichée : sur un petit écran, les repères sont agrandis pour rester lisibles et faciles à toucher
   const [largeur, setLargeur] = useState(L);
@@ -65,6 +65,17 @@ function CarteMonde({ theatres, groupes, choisi, onChoisir }) {
             <circle r={(9 + t.tensionActuelle / 12) * k} className="halo" />
             <circle r={6 * k} className="point" />
             <text y={-14 * k} textAnchor="middle" style={{ fontSize: 13 * k }}>{t.court}</text>
+          </g>
+        );
+      })}
+      {bases.filter((b) => !b.metropole).map((b) => {
+        const [x, y] = p(b.lon, b.lat);
+        const icones = b.presents.map((id) => b.unites.find((u) => u.id === id)?.icone).join('');
+        return (
+          <g key={b.id} className={`carte-base ${b.presents.length ? 'occupee' : ''}`} transform={`translate(${x},${y}) scale(${k})`}>
+            <rect x="-4.5" y="-4.5" width="9" height="9" transform="rotate(45)" />
+            {icones && <text y="17" textAnchor="middle">{icones}</text>}
+            <title>{`${b.nom}${icones ? ` : ${b.presents.length} unité(s) déployée(s)` : ''}`}</title>
           </g>
         );
       })}
@@ -145,8 +156,68 @@ function FicheGroupe({ g, numero, plusieurs, destination, nomTheatre, onAnnuler 
  * Géopolitique (France) : carte des théâtres, tensions, déploiement du groupe
  * aéronaval. Les crises arrivent dans l'onglet Événements.
  */
+/**
+ * Forces projetables : unités terrestres et aériennes à envoyer sur des bases
+ * françaises ou alliées, comme le groupe aéronaval.
+ */
+function Deploiements({ d, decisions, majDecisions }) {
+  const ordres = decisions.deploiements ?? {};
+  const donner = (unite, base) => majDecisions((x) => ({ deploiements: { ...(x.deploiements ?? {}), [unite]: base } }));
+  const nomBase = (id) => d.bases.find((b) => b.id === id)?.court ?? id;
+  return (
+    <div className="carte pile deploiements">
+      <h3 style={{ margin: 0 }}>🪖 Forces projetables et bases alliées <Info texte="Comme le groupe aéronaval, chaque unité déployée coûte, s'use et doit revenir en métropole pour récupérer. Sa présence apaise la tension du théâtre voisin et renforce l'influence et les relations avec le pays hôte. Une base alliée n'accueille que si les relations restent suffisantes ; les missions de l'OTAN supposent d'en être membre. Effectifs, coûts et effets : hypothèses de jeu." /></h3>
+      <p className="petit muet" style={{ margin: 0 }}>Déployées : {d.unites.filter((u) => u.position !== 'metropole').length} unité(s) sur {d.unites.length} · coût de présence environ {md(d.coutAnnuel, 2)} par an.{d.horsOtan && <strong className="negatif"> La France a quitté l'OTAN : les missions de l'Alliance (Roumanie, Estonie, Lituanie) lui sont fermées.</strong>}</p>
+      <div className="grille-deploiements">
+        {d.unites.map((u) => {
+          const ordre = ordres[u.id];
+          const choix = d.bases.filter((b) => b.id !== u.position && b.types.includes(u.type));
+          const fatigue = u.potentiel < d.potentielMin + u.usure;
+          return (
+            <div key={u.id} className={`unite-deployable ${u.position !== 'metropole' ? 'deployee' : ''}`}>
+              <div className="ligne espace"><strong className="petit">{u.icone} {u.nom}</strong><span className="etiquette">{u.type === 'air' ? 'Air' : 'Terre'}</span></div>
+              <span className="tres-petit muet">{u.description}</span>
+              <div className="ligne espace petit"><span>Position</span><strong>{nomBase(u.position)}{u.position !== 'metropole' ? ` · ${u.trimestres} trim.` : ''}</strong></div>
+              <div className="tres-petit">Potentiel : <strong>{Math.round(u.potentiel)} %</strong>{u.repos > 0 ? ` · remise en condition : ${u.repos} trimestre(s)` : ''}
+                <div className="jauge-potentiel"><div style={{ width: `${u.potentiel}%` }} className={u.potentiel < 40 ? 'bas' : ''} /></div>
+              </div>
+              <label className="tres-petit">Ordre :
+                <select value={ordre ?? ''} onChange={(ev) => donner(u.id, ev.target.value || null)} style={{ marginLeft: 6, maxWidth: '100%' }}>
+                  <option value="">— rester sur place —</option>
+                  {choix.map((b) => {
+                    const a = b.acces[u.type];
+                    const bloque = !b.metropole && (!a.ok || u.repos > 0 || fatigue);
+                    return <option key={b.id} value={b.id} disabled={bloque}>{b.metropole ? 'Rentrer en métropole' : `${b.court}${bloque ? ` (${!a.ok ? 'accès refusé' : 'unité à remettre en condition'})` : ` · ${md(u.cout * (b.distance ?? 1), 2)}/an`}`}</option>;
+                  })}
+                </select>
+              </label>
+              {ordre && <span className="tres-petit alerte bonne">Ordre donné : {ordre === 'metropole' ? 'retour en métropole' : `déploiement vers ${nomBase(ordre)}`} (à la validation). <button type="button" className="lien" onClick={() => donner(u.id, null)}>Annuler</button></span>}
+            </div>
+          );
+        })}
+      </div>
+      <details>
+        <summary>Les bases et leurs conditions d'accès</summary>
+        <ul className="tres-petit" style={{ paddingLeft: '1rem' }}>
+          {d.bases.filter((b) => !b.metropole).map((b) => {
+            const refus = [b.acces.terre, b.acces.air].find((a) => !a.ok && !a.motif.startsWith('Cette base'));
+            return (
+              <li key={b.id} style={{ marginBottom: '0.3rem' }}>
+                <strong>{b.nom}</strong> ({b.types.map((t) => (t === 'air' ? 'aviation' : 'troupes')).join(' et ')}{b.otan ? ', mission de l\'OTAN' : ''}{b.partenaire ? '' : ', territoire français'}) : {b.description}
+                {refus && <span className="negatif"> {refus.motif}</span>}
+                {b.presents.length > 0 && <span className="positif"> Présents : {b.presents.map((id) => d.unites.find((u) => u.id === id)?.court).join(', ')}.</span>}
+              </li>
+            );
+          })}
+        </ul>
+      </details>
+    </div>
+  );
+}
+
 export default function Geopolitique({ partie, decisions, majDecisions, allerA }) {
   const r = resumeGeopolitique(partie);
+  const dep = resumeDeploiements(partie);
   const [choisi, setChoisi] = useState(null);
   const [voir3d, setVoir3d] = useState(null); // 'charlesDeGaulle' | 'porteAvions' | null
   const theatres = r?.theatres ?? [];
@@ -166,15 +237,18 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
       <p className="petit muet">La France est présente sur tous les océans : ses territoires d'outre-mer lui donnent le deuxième espace maritime du monde. Déployer le groupe aéronaval rassure les alliés, apaise les tensions et pèse dans les crises ; mais il s'use, coûte cher et ne peut être partout à la fois.</p>
 
       <div className="carte pile">
-        <CarteMonde theatres={theatres} groupes={groupes.map(({ numero, g: gr, destination }) => ({ numero, position: gr.position, destination }))} choisi={selection?.id} onChoisir={setChoisi} />
+        <CarteMonde theatres={theatres} groupes={groupes.map(({ numero, g: gr, destination }) => ({ numero, position: gr.position, destination }))} choisi={selection?.id} onChoisir={setChoisi} bases={(dep?.bases ?? []).map((b) => ({ ...b, unites: dep.unites }))} />
         <div className="ligne petit legende-carte">
           <span><span className="pastille-legende critique" /> tension forte</span>
           <span><span className="pastille-legende attention" /> moyenne</span>
           <span><span className="pastille-legende bon" /> faible</span>
           <span>🚢 {plusieurs ? 'groupes aéronavals (1 et 2)' : 'groupe aéronaval'}</span>
           <span><span className="pastille-legende outre-mer" /> outre-mer français</span>
+          <span><span className="pastille-legende base" /> base (troupes, aviation)</span>
         </div>
       </div>
+
+      {dep && <Deploiements d={dep} decisions={decisions} majDecisions={majDecisions} />}
 
       <div className="grille-2">
         <div className="carte pile">

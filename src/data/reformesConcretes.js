@@ -747,4 +747,41 @@ export const REFORMES_CONCRETES = [
     positionsGroupesParOption: { cotisations: { SOC: 0, LFI: -0.3, GDR: -0.3, ECOS: -0.1 } },
     chiffrage: 'Hypothèses de jeu : environ 1,3 million d\'étudiants travaillent (44 % d\'environ 3 millions). Supprimer le plafond : environ 0,15 Md€ par an ; sans limite d\'âge : environ 0,35 Md€ ; sans cotisations salariales en plus (environ 22 % d\'un salaire moyen de 5 000 € par an) : environ 1,75 Md€ par an au total.',
   },
+  {
+    id: 'principe_precaution', majoriteRenforcee: true,
+    nom: 'Principe de précaution dans la Constitution',
+    categorie: 'institutions', pays: FR, vehicule: 'loi constitutionnelle',
+    resume: 'Supprimer le principe de précaution de la Constitution, l\'équilibrer par un « principe d\'innovation », ou le garder en l\'encadrant.',
+    pedagogie: 'Depuis 2005, l\'article 5 de la Charte de l\'environnement, qui a valeur constitutionnelle, impose aux autorités publiques de prendre des « mesures provisoires et proportionnées » face à un dommage « grave et irréversible », même quand la science est incertaine. Ses critiques y voient un frein à l\'innovation (biotechnologies, nucléaire, recherche) et une source de contentieux ; ses défenseurs, un garde-fou sanitaire et environnemental, rarement invoqué seul par le juge. L\'idée d\'inscrire à côté un « principe d\'innovation » a été défendue au Parlement et au niveau européen sans aboutir. Une révision constitutionnelle exige le vote du même texte par les deux assemblées, puis trois cinquièmes des voix au Congrès, ou un référendum.',
+    sources: [
+      { texte: 'Conseil constitutionnel : la Charte de l\'environnement (article 5, principe de précaution)', url: 'https://www.conseil-constitutionnel.fr/le-bloc-de-constitutionnalite/charte-de-l-environnement-de-2004' },
+      { texte: 'Légifrance : loi constitutionnelle du 1er mars 2005 relative à la Charte de l\'environnement', url: 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000790249' },
+    ],
+    pour: ['Lever un frein perçu à l\'innovation et à l\'investissement', 'Moins de contentieux et de décisions par prudence excessive', 'Un signal envoyé aux chercheurs et aux industriels'],
+    contre: ['Recul symbolique sur l\'écologie et la santé', 'Effet économique réel incertain : le principe est rarement seul en cause', 'Révision constitutionnelle difficile à faire adopter'],
+    exemples: ['Union européenne : le principe de précaution figure dans les traités (article 191 du TFUE)', 'États-Unis : approche fondée sur l\'analyse coûts-bénéfices, sans principe de précaution général'],
+    options: [
+      { id: 'supprimer', nom: 'Supprimer l\'article 5 de la Charte de l\'environnement' },
+      { id: 'innovation', nom: 'L\'équilibrer par un « principe d\'innovation » inscrit à côté' },
+      { id: 'encadrer', nom: 'Le garder, mais exiger une évaluation scientifique et économique avant toute mesure' },
+    ],
+    delai: 3,
+    effets(e, o, age) {
+      const k = { supprimer: 0.012, innovation: 0.008, encadrer: 0.004 }[o];
+      return { potentielBonus: k * rampe(age, 8), emissionsEvitees: o === 'supprimer' ? -0.5 * rampe(age, 8) : 0 };
+    },
+    reaction: (e, o) => ({
+      supprimer: { chocs: { entrepreneurs: 4, agriculteurs: 3, jeunes: -4, salaries: -1 }, grief: { jeunes: 4 }, credibilite: 0.01, instabilite: 0.02 },
+      innovation: { chocs: { entrepreneurs: 3, agriculteurs: 2, jeunes: -2 }, grief: { jeunes: 1 } },
+      encadrer: { chocs: { entrepreneurs: 1.5, agriculteurs: 1, jeunes: -0.5 } },
+    }[o]),
+    axes: { marche: 0.5, ecologie: -0.4 },
+    axesParOption: { supprimer: { marche: 0.7, ecologie: -0.8 }, encadrer: { marche: 0.3, ecologie: -0.1 } },
+    positionsGroupesParOption: {
+      supprimer: { RN: 0.3, UDR: 0.7, DR: 0.6, EPR: -0.2, HOR: 0.3, DEM: -0.4, SOC: -0.9, LIOT: -0.2, LFI: -1, GDR: -0.9, ECOS: -1 },
+      innovation: { RN: 0.4, UDR: 0.7, DR: 0.8, EPR: 0.4, HOR: 0.6, DEM: 0.1, SOC: -0.7, LIOT: 0, LFI: -1, GDR: -0.8, ECOS: -1 },
+      encadrer: { RN: 0.4, UDR: 0.5, DR: 0.7, EPR: 0.6, HOR: 0.7, DEM: 0.5, SOC: -0.3, LIOT: 0.3, LFI: -0.8, GDR: -0.6, ECOS: -0.7 },
+    },
+    chiffrage: 'Hypothèses de jeu : effet modeste sur la croissance potentielle (de +0,004 à +0,012 point par an au bout de deux ans, par plus d\'investissement dans la recherche et l\'industrie), sans effet budgétaire direct. Suppression pure : léger recul sur les émissions (moins de freins aux projets polluants). Le plus difficile est politique : trois cinquièmes au Congrès.',
+  },
 ];

@@ -780,3 +780,13 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .theme-reformes[open] > summary:hover { border-radius: 12px 12px 0 0; }
 /* « Voir le détail » : la carte visée s'arrête sous l'en-tête fixe */
 .carte.pile[id^="reforme-"] { scroll-margin-top: 84px; }
+
+/* Déploiements : bases sur la carte et unités projetables */
+.carte-base rect { fill: var(--surface); stroke: var(--encre-2); stroke-width: 1.6; }
+.carte-base.occupee rect { fill: var(--accent); stroke: var(--surface); }
+.carte-base text { font-size: 12px; pointer-events: none; }
+.pastille-legende.base { display: inline-block; width: 9px; height: 9px; transform: rotate(45deg); border: 1.6px solid var(--encre-2); background: var(--surface); margin-right: 0.3rem; border-radius: 1px; }
+.grille-deploiements { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.6rem; }
+.unite-deployable { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.65rem 0.75rem; border: 1px solid var(--bordure); border-radius: 10px; background: var(--surface-2); }
+.unite-deployable.deployee { border-color: var(--accent); }
+.unite-deployable select { font-size: 0.85rem; }

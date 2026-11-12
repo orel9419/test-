@@ -768,18 +768,21 @@ export const REFORMES_FRANCE = [
       { id: 'oui', nom: 'Programme de fusion et de suppression (annonce : 2 Md€)' },
       { id: 'doublons', nom: 'Supprimer les agences qui doublonnent avec les préfets et les collectivités (idée défendue par Jean-Louis Borloo)', description: 'Missions rendues aux préfets, aux régions et aux départements ; économie plus forte, désorganisation plus grande.' },
       { id: 'fusion_poles', nom: 'Fusionner les opérateurs par grands pôles (un tiers en moins) et supprimer les 24 agences ciblées par le Sénat', description: 'Fonctions support, immobilier et systèmes d\'information mis en commun ; tutelle unique par opérateur.' },
+      { id: 'grand_menage', nom: 'Grand ménage des doublons : agences, et commissions consultatives sans activité', description: 'Les deux précédentes à la fois, plus la suppression des comités et commissions consultatives qui ne se réunissent plus (recensés chaque année en annexe du budget) ; économie plus forte, transition plus longue et plus conflictuelle.' },
     ],
     delai: 1,
     effets: (e, o, age) => ({ depenses: { economieFinances: ({
       doublons: -2.5 * rampe(age - 2, 12) + (age < 4 ? 0.3 : 0),
       fusion_poles: -1.8 * rampe(age - 2, 10) + (age < 4 ? 0.4 : 0),
+      grand_menage: -3.2 * rampe(age - 3, 12) + (age < 5 ? 0.6 : 0),
     }[o] ?? -0.8 * rampe(age, 8)) * prix(e) } }),
     reaction: (e, o) => ({
       doublons: { chocs: { fonctionnaires: -5, retraites: 2, entrepreneurs: 1 }, grief: { fonctionnaires: 4 }, credibilite: 0.04, instabilite: 0.02 },
       fusion_poles: { chocs: { fonctionnaires: -4, retraites: 2, salaries: 1, entrepreneurs: 1 }, grief: { fonctionnaires: 3 }, opinion: { retraites: 1, salaries: 0.5 }, credibilite: 0.04 },
+      grand_menage: { chocs: { fonctionnaires: -7, retraites: 3, salaries: 1, entrepreneurs: 2 }, grief: { fonctionnaires: 6 }, opinion: { retraites: 1, salaries: 0.5 }, credibilite: 0.06, instabilite: 0.03 },
     }[o] ?? { chocs: { fonctionnaires: -3, retraites: 1 }, credibilite: 0.02 }),
     axes: { rigueur: 0.4, marche: 0.3 },
-    chiffrage: 'Annoncé : 2 Md€. Rendement réel retenu : 0,8 Md€ par an au bout de deux ans ; fusion par grands pôles : 1,8 Md€ par an au bout de trois ans ; suppression des doublons : 2,5 Md€ par an au bout de trois à quatre ans, après un coût de transition (hypothèses de jeu).',
+    chiffrage: 'Annoncé : 2 Md€. Rendement réel retenu : 0,8 Md€ par an au bout de deux ans ; fusion par grands pôles : 1,8 Md€ par an au bout de trois ans ; suppression des doublons : 2,5 Md€ par an au bout de trois à quatre ans, après un coût de transition ; grand ménage (doublons, pôles et commissions consultatives) : 3,2 Md€ par an au bout de quatre à cinq ans (hypothèses de jeu).',
   },
   {
     id: 'dotations_collectivites',
