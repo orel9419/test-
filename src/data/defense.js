@@ -8,6 +8,10 @@
  */
 
 export const SOURCES_DEFENSE = {
+  m51Vigilant: { titre: 'Naval News : tir de recette d\'un M51.3 depuis le SNLE Le Vigilant, au large du Finistère (6 octobre 2026)', url: 'https://navalnews.com/naval-news/2026/10/french-navy-conducts-acceptance-firing-of-m51-3-missile-from-le-vigilant-ssbn' },
+  m51Biscarrosse: { titre: 'Ministère des Armées : succès d\'un tir d\'essai du missile M51.3 depuis Biscarrosse (18 novembre 2023)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/20231118_Succ%C3%A8s%20d%27un%20tir%20d%27essai%20de%20missile%20M51.pdf' },
+  m51Terrible: { titre: 'Ministère des Armées : le système d\'armes du SNLE Le Terrible validé en conditions opérationnelles (19 avril 2023)', url: 'https://www.defense.gouv.fr/sites/default/files/ministere-armees/19.04.2023%20Le%20syst%C3%A8me%20d%E2%80%99armes%20du%20SNLE%20Le%20Terrible%20-%20M51%20valid%C3%A9%20en%20conditions%20op%C3%A9rationnelles.pdf' },
+  m51Echec: { titre: 'Actu Nautique : un missile balistique français s\'autodétruit en baie d\'Audierne (5 mai 2013)', url: 'https://www.actunautique.com/article-un-missile-balistique-fran-ais-s-autodetruit-en-baie-d-audierne-117589531.html' },
   plf2027: { titre: 'Ministère des Armées : projet de loi de finances 2027, LPM année 4', url: 'https://www.defense.gouv.fr/ministere/politique-defense/loi-programmation-militaire-2024-2030/projet-loi-finances-armees-2027-lpm-annee-4' },
   actualisation: { titre: 'Ministère des Armées : actualisation de la LPM (+36 Md€ de 2026 à 2030)', url: 'https://www.defense.gouv.fr/actualites/actualisation-lpm-france-intensifie-son-effort-rearmement' },
   rafale: { titre: 'Gifas : vers le début du renouvellement de la flotte Rafale (livraisons et carnet de commandes 2025)', url: 'https://www.gifas.fr/press-summary/vers-le-debut-du-renouvellement-de-la-flotte-rafale' },

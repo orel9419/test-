@@ -9,8 +9,9 @@ import { installerFauxDocument } from './outils/faux-document.js';
 import { UNITES, BASES } from '../src/data/deploiements.js';
 
 installerFauxDocument();
-const { construireGtia, construireForcesSpeciales, construirePoliceDuCiel, construireRavitaillement } = await import('../src/ui/3d/unites.js');
-const SCENES = { gtia: construireGtia, forcesSpeciales: construireForcesSpeciales, policeDuCiel: construirePoliceDuCiel, ravitaillement: construireRavitaillement };
+const { construireGtia, construireForcesSpeciales, construirePoliceDuCiel, construireRavitaillement, construireEscadronLeclerc } = await import('../src/ui/3d/unites.js');
+const { construireDissuasion } = await import('../src/ui/3d/marine.js');
+const SCENES = { gtia: construireGtia, forcesSpeciales: construireForcesSpeciales, policeDuCiel: construirePoliceDuCiel, ravitaillement: construireRavitaillement, escadronLeclerc: construireEscadronLeclerc };
 
 const boite = (o) => { o.updateMatrixWorld(true); return new THREE.Box3().setFromObject(o); };
 const animer = (g, api = {}, n = 60) => { for (let k = 0; k < n; k++) g.userData.animer(k * 16, api); };
@@ -19,7 +20,7 @@ const sansNaN = (g) => { let ok = true; g.updateMatrixWorld(true); g.traverse((o
 describe('Scènes 3D des unités projetables', () => {
   it('chaque unité a sa scène, et chaque base extérieure son décor', () => {
     for (const u of Object.values(UNITES)) expect(SCENES[u.scene], u.nom).toBeTypeOf('function');
-    for (const b of Object.values(BASES).filter((x) => !x.metropole)) expect(['desert', 'europe', 'tropical']).toContain(b.terrain);
+    for (const b of Object.values(BASES).filter((x) => !x.metropole)) expect(['desert', 'europe', 'tropical', 'levant']).toContain(b.terrain);
   });
 
   it('se construisent dans les deux états, avec légendes distinctes, commandes et animation', () => {
@@ -84,5 +85,19 @@ describe('Scènes 3D des unités projetables', () => {
     const avant = gauche.position.x;
     animer(g, { attente: true }, 500);
     expect(gauche.position.x).toBeGreaterThan(avant + 0.5);
+  });
+
+  it('dissuasion : SNLE (ou SNLE 3G), escorte, tir d\'essai du M51 qui sort de l\'eau et monte', () => {
+    for (const snle3g of [false, true]) {
+      const g = construireDissuasion(THREE, { donnees: { snle3g } });
+      expect(g.userData.commandes.map((c) => c.id)).toEqual(['trappes', 'tir', 'sonar']);
+      expect(g.userData.legendes.some((l) => l.texte.includes('Monge'))).toBe(true);
+      const api = { trappes: true, tir: true };
+      g.userData.animer(1000, api);
+      const missile = g.userData.m51;
+      g.userData.animer(1000 + 6000, api);
+      expect(missile.visible).toBe(true);
+      expect(missile.position.y).toBeGreaterThan(1);
+    }
   });
 });

@@ -1614,6 +1614,14 @@ export function construireLeclerc(THREE) {
   coaxiale.rotation.z = Math.PI / 2;
   coaxiale.position.set(-0.3, -0.18, 0.32);
   canon.add(tube, bouche, ame, reference, coaxiale);
+  // Tir simulé : lueur de bouche et fumée, cachées au repos
+  const lueur = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 10), new THREE.MeshBasicMaterial({ color: 0xffc76a, transparent: true, opacity: 0.95, depthWrite: false }));
+  lueur.position.x = -4.5;
+  lueur.visible = false;
+  const fumeeTir = new THREE.Mesh(new THREE.SphereGeometry(0.5, 14, 10), new THREE.MeshStandardMaterial({ color: 0xcfc9bd, roughness: 1, transparent: true, opacity: 0, depthWrite: false }));
+  fumeeTir.position.x = -4.7;
+  fumeeTir.visible = false;
+  canon.add(lueur, fumeeTir);
   // Toit : viseur panoramique du chef, viseur du tireur, épiscopes
   const viseurChef = new THREE.Group();
   viseurChef.position.set(-0.85, 0.86, 1.0);
@@ -1718,10 +1726,28 @@ export function construireLeclerc(THREE) {
   ];
   let angle = 0;
   let livree = 'sable';
+  let tir = null;
+  /**
+   * api : tourelle (balayage), cap (angle de tourelle imposé, en radians),
+   * tir (un coup : recul du canon, lueur et fumée de bouche), livree.
+   */
   groupe.userData.animer = (t, api) => {
-    const cible = api.tourelle ? 0.7 * Math.sin(t / 1400) : 0;
+    const cible = typeof api.cap === 'number' ? api.cap : api.tourelle ? 0.7 * Math.sin(t / 1400) : 0;
     angle += (cible - angle) * 0.06;
     tourelle.rotation.y = angle;
+    if (api.tir && tir === null) tir = t;
+    if (tir !== null) {
+      const d = (t - tir) / 1000;
+      // Recul brutal puis retour en batterie ; lueur très brève ; fumée qui s'étale et se dissipe
+      canon.position.x = -2.75 + 0.45 * (d < 0.06 ? d / 0.06 : Math.max(0, 1 - (d - 0.06) / 0.55));
+      lueur.visible = d < 0.11;
+      lueur.scale.set(1.8 + d * 14, 1 + d * 7, 1 + d * 7);
+      fumeeTir.visible = d < 2.2;
+      fumeeTir.scale.setScalar(1.6 + d * 4.5);
+      fumeeTir.position.x = -4.7 - d * 1.2;
+      fumeeTir.material.opacity = Math.max(0, 0.55 * (1 - d / 2.2));
+      if (d > 2.2) { tir = null; canon.position.x = -2.75; lueur.visible = fumeeTir.visible = false; }
+    }
     const voulue = api.livree ?? 'sable';
     if (voulue !== livree && textures[voulue]) {
       livree = voulue;

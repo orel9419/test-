@@ -19,7 +19,7 @@
  * Repère : les engins font face à x négatif ; y vers le haut ; mètres × K.
  */
 import { construireGriffon, construireJaguar, construireCaesar } from './materiels.js';
-import { construireRafale, loft, pieces } from './modeles.js';
+import { construireRafale, construireLeclerc, loft, pieces } from './modeles.js';
 import { construirePhenix, construireCaiman, construireCaracal, soldat } from './aeronefs.js';
 import { construireTigre } from './tigre.js';
 import { voilure, tubeEntre } from './formes.js';
@@ -40,6 +40,7 @@ const MODELES = {
   caracal: { construire: (T) => construireCaracal(T), s: 0.82, sol: -1.8, axe: -1.8 },
   rafale: { construire: (T) => construireRafale(T, { armement: true }), s: 1, sol: -1.75, axe: 0 },
   phenix: { construire: (T) => construirePhenix(T), s: 0.26, sol: -1.12, axe: 0.6 },
+  leclerc: { construire: (T) => construireLeclerc(T), s: 1.35, sol: -2.2 },
 };
 
 /** Construit un engin à l'échelle commune K (unités par mètre) ; origine au sol, ou sur l'axe du fuselage en vol. */
@@ -66,6 +67,7 @@ const SOLS = {
   desert: { sol: 0xb2935f, piste: 0x9a7d50 },
   europe: { sol: 0x5f7243, piste: 0x7d6c4e },
   tropical: { sol: 0x4d6b3c, piste: 0xa67b52 },
+  levant: { sol: 0xa38f63, piste: 0x8c7752 }, // collines sèches du Sud-Liban : calcaire, oliviers
   garnison: { sol: 0x84847f, piste: 0x767672 },
 };
 
@@ -89,7 +91,8 @@ function decor(THREE, K, type, { piste = true, rayon = 600, libre = 40, lointain
   }
   if (type === 'garnison') return g;
   const h = hasard(type.length * 7919 + 13);
-  const roche = mat(THREE, type === 'desert' ? 0x8f7650 : 0x7a7a72, 1, { flatShading: true });
+  const roche = mat(THREE, type === 'desert' ? 0x8f7650 : type === 'levant' ? 0xb3a88f : 0x7a7a72, 1, { flatShading: true });
+  const olivier = mat(THREE, 0x6f7b4e, 1, { flatShading: true });
   const feuillage = mat(THREE, type === 'tropical' ? 0x3f7a3a : 0x3f5f34, 1, { flatShading: true });
   const tronc = mat(THREE, 0x6a5238, 1);
   const dune = mat(THREE, 0xbb9d69, 1);
@@ -99,7 +102,26 @@ function decor(THREE, K, type, { piste = true, rayon = 600, libre = 40, lointain
     const x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (piste && Math.abs(z) < 7) continue;
     const t = h();
-    if (type === 'desert') {
+    if (type === 'levant') {
+      // Rochers calcaires et oliviers trapus
+      if (t < 0.45) {
+        const m = new THREE.Mesh(new THREE.DodecahedronGeometry((0.6 + h() * 1.6) * K, 0), roche);
+        m.position.set(x * K, 0.3 * K, z * K);
+        m.rotation.set(h() * 3, h() * 3, h() * 3);
+        m.scale.y = 0.6;
+        m.castShadow = true;
+        g.add(m);
+      } else {
+        const haut = 2 + h() * 1.2;
+        const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.22 * K, 0.36 * K, haut * K, 6), tronc);
+        tr.position.set(x * K, (haut / 2) * K, z * K);
+        const cime = new THREE.Mesh(new THREE.IcosahedronGeometry((1.7 + h() * 0.9) * K, 0), olivier);
+        cime.position.set(x * K, (haut + 0.9) * K, z * K);
+        cime.scale.y = 0.7;
+        tr.castShadow = cime.castShadow = true;
+        g.add(tr, cime);
+      }
+    } else if (type === 'desert') {
       if (t < 0.3) {
         const m = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8), dune);
         m.scale.set((9 + h() * 10) * K, (1 + h() * 1.6) * K, (6 + h() * 8) * K);
@@ -675,6 +697,147 @@ export function construireForcesSpeciales(THREE, { donnees = null } = {}) {
       caracal.objet.userData.animer?.(tt, { fermer: true });
       tigre.objet.userData.animer?.(tt, {});
     }
+  };
+  racine.userData.animer(0, {});
+  return racine;
+}
+
+/**
+ * Escadron de chars Leclerc : quatre chars montrés sur les treize d'un
+ * escadron. En mission : déployés en ligne face à l'avant, tourelles en
+ * chasse, tirs au canon de 120 mm sur des buttes lointaines, bond en avant ;
+ * livrée selon le terrain (camouflage centre-Europe sur le flanc est, sable
+ * ailleurs). En métropole : alignés devant le hangar du régiment, équipages
+ * de trois hommes rassemblés devant leur char.
+ */
+export function construireEscadronLeclerc(THREE, { donnees = null } = {}) {
+  const K = 0.34;
+  const enMission = donnees?.deploye !== false;
+  const terrain = enMission ? (donnees?.terrain ?? 'europe') : 'garnison';
+  const racine = new THREE.Group();
+  const p = (x, y, z) => new THREE.Vector3(x * K, y * K, z * K);
+  const legendes = [];
+  racine.add(decor(THREE, K, terrain, { piste: false, libre: 36, lointain: 110 }));
+
+  // [x, z, cap] en mètres : ligne de chars (mission) ou alignement au quartier (garnison, face à z positif)
+  const postes = enMission
+    ? [[-4, -18, 0.06], [-10, -6, 0], [-8, 6, -0.03], [-3, 18, -0.07]]
+    : [[-15, -3, Math.PI / 2], [-5, -3, Math.PI / 2], [5, -3, Math.PI / 2], [15, -3, Math.PI / 2]];
+  // Cibles (mission) : buttes à environ 100 m devant (distances resserrées : en réalité 2 à 3 km)
+  const cibles = [[-82, -26], [-88, -8], [-86, 10], [-80, 28]];
+  const chars = postes.map(([x, z, cap]) => {
+    const c = placer(THREE, 'leclerc', K);
+    c.conteneur.position.set(x * K, 0, z * K);
+    c.conteneur.rotation.y = cap;
+    racine.add(c.conteneur);
+    return { x, z, cap, ...c };
+  });
+  const mPoussiere = (couleur) => new THREE.MeshStandardMaterial({ color: couleur, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
+  const couleurSol = (SOLS[terrain] ?? SOLS.desert).sol;
+  // Poussière soulevée au départ du coup, impacts sur les buttes, poussière de roulage
+  const souffles = chars.map(() => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8), mPoussiere(0xcbbd9c)); m.visible = false; racine.add(m); return m; });
+  const impacts = cibles.map(([x, z]) => {
+    const g = new THREE.Group();
+    const nuage = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 9), mPoussiere(0x8d7b60));
+    const eclair = new THREE.Mesh(new THREE.SphereGeometry(0.7, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffd08a, transparent: true, opacity: 0.9, depthWrite: false }));
+    g.add(nuage, eclair);
+    g.position.set(x * K, 1.2 * K, z * K);
+    g.visible = false;
+    racine.add(g);
+    return { g, nuage, eclair };
+  });
+  const roulage = chars.map(() => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), mPoussiere(couleurSol)); m.visible = false; racine.add(m); return m; });
+
+  const lieuTexte = lieu(donnees, 'au quartier, en métropole');
+  if (enMission) {
+    legendes.push({ texte: `Escadron de chars Leclerc · ${lieuTexte}`, point: p(-15, 13, 0) });
+    legendes.push({ texte: 'Char du capitaine, commandant d\'escadron', point: p(postes[1][0], 5.5, postes[1][1]) });
+    legendes.push({ texte: 'Canon de 120 mm : tir en marche, environ 40 obus à bord', point: p(postes[2][0] - 6, 3.4, postes[2][1]) });
+    legendes.push({ texte: 'Quatre chars montrés sur les treize d\'un escadron', point: p(postes[3][0], 5, postes[3][1]) });
+    legendes.push({ texte: 'Objectifs (distances resserrées : 2 à 3 km en réalité)', point: p(-85, 6, 0) });
+  } else {
+    const h = hangar(THREE, K, { longueur: 66, profondeur: 16, hauteur: 7.5 });
+    h.position.set(0, 0, -24 * K);
+    const d = drapeau(THREE, K);
+    d.position.set(-32 * K, 0, 10 * K);
+    racine.add(h, d);
+    const equipages = [];
+    for (const [x] of postes) for (let k = 0; k < 3; k++) equipages.push([x - 1.6 + k * 1.6, 6.5, Math.PI / 2]);
+    for (const s of fantassins(THREE, K, equipages, 0x5f6148, 0x2f3128)) racine.add(s);
+    legendes.push({ texte: `Escadron de chars Leclerc · ${lieuTexte}`, point: p(0, 15, -10) });
+    legendes.push({ texte: 'Équipage de trois : chef de char, tireur, pilote (chargement automatique)', point: p(postes[1][0], 3, 6.5) });
+    legendes.push({ texte: 'Leclerc rénové (XLR) : combat collaboratif SCORPION', point: p(postes[2][0], 5.5, postes[2][1]) });
+  }
+
+  racine.userData.legendes = legendes;
+  racine.userData.taille = 16;
+  racine.userData.echelle = K;
+  racine.userData.sol = true;
+  racine.userData.brume = [BRUME, 42, 150];
+  racine.userData.commandes = enMission ? [
+    { id: 'tourelles', libelle: 'Tourelles en chasse (recherche de cibles)', actif: 'Tourelles dans l\'axe' },
+    { id: 'progresser', libelle: 'Bond en avant', actif: 'Revenir en position' },
+    { id: 'salve', type: 'action', libelle: '💥 Tir au canon (simulation)' },
+  ] : [
+    { id: 'sable', libelle: 'Livrée sable (opérations extérieures)', actif: 'Camouflage centre-Europe' },
+    { id: 'tourelles', libelle: 'Faire pivoter les tourelles', actif: 'Tourelles dans l\'axe' },
+  ];
+  let fP = 0;
+  let vitesse = 0;
+  let salve = null;
+  racine.userData.animer = (t, api = {}) => {
+    const livree = enMission ? (terrain === 'europe' ? 'centreEurope' : 'sable') : (api.sable ? 'sable' : 'centreEurope');
+    if (api.salve && salve === null) { salve = t; }
+    api.salve = false;
+    const avant = fP;
+    fP += ((api.progresser ? 1 : 0) - fP) * 0.012;
+    vitesse = Math.abs(fP - avant);
+    const d = salve === null ? null : (t - salve) / 1000;
+    chars.forEach((c, i) => {
+      // Bond en avant : environ 30 m, de front
+      const x = c.x - 30 * fP;
+      c.conteneur.position.x = x * K;
+      // Visée : vers sa cible pendant la salve, balayage en chasse, sinon dans l'axe
+      let cap = 0;
+      if (enMission && d !== null) {
+        const [cx, cz] = cibles[i];
+        cap = Math.atan2(cz - c.z, -(cx - x)) - c.cap;
+      } else if (api.tourelles) cap = 0.65 * Math.sin(t / 1600 + i * 1.3);
+      const depart = 0.35 + i * 0.55; // tirs l'un après l'autre, une fois la tourelle en place
+      const tir = d !== null && d >= depart && d < depart + 0.05;
+      c.objet.userData.animer?.(t, { cap, tir, livree });
+      // Souffle au départ du coup
+      const s = souffles[i];
+      const u = d === null ? -1 : d - depart;
+      s.visible = u >= 0 && u < 1.6;
+      if (s.visible) {
+        const r = (2 + u * 7) * K;
+        s.scale.set(r * 1.6, r * 0.35, r * 1.6);
+        s.position.set((x - 7.5) * K, 0.25 * K, c.z * K);
+        s.material.opacity = 0.42 * (1 - u / 1.6);
+      }
+      // Impact une seconde plus tard (obus flèche : environ 1 700 m/s)
+      const im = impacts[i];
+      const v = u - 0.9;
+      im.g.visible = enMission && v >= 0 && v < 3;
+      if (im.g.visible) {
+        im.nuage.scale.set((2 + v * 4) * K, (1.6 + v * 3.2) * K, (2 + v * 4) * K);
+        im.nuage.position.y = v * 1.6 * K;
+        im.nuage.material.opacity = 0.75 * (1 - v / 3);
+        im.eclair.visible = v < 0.15;
+        im.eclair.scale.setScalar((1.5 + v * 18) * K);
+      }
+      // Poussière de roulage derrière chaque char en mouvement
+      const pr = roulage[i];
+      pr.visible = vitesse > 0.0004;
+      if (pr.visible) {
+        const a = Math.min(1, vitesse * 900);
+        pr.scale.set((4 + Math.sin(t / 300 + i) * 0.6) * K, 1.6 * K, 3.2 * K);
+        pr.position.set((x + 6.5) * K, 1 * K, c.z * K);
+        pr.material.opacity = 0.32 * a;
+      }
+    });
+    if (d !== null && d > 0.35 + chars.length * 0.55 + 3.2) salve = null;
   };
   racine.userData.animer(0, {});
   return racine;

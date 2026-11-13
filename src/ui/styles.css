@@ -609,7 +609,7 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .visionneuse-snle3g .visionneuse-scene { background: radial-gradient(ellipse at 50% 30%, #f6f7f9 0%, #dfe3e8 60%, #c3c9d1 100%); }
 .visionneuse-porteAvions .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
 .visionneuse-charlesDeGaulle .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
-.visionneuse-groupeAeronaval .visionneuse-scene, .visionneuse-pha .visionneuse-scene, .visionneuse-fda .visionneuse-scene, .visionneuse-fremm .visionneuse-scene, .visionneuse-brf .visionneuse-scene, .visionneuse-monge .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
+.visionneuse-groupeAeronaval .visionneuse-scene, .visionneuse-dissuasion .visionneuse-scene, .visionneuse-pha .visionneuse-scene, .visionneuse-fda .visionneuse-scene, .visionneuse-fremm .visionneuse-scene, .visionneuse-brf .visionneuse-scene, .visionneuse-monge .visionneuse-scene { background: linear-gradient(180deg, #8fb7dc 0%, #c9dcec 55%, #c9dcec 100%); }
 .visionneuse-sna .visionneuse-scene { background: linear-gradient(180deg, #2f6aa3 0%, #12395f 45%, #071a2e 100%); }
 .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #f3f1e8 0%, #d9d6c4 55%, #b3ad94 100%); }
 :root[data-theme="dark"] .visionneuse-leclerc .visionneuse-scene { background: radial-gradient(ellipse at 50% 35%, #45443a 0%, #2b2a24 60%, #191814 100%); }
@@ -792,7 +792,17 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .unite-deployable select { font-size: 0.85rem; }
 
 /* Scènes des unités en mission : ciel au-dessus du terrain, ciel d'altitude pour les avions */
-.visionneuse-gtia .visionneuse-scene, .visionneuse-forcesSpeciales .visionneuse-scene { background: linear-gradient(180deg, #7fadd8 0%, #c6d9ea 45%, #dfe3e2 62%, #dfe3e2 100%); }
+.visionneuse-gtia .visionneuse-scene, .visionneuse-forcesSpeciales .visionneuse-scene, .visionneuse-escadronLeclerc .visionneuse-scene { background: linear-gradient(180deg, #7fadd8 0%, #c6d9ea 45%, #dfe3e2 62%, #dfe3e2 100%); }
 .visionneuse-policeDuCiel .visionneuse-scene, .visionneuse-ravitaillement .visionneuse-scene { background: linear-gradient(180deg, #4f8fd0 0%, #9cc3e8 55%, #cfe2f3 100%); }
-:root[data-theme="dark"] .visionneuse-gtia .visionneuse-scene, :root[data-theme="dark"] .visionneuse-forcesSpeciales .visionneuse-scene { background: linear-gradient(180deg, #33506e 0%, #6f8aa3 55%, #8a8473 100%); }
+:root[data-theme="dark"] .visionneuse-gtia .visionneuse-scene, :root[data-theme="dark"] .visionneuse-forcesSpeciales .visionneuse-scene, :root[data-theme="dark"] .visionneuse-escadronLeclerc .visionneuse-scene { background: linear-gradient(180deg, #33506e 0%, #6f8aa3 55%, #8a8473 100%); }
 :root[data-theme="dark"] .visionneuse-policeDuCiel .visionneuse-scene, :root[data-theme="dark"] .visionneuse-ravitaillement .visionneuse-scene { background: linear-gradient(180deg, #1f3f66 0%, #47709c 60%, #7d9cba 100%); }
+
+/* Opérations extérieures : repères sur la carte, opérations en cours, choix des forces */
+.carte-opex path { fill: var(--critique); stroke: var(--surface); stroke-width: 1.4; }
+.carte-opex text { font-size: 12px; font-weight: 700; fill: var(--encre); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; pointer-events: none; }
+.carte-opex text.icones { font-weight: 400; stroke-width: 0; }
+.pastille-legende.opex { display: inline-block; width: 10px; height: 10px; background: var(--critique); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); margin-right: 0.3rem; }
+.operation-encours { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.55rem 0.7rem; border: 1px solid var(--critique); border-radius: 10px; background: color-mix(in srgb, var(--critique) 6%, var(--surface-2)); }
+.unite-deployable.en-operation { border-color: var(--critique); }
+.forces-prevues { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.35rem; }
+.forces-prevues .etiquette { font-size: 0.72rem; }

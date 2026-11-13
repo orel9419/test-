@@ -182,7 +182,45 @@ export function deciderDefense(e, d = {}, alea) {
       res.push({ type: 'erreur', texte: 'La dissuasion relève du seul président de la République.' });
     }
   }
+  // Dissuasion : tir d'essai d'un missile M51 (au plus un par an, aléa séparé)
+  if (d.essaiM51 && e.pays === 'france') res.push(essaiM51(e));
   return res;
+}
+
+/** Sous-marins nucléaires lanceurs d'engins en service, d'où partent les tirs d'essai à tour de rôle. */
+const LANCEURS_M51 = ['Le Téméraire', 'Le Terrible', 'Le Triomphant', 'Le Vigilant'];
+/** Chance de succès d'un tir d'essai (hypothèse de jeu : un seul échec public, en 2013, sur une quinzaine de tirs). */
+export const CHANCE_ESSAI_M51 = 0.9;
+/** Coût d'un tir d'essai, en Md€ (missile, campagne de mesure : hypothèse de jeu). */
+export const COUT_ESSAI_M51 = 0.1;
+
+/** Prochain trimestre (rang de tour) où un essai est possible : un par an au plus. */
+export function prochainEssaiM51(e) {
+  const dernier = e.defense?.essaisM51?.at(-1);
+  return dernier ? dernier.tour + 4 : e.tour;
+}
+
+/**
+ * Tir d'essai d'un M51, sans charge nucléaire, depuis un SNLE au large du
+ * Finistère, suivi par le bâtiment d'essais et de mesures Monge. Réussi, il
+ * conforte la crédibilité de la dissuasion (influence) ; raté, il impose une
+ * enquête et coûte un peu de crédit. Décision du seul président.
+ */
+export function essaiM51(e) {
+  const x = e.defense;
+  if (domaineReserve(e)) return { type: 'erreur', texte: 'La dissuasion relève du seul président de la République.' };
+  if (e.tour < prochainEssaiM51(e)) return { type: 'erreur', texte: `Un tir d'essai par an au plus : encore ${prochainEssaiM51(e) - e.tour} trimestre(s) à attendre.` };
+  const n = x.essaisM51?.length ?? 0;
+  const lanceur = LANCEURS_M51[n % LANCEURS_M51.length];
+  const succes = creerAleatoire(((e.graine ^ Math.imul(e.tour + 41, 2654435761)) + 7) >>> 0).tirage(CHANCE_ESSAI_M51);
+  e.depensesTemporaires.push({ poste: 'defense', valeur: COUT_ESSAI_M51 * 4, fin: e.tour + 1, source: 'essai_m51' });
+  appliquer(e, { influence: succes ? 1 : -1 }, 'Essai M51');
+  x.essaisM51 = [...(x.essaisM51 ?? []), { tour: e.tour, trimestre: libelleTrimestre(e.trimestre), lanceur, succes }];
+  const texte = succes
+    ? `Dissuasion — Tir d'essai réussi : un missile M51 sans charge nucléaire, tiré en plongée par le SNLE ${lanceur} au large du Finistère, a atteint sa zone de retombée en Atlantique Nord, suivi par le Monge. Message de crédibilité adressé à tous.`
+    : `Dissuasion — Échec du tir d'essai : le missile M51 tiré par le SNLE ${lanceur} s'est autodétruit peu après sa sortie de l'eau, comme le 5 mai 2013 depuis Le Vigilant. Enquête de la DGA ; les autres missiles ne sont pas en cause.`;
+  e.journal.push({ tour: e.tour, trimestre: libelleTrimestre(e.trimestre), type: succes ? 'reforme' : 'alerte', texte });
+  return { type: 'essaiM51', succes, texte };
 }
 
 /** Chances d'emporter un contrat d'armement (relations, influence, carnet de commandes déjà gagné). */
@@ -382,5 +420,7 @@ export function resumeDefense(e) {
     exports: exportsDuPays(e.pays).map((p) => ({ ...p, ...x.exports[p.id], probabilite: probabiliteExport(e, p), disponible: x.exports[p.id]?.statut === 'ouvert' && (x.exports[p.id].derniereTentative === null || e.tour - x.exports[p.id].derniereTentative >= 4) })),
     dissuasion: x.dissuasion,
     domaineReserve: domaineReserve(e),
+    essaisM51: x.essaisM51 ?? [],
+    prochainEssaiM51: prochainEssaiM51(e),
   };
 }

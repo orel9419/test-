@@ -9,7 +9,7 @@
  * publiques et les photos, infographies ou plans de référence, puis mis à
  * l'échelle pour mesurer environ 13 unités. Formes simplifiées.
  */
-import { loft, surface, pieces, tronc, texturePeinte, texturePanneaux, construireCharlesDeGaulle, construirePorteAvions, construireRafale } from './modeles.js';
+import { loft, surface, pieces, tronc, texturePeinte, texturePanneaux, construireCharlesDeGaulle, construirePorteAvions, construireRafale, construireSnle, construireSnle3G } from './modeles.js';
 import { construireCaiman } from './aeronefs.js';
 
 const GRIS = [0.24, 0.26, 0.28];
@@ -1040,6 +1040,7 @@ const MODELES_GROUPE = {
   brf: { construire: construireBrf, s: 13 / 194, y: -0.5, L: 194, B: 27, nom: 'ravitailleur de forces' },
   sna: { construire: construireSna, s: 0.13, y: -0.6 * 0.13, L: 99, B: 9, nom: 'SNA' },
   pha: { construire: construirePha, s: 13 / 199, y: -0.5, L: 199, B: 32, nom: 'porte-hélicoptères amphibie' },
+  monge: { construire: construireMonge, s: 13 / 225, y: -0.5, L: 225, B: 24, nom: 'Monge' },
 };
 
 /** Positions de l'escorte autour du porte-avions (mètres ; cap vers x négatif ; z négatif à tribord). Distances resserrées. */
@@ -1254,5 +1255,245 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
       a.r.rotation.set(-0.35, Math.PI / 2 - ang, 0);
     }
   };
+  return racine;
+}
+
+// ---------------------------------------------------------------------------
+// Dissuasion océanique : SNLE en patrouille, son escorte, tir d'essai d'un M51
+// ---------------------------------------------------------------------------
+
+/** Missile M51 (12 m, 2,3 m de diamètre), en mètres, base en y = 0, pointe vers le haut ; tuyère et flamme. */
+function missileM51(THREE) {
+  const g = new THREE.Group();
+  const blanc = new THREE.MeshStandardMaterial({ color: 0xe9ebee, roughness: 0.45, metalness: 0.15 });
+  const sombre = new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.6, metalness: 0.3 });
+  const corps = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.15, 8.6, 24), blanc);
+  corps.position.y = 4.3;
+  const coiffe = new THREE.Mesh(new THREE.ConeGeometry(1.15, 3.4, 24), blanc);
+  coiffe.position.y = 10.3;
+  const bague = new THREE.Mesh(new THREE.CylinderGeometry(1.17, 1.17, 0.35, 24), sombre);
+  bague.position.y = 6.2;
+  const tuyere = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 1.0, 0.8, 18, 1, true), sombre);
+  tuyere.position.y = -0.3;
+  const flamme = new THREE.Group();
+  const coeur = new THREE.Mesh(new THREE.ConeGeometry(0.9, 7, 18, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff1c4, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide }));
+  const halo = new THREE.Mesh(new THREE.ConeGeometry(1.6, 11, 18, 1, true), new THREE.MeshBasicMaterial({ color: 0xff9a3c, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
+  coeur.rotation.x = halo.rotation.x = Math.PI; // pointe vers le bas
+  coeur.position.y = -4.1;
+  halo.position.y = -6;
+  flamme.add(halo, coeur);
+  flamme.visible = false;
+  g.add(corps, coiffe, bague, tuyere, flamme);
+  g.traverse((o) => { if (o.isMesh) o.castShadow = !o.material.transparent; });
+  return { groupe: g, flamme };
+}
+
+/** Côte basse et falaises à l'horizon (Finistère), en mètres × k. */
+function cote(THREE, k, z) {
+  const g = new THREE.Group();
+  const lande = new THREE.MeshStandardMaterial({ color: 0x6f7a55, roughness: 1, flatShading: true });
+  const falaise = new THREE.MeshStandardMaterial({ color: 0x8a8273, roughness: 1, flatShading: true });
+  const reliefs = [[-2600, 520, 70], [-1700, 640, 95], [-800, 520, 60], [0, 760, 110], [900, 600, 80], [1800, 700, 100], [2700, 560, 65]];
+  for (const [x, l, h] of reliefs) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 10), lande);
+    m.scale.set(l * k, h * k, 230 * k);
+    m.position.set(x * k, -h * 0.25 * k, z * k);
+    const f = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 1), falaise);
+    f.scale.set(l * 0.8 * k, h * 0.55 * k, 60 * k);
+    f.position.set(x * k, 0, (z + 170) * k);
+    g.add(m, f);
+  }
+  return g;
+}
+
+/**
+ * Dissuasion océanique : un SNLE en patrouille, en plongée (SNLE 3G s'il est
+ * en service dans la partie), un SNA qui protège sa patrouille, une FREMM
+ * anti-sous-marine et son Caïman Marine à sonar trempé, et le bâtiment
+ * d'essais et de mesures Monge, au large des côtes du Finistère.
+ * Commandes : trappes des missiles, tir d'essai d'un M51 (éjection à froid,
+ * sortie de l'eau, allumage du premier étage, montée et basculement vers
+ * l'Atlantique), sonar trempé.
+ * donnees : { snle3g: booléen, nom: nom du SNLE }
+ * Navires à la même échelle, distances resserrées ; missile agrandi en vol.
+ */
+export function construireDissuasion(THREE, { donnees = null } = {}) {
+  const k = 0.05;
+  const racine = new THREE.Group();
+  const P = (x, y, z) => new THREE.Vector3(x * k, y * k, z * k);
+  const legendes = [];
+  const animations = [];
+
+  // SNLE en plongée : axe à 30 m sous la surface, cap vers x négatif
+  const nouveau = !!donnees?.snle3g;
+  const snle = nouveau ? construireSnle3G(THREE) : construireSnle(THREE);
+  const s = 0.1; // échelle propre des modèles de SNLE (1/10)
+  const f = k / s;
+  const conteneurSnle = new THREE.Group();
+  conteneurSnle.add(snle);
+  conteneurSnle.scale.setScalar(f);
+  conteneurSnle.position.y = -30 * k + 0.15 * f; // l'axe de la coque est à y = -0,15 dans le modèle
+  racine.add(conteneurSnle);
+  const trappes = snle.userData.trappes ?? [];
+  if (snle.userData.missile) snle.userData.missile.visible = false;
+  const nom = donnees?.nom ?? (nouveau ? 'L\'Invincible (SNLE 3G)' : 'Le Téméraire');
+  legendes.push({ texte: `SNLE ${nom} en patrouille, à une trentaine de mètres de profondeur`, point: P(0, 4, 0) });
+  legendes.push({ texte: '16 tubes de missiles M51, derrière le kiosque', point: P(nouveau ? 0 : -3, -12, 14) });
+
+  // SNA d'escorte : il « nettoie » la zone et protège la patrouille
+  const sna = navireDuGroupe(THREE, 'sna', k);
+  sna.conteneur.position.set(-300 * k, sna.conteneur.position.y - 22 * k, 190 * k);
+  racine.add(sna.conteneur);
+  legendes.push({ texte: 'SNA (classe Suffren) : il protège la patrouille contre les sous-marins adverses', point: P(-300, 2, 190) });
+
+  // FREMM anti-sous-marine, son sillage, son Caïman Marine
+  const fremm = navireDuGroupe(THREE, 'fremm', k);
+  fremm.conteneur.position.set(-430 * k, fremm.conteneur.position.y, -300 * k);
+  racine.add(fremm.conteneur);
+  const sf = sillage(THREE, fremm.d.L, fremm.d.B);
+  sf.scale.setScalar(k);
+  sf.position.set((-430 + fremm.d.L / 2) * k, 1.5 * k, -300 * k);
+  racine.add(sf);
+  if (fremm.objet.userData.animer) animations.push(fremm.objet);
+  const helico = caimanAsm(THREE, k, racine, -560, -210);
+  legendes.push({ texte: 'FREMM anti-sous-marine (sonar remorqué)', point: P(-430, 40, -300) });
+  legendes.push({ texte: 'Caïman Marine : sonar trempé', point: P(-560, 95, -210) });
+
+  // Monge : il suit le tir (radars de trajectographie, télémesure)
+  const monge = navireDuGroupe(THREE, 'monge', k);
+  monge.conteneur.position.set(620 * k, monge.conteneur.position.y, -560 * k);
+  monge.conteneur.rotation.y = 0.5;
+  racine.add(monge.conteneur);
+  legendes.push({ texte: 'Bâtiment d\'essais et de mesures Monge : il suit le missile', point: P(620, 50, -560) });
+
+  // Côtes du Finistère à l'horizon
+  racine.add(cote(THREE, k, -2300));
+  legendes.push({ texte: 'Côtes du Finistère (essais au large de la baie d\'Audierne)', point: P(-800, 90, -2200) });
+
+  // Mer un peu transparente : on devine les sous-marins sous la surface
+  const mer = new THREE.Mesh(new THREE.PlaneGeometry(9000, 9000), new THREE.MeshStandardMaterial({ color: 0x174a72, roughness: 0.4, metalness: 0, envMapIntensity: 0.3, transparent: true, opacity: 0.62 }));
+  mer.rotation.x = -Math.PI / 2;
+  mer.position.y = -0.01;
+  mer.receiveShadow = true;
+  mer.renderOrder = 1;
+  racine.add(mer);
+
+  // Missile, bulles, gerbe d'eau et panache
+  const { groupe: m51, flamme } = missileM51(THREE);
+  m51.visible = false;
+  racine.add(m51);
+  racine.updateMatrixWorld(true);
+  const iTube = Math.min(6, Math.max(0, trappes.length - 1));
+  const t0 = trappes[iTube];
+  const depart = t0 ? t0.parent.localToWorld(new THREE.Vector3(t0.position.x, t0.position.y, (t0.userData.cote ?? 1) * 2.0 * s)) : P(0, -22, 2);
+  const mBulle = new THREE.MeshStandardMaterial({ color: 0xe8f3ff, roughness: 0.2, transparent: true, opacity: 0.55, depthWrite: false });
+  const bulles = Array.from({ length: 24 }, () => { const b = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), mBulle); b.visible = false; racine.add(b); return b; });
+  const gerbe = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.3, 1, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0xf4f8fb, roughness: 0.9, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+  gerbe.visible = false;
+  const anneau = new THREE.Mesh(new THREE.RingGeometry(0.7, 1, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+  anneau.rotation.x = -Math.PI / 2;
+  anneau.visible = false;
+  anneau.renderOrder = 3;
+  racine.add(gerbe, anneau);
+  const mFumee = new THREE.MeshStandardMaterial({ color: 0xf1f1ef, roughness: 1, transparent: true, depthWrite: false });
+  const fumees = Array.from({ length: 110 }, () => { const b = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 7), mFumee.clone()); b.visible = false; racine.add(b); return { b, ne: -1, x: 0, y: 0, z: 0 }; });
+  let prochaine = 0;
+
+  racine.userData.legendes = legendes;
+  racine.userData.taille = 14;
+  racine.userData.mer = true;
+  racine.userData.brume = [0xc9dcec, 45, 190];
+  racine.userData.m51 = m51; // missile du tir d'essai (tests)
+  racine.userData.commandes = [
+    { id: 'trappes', libelle: 'Ouvrir les trappes des missiles', actif: 'Fermer les trappes' },
+    { id: 'tir', type: 'action', libelle: '🚀 Tir d\'essai d\'un M51 (simulation)', requiert: 'trappes', aide: 'Ouvrez d\'abord les trappes' },
+    { id: 'sonar', libelle: 'Tremper le sonar (lutte anti-sous-marine)', actif: 'Remonter le sonar' },
+  ];
+  let tir = null;
+  racine.userData.animer = (t, api = {}) => {
+    helico.animer(t, !!api.sonar);
+    for (const o of animations) o.userData.animer(t, {});
+    // Trappes : ouverture progressive
+    const cible = api.trappes ? 1.75 : 0;
+    for (const tr of trappes) {
+      tr.userData.angle += (cible - tr.userData.angle) * 0.08;
+      tr.rotation.x = tr.userData.cote * tr.userData.angle;
+    }
+    if (api.tir && tir === null && api.trappes) { tir = t; prochaine = 0; }
+    api.tir = false;
+    monge.objet.userData.animer?.(t, { suivre: tir !== null });
+    const d = tir === null ? -1 : (t - tir) / 1000;
+    const surface = 0;
+    let pos = null, inclinaison = 0, echelle = 1.6;
+    if (d >= 0) {
+      if (d < 1.8) {
+        // Éjection à froid : un générateur de gaz pousse le missile hors du tube, jusqu'à la surface
+        const u = d / 1.8;
+        pos = new THREE.Vector3(depart.x, depart.y + (surface + 0.15 - depart.y) * (u * u * (3 - 2 * u)), depart.z);
+      } else if (d < 2.5) {
+        // Il jaillit de l'eau, presque à l'arrêt, puis le premier étage s'allume
+        const u = (d - 1.8) / 0.7;
+        pos = new THREE.Vector3(depart.x, surface + 0.15 + 1.1 * Math.sin(u * Math.PI / 2), depart.z);
+      } else {
+        // Montée accélérée, puis basculement progressif vers le large (x négatif)
+        const u = d - 2.5;
+        const h = 1.25 + 0.8 * u * u + 1.2 * u;
+        inclinaison = Math.min(0.75, Math.max(0, (u - 1.2) * 0.25));
+        const deport = Math.max(0, u - 1.2) ** 2;
+        pos = new THREE.Vector3(depart.x - deport, surface + h, depart.z);
+        echelle = 1.6 + Math.min(2.4, u * 0.8); // agrandi en vol pour rester visible
+      }
+    }
+    const enVol = pos && d < 15;
+    m51.visible = !!enVol;
+    if (enVol) {
+      m51.position.copy(pos);
+      m51.rotation.set(0, 0, inclinaison);
+      m51.scale.setScalar(k * echelle);
+      flamme.visible = d >= 2.45;
+      if (flamme.visible) flamme.scale.set(1 + Math.sin(t / 30) * 0.08, 1 + Math.sin(t / 45) * 0.15, 1);
+    }
+    // Bulles pendant l'éjection
+    bulles.forEach((b, i) => {
+      const u = d - i * 0.06;
+      b.visible = d >= 0 && d < 3 && u > 0 && u < 1.6;
+      if (b.visible) {
+        const y = Math.min(-0.02, depart.y + u * 1.3);
+        b.position.set(depart.x + Math.sin(i * 2.1) * 0.12, y, depart.z + Math.cos(i * 1.7) * 0.12);
+        b.scale.setScalar(k * (0.6 + (i % 4) * 0.25));
+      }
+    });
+    // Gerbe et anneau d'écume à la sortie de l'eau
+    const g = d - 1.75;
+    gerbe.visible = anneau.visible = d >= 0 && g > 0 && g < 4;
+    if (gerbe.visible) {
+      gerbe.position.set(depart.x, (0.5 + g * 0.6) * k * 6, depart.z);
+      gerbe.scale.set((3 + g * 4) * k * 1.6, (2 + g * 10) * k * 1.4, (3 + g * 4) * k * 1.6);
+      gerbe.material.opacity = 0.7 * Math.max(0, 1 - g / 2.2);
+      anneau.position.set(depart.x, 0.02, depart.z);
+      anneau.scale.setScalar((4 + g * 22) * k);
+      anneau.material.opacity = 0.75 * Math.max(0, 1 - g / 4);
+    }
+    // Panache du premier étage : bouffées émises sous la tuyère, qui grossissent et se dissipent
+    if (enVol && d >= 2.45) {
+      while (prochaine <= d) {
+        const libre = fumees.find((x) => x.ne < 0) ?? fumees.reduce((a, b) => (a.ne < b.ne ? a : b));
+        const queue = new THREE.Vector3(0, -1.2, 0).applyEuler(m51.rotation).multiplyScalar(k * echelle).add(m51.position);
+        Object.assign(libre, { ne: prochaine, x: queue.x, y: queue.y, z: queue.z });
+        prochaine += d < 7.5 ? 0.07 : 0.3; // panache dense au départ, plus lâche une fois le missile hors de vue
+      }
+    }
+    for (const fu of fumees) {
+      if (fu.ne < 0) continue;
+      const age = d - fu.ne;
+      if (d < 0 || age > 14) { fu.ne = -1; fu.b.visible = false; continue; }
+      fu.b.visible = age >= 0;
+      fu.b.position.set(fu.x + age * 0.05, fu.y + age * 0.01, fu.z + age * 0.02);
+      fu.b.scale.setScalar((0.22 + Math.sqrt(age) * 0.42) * (fu.y > 1.2 ? 1 : 1.5));
+      fu.b.material.opacity = 0.82 * Math.max(0, 1 - age / 14);
+    }
+    if (d > 28) { tir = null; m51.visible = false; for (const fu of fumees) { fu.ne = -1; fu.b.visible = false; } }
+  };
+  racine.userData.animer(0, {});
   return racine;
 }

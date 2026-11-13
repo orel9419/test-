@@ -7,14 +7,16 @@ import { EVENEMENTS as BASE } from '../data/evenements.js';
 import { GRANDS_EVENEMENTS } from '../data/grandsEvenements.js';
 import { CRISES } from '../data/geopolitique.js';
 import { PENURIES } from '../data/relocalisations.js';
+import { CRISES_OPEX } from '../data/opex.js';
 
 /** Catalogue complet : événements aléatoires, dossiers d'entreprises et grands rendez-vous à date fixe. */
-export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES, ...EVENEMENTS_INSTITUTIONS];
+export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES, ...EVENEMENTS_INSTITUTIONS, ...CRISES_OPEX];
 import { appliquerChocs } from './social.js';
 import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
 import { appliquerEffetsEntreprise } from './entreprises.js';
+import { engagerForces, appliquerTensions } from './opex.js';
 
 /** Tire les événements du prochain trimestre (au plus deux, plus un mouvement social éventuel). */
 export function genererEvenements(e, alea, frequence = 1, options = {}) {
@@ -79,6 +81,9 @@ function appliquerEffets(e, eff, alea) {
     e.grandsEvenements ??= {};
     e.grandsEvenements[id] = { ...(e.grandsEvenements[id] ?? {}), ...reste };
   }
+  // Opérations extérieures (France) : forces engagées, tension des théâtres
+  if (eff.envoiForces) engagerForces(e, eff.envoiForces.operation, eff.envoiForces.unites);
+  if (eff.tensions) appliquerTensions(e, eff.tensions);
   if (eff.reduireGrief) {
     for (const ref of e.reformes.actives) if (ref.grief?.[eff.reduireGrief.groupe]) ref.grief[eff.reduireGrief.groupe] *= 1 - eff.reduireGrief.part;
   }

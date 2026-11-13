@@ -1,7 +1,8 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Info from '../composants/Info.jsx';
-import { resumeGeopolitique, compositionGroupes, resumeDeploiements } from '../../engine/index.js';
+import { resumeGeopolitique, compositionGroupes, resumeDeploiements, resumeOpex } from '../../engine/index.js';
 import { GROUPE_AERONAVAL } from '../../data/geopolitique.js';
+import { SOURCES_OPEX } from '../../data/opex.js';
 import { PARTENAIRES } from '../../data/diplomatie.js';
 import { md } from '../format.js';
 
@@ -17,7 +18,7 @@ const L = 960, H = 500;
 const niveau = (t) => (t >= 65 ? { classe: 'critique', texte: 'forte' } : t >= 40 ? { classe: 'attention', texte: 'moyenne' } : { classe: 'bon', texte: 'faible' });
 
 /** Carte du monde (Natural Earth) chargée à la demande, avec les théâtres et le groupe aéronaval. */
-function CarteMonde({ theatres, groupes, choisi, onChoisir, bases = [] }) {
+function CarteMonde({ theatres, groupes, choisi, onChoisir, bases = [], operations = [] }) {
   const [carte, setCarte] = useState(null);
   // Largeur affichée : sur un petit écran, les repères sont agrandis pour rester lisibles et faciles à toucher
   const [largeur, setLargeur] = useState(L);
@@ -76,6 +77,17 @@ function CarteMonde({ theatres, groupes, choisi, onChoisir, bases = [] }) {
             <rect x="-4.5" y="-4.5" width="9" height="9" transform="rotate(45)" />
             {icones && <text y="17" textAnchor="middle">{icones}</text>}
             <title>{`${b.nom}${icones ? ` : ${b.presents.length} unité(s) déployée(s)` : ''}`}</title>
+          </g>
+        );
+      })}
+      {operations.map((o) => {
+        const [x, y] = p(o.lon, o.lat);
+        return (
+          <g key={o.id} className="carte-opex" transform={`translate(${x},${y}) scale(${k})`}>
+            <path d="M0,-9 L2.6,-2.6 L9,0 L2.6,2.6 L0,9 L-2.6,2.6 L-9,0 L-2.6,-2.6 Z" />
+            <text y="-12" textAnchor="middle">{o.court}</text>
+            <text y="21" textAnchor="middle" className="icones">{o.unites.map((u) => u.icone).join('')}</text>
+            <title>{`${o.nom} : encore ${o.restants} trimestre(s)`}</title>
           </g>
         );
       })}
@@ -157,10 +169,36 @@ function FicheGroupe({ g, numero, plusieurs, destination, nomTheatre, onAnnuler 
  * aéronaval. Les crises arrivent dans l'onglet Événements.
  */
 /**
+ * Opérations extérieures : en cours (forces engagées, échéance, chances) et
+ * passées (issue). Les crises qui les déclenchent arrivent dans les Événements.
+ */
+function Operations({ opex, allerA }) {
+  return (
+    <div className="carte pile operations-ext">
+      <h3 style={{ margin: 0 }}>🎖️ Opérations extérieures <Info texte="Au fil des trimestres, des crises éclatent (Liban, otages au Sahel, flanc est de l'OTAN, Émirats) : vous décidez d'y engager ou non vos forces projetables, dans l'onglet Événements. Une opération coûte plus cher et use davantage qu'une simple présence ; son issue est tirée à la fin, avec des chances qui dépendent des unités engagées et de leur potentiel. Hypothèses de jeu." /></h3>
+      {opex.encours.length === 0 && <p className="petit muet" style={{ margin: 0 }}>Aucune opération en cours. Quand une crise éclate, elle arrive dans l'onglet <button type="button" className="lien" onClick={() => allerA?.('evenements')}>Événements</button>, avec les forces disponibles et vos chances de succès.</p>}
+      {opex.encours.map((o) => (
+        <div key={o.id} className="operation-encours">
+          <div className="ligne espace"><strong className="petit">{o.nom}</strong><span className="etiquette">encore {o.restants} trim.</span></div>
+          <span className="tres-petit">Forces engagées : {o.unites.map((u) => `${u.icone} ${u.court}`).join(' · ')} · chances de succès estimées à l'engagement : <strong>{Math.round(o.chance * 100)} %</strong></span>
+          <div className="jauge-potentiel" aria-hidden="true"><div style={{ width: `${Math.min(100, (o.trimestres / Math.max(1, o.fin - o.debut)) * 100)}%` }} /></div>
+        </div>
+      ))}
+      {opex.historique.length > 0 && (
+        <ul className="tres-petit" style={{ margin: 0, paddingLeft: '1rem' }}>
+          {opex.historique.map((h) => <li key={`${h.id}-${h.debut}`}><span className={h.succes ? 'positif' : 'negatif'}>{h.succes ? '✔ Succès' : '✖ Échec'}</span> · {h.nom} (chances : {Math.round(h.chance * 100)} %)</li>)}
+        </ul>
+      )}
+      <p className="tres-petit muet" style={{ margin: 0 }}>Repères : {Object.values(SOURCES_OPEX).slice(0, 3).map((x, i) => <span key={x.url}>{i > 0 && ' · '}<a href={x.url} target="_blank" rel="noreferrer">{x.titre}</a></span>)}.</p>
+    </div>
+  );
+}
+
+/**
  * Forces projetables : unités terrestres et aériennes à envoyer sur des bases
  * françaises ou alliées, comme le groupe aéronaval.
  */
-function Deploiements({ d, decisions, majDecisions }) {
+function Deploiements({ d, opex, decisions, majDecisions }) {
   const [vue3d, setVue3d] = useState(null); // unité montrée en 3D
   const ordres = decisions.deploiements ?? {};
   const donner = (unite, base) => majDecisions((x) => ({ deploiements: { ...(x.deploiements ?? {}), [unite]: base } }));
@@ -168,21 +206,22 @@ function Deploiements({ d, decisions, majDecisions }) {
   return (
     <div className="carte pile deploiements">
       <h3 style={{ margin: 0 }}>🪖 Forces projetables et bases alliées <Info texte="Comme le groupe aéronaval, chaque unité déployée coûte, s'use et doit revenir en métropole pour récupérer. Sa présence apaise la tension du théâtre voisin et renforce l'influence et les relations avec le pays hôte. Une base alliée n'accueille que si les relations restent suffisantes ; les missions de l'OTAN supposent d'en être membre. Effectifs, coûts et effets : hypothèses de jeu." /></h3>
-      <p className="petit muet" style={{ margin: 0 }}>Déployées : {d.unites.filter((u) => u.position !== 'metropole').length} unité(s) sur {d.unites.length} · coût de présence environ {md(d.coutAnnuel, 2)} par an.{d.horsOtan && <strong className="negatif"> La France a quitté l'OTAN : les missions de l'Alliance (Roumanie, Estonie, Lituanie) lui sont fermées.</strong>}</p>
+      <p className="petit muet" style={{ margin: 0 }}>Déployées : {d.unites.filter((u) => u.position !== 'metropole' && !u.enOperation).length} unité(s) sur {d.unites.length} · coût de présence environ {md(d.coutAnnuel, 2)} par an{d.unites.some((u) => u.enOperation) ? ` · en opération : ${d.unites.filter((u) => u.enOperation).length} (environ ${md(d.coutOpex, 2)} par an)` : ''}.{d.horsOtan && <strong className="negatif"> La France a quitté l'OTAN : les missions de l'Alliance (Roumanie, Estonie, Lituanie) lui sont fermées.</strong>}</p>
       <div className="grille-deploiements">
         {d.unites.map((u) => {
           const ordre = ordres[u.id];
-          const choix = d.bases.filter((b) => b.id !== u.position && b.types.includes(u.type));
+          const choix = d.bases.filter((b) => b.id !== u.position && b.types.includes(u.type) && (!u.bases || b.metropole || u.bases.includes(b.id)));
           const fatigue = u.potentiel < d.potentielMin + u.usure;
           return (
-            <div key={u.id} className={`unite-deployable ${u.position !== 'metropole' ? 'deployee' : ''}`}>
+            <div key={u.id} className={`unite-deployable ${u.position !== 'metropole' ? 'deployee' : ''} ${u.enOperation ? 'en-operation' : ''}`}>
               <div className="ligne espace"><strong className="petit">{u.icone} {u.nom}</strong><span className="etiquette">{u.type === 'air' ? 'Air' : 'Terre'}</span></div>
               <span className="tres-petit muet">{u.description}</span>
-              <div className="ligne espace petit"><span>Position</span><strong>{nomBase(u.position)}{u.position !== 'metropole' ? ` · ${u.trimestres} trim.` : ''}</strong></div>
+              <div className="ligne espace petit"><span>Position</span><strong>{u.lieu ?? nomBase(u.position)}{u.position !== 'metropole' ? ` · ${u.trimestres} trim.` : ''}</strong></div>
               <div className="tres-petit">Potentiel : <strong>{Math.round(u.potentiel)} %</strong>{u.repos > 0 ? ` · remise en condition : ${u.repos} trimestre(s)` : ''}
                 <div className="jauge-potentiel"><div style={{ width: `${u.potentiel}%` }} className={u.potentiel < 40 ? 'bas' : ''} /></div>
               </div>
-              <label className="tres-petit">Ordre :
+              {u.enOperation && <span className="tres-petit alerte">🎖️ Engagée en opération : retour en métropole dans {u.restants} trimestre(s), à la fin de l'opération.</span>}
+              {!u.enOperation && <label className="tres-petit">Ordre :
                 <select value={ordre ?? ''} onChange={(ev) => donner(u.id, ev.target.value || null)} style={{ marginLeft: 6, maxWidth: '100%' }}>
                   <option value="">— rester sur place —</option>
                   {choix.map((b) => {
@@ -191,7 +230,7 @@ function Deploiements({ d, decisions, majDecisions }) {
                     return <option key={b.id} value={b.id} disabled={bloque}>{b.metropole ? 'Rentrer en métropole' : `${b.court}${bloque ? ` (${!a.ok ? 'accès refusé' : 'unité à remettre en condition'})` : ` · ${md(u.cout * (b.distance ?? 1), 2)}/an`}`}</option>;
                   })}
                 </select>
-              </label>
+              </label>}
               {ordre && <span className="tres-petit alerte bonne">Ordre donné : {ordre === 'metropole' ? 'retour en métropole' : `déploiement vers ${nomBase(ordre)}`} (à la validation). <button type="button" className="lien" onClick={() => donner(u.id, null)}>Annuler</button></span>}
               <button type="button" className={`bouton petit ${vue3d === u.id ? 'principal' : ''}`} onClick={() => setVue3d((v) => (v === u.id ? null : u.id))}>{vue3d === u.id ? 'Masquer la vue 3D' : '🎖️ Voir en 3D'}</button>
             </div>
@@ -200,7 +239,8 @@ function Deploiements({ d, decisions, majDecisions }) {
       </div>
       {vue3d && (() => {
         const u = d.unites.find((x) => x.id === vue3d);
-        const b = d.bases.find((x) => x.id === u.position);
+        const op = u.enOperation ? opex?.encours.find((o) => o.id === u.operation.id) : null;
+        const b = op ? { court: `opération ${op.court}`, terrain: op.terrain, interception: op.interception, metropole: false } : d.bases.find((x) => x.id === u.position);
         const deploye = !b.metropole;
         const donnees = { deploye, base: b.court, terrain: b.terrain ?? 'desert', interception: !!b.interception };
         return (
@@ -233,6 +273,7 @@ function Deploiements({ d, decisions, majDecisions }) {
 export default function Geopolitique({ partie, decisions, majDecisions, allerA }) {
   const r = resumeGeopolitique(partie);
   const dep = resumeDeploiements(partie);
+  const opex = resumeOpex(partie);
   const [choisi, setChoisi] = useState(null);
   const [voir3d, setVoir3d] = useState(null); // 'charlesDeGaulle' | 'porteAvions' | null
   const theatres = r?.theatres ?? [];
@@ -252,7 +293,7 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
       <p className="petit muet">La France est présente sur tous les océans : ses territoires d'outre-mer lui donnent le deuxième espace maritime du monde. Déployer le groupe aéronaval rassure les alliés, apaise les tensions et pèse dans les crises ; mais il s'use, coûte cher et ne peut être partout à la fois.</p>
 
       <div className="carte pile">
-        <CarteMonde theatres={theatres} groupes={groupes.map(({ numero, g: gr, destination }) => ({ numero, position: gr.position, destination }))} choisi={selection?.id} onChoisir={setChoisi} bases={(dep?.bases ?? []).map((b) => ({ ...b, unites: dep.unites }))} />
+        <CarteMonde theatres={theatres} groupes={groupes.map(({ numero, g: gr, destination }) => ({ numero, position: gr.position, destination }))} choisi={selection?.id} onChoisir={setChoisi} bases={(dep?.bases ?? []).map((b) => ({ ...b, unites: dep.unites }))} operations={opex?.encours ?? []} />
         <div className="ligne petit legende-carte">
           <span><span className="pastille-legende critique" /> tension forte</span>
           <span><span className="pastille-legende attention" /> moyenne</span>
@@ -260,10 +301,13 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
           <span>🚢 {plusieurs ? 'groupes aéronavals (1 et 2)' : 'groupe aéronaval'}</span>
           <span><span className="pastille-legende outre-mer" /> outre-mer français</span>
           <span><span className="pastille-legende base" /> base (troupes, aviation)</span>
+          {(opex?.encours.length ?? 0) > 0 && <span><span className="pastille-legende opex" /> opération en cours</span>}
         </div>
       </div>
 
-      {dep && <Deploiements d={dep} decisions={decisions} majDecisions={majDecisions} />}
+      {opex && <Operations opex={opex} allerA={allerA} />}
+
+      {dep && <Deploiements d={dep} opex={opex} decisions={decisions} majDecisions={majDecisions} />}
 
       <div className="grille-2">
         <div className="carte pile">

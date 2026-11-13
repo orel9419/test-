@@ -10,6 +10,7 @@
  * Aucun tirage aléatoire : le reste du jeu n'est pas modifié.
  */
 import { UNITES, BASES, POTENTIEL_MIN, RECUPERATION } from '../data/deploiements.js';
+import { OPEX } from '../data/opex.js';
 import { borner } from '../model/outils.js';
 import { libelleTrimestre } from './calendrier.js';
 
@@ -17,7 +18,7 @@ const actif = (e) => e.pays === 'france';
 const nouvelleUnite = () => ({ position: 'metropole', potentiel: 100, trimestres: 0, repos: 0 });
 
 /** États des unités (créés à la demande : les sauvegardes antérieures restent jouables). */
-function forces(e) {
+export function etatForces(e) {
   if (!e.geopolitique) return null;
   e.geopolitique.forces ??= {};
   for (const id of Object.keys(UNITES)) e.geopolitique.forces[id] ??= nouvelleUnite();
@@ -51,14 +52,16 @@ export function accesBase(e, baseId, type = null) {
  */
 export function deployerUnite(e, uniteId, baseId) {
   if (!actif(e)) return { erreur: 'Disponible pour la France.' };
-  const f = forces(e);
+  const f = etatForces(e);
   const u = UNITES[uniteId];
   if (!f || !u) return { erreur: 'Unité inconnue.' };
   const g = f[uniteId];
   const b = BASES[baseId];
   if (!b) return { erreur: 'Base inconnue.' };
+  if (g.operation) return { erreur: 'L\'unité est engagée en opération : elle rentrera en métropole à la fin de celle-ci.' };
   if (g.position === baseId) return { erreur: 'L\'unité y est déjà.' };
   if (!b.metropole) {
+    if (u.bases && !u.bases.includes(baseId)) return { erreur: u.motifBases ?? 'Cette unité ne peut pas être déployée sur cette base.' };
     const a = accesBase(e, baseId, u.type);
     if (!a.ok) return { erreur: a.motif };
     if (g.repos > 0) return { erreur: `Remise en condition en métropole : encore ${g.repos} trimestre(s).` };
@@ -75,13 +78,13 @@ export function deployerUnite(e, uniteId, baseId) {
 /** Trimestre : présence (effets, coût, usure), récupération en métropole, retours forcés. */
 export function majDeploiements(e) {
   if (!actif(e)) return;
-  const f = forces(e);
+  const f = etatForces(e);
   if (!f) return;
   const i = e.international;
   const lib = libelleTrimestre(e.trimestre);
   for (const [id, g] of Object.entries(f)) {
     const u = UNITES[id];
-    if (!u) continue;
+    if (!u || g.operation) continue; // en opération : voir le module des opérations extérieures
     const b = BASES[g.position];
     if (!b || b.metropole) {
       g.position = 'metropole';
@@ -103,7 +106,8 @@ export function majDeploiements(e) {
       for (const [p, v] of Object.entries(b.presence?.relations ?? {})) if (i.relations[p] !== undefined) i.relations[p] = borner(i.relations[p] + v * u.poids, -100, 100);
     }
     if (b.theatre && e.geopolitique.tensions?.[b.theatre] !== undefined) e.geopolitique.tensions[b.theatre] = Math.max(0, e.geopolitique.tensions[b.theatre] - 4 * u.poids);
-    e.depensesTemporaires.push({ poste: 'defense', valeur: u.cout * (b.distance ?? 1) * (e.macro.niveauPrix / 100), fin: e.tour + 1, source: 'deploiement' });
+    // Montant en euros constants : l'indexation sur les prix est faite par depensesTemporairesActives
+    e.depensesTemporaires.push({ poste: 'defense', valeur: u.cout * (b.distance ?? 1), fin: e.tour + 1, source: 'deploiement' });
     g.potentiel = Math.max(0, g.potentiel - u.usure);
     g.trimestres += 1;
     if (g.potentiel < POTENTIEL_MIN) {
@@ -118,14 +122,19 @@ export function majDeploiements(e) {
 /** Résumé pour l'interface : unités, bases et accès. */
 export function resumeDeploiements(e) {
   if (!actif(e)) return null;
-  const f = e.geopolitique ? forces(e) : Object.fromEntries(Object.keys(UNITES).map((id) => [id, nouvelleUnite()]));
-  const unites = Object.entries(UNITES).map(([id, u]) => ({ id, ...u, ...f[id] }));
+  const f = e.geopolitique ? etatForces(e) : Object.fromEntries(Object.keys(UNITES).map((id) => [id, nouvelleUnite()]));
+  const unites = Object.entries(UNITES).map(([id, u]) => {
+    const g = f[id];
+    const op = g.operation ? OPEX[g.operation.id] : null;
+    return { id, ...u, ...g, lieu: op ? `Opération : ${op.court}` : BASES[g.position]?.court ?? g.position, enOperation: !!op, restants: op ? Math.max(1, g.operation.fin - e.tour) : 0 };
+  });
   const bases = Object.entries(BASES).map(([id, b]) => ({
     id, ...b,
     acces: { terre: accesBase(e, id, 'terre'), air: accesBase(e, id, 'air') },
     presents: unites.filter((u) => u.position === id).map((u) => u.id),
   }));
-  const deployees = unites.filter((u) => u.position !== 'metropole');
+  const deployees = unites.filter((u) => u.position !== 'metropole' && !u.enOperation);
   const coutAnnuel = deployees.reduce((s, u) => s + u.cout * (BASES[u.position]?.distance ?? 1), 0);
-  return { unites, bases, coutAnnuel, horsOtan: horsOtan(e), potentielMin: POTENTIEL_MIN };
+  const coutOpex = unites.filter((u) => u.enOperation).reduce((s, u) => s + u.cout * (OPEX[u.operation.id]?.surcout ?? 1), 0);
+  return { unites, bases, coutAnnuel, coutOpex, horsOtan: horsOtan(e), potentielMin: POTENTIEL_MIN };
 }

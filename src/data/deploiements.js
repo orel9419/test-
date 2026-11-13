@@ -17,6 +17,11 @@ export const UNITES = {
     nom: 'Groupement tactique interarmes', court: 'GTIA', icone: '🪖', type: 'terre', scene: 'gtia', cout: 0.3, usure: 15, poids: 1,
     description: 'Environ un millier de soldats : infanterie sur Griffon, blindés Jaguar, artillerie Caesar, génie et soutien, prélevés sur l\'échelon national d\'urgence (dispositif d\'alerte « Guépard »).',
   },
+  escadron_leclerc: {
+    nom: 'Escadron de chars Leclerc', court: 'Leclerc', icone: '🛡️', type: 'terre', scene: 'escadronLeclerc', cout: 0.2, usure: 18, poids: 0.9,
+    bases: ['roumanie', 'estonie'], motifBases: 'Hors opération, les chars Leclerc ne sont projetés que sur le flanc est de l\'OTAN (Roumanie, Estonie).',
+    description: 'Treize chars Leclerc, leurs dépanneurs et environ 150 militaires : la puissance de feu du combat de haute intensité. Un escadron sert en Roumanie depuis novembre 2022 (mission Aigle) ; des Leclerc ont aussi servi en Estonie (mission Lynx, 2017) et au Sud-Liban (FINUL, 2006).',
+  },
   forces_speciales: {
     nom: 'Détachement des forces spéciales', court: 'Forces spéciales', icone: '🎯', type: 'terre', scene: 'forcesSpeciales', cout: 0.12, usure: 20, poids: 0.6,
     description: 'Quelques centaines de commandos du Commandement des opérations spéciales (COS), avec leurs hélicoptères Caracal et Caïman : renseignement, libération d\'otages, appui aux armées partenaires.',

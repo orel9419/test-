@@ -155,6 +155,14 @@ const FICHES = {
     titre: 'Bâtiment d\'essais et de mesures Monge (A601)',
     lignes: ['Environ 225 m · en service depuis 1992 · équipage mixte Marine nationale et DGA', 'Radars de trajectographie, antennes de télémesure et moyens optiques : il suit les tirs d\'essai du missile M51 et des lancements spatiaux', 'Unique en Europe : la France valide seule ses missiles · plateforme hélicoptère en porte-à-faux à la poupe', 'D\'après une photo · antennes et radômes simplifiés'],
   },
+  escadronLeclerc: {
+    titre: 'Escadron de chars Leclerc',
+    lignes: ['Treize chars Leclerc et leurs dépanneurs, environ 150 militaires : quatre chars montrés ici', 'En mission : en ligne face à l\'objectif, tourelles en chasse ; le canon de 120 mm tire en marche, à plus de 2 km (distances resserrées ici)', 'Un escadron sert en Roumanie depuis novembre 2022 (mission Aigle) ; des Leclerc ont servi en Estonie (2017) et au Sud-Liban (2006, FINUL)', 'Livrée selon le terrain : camouflage centre-Europe sur le flanc est, sable au Levant et au désert · en métropole, alignés devant le hangar du régiment'],
+  },
+  dissuasion: {
+    titre: 'Dissuasion océanique : patrouille et tir d\'essai du M51',
+    lignes: ['Un SNLE en patrouille, indétectable, en permanence depuis 1972 : 16 missiles M51 de plusieurs milliers de kilomètres de portée', 'Sa sortie et sa patrouille sont protégées : sous-marin nucléaire d\'attaque, frégates anti-sous-marines et leurs hélicoptères, avions de patrouille maritime', 'Tir d\'essai : le missile est éjecté à froid, sort de l\'eau, puis son premier étage s\'allume ; le Monge suit sa trajectoire jusqu\'à la retombée en Atlantique Nord', 'Le 6 octobre 2026, Le Vigilant a tiré pour la première fois un M51.3 en plongée, au large du Finistère · navires à la même échelle, distances resserrées, missile agrandi'],
+  },
   leclerc: {
     titre: 'Char Leclerc rénové (XLR)',
     lignes: ['Char de combat de l\'armée de Terre, en service depuis 1992 · 9,87 m canon compris · 3,71 m de large · environ 57 t', 'Canon de 120 mm à chargement automatique : trois hommes d\'équipage au lieu de quatre · 72 km/h sur route', 'Rénovation XLR : intégration au combat collaboratif SCORPION, protection renforcée, tourelleau téléopéré ; 160 chars rénovés fin 2030, 200 fin 2035', 'Livrée sable (opérations extérieures) ou camouflage centre-Europe · silhouette fidèle, détails simplifiés'],
@@ -179,6 +187,8 @@ const VUES = {
   brf: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, 12] },
   monge: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, -12] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
+  escadronLeclerc: { '3/4': [-14, 6.5, 15], 'Ligne de chars': [-22, 3, 4], Dessus: [0, 26, 0.01], Profil: [0, 3, 22], Arrière: [15, 6, -13] },
+  dissuasion: { '3/4': [-15, 7, 16], 'Tir (vue large)': [-24, 9, 26], 'Au ras de l\'eau': [-17, 1.4, 9], Dessus: [0, 27, 0.01], 'Côté Monge': [19, 6, -4] },
   f35a: { '3/4': [-13, 2.5, 14], Face: [-20, 0.3, 0.01], Profil: [0, 0.3, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Arrière: [13, 4.5, 14], 'Au roulage': [-15, 0.2, -9.5] },
   f35b: { '3/4': [-13, 2.5, 14], Face: [-20, 0.3, 0.01], Profil: [0, 0.3, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Arrière: [13, 4.5, 14], 'Au roulage': [-15, 0.2, -9.5] },
   f35c: { '3/4': [-13, 2.5, 15], Face: [-21, 0.3, 0.01], Profil: [0, 0.3, 21], Dessus: [0, 28, 0.01], Dessous: [0.01, -15, 6], Arrière: [13, 4.5, 15], 'Au roulage': [-15, 0.2, -9.5] },
@@ -224,6 +234,7 @@ const CONSTRUCTEURS = {
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   groupeAeronaval: ['marine', 'construireGroupeAeronaval'],
   gtia: ['unites', 'construireGtia'], forcesSpeciales: ['unites', 'construireForcesSpeciales'], policeDuCiel: ['unites', 'construirePoliceDuCiel'], ravitaillement: ['unites', 'construireRavitaillement'],
+  escadronLeclerc: ['unites', 'construireEscadronLeclerc'], dissuasion: ['marine', 'construireDissuasion'],
   sna: ['marine', 'construireSna'], pha: ['marine', 'construirePha'], fda: ['marine', 'construireFda'], fremm: ['marine', 'construireFremm'], brf: ['marine', 'construireBrf'], monge: ['marine', 'construireMonge'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
   hemicycleAN: ['palais', 'construireHemicycle'], hemicycleSenat: ['palais', 'construireHemicycle'],
@@ -232,7 +243,7 @@ const CONSTRUCTEURS = {
 const TERRAIN = new Set(['elysee', 'matignon', 'assemblee', 'senat', 'hemicycleAN', 'hemicycleSenat']);
 /** Sous-marins (lumière sous-marine) et navires de surface (mer, horizon). */
 const SOUS = new Set(['snle', 'snle3g', 'sna']);
-const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge', 'groupeAeronaval']);
+const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge', 'groupeAeronaval', 'dissuasion']);
 const ESPACE = new Set(['satellite']);
 
 /**

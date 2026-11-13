@@ -54,6 +54,7 @@ import { initialiserDefense, deciderDefense, majDefense } from './defense.js';
 import { attribuerLot, majChantiers } from './chantiers.js';
 import { initialiserGeopolitique, majGeopolitique, deplacerGroupe, injecterCrises } from './geopolitique.js';
 import { deployerUnite, majDeploiements } from './deploiements.js';
+import { majOpex, injecterOpex } from './opex.js';
 import { initialiserRelocalisation, demanderProduction, majRelocalisation, injecterPenuries } from './relocalisation.js';
 import { initialiserInstitutions, majInstitutions, gouvernementCohabitation, neutraliserDecisions, reactionAuxReformes, propositionGouvernement, accordPresident, injecterEvenementsInstitutions } from './institutions.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
@@ -75,6 +76,7 @@ export { classementsTries, rangs as rangsClassements, ID_PAYS } from './classeme
 export { bilanReformes, effetOpinionReforme } from './reformes.js';
 export { suggestionsReformes } from './suggestions.js';
 export { resumeDeploiements, accesBase } from './deploiements.js';
+export { resumeOpex, previsionOpex, declencherOpex } from './opex.js';
 export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
@@ -389,7 +391,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   for (const [unite, base] of Object.entries(decisions.deploiements ?? {})) {
     if (base) (e.resultatsTour.deploiements ??= []).push({ unite, ...deployerUnite(e, unite, base) });
   }
-  if (!options.sansPolitique) { majGeopolitique(e); majDeploiements(e); }
+  if (!options.sansPolitique) { majGeopolitique(e); majDeploiements(e); majOpex(e); }
   // Produire en France : demandes aux grands groupes (aléa séparé)
   for (const r of decisions.relocalisations ?? []) (e.resultatsTour.relocalisations ??= []).push({ id: r.id, ...demanderProduction(e, r.id, r.levier) });
   // Chantiers des grands événements : attribution des lots
@@ -577,7 +579,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   } else if (options.evenementsActifs !== false) {
     genererEvenements(e, alea, mode.frequenceEvenements, { max: mode.maxEvenements ?? 3 });
     // Crises géopolitiques et pénuries (France), tirées avec leur propre aléa
-    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); injecterEvenementsInstitutions(e, mode.maxEvenements ?? 3); }
+    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); injecterEvenementsInstitutions(e, mode.maxEvenements ?? 3); injecterOpex(e, mode.maxEvenements ?? 3); }
   }
   if (e.statique.devise === '$') {
     e.journal = e.journal.map((j, i) => (i >= etat.journal.length ? adapterDevise(j) : j));
