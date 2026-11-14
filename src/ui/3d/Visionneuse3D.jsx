@@ -37,7 +37,7 @@ const FICHES = {
   },
   mirage2000: {
     titre: 'Mirage 2000-5F',
-    lignes: ['Avion de défense aérienne de Dassault Aviation · longueur 14,36 m · envergure 9,13 m · hauteur 5,20 m', 'Réacteur M53-P2 (95 kN avec postcombustion) · Mach 2,2 · aile delta à commandes de vol électriques, sans plans canard mobiles', 'Version -5 : radar RDY et missiles MICA ; la France a livré des Mirage 2000-5F à l\'Ukraine à partir de février 2025', 'Configuration affichée : 2 réservoirs de 1 700 litres et 2 MICA, camouflage deux tons de gris'],
+    lignes: ['Avion de défense aérienne de Dassault Aviation · longueur 14,36 m · envergure 9,13 m · hauteur 5,20 m', 'Réacteur M53-P2 (95 kN avec postcombustion) · Mach 2,2 · aile delta à commandes de vol électriques, sans plans canard mobiles', 'Version -5 : radar RDY et missiles MICA ; la France a livré des Mirage 2000-5F à l\'Ukraine à partir de février 2025', 'Configuration affichée : 2 réservoirs de 1 700 litres et 2 MICA · camouflage deux tons de gris bleuté (EC 2/5, d\'après un profil) ou gris foncé (EC 2/2, bouton « Livrée »), dessus plus foncé que le dessous'],
   },
   phenix: {
     titre: 'Airbus A330 MRTT « Phénix »',
