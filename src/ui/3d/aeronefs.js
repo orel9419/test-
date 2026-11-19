@@ -264,9 +264,15 @@ export function construirePhenix(THREE) {
   }
   for (const [p, l, b, h] of portes) T.contour(p, p + l, b, h, '#d8b329', 5);
   // Poste de pilotage : pare-brise et fenêtres latérales
-  T.rect(1.6, 2.3, 0.24, 0.42, '#1d232b', 'deux', 8);
-  T.rect(2.4, 3.3, 0.24, 0.4, '#1d232b', 'deux', 8);
-  T.dessus(1.1, 1.62, 0.4, '#1d232b');
+  // (deux grandes vitres frontales qui remontent presque jusqu'au sommet, séparées par un montant
+  // central ; puis deux fenêtres latérales de chaque côté, dans le prolongement de leur bord inférieur)
+  T.rect(1.95, 2.55, 0.5, 0.85, '#232a33', 'deux', 5);
+  T.rect(2.63, 3.25, 0.43, 0.62, '#232a33', 'deux', 5);
+  T.rect(3.33, 3.9, 0.42, 0.59, '#232a33', 'deux', 5);
+  // Fins cadres plus sombres autour des vitres
+  T.contour(1.95, 2.55, 0.5, 0.85, '#1a1d21', 2);
+  T.contour(2.63, 3.25, 0.43, 0.62, '#1a1d21', 2);
+  T.contour(3.33, 3.9, 0.42, 0.59, '#1a1d21', 2);
   // Feux de formation (barres sombres cerclées de jaune) à l'avant et à l'arrière
   for (const [x0, n] of [[7.9, 3], [41.9, 3]]) {
     for (let i = 0; i < n; i++) {
@@ -290,13 +296,24 @@ export function construirePhenix(THREE) {
   T.cocardePeinte(48.6, 0.42, 0.62, 13.5);
   T.texte('F-UJCG', 48.6, 0.08, 16, '#3a3f46');
   const peau = new THREE.MeshStandardMaterial({ map: textureDe(THREE, T.c), metalness: 0.3, roughness: 0.45, envMapIntensity: 0.8 });
+  // Nez de l'A330, calculé section par section d'après la photo : profil supérieur en ellipse qui
+  // plonge vers une pointe basse (tiers inférieur), menton plein, vue de dessus arrondie ; il atteint
+  // le diamètre du fuselage (5,64 m) à 6,3 m de la pointe. Les sections serrées évitent toute arête.
+  const nez = [];
+  const R = 2.82, LNez = 6.3, yPointe = -0.7;
+  for (let i = 0; i <= 18; i++) {
+    const t = i / 18;
+    const sx = 1 - (1 - t) ** 1.6; // plus de sections près de la pointe
+    const eHaut = Math.sqrt(1 - (1 - sx) ** 2);
+    const eBas = (1 - (1 - sx) ** 1.8) ** 0.55;
+    const eLarg = (1 - (1 - sx) ** 2.3) ** 0.5;
+    const haut = yPointe + (R - yPointe) * eHaut, bas = yPointe - (R + yPointe) * eBas;
+    nez.push({ x: sx * LNez, w: Math.max(0.001, 2 * R * eLarg), hHaut: Math.max(0.0005, (haut - bas) / 2), hBas: Math.max(0.0005, (haut - bas) / 2), y: (haut + bas) / 2 });
+  }
   a.add(new THREE.Mesh(loft(THREE, [
-    { x: 0, w: 0, h: 0, y: -0.75 },
-    { x: 0.35, w: 1.25, hHaut: 0.62, hBas: 0.7, y: -0.78 },
-    { x: 1.1, w: 2.6, hHaut: 1.35, hBas: 1.45, y: -0.62 },
-    { x: 2.4, w: 4.0, hHaut: 2.2, hBas: 2.2, y: -0.32 },
-    { x: 4.2, w: 5.1, hHaut: 2.7, hBas: 2.6, y: -0.1 },
-    { x: 7.0, w: 5.64, hHaut: 2.82, hBas: 2.82, y: 0 },
+    ...nez,
+    // Sections pleines régulières : l'interpolation ne forme ni bourrelet ni arête après le nez
+    ...[7.4, 9.0, 12, 18, 24, 30, 36].map((x) => ({ x, w: 5.64, hHaut: 2.82, hBas: 2.82, y: 0 })),
     { x: 41.5, w: 5.64, hHaut: 2.82, hBas: 2.82, y: 0 },
     { x: 46.5, w: 5.0, hHaut: 2.62, hBas: 2.2, y: 0.38 },
     { x: 51.5, w: 3.3, hHaut: 1.95, hBas: 1.25, y: 1.15 },
