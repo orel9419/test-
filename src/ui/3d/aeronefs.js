@@ -548,29 +548,38 @@ export function construireA321Mpa(THREE) {
   patiner(T.ctx, T.largeur, T.hauteur, 9, 0.025);
   // Poste de pilotage (pare-brise et fenêtres latérales, comme sur tous les A320)
   // (pare-brise en retrait du nez, au-dessus de l'axe ; deux fenêtres latérales de chaque côté)
-  T.rect(1.95, 2.35, 0.36, 0.66, '#1b1f25', 'deux', 4);
-  for (const [x1, x2] of [[2.45, 2.95], [3.05, 3.5]]) T.rect(x1, x2, 0.36, 0.56, '#1b1f25', 'deux', 5);
+  for (const [x1, x2, h1, h2] of [[1.5, 2.2, 0.32, 0.84], [2.3, 2.85, 0.27, 0.57], [2.95, 3.4, 0.27, 0.53]]) {
+    T.rect(x1, x2, h1, h2, '#3b4148', 'deux', 6);
+    T.contour(x1, x2, h1, h2, '#1d2126', 3);
+  }
   // Portes : avant, avant-aile, sortie d'aile, arrière (contours foncés)
-  for (const [x1, x2, h1, h2] of [[4.4, 5.3, -0.42, 0.52], [13.6, 14.5, -0.42, 0.52], [26.3, 27.0, -0.12, 0.42], [39.2, 40.0, -0.42, 0.45]]) T.contour(x1, x2, h1, h2, '#4e524f', 4);
+  for (const [x1, x2, h1, h2] of [[4.4, 5.5, -0.42, 0.55], [36.1, 37.1, -0.42, 0.52]]) T.contour(x1, x2, h1, h2, '#4e524f', 4);
   // Quelques hublots d'observation (la cabine de mission en a peu)
-  for (const x of [8.2, 11.6, 21.0, 30.5, 34.6]) T.rect(x, x + 0.45, 0.24, 0.42, '#2a2f36', 'deux', 6);
+  for (const x of [9.6, 18.4]) { T.rect(x, x + 0.6, 0.12, 0.5, '#4a4f55', 'deux', 8); T.contour(x, x + 0.6, 0.12, 0.5, '#2e3236', 3); }
   // Inscriptions de la maquette : « AIRBUS » et « A321 MPA » en avant de l'aile, « MARINE » sous la cocarde
-  T.texte('AIRBUS', 15.3, 0.4, 26, '#2f3337');
-  T.texte('A321 MPA', 16.4, 0.12, 60, '#2f3337');
-  T.cocardePeinte(36.0, 0.42, 0.62, 12, { ancre: true });
-  T.texte('MARINE', 36.0, -0.05, 40, '#2f3337');
+  T.texte('AIRBUS', 14.0, 0.44, 26, '#2f3337');
+  T.texte('A321 MPA', 15.4, 0.18, 60, '#2f3337');
+  T.cocardePeinte(31.2, 0.22, 0.6, 12, { ancre: true });
+  T.texte('MARINE', 31.2, -0.62, 40, '#2f3337');
   const peau = new THREE.MeshStandardMaterial({ map: textureDe(THREE, T.c), metalness: 0.2, roughness: 0.55, envMapIntensity: 0.5 });
   // Fuselage (largeur 3,95 m, hauteur 4,14 m), nez arrondi, cône arrière relevé
+  // Nez de la famille A320, calculé section par section d'après le profil et la maquette : dessus
+  // en ellipse qui plonge vers une pointe basse, menton plein, vue de dessus arrondie ; diamètre
+  // du fuselage atteint à 5,6 m de la pointe. Sections serrées : ni arête ni « capuchon ».
+  const nez = [];
+  const R = 2.07, LNez = 5.6, yPointe = -0.65;
+  for (let i = 0; i <= 18; i++) {
+    const t = i / 18;
+    const sx = 1 - (1 - t) ** 1.6;
+    const eHaut = Math.sqrt(1 - (1 - sx) ** 2);
+    const eBas = (1 - (1 - sx) ** 1.8) ** 0.55;
+    const eLarg = (1 - (1 - sx) ** 2.3) ** 0.5;
+    const haut = yPointe + (R - yPointe) * eHaut, bas = yPointe - (R + yPointe) * eBas;
+    nez.push({ x: sx * LNez, w: Math.max(0.001, 3.95 * eLarg), hHaut: Math.max(0.0005, (haut - bas) / 2), hBas: Math.max(0.0005, (haut - bas) / 2), y: (haut + bas) / 2 });
+  }
   a.add(new THREE.Mesh(loft(THREE, [
-    { x: 0, w: 0, h: 0, y: -0.55 },
-    { x: 0.3, w: 1.05, hHaut: 0.52, hBas: 0.6, y: -0.6 },
-    { x: 1.0, w: 2.15, hHaut: 1.15, hBas: 1.25, y: -0.5 },
-    { x: 1.6, w: 2.75, hHaut: 1.5, hBas: 1.57, y: -0.39 },
-    { x: 2.2, w: 3.2, hHaut: 1.75, hBas: 1.8, y: -0.28 },
-    { x: 3.0, w: 3.55, hHaut: 1.91, hBas: 1.95, y: -0.16 },
-    { x: 3.8, w: 3.78, hHaut: 2.0, hBas: 2.03, y: -0.08 },
-    { x: 4.7, w: 3.91, hHaut: 2.05, hBas: 2.06, y: -0.03 },
-    { x: 5.8, w: 3.95, hHaut: 2.07, hBas: 2.07, y: 0 },
+    ...nez,
+    ...[6.6, 8.5, 12, 17, 22, 27].map((x) => ({ x, w: 3.95, hHaut: 2.07, hBas: 2.07, y: 0 })),
     { x: 33.0, w: 3.95, hHaut: 2.07, hBas: 2.07, y: 0 },
     { x: 37.0, w: 3.6, hHaut: 1.97, hBas: 1.6, y: 0.3 },
     { x: 40.5, w: 2.5, hHaut: 1.45, hBas: 0.9, y: 0.85 },
@@ -665,6 +674,24 @@ export function construireA321Mpa(THREE) {
     d.position.set(x, 2.02, 0);
     a.add(d);
   }
+  // Carénages latéraux en avant de l'aile (capteurs, visibles sur la maquette) et longue carène ventrale (profil)
+  for (const cote of [1, -1]) {
+    const c = new THREE.Mesh(loft(THREE, [
+      { x: 11.2, w: 0.05, h: 0.05, y: -0.55, z: cote * 1.9 },
+      { x: 11.6, w: 0.32, hHaut: 0.32, hBas: 0.32, y: -0.55, z: cote * 1.98 },
+      { x: 12.6, w: 0.34, hHaut: 0.34, hBas: 0.34, y: -0.55, z: cote * 1.99 },
+      { x: 13.0, w: 0.05, h: 0.05, y: -0.55, z: cote * 1.92 },
+    ], { segments: 20, parSegment: 4 }), gris);
+    const vitre = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 0.03), sombre);
+    vitre.position.set(11.75, -0.5, cote * 2.16);
+    a.add(c, vitre);
+  }
+  a.add(new THREE.Mesh(loft(THREE, [
+    { x: 22.5, w: 1.4, hHaut: 0.3, hBas: 0.02, y: -2.0 },
+    { x: 25.0, w: 2.0, hHaut: 0.3, hBas: 0.28, y: -2.0 },
+    { x: 34.0, w: 1.9, hHaut: 0.3, hBas: 0.25, y: -1.95 },
+    { x: 37.5, w: 1.0, hHaut: 0.3, hBas: 0.02, y: -1.75 },
+  ], { segments: 32, parSegment: 6 }), gris));
   // Sous le ventre (emplacements indicatifs) : tourelle optronique sous le nez, radar de surveillance
   const tourelle = new THREE.Mesh(new THREE.SphereGeometry(0.36, 20, 14), sombre);
   tourelle.position.set(5.0, -2.05, 0);
@@ -730,7 +757,8 @@ export function construireA321Mpa(THREE) {
   groupe.userData.legendes = [
     { texte: 'Rangée d\'antennes de communication et de guerre électronique', point: p(17.5, 2.9, 0) },
     { texte: 'Radôme de télécommunications par satellite', point: p(31, 2.6, 0) },
-    { texte: 'Cocarde à ancre de l\'aéronautique navale', point: p(36, 1.0, 2.1) },
+    { texte: 'Cocarde à ancre de l\'aéronautique navale', point: p(31.2, 0.8, 2.1) },
+    { texte: 'Carénage de capteurs (maquette)', point: p(12, -0.2, 2.3) },
     { texte: 'Réacteur à grande soufflante (LEAP ou PW1100G)', point: p(14.6, -2.6, 5.75) },
     { texte: 'Sharklet', point: p(27.4, 1.6, 17.8) },
     { texte: 'Soute à armement (torpilles), emplacement indicatif', point: p(30, -2.6, 0) },
