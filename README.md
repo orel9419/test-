@@ -80,7 +80,20 @@ Dans la rubrique Régalien (Armées, Dissuasion), dans l'onglet Géopolitique, d
 
 Le Rafale existe en monoplace (C) et en biplace (B), train d'atterrissage rentré ou sorti.
 
-Rotation au doigt ou à la souris, vues de profil, de dessus et de face, légendes, et bouton **Photo** pour partager sa plus belle vue. Les formes sont simplifiées : ce ne sont pas des plans. La 3D n'est chargée qu'à l'ouverture de ces écrans ; dans l'écran Armées, chaque visionneuse n'est créée que lorsque sa carte arrive à l'écran (les navigateurs limitent le nombre de contextes WebGL actifs, environ 16).
+Rotation au doigt ou à la souris, vues de profil, de dessus et de face, légendes, et bouton **Photo** pour partager sa plus belle vue. Les formes sont simplifiées : ce ne sont pas des plans.
+
+**Rendu réaliste** (`src/ui/3d/rendu.js`, commun à tous les matériels des armées) :
+- **ciel d'extérieur** : la lumière d'ambiance et les reflets viennent du ciel en haut (bleu pâle au zénith, voile clair à l'horizon, halo chaud côté soleil) et de la terre ou de la mer en bas. Les teintes sont calées pour que les livrées gardent leurs vraies couleurs, à une luminosité proche de l'ancien rendu ;
+- **occlusion ambiante** (GTAO) : les recoins, les emplantures d'ailes, les passages de roues et le dessous des tourelles s'assombrissent comme en vrai ;
+- **anticrénelage** (4 échantillons, 2 sur les écrans haute densité des téléphones) ;
+- **mer animée** : houle en deux couches qui dérivent, avec l'indice de réfraction de l'eau (1,33), donc des reflets du ciel plus forts en incidence rasante. Au loin, la mer paraît plus lisse ;
+- **joints de panneaux et usure légère**, calculés dans le shader à partir des coordonnées du modèle. Ils sont plus fins sur les avions, plus larges sur les navires ; les blindés n'ont que l'usure ;
+- **sol texturé** : terre sèche sous les blindés, terrain des scènes d'unités en mission ;
+- **soufflantes des réacteurs** de l'A330 Phénix (Trent 772, 26 pales) et de l'A321 MPA (18 pales), visibles dans les entrées d'air.
+
+Tout est procédural : aucune image n'est téléchargée. Le bouton **« ✨ Rendu réaliste / ⚡ Rendu rapide »** permet de revenir au rendu simple ; ce choix est mémorisé sur l'appareil. Si l'appareil peine (plus de 50 ms par image en moyenne), la visionneuse repasse d'elle-même en rendu rapide.
+
+La 3D n'est chargée qu'à l'ouverture de ces écrans ; dans l'écran Armées, chaque visionneuse n'est créée que lorsque sa carte arrive à l'écran (les navigateurs limitent le nombre de contextes WebGL actifs, environ 16).
 
 Pour la fidélité des formes, des plans libres de droits ont été cherchés sur Wikimedia Commons (NH90, Tigre, Super Puma, SNLE Le Triomphant, PANG) : ils servent seulement de référence de mesure et ne sont pas inclus dans le jeu. Le serveur de Wikimedia limite le nombre de téléchargements ; les plans manquants (Puma, Caracal, Leclerc, A330, Caesar) pourront compléter le travail plus tard.
 

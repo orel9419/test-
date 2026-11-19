@@ -250,6 +250,19 @@ const TERRAIN = new Set(['elysee', 'matignon', 'assemblee', 'senat', 'hemicycleA
 const SOUS = new Set(['snle', 'snle3g', 'sna']);
 const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge', 'groupeAeronaval', 'dissuasion']);
 const ESPACE = new Set(['satellite']);
+/** Rendu réaliste : catégories pour les joints de panneaux et l'usure des surfaces (pas en mètres). */
+const AIR = new Set(['rafale', 'mirage2000', 'f35a', 'f35b', 'f35c', 'phenix', 'a321mpa', 'caiman', 'caimanFS', 'caimanMarine', 'tigre', 'puma', 'caracal', 'patroller', 'satellite', 'policeDuCiel', 'ravitaillement']);
+const TERRE = new Set(['leclerc', 'griffon', 'jaguar', 'caesar', 'gtia', 'forcesSpeciales', 'escadronLeclerc']);
+const DETAILS = { air: { pas: 1.3, joints: 0.1, usure: 0.05 }, mer: { pas: 2.4, joints: 0.07, usure: 0.07 }, terre: { pas: 0, joints: 0, usure: 0.09 } };
+/** Véhicules terrestres seuls : posés sur un disque de terrain. */
+const VEHICULES = new Set(['leclerc', 'griffon', 'jaguar', 'caesar']);
+/** Lieux clos et espace : éclairage de studio plutôt que de ciel. */
+const INTERIEUR = new Set(['hemicycleAN', 'hemicycleSenat', 'satellite']);
+/** Rayon de l'occlusion ambiante (unités de scène) : plus petit dans les scènes où les engins sont petits. */
+const RAYON_AO = { groupeAeronaval: 0.1, dissuasion: 0.14, gtia: 0.22, forcesSpeciales: 0.22, escadronLeclerc: 0.25, policeDuCiel: 0.3, ravitaillement: 0.3 };
+/** Qualité du rendu, mémorisée sur l'appareil : « réaliste » (occlusion ambiante) ou « rapide ». */
+const lireQualite = () => { try { return localStorage.getItem('rendu3d') !== 'rapide'; } catch { return true; } };
+const ecrireQualite = (realiste) => { try { localStorage.setItem('rendu3d', realiste ? 'realiste' : 'rapide'); } catch { /* stockage indisponible */ } };
 
 /**
  * Visionneuse 3D interactive (three.js, chargé à la demande) : rotation au
@@ -273,6 +286,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
   const [commandes, setCommandes] = useState([]);
   const [etats, setEtats] = useState({});
   const [message, setMessage] = useState(null);
+  const [realiste, setRealiste] = useState(lireQualite);
   const sous = SOUS.has(modele);
   const navire = NAVIRES.has(modele);
   const snle = modele === 'snle' || modele === 'snle3g';
@@ -289,36 +303,49 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         const c = document.createElement('canvas');
         if (!(c.getContext('webgl2') || c.getContext('webgl'))) throw new Error('WebGL');
       } catch { setEtat('indisponible'); return; }
-      const [THREE, { OrbitControls }, { RoomEnvironment }, modeles] = await Promise.all([
+      const [THREE, { OrbitControls }, { RoomEnvironment }, modeles, rendu] = await Promise.all([
         import('three'),
         import('three/examples/jsm/controls/OrbitControls.js'),
         import('three/examples/jsm/environments/RoomEnvironment.js'),
         MODULES[CONSTRUCTEURS[modele][0]](),
+        import('./rendu.js'),
       ]);
+      const R = await rendu.chargerRendu();
       if (annule || !conteneur.current) return;
       const el = conteneur.current;
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.05;
+      renderer.toneMappingExposure = INTERIEUR.has(modele) ? 1.05 : 1.15;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       el.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
       const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      // Lumière d'ambiance et reflets : un ciel d'extérieur (soleil dans l'axe de la lumière principale),
+      // un studio pour les lieux clos et l'espace
+      const directionSoleil = new THREE.Vector3(6, 14, 8);
+      let environnement = null;
+      if (INTERIEUR.has(modele)) scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      else {
+        environnement = rendu.environnementCiel(THREE, renderer, directionSoleil, navire || sous ? { sol: 0x4a6a86 } : {});
+        scene.environment = environnement.texture;
+        scene.environmentIntensity = 1.7;
+      }
       const camera = new THREE.PerspectiveCamera(32, 1, 0.1, terrain ? 400 : 600);
       if (sous) scene.fog = new THREE.Fog(0x0d2a48, 18, 60);
       if (navire) scene.fog = new THREE.Fog(0xc9dcec, 120, 420);
       if (terrain) scene.fog = new THREE.Fog(0xdfe6ee, 38, 110);
 
-      scene.add(new THREE.HemisphereLight(sous ? 0x9fc6ff : 0xeaf2ff, sous ? 0x0a1a2c : espace ? 0x10141c : 0x6b6f75, sous ? 1.0 : espace ? 0.35 : 0.75));
-      const soleil = new THREE.DirectionalLight(0xffffff, sous ? 1.5 : espace ? 3 : 2.2);
-      soleil.position.set(6, 14, 8);
+      scene.add(new THREE.HemisphereLight(sous ? 0x9fc6ff : 0xeaf2ff, sous ? 0x0a1a2c : espace ? 0x10141c : 0x6b6f75, sous ? 1.0 : espace ? 0.35 : INTERIEUR.has(modele) ? 0.75 : 0.5));
+      const soleil = new THREE.DirectionalLight(0xfff6e8, sous ? 1.5 : espace ? 3 : 2.5);
+      soleil.position.copy(directionSoleil);
       soleil.castShadow = true;
       soleil.shadow.mapSize.set(2048, 2048);
+      soleil.shadow.bias = -0.0004;
+      soleil.shadow.normalBias = 0.025;
       const borne = navire ? 14 : terrain ? 16 : 12;
       Object.assign(soleil.shadow.camera, { left: -borne, right: borne, top: borne, bottom: -borne, near: 1, far: 60 });
       scene.add(soleil);
@@ -331,7 +358,14 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       // Scènes composées (unités en mission) : sol ou ciel propres, brume à leur couleur
       const solPropre = !!objet.userData.sol, ciel = !!objet.userData.ciel;
       if (objet.userData.brume) scene.fog = new THREE.Fog(...objet.userData.brume);
-      if (!navire && !terrain && !espace && !solPropre && !ciel) {
+      // Rendu réaliste : mer animée, joints de panneaux et usure selon la famille de matériel
+      const mer = rendu.oceaniser(THREE, objet, { reflets: environnement?.texture ?? null });
+      const famille = AIR.has(modele) ? 'air' : TERRE.has(modele) ? 'terre' : navire ? 'mer' : null;
+      if (famille) rendu.detailler(THREE, objet, DETAILS[famille]);
+      if (VEHICULES.has(modele)) {
+        // Véhicule terrestre : posé sur un disque de terrain qui se fond dans le fond
+        scene.add(rendu.plateauSol(THREE, 15, -2.2));
+      } else if (!navire && !terrain && !espace && !solPropre && !ciel) {
         // Ombre portée douce sous l'appareil (sol invisible)
         const sol = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({ opacity: sous ? 0.25 : 0.18 }));
         sol.rotation.x = -Math.PI / 2;
@@ -356,13 +390,21 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         camera.position.set(x * k, y * k, z * k);
         controles.update();
       };
+      // Chaîne de rendu réaliste (occlusion ambiante), créée à la demande
+      let compo = null;
+      const creerCompo = () => {
+        const l = el.clientWidth || 600;
+        compo = rendu.creerComposition(THREE, R, renderer, scene, camera, { largeur: l, hauteur, rayon: RAYON_AO[modele] ?? 0.45 });
+      };
       const taille = () => {
         const l = el.clientWidth || 600;
         renderer.setSize(l, hauteur);
         camera.aspect = l / hauteur;
         camera.updateProjectionMatrix();
+        compo?.taille(l, hauteur);
       };
       taille();
+      if (lireQualite()) creerCompo();
       placer(Object.keys(VUES[modele])[0]);
       const ro = new ResizeObserver(taille);
       ro.observe(el);
@@ -376,6 +418,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       const v = new THREE.Vector3();
       let boucle = 0;
       let visible = true;
+      let tPrecedent = 0, cumul = 0, images = 0;
       const io = new IntersectionObserver(([x]) => { visible = x.isIntersecting; }, { threshold: 0.05 });
       io.observe(el);
       const animer = (t) => {
@@ -412,8 +455,18 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
           }
         }
         objet.userData.animer?.(t, api.current);
+        mer?.animer(t);
         controles.update();
-        renderer.render(scene, camera);
+        if (compo?.actif) {
+          compo.rendre();
+          // Appareil trop lent pour l'occlusion ambiante (plus de 50 ms par image en moyenne) : rendu rapide
+          if (tPrecedent && t - tPrecedent < 400) { cumul += t - tPrecedent; images += 1; }
+          tPrecedent = t;
+          if (images >= 45) {
+            if (cumul / images > 50) { compo.actif = false; setRealiste(false); }
+            cumul = 0; images = 0;
+          }
+        } else renderer.render(scene, camera);
         const conteneurLegendes = legendesRef.current;
         if (conteneurLegendes) {
           const l = el.clientWidth;
@@ -436,6 +489,11 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         vue: placer,
         basculer: objet.userData.basculer ?? {},
         photo: () => renderer.domElement.toDataURL('image/png'),
+        realiste: (on) => {
+          if (on && !compo) creerCompo();
+          if (compo) compo.actif = on;
+          tPrecedent = 0; cumul = 0; images = 0;
+        },
       };
       for (const c of objet.userData.commandes ?? []) api.current[c.id] = false;
       setNoms(objet.userData.legendes.map((l) => l.texte));
@@ -450,9 +508,12 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         controles.dispose();
         scene.traverse((o) => {
           if (o.geometry) o.geometry.dispose();
-          if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { m.map?.dispose(); m.dispose(); });
+          if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { m.map?.dispose(); m.alphaMap?.dispose(); m.dispose(); });
         });
         pmrem.dispose();
+        environnement?.dispose();
+        compo?.liberer();
+        mer?.liberer();
         renderer.dispose();
         renderer.forceContextLoss(); // libère tout de suite le contexte WebGL (les navigateurs en limitent le nombre)
         renderer.domElement.remove();
@@ -492,6 +553,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
             ? <button key={c.id} type="button" className="puce" disabled={c.requiert && !etats[c.requiert]} title={c.requiert && !etats[c.requiert] ? c.aide : ''} onClick={() => { api.current[c.id] = true; }}>{c.libelle}</button>
             : <button key={c.id} type="button" className={`puce ${etats[c.id] ? 'active' : ''}`} aria-pressed={!!etats[c.id]} onClick={() => { const v = !etats[c.id]; api.current[c.id] = v; setEtats({ ...etats, [c.id]: v }); }}>{etats[c.id] ? c.actif : c.libelle}</button>))}
           {modele === 'leclerc' && <button type="button" className="puce" onClick={() => { const l = livree === 'sable' ? 'centreEurope' : 'sable'; api.current.livree = l; setLivree(l); }}>{livree === 'sable' ? 'Livrée : sable' : 'Livrée : centre-Europe'}</button>}
+          <button type="button" className={`puce ${realiste ? 'active' : ''}`} aria-pressed={realiste} title="Rendu réaliste : ombres de contact (occlusion ambiante) et anticrénelage ; rendu rapide pour les appareils modestes" onClick={() => { const v = !realiste; api.current.realiste?.(v); setRealiste(v); ecrireQualite(v); }}>{realiste ? '✨ Rendu réaliste' : '⚡ Rendu rapide'}</button>
           <button type="button" className="puce" onClick={photo}>📸 Photo</button>
         </div>
       )}

@@ -23,6 +23,7 @@ import { construireRafale, construireLeclerc, loft, pieces } from './modeles.js'
 import { construirePhenix, construireCaiman, construireCaracal, soldat } from './aeronefs.js';
 import { construireTigre } from './tigre.js';
 import { voilure, tubeEntre } from './formes.js';
+import { textureSol } from './rendu.js';
 
 const TOUR = Math.PI * 2;
 
@@ -71,6 +72,12 @@ const SOLS = {
   garnison: { sol: 0x84847f, piste: 0x767672 },
 };
 
+/** Trois teintes autour de la couleur du sol (plus sombre, de base, plus claire). */
+function rampeSol(couleur) {
+  const r = (couleur >> 16) & 255, v = (couleur >> 8) & 255, b = couleur & 255;
+  return [0.84, 1, 1.13].map((f) => '#' + [r, v, b].map((x) => Math.min(255, Math.round(x * f)).toString(16).padStart(2, '0')).join(''));
+}
+
 /**
  * Sol et décor d'une scène terrestre, en mètres × K : sol, piste, et reliefs
  * selon la région (rochers et dunes, sapins, palmiers).
@@ -78,12 +85,16 @@ const SOLS = {
 function decor(THREE, K, type, { piste = true, rayon = 600, libre = 40, lointain = 125 } = {}) {
   const c = SOLS[type] ?? SOLS.desert;
   const g = new THREE.Group();
-  const sol = new THREE.Mesh(new THREE.CircleGeometry(rayon * K, 64), mat(THREE, c.sol, 1));
+  // Terrain texturé (variations de teinte, grain) : motif de 26 m qui se répète sans couture
+  const texture = textureSol(THREE, { teintes: rampeSol(c.sol), graine: type.length * 31 + 7, repetition: (rayon * 2) / 26 });
+  const sol = new THREE.Mesh(new THREE.CircleGeometry(rayon * K, 64), mat(THREE, 0xffffff, 1, { map: texture }));
   sol.rotation.x = -Math.PI / 2;
   sol.receiveShadow = true;
   g.add(sol);
   if (piste) {
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(rayon * 2 * K, 7 * K), mat(THREE, c.piste, 1));
+    const tp = textureSol(THREE, { teintes: rampeSol(c.piste), graine: 3, taille: 256 });
+    tp.repeat.set((rayon * 2) / 12, 7 / 12);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(rayon * 2 * K, 7 * K), mat(THREE, 0xffffff, 1, { map: tp }));
     p.rotation.x = -Math.PI / 2;
     p.position.y = 0.004;
     p.receiveShadow = true;
