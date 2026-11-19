@@ -8,6 +8,9 @@
  */
 
 export const SOURCES_DEFENSE = {
+  patmarSelection: { titre: 'Air & Cosmos : patrouille maritime, l\'Airbus A321 MPA sélectionné par la France', url: 'https://air-cosmos.com/article/patrouille-maritime-l-airbus-a321-mpa-selectionne-par-la-france-69883' },
+  patmarCout: { titre: 'Zone Militaire (opex360) : le coût des douze futurs avions PATMAR serait aussi élevé que celui du « France Libre » (18 novembre 2026)', url: 'https://www.opex360.com/2026/11/18/le-cout-des-douze-futurs-avions-patmar-de-la-marine-nationale-serait-aussi-eleve-que-celui-du-porte-avions-france-libre/' },
+  patmarSuspension: { titre: 'Air Data News : le programme A321 de patrouille maritime à l\'arrêt, des coûts approchant 12 Md€', url: 'https://www.airdatanews.com/frances-a321-maritime-patrol-aircraft-program-stalls-as-costs-approach-e12-billion/' },
   m51Vigilant: { titre: 'Naval News : tir de recette d\'un M51.3 depuis le SNLE Le Vigilant, au large du Finistère (6 octobre 2026)', url: 'https://navalnews.com/naval-news/2026/10/french-navy-conducts-acceptance-firing-of-m51-3-missile-from-le-vigilant-ssbn' },
   m51Biscarrosse: { titre: 'Ministère des Armées : succès d\'un tir d\'essai du missile M51.3 depuis Biscarrosse (18 novembre 2023)', url: 'https://prod-site-internet-minarm-admin.cloud.defense.gouv.fr/sites/default/files/ministere-armees/20231118_Succ%C3%A8s%20d%27un%20tir%20d%27essai%20de%20missile%20M51.pdf' },
   m51Terrible: { titre: 'Ministère des Armées : le système d\'armes du SNLE Le Terrible validé en conditions opérationnelles (19 avril 2023)', url: 'https://www.defense.gouv.fr/sites/default/files/ministere-armees/19.04.2023%20Le%20syst%C3%A8me%20d%E2%80%99armes%20du%20SNLE%20Le%20Terrible%20-%20M51%20valid%C3%A9%20en%20conditions%20op%C3%A9rationnelles.pdf' },
@@ -336,6 +339,23 @@ export const PROGRAMMES_DEFENSE = {
       options: [{ id: 'nominal', nom: 'Le garder en service', description: 'Le Monge continue de suivre les essais ; son remplacement n\'est pas encore programmé.' }],
       jalons: [],
       sources: ['monge'],
+    },
+    {
+      id: 'patmar', nom: 'Avion de patrouille maritime futur (A321 MPA)', sousTitre: 'Remplacer les Atlantique 2 : chasse aux sous-marins, surveillance des mers', illustration: 'chasseur', domaine: 'Marine',
+      industriels: ['Airbus (avion, intégration)', 'Thales (capteurs, détection, radar)', 'Safran ou Pratt & Whitney (réacteurs)'], fleurons: ['airbus', 'thales'],
+      faits: [
+        'La patrouille maritime repose sur 18 Atlantique 2, des bimoteurs à hélices des années 1990 : ils traquent les sous-marins (y compris pour protéger la sortie des SNLE), surveillent les mers et appuient les opérations.',
+        'Airbus a été retenu en 2025 avec l\'A321 MPA, version militaire de l\'A321XLR, face à une offre de Dassault Aviation dérivée du Falcon 10X ; la DGA lui avait confié des études en février 2025. Thales fournit les capteurs.',
+        'Selon un rapport parlementaire (novembre 2026), le coût inscrit est passé de 2,76 à 4,57 Md€ entre les budgets 2026 et 2027 ; la presse évoque 10 à 12 Md€ pour douze avions. Faute d\'accord sur le prix, le lancement a été suspendu : la Marine craint une rupture temporaire de capacité.',
+      ],
+      capacite: { cle: 'patmar', libelle: 'A321 MPA en service', depart: 0 },
+      options: [
+        { id: 'nominal', nom: 'Attendre un accord sur le prix (situation de novembre 2026)', description: 'Pas de dépense supplémentaire pour l\'instant ; premier avion vers 2033 si le contrat est signé à temps (hypothèse de jeu).' },
+        { id: 'lancer', nom: 'Signer le contrat pour douze A321 MPA', description: 'Environ 0,8 Md€ de plus par an pendant six ans (hypothèse de jeu, d\'après les 10 à 12 Md€ cités par la presse, soutien compris pour une partie) : la relève des Atlantique 2 est assurée.', cout: 0.8, duree: 24, effets: { souverainete: 2, influence: 1, relations: { ue: 1 }, fleurons: { airbus: 3, thales: 3 } }, avance: { jalon: 'patmar_1', trimestres: 4 } },
+        { id: 'renoncer', nom: 'Renoncer et prolonger les Atlantique 2', description: 'Environ 0,15 Md€ par an pendant quatre ans pour prolonger les vieux avions (hypothèse de jeu) : économie à court terme, mais une flotte vieillissante et un trou capacitaire à terme.', cout: 0.15, duree: 16, effets: { souverainete: -2, influence: -1, fleurons: { airbus: -3, thales: -2 } }, retard: { jalon: 'patmar_1', trimestres: 12 } },
+      ],
+      jalons: [{ id: 'patmar_1', annee: 2033, t: 4, texte: 'Le premier A321 MPA rejoint la flottille : la relève des Atlantique 2 commence.', capacite: 1, risqueRetard: 0.3 }],
+      sources: ['patmarSelection', 'patmarCout', 'patmarSuspension'],
     },
     {
       id: 'successeur', nom: 'Successeur du Rafale', sousTitre: 'Après l\'abandon du chasseur commun du SCAF (juin 2026, selon la presse)', illustration: 'chasseurFutur', domaine: 'Air',

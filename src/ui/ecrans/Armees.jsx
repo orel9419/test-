@@ -9,7 +9,7 @@ const MODELES_3D = {
   helicos: [['tigre', 'Tigre'], ['caiman', 'Caïman'], ['caimanFS', 'Caïman forces spéciales'], ['caimanMarine', 'Caïman Marine'], ['puma', 'Puma']], mco: [['caracal', 'Caracal']], snle3g: [['snle3g', 'SNLE 3G']], pang: [['porteAvions', 'France Libre']], cdg: [['charlesDeGaulle', 'Charles-de-Gaulle']],
   leclerc: [['leclerc', 'Leclerc']], artillerie: [['caesar', 'Caesar MkII']], drones: [['patroller', 'Drone Patroller']],
   scorpion: [['griffon', 'Griffon'], ['jaguar', 'Jaguar']], espace: [['satellite', 'Satellite d\'observation']],
-  sna: [['sna', 'SNA Suffren']], pha: [['pha', 'PHA Mistral']], fregates: [['fda', 'Chevalier Paul (FDA)'], ['fremm', 'FREMM']], brf: [['brf', 'Ravitailleur (BRF)']], monge: [['monge', 'Monge']],
+  sna: [['sna', 'SNA Suffren']], pha: [['pha', 'PHA Mistral']], fregates: [['fda', 'Chevalier Paul (FDA)'], ['fremm', 'FREMM']], brf: [['brf', 'Ravitailleur (BRF)']], monge: [['monge', 'Monge']], patmar: [['a321mpa', 'A321 MPA']],
 };
 
 /** Variantes par pays (les États-Unis utilisent les trois versions du F-35). */

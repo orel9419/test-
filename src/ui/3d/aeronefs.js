@@ -497,6 +497,272 @@ export function construirePhenix(THREE) {
   return groupe;
 }
 
+// ---------------------------------------------------------------------------
+// A321 MPA : futur avion de patrouille maritime de la Marine nationale
+// ---------------------------------------------------------------------------
+
+/**
+ * Airbus A321 MPA (« Maritime Patrol Aircraft »), version militaire de
+ * l'A321XLR proposée pour remplacer les Atlantique 2, d'après la maquette
+ * présentée par Airbus (salon Euronaval) et une image de présentation :
+ * livrée grise de la Marine, cocarde à ancre de l'aéronautique navale,
+ * « MARINE » sur l'arrière, rangée d'antennes sur le dos, radômes de
+ * télécommunications par satellite, réacteurs à grande soufflante (LEAP ou
+ * PW1100G), ailettes « sharklets ». 44,51 m de long, 35,80 m d'envergure,
+ * 11,76 m de haut (A321neo, Airbus). Les équipements de mission ne sont pas
+ * publiés : soute à torpilles, lance-bouées, tourelle optronique et radar
+ * sous le ventre sont placés à titre indicatif.
+ * Commandes : soute, largage d'une torpille, bouées acoustiques, train.
+ */
+export function construireA321Mpa(THREE) {
+  const L = 44.5;
+  const a = new THREE.Group();
+  const gris = new THREE.MeshStandardMaterial({ color: 0x6e726e, metalness: 0.2, roughness: 0.55, envMapIntensity: 0.5 });
+  const grisClair = new THREE.MeshStandardMaterial({ color: 0x7c807c, metalness: 0.25, roughness: 0.5 });
+  const sombre = new THREE.MeshStandardMaterial({ color: 0x2c2f33, metalness: 0.3, roughness: 0.6 });
+  const metal = new THREE.MeshStandardMaterial({ color: 0x8f9398, metalness: 0.85, roughness: 0.3 });
+  const noir = new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.8 });
+  const radome = new THREE.MeshStandardMaterial({ color: 0x666a66, metalness: 0.1, roughness: 0.6 });
+
+  // Toile du fuselage, d'après la maquette : gris uni, peu de hublots, portes dessinées, inscriptions
+  const T = toileFuselage(L, { largeur: 4096, hauteur: 1024, perimetre: 12.7 });
+  T.ctx.fillStyle = '#727671';
+  T.ctx.fillRect(0, 0, T.largeur, T.hauteur);
+  patiner(T.ctx, T.largeur, T.hauteur, 9, 0.025);
+  // Poste de pilotage (pare-brise et fenêtres latérales, comme sur tous les A320)
+  // (pare-brise en retrait du nez, au-dessus de l'axe ; deux fenêtres latérales de chaque côté)
+  T.rect(1.95, 2.35, 0.36, 0.66, '#1b1f25', 'deux', 4);
+  for (const [x1, x2] of [[2.45, 2.95], [3.05, 3.5]]) T.rect(x1, x2, 0.36, 0.56, '#1b1f25', 'deux', 5);
+  // Portes : avant, avant-aile, sortie d'aile, arrière (contours foncés)
+  for (const [x1, x2, h1, h2] of [[4.4, 5.3, -0.42, 0.52], [13.6, 14.5, -0.42, 0.52], [26.3, 27.0, -0.12, 0.42], [39.2, 40.0, -0.42, 0.45]]) T.contour(x1, x2, h1, h2, '#4e524f', 4);
+  // Quelques hublots d'observation (la cabine de mission en a peu)
+  for (const x of [8.2, 11.6, 21.0, 30.5, 34.6]) T.rect(x, x + 0.45, 0.24, 0.42, '#2a2f36', 'deux', 6);
+  // Inscriptions de la maquette : « AIRBUS » et « A321 MPA » en avant de l'aile, « MARINE » sous la cocarde
+  T.texte('AIRBUS', 15.3, 0.4, 26, '#2f3337');
+  T.texte('A321 MPA', 16.4, 0.12, 60, '#2f3337');
+  T.cocardePeinte(36.0, 0.42, 0.62, 12, { ancre: true });
+  T.texte('MARINE', 36.0, -0.05, 40, '#2f3337');
+  const peau = new THREE.MeshStandardMaterial({ map: textureDe(THREE, T.c), metalness: 0.2, roughness: 0.55, envMapIntensity: 0.5 });
+  // Fuselage (largeur 3,95 m, hauteur 4,14 m), nez arrondi, cône arrière relevé
+  a.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 0, h: 0, y: -0.55 },
+    { x: 0.3, w: 1.05, hHaut: 0.52, hBas: 0.6, y: -0.6 },
+    { x: 1.0, w: 2.15, hHaut: 1.15, hBas: 1.25, y: -0.5 },
+    { x: 1.6, w: 2.75, hHaut: 1.5, hBas: 1.57, y: -0.39 },
+    { x: 2.2, w: 3.2, hHaut: 1.75, hBas: 1.8, y: -0.28 },
+    { x: 3.0, w: 3.55, hHaut: 1.91, hBas: 1.95, y: -0.16 },
+    { x: 3.8, w: 3.78, hHaut: 2.0, hBas: 2.03, y: -0.08 },
+    { x: 4.7, w: 3.91, hHaut: 2.05, hBas: 2.06, y: -0.03 },
+    { x: 5.8, w: 3.95, hHaut: 2.07, hBas: 2.07, y: 0 },
+    { x: 33.0, w: 3.95, hHaut: 2.07, hBas: 2.07, y: 0 },
+    { x: 37.0, w: 3.6, hHaut: 1.97, hBas: 1.6, y: 0.3 },
+    { x: 40.5, w: 2.5, hHaut: 1.45, hBas: 0.9, y: 0.85 },
+    { x: 43.3, w: 1.0, hHaut: 0.62, hBas: 0.42, y: 1.35 },
+    { x: 44.5, w: 0.45, hHaut: 0.2, hBas: 0.2, y: 1.5 },
+  ], { segments: 64, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  // Carénage ventral d'emplanture
+  a.add(new THREE.Mesh(loft(THREE, [
+    { x: 14.0, w: 3.4, hHaut: 0.2, hBas: 0.15, y: -1.85 },
+    { x: 16.5, w: 4.6, hHaut: 0.5, hBas: 0.55, y: -1.75 },
+    { x: 24.5, w: 4.6, hHaut: 0.5, hBas: 0.55, y: -1.75 },
+    { x: 27.5, w: 3.0, hHaut: 0.2, hBas: 0.2, y: -1.85 },
+  ], { segments: 40, parSegment: 6 }), gris));
+
+  // Aile à cassure (flèche de 25°, bord de fuite droit à l'intérieur), dièdre, sharklets, réacteurs
+  const aile = surface(THREE, [[17.3, 1.6], [20.1, 6.3], [25.6, 17.3], [27.1, 17.3], [23.9, 6.3], [24.4, 1.6]], 0.42);
+  const numeroAile = new THREE.MeshBasicMaterial({ map: texturePeinteSimple(THREE, '10', '#2f3337'), transparent: true, depthWrite: false });
+  for (const cote of [1, -1]) {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(aile, gris));
+    g.add(tube(THREE, [17.3, 0, 1.6], [20.1, 0, 6.3], 0.17, grisClair), tube(THREE, [20.1, 0, 6.3], [25.6, 0, 17.3], 0.13, grisClair));
+    // Volets et ailerons (joints sombres)
+    for (const [x1, z1, x2, z2] of [[23.3, 2.0, 23.2, 6.2], [23.4, 6.5, 25.7, 11.8], [25.8, 12.1, 26.5, 15.6]]) g.add(tube(THREE, [x1, 0.22, z1], [x2, 0.22, z2], 0.025, sombre));
+    // Sharklet : ailette relevée, légèrement inclinée vers l'extérieur
+    const sh = new THREE.Mesh(surface(THREE, [[25.5, 0], [27.15, 2.4], [27.75, 2.4], [27.2, 0]], 0.14, { plan: 'xy', biseau: 0.03 }), gris);
+    sh.position.z = 17.3;
+    sh.rotation.x = 0.2;
+    g.add(sh);
+    // Numéro peint sur l'extrados droit, comme sur la maquette
+    if (cote < 0) {
+      const n = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.3), numeroAile);
+      n.rotation.set(-Math.PI / 2, 0, Math.PI / 2 - 0.4);
+      n.position.set(22.6, 0.235, 9.5);
+      g.add(n);
+    }
+    // Réacteur sur son mât : nacelle à grande soufflante, cône d'échappement
+    const z = 5.75;
+    const mat = new THREE.Mesh(surface(THREE, [[16.6, 0], [17.8, 0.9], [21.6, 0.9], [22.6, 0]], 0.38, { plan: 'xy', biseau: 0.05 }), gris);
+    mat.position.set(0, -1.05, z);
+    const nacelle = new THREE.Mesh(loft(THREE, [
+      { x: 14.6, w: 2.25, h: 2.25, y: -1.15, z },
+      { x: 15.2, w: 2.5, h: 2.5, y: -1.15, z },
+      { x: 17.4, w: 2.4, h: 2.4, y: -1.12, z },
+      { x: 19.0, w: 1.75, h: 1.75, y: -1.05, z },
+      { x: 19.6, w: 1.35, h: 1.35, y: -1.02, z },
+    ], { segments: 36, parSegment: 6, fermer: false }), gris);
+    const levre = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.09, 10, 36), metal);
+    levre.rotation.y = Math.PI / 2;
+    levre.position.set(14.62, -1.15, z);
+    const entree = new THREE.Mesh(new THREE.CircleGeometry(1.08, 36), noir);
+    entree.rotation.y = -Math.PI / 2;
+    entree.position.set(14.95, -1.15, z);
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.85, 20), metal);
+    cone.rotation.z = Math.PI / 2;
+    cone.position.set(15.3, -1.15, z);
+    const tuyere = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.3, 20), metal);
+    tuyere.rotation.z = -Math.PI / 2;
+    tuyere.position.set(20.2, -1.02, z);
+    g.add(mat, nacelle, levre, entree, cone, tuyere);
+    g.scale.z = cote;
+    g.rotation.x = cote * 0.09;
+    g.position.y = -1.3;
+    a.add(g);
+  }
+  // Empennage horizontal
+  for (const cote of [1, -1]) {
+    const gS = new THREE.Group();
+    gS.add(new THREE.Mesh(surface(THREE, [[38.0, 0.8], [41.1, 6.2], [42.5, 6.2], [41.9, 0.8]], 0.22), gris));
+    gS.add(tube(THREE, [38.0, 0, 0.8], [41.1, 0, 6.2], 0.1, grisClair));
+    gS.scale.z = cote;
+    gS.position.y = 0.95;
+    gS.rotation.x = cote * 0.1;
+    a.add(gS);
+  }
+  // Dérive (5,9 m au-dessus du dos) et filet dorsal
+  const derive = new THREE.Mesh(surface(THREE, [[34.6, 0], [39.7, 5.9], [41.7, 5.9], [41.4, 0]], 0.3, { plan: 'xy' }), gris);
+  derive.position.y = 1.9;
+  const filet = new THREE.Mesh(surface(THREE, [[32.2, 0.15], [35.6, 1.3], [35.9, 0.15]], 0.24, { plan: 'xy', biseau: 0.04 }), gris);
+  filet.position.y = 1.9;
+  const gouverne = tube(THREE, [40.6, 2.1, 0], [41.4, 7.6, 0], 0.03, sombre);
+  a.add(derive, filet, gouverne, tube(THREE, [34.6, 1.9, 0], [39.7, 7.8, 0], 0.15, grisClair));
+
+  // Équipements de mission visibles sur la maquette : antennes de dos, radômes de télécommunications par satellite
+  for (let i = 0; i < 6; i++) {
+    const lame = new THREE.Mesh(surface(THREE, [[0, 0], [0.35, 0.42], [0.6, 0.42], [0.55, 0]], 0.05, { plan: 'xy', biseau: 0.01 }), sombre);
+    lame.position.set(14.2 + i * 1.25, 2.05, 0);
+    a.add(lame);
+  }
+  for (const [x, l, h] of [[23.0, 1.6, 0.22], [31.0, 2.4, 0.3]]) {
+    const d = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12, 0, TOUR, 0, Math.PI / 2), radome);
+    d.scale.set(l / 2, h, l / 3);
+    d.position.set(x, 2.02, 0);
+    a.add(d);
+  }
+  // Sous le ventre (emplacements indicatifs) : tourelle optronique sous le nez, radar de surveillance
+  const tourelle = new THREE.Mesh(new THREE.SphereGeometry(0.36, 20, 14), sombre);
+  tourelle.position.set(5.0, -2.05, 0);
+  const fut = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.25, 16), gris);
+  fut.position.set(5.0, -1.82, 0);
+  const radar = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 12), radome);
+  radar.scale.set(2.2, 0.35, 1.0);
+  radar.position.set(10.5, -2.0, 0);
+  a.add(tourelle, fut, radar);
+  // Soute à armement derrière l'aile : deux portes articulées sur les bords, torpille MU90 à l'intérieur
+  const portes = [];
+  for (const cote of [1, -1]) {
+    const pivot = new THREE.Group();
+    pivot.position.set(30.0, -1.95, cote * 0.62);
+    const porte = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.04, 0.62), gris);
+    porte.position.z = -cote * 0.31;
+    pivot.add(porte);
+    pivot.userData.cote = cote;
+    a.add(pivot);
+    portes.push(pivot);
+  }
+  const fondSoute = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.05, 1.24), noir);
+  fondSoute.position.set(30.0, -1.6, 0);
+  a.add(fondSoute);
+  const torpille = new THREE.Group();
+  const corps = new THREE.Mesh(new THREE.CylinderGeometry(0.162, 0.162, 2.6, 18), new THREE.MeshStandardMaterial({ color: 0xb8a24a, roughness: 0.5 }));
+  corps.rotation.z = Math.PI / 2;
+  const ogive = new THREE.Mesh(new THREE.SphereGeometry(0.162, 16, 10), new THREE.MeshStandardMaterial({ color: 0x3c4a3a, roughness: 0.5 }));
+  ogive.position.x = -1.3;
+  const parachute = new THREE.Mesh(new THREE.ConeGeometry(0.7, 0.6, 16, 1, true), new THREE.MeshStandardMaterial({ color: 0xe9e4d6, roughness: 0.8, side: THREE.DoubleSide }));
+  parachute.rotation.z = -Math.PI / 2;
+  parachute.position.x = 2.4;
+  parachute.visible = false;
+  torpille.add(corps, ogive, parachute);
+  const repos = new THREE.Vector3(30.0, -1.78, 0);
+  torpille.position.copy(repos);
+  a.add(torpille);
+  // Lance-bouées acoustiques sous l'arrière du fuselage
+  const bouees = [];
+  for (let i = 0; i < 3; i++) {
+    const x = 34.2 + i * 0.6;
+    a.add(pieces(THREE, noir, [[x, -1.62, 0, 0.18, 0.02, 0.18]]));
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.9, 10), new THREE.MeshStandardMaterial({ color: 0xd9c25a, roughness: 0.5 }));
+    b.visible = false;
+    a.add(b);
+    bouees.push({ b, x });
+  }
+  // Train d'atterrissage (rentré en vol)
+  const train = new THREE.Group();
+  const pneu = new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.9 });
+  const jambe = new THREE.MeshStandardMaterial({ color: 0xd6d8db, metalness: 0.6, roughness: 0.35 });
+  train.add(tube(THREE, [5.0, -1.9, 0], [5.2, -3.4, 0], 0.11, jambe));
+  for (const z of [-0.25, 0.25]) { const r = roue(THREE, 0.38, 0.25, pneu, jambe); r.position.set(5.2, -3.6, z); train.add(r); }
+  for (const s of [-1, 1]) {
+    train.add(tube(THREE, [21.8, -1.8, s * 3.6], [21.8, -3.4, s * 3.8], 0.15, jambe));
+    for (const dz of [-0.35, 0.35]) { const r = roue(THREE, 0.58, 0.36, pneu, jambe); r.position.set(21.8, -3.4, s * 3.8 + dz); train.add(r); }
+  }
+  train.visible = false;
+  a.add(train);
+
+  const k = 0.32;
+  const { groupe, p } = installer(THREE, a, k, 22, 0.3);
+  groupe.userData.legendes = [
+    { texte: 'Rangée d\'antennes de communication et de guerre électronique', point: p(17.5, 2.9, 0) },
+    { texte: 'Radôme de télécommunications par satellite', point: p(31, 2.6, 0) },
+    { texte: 'Cocarde à ancre de l\'aéronautique navale', point: p(36, 1.0, 2.1) },
+    { texte: 'Réacteur à grande soufflante (LEAP ou PW1100G)', point: p(14.6, -2.6, 5.75) },
+    { texte: 'Sharklet', point: p(27.4, 1.6, 17.8) },
+    { texte: 'Soute à armement (torpilles), emplacement indicatif', point: p(30, -2.6, 0) },
+    { texte: 'Tourelle optronique et radar de surveillance (indicatifs)', point: p(7.5, -2.7, 0) },
+  ];
+  groupe.userData.commandes = [
+    { id: 'soute', libelle: 'Ouvrir la soute', actif: 'Fermer la soute' },
+    { id: 'torpille', type: 'action', libelle: '🎯 Larguer une torpille (simulation)', requiert: 'soute', aide: 'Ouvrez d\'abord la soute' },
+    { id: 'bouees', type: 'action', libelle: '📡 Larguer des bouées acoustiques' },
+    { id: 'train', libelle: 'Sortir le train', actif: 'Rentrer le train' },
+  ];
+  let fs = 0, largage = null, salve = null;
+  groupe.userData.animer = (t, api = {}) => {
+    fs += ((api.soute ? 1 : 0) - fs) * 0.05;
+    for (const pv of portes) pv.rotation.x = -pv.userData.cote * fs * 1.45;
+    if (api.torpille && largage === null && api.soute) largage = t;
+    api.torpille = false;
+    if (largage !== null) {
+      const d = (t - largage) / 1000;
+      // Elle tombe, recule par rapport à l'avion, puis le parachute de freinage s'ouvre
+      torpille.position.set(repos.x + 3 * d * d + 2 * d, repos.y - 4.9 * d * d * 0.6, 0);
+      torpille.rotation.z = -Math.min(0.5, d * 0.3);
+      parachute.visible = d > 0.5;
+      if (d > 3.5) { largage = null; torpille.position.copy(repos); torpille.rotation.z = 0; parachute.visible = false; }
+    }
+    if (api.bouees && salve === null) salve = t;
+    api.bouees = false;
+    bouees.forEach(({ b, x }, i) => {
+      const d = salve === null ? -1 : (t - salve) / 1000 - i * 0.35;
+      b.visible = d > 0 && d < 2.5;
+      if (b.visible) { b.position.set(x + 4 * d * d, -1.7 - 3 * d * d, 0); b.rotation.z = Math.min(1.3, d * 1.5); }
+    });
+    if (salve !== null && (t - salve) / 1000 > 3.3) salve = null;
+    train.visible = !!api.train;
+  };
+  groupe.userData.taille = 16;
+  return groupe;
+}
+
+/** Texte peint simple (numéro) sur fond transparent. */
+function texturePeinteSimple(THREE, texte, couleur) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 160;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = couleur; ctx.font = 'bold 130px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(texte, 128, 84);
+  return textureDe(THREE, c);
+}
+
 /** Numéro peint (gris foncé) pour la dérive. */
 function textureNumero(THREE, texte) {
   const c = document.createElement('canvas');

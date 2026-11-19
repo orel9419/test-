@@ -155,6 +155,10 @@ const FICHES = {
     titre: 'Bâtiment d\'essais et de mesures Monge (A601)',
     lignes: ['Environ 225 m · en service depuis 1992 · équipage mixte Marine nationale et DGA', 'Radars de trajectographie, antennes de télémesure et moyens optiques : il suit les tirs d\'essai du missile M51 et des lancements spatiaux', 'Unique en Europe : la France valide seule ses missiles · plateforme hélicoptère en porte-à-faux à la poupe', 'D\'après une photo · antennes et radômes simplifiés'],
   },
+  a321mpa: {
+    titre: 'Airbus A321 MPA : futur avion de patrouille maritime',
+    lignes: ['Version militaire de l\'A321XLR proposée pour remplacer les 18 Atlantique 2 de la Marine nationale : 44,51 m de long, 35,80 m d\'envergure (A321neo)', 'Airbus retenu en 2025 face à une offre de Dassault dérivée du Falcon 10X ; Thales fournit les capteurs (radar, détection, détecteur d\'anomalie magnétique)', 'Programme suspendu en novembre 2026 faute d\'accord sur le prix : la presse évoque 10 à 12 Md€ pour douze avions', 'D\'après la maquette d\'Euronaval et une image d\'Airbus · soute, lance-bouées, tourelle optronique et radar ventral placés à titre indicatif (non publiés)'],
+  },
   escadronLeclerc: {
     titre: 'Escadron de chars Leclerc',
     lignes: ['Treize chars Leclerc et leurs dépanneurs, environ 150 militaires : quatre chars montrés ici', 'En mission : en ligne face à l\'objectif, tourelles en chasse ; le canon de 120 mm tire en marche, à plus de 2 km (distances resserrées ici)', 'Un escadron sert en Roumanie depuis novembre 2022 (mission Aigle) ; des Leclerc ont servi en Estonie (2017) et au Sud-Liban (2006, FINUL)', 'Livrée selon le terrain : camouflage centre-Europe sur le flanc est, sable au Levant et au désert · en métropole, alignés devant le hangar du régiment'],
@@ -193,6 +197,7 @@ const VUES = {
   f35b: { '3/4': [-13, 2.5, 14], Face: [-20, 0.3, 0.01], Profil: [0, 0.3, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Arrière: [13, 4.5, 14], 'Au roulage': [-15, 0.2, -9.5] },
   f35c: { '3/4': [-13, 2.5, 15], Face: [-21, 0.3, 0.01], Profil: [0, 0.3, 21], Dessus: [0, 28, 0.01], Dessous: [0.01, -15, 6], Arrière: [13, 4.5, 15], 'Au roulage': [-15, 0.2, -9.5] },
   mirage2000: { '3/4': [-13.5, 0.4, 13.5], Profil: [0, -0.2, 20], Dessus: [0, 26, 0.01], Dessous: [0.01, -14, 6], Face: [-19, 0.4, 0.01], Haut: [-13, 4, 15], Arrière: [13, 5.5, 14] },
+  a321mpa: { '3/4': [-13, 5, 15], 'Maquette (Euronaval)': [8, 6, -15], Profil: [0, 1, 22], Dessus: [0, 26, 0.01], Dessous: [3, -16, 8], Face: [-21, 1, 0.01] },
   phenix: { '3/4': [-17, 7, 19], Profil: [0, 1.5, 27], 'Côté droit': [0, 1.5, -27], Dessus: [0, 32, 0.01], Dessous: [0.01, -26, 8], Face: [-27, 2, 0.01], Arrière: [18, 6, 18] },
   caiman: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
   caimanFS: { '3/4': [-13, 5, 15], Profil: [0, 2, 20], Dessus: [0, 24, 0.01], Face: [-20, 2.5, 0.01], Arrière: [14, 6, 14] },
@@ -229,7 +234,7 @@ const MODULES = {
 const CONSTRUCTEURS = {
   rafale: ['modeles', 'construireRafale'], snle: ['modeles', 'construireSnle'], snle3g: ['modeles', 'construireSnle3G'],
   porteAvions: ['modeles', 'construirePorteAvions'], charlesDeGaulle: ['modeles', 'construireCharlesDeGaulle'], leclerc: ['modeles', 'construireLeclerc'],
-  mirage2000: ['avions', 'construireMirage2000'], f35a: ['f35', 'construireF35'], f35b: ['f35', 'construireF35'], f35c: ['f35', 'construireF35'], phenix: ['aeronefs', 'construirePhenix'],
+  mirage2000: ['avions', 'construireMirage2000'], f35a: ['f35', 'construireF35'], f35b: ['f35', 'construireF35'], f35c: ['f35', 'construireF35'], phenix: ['aeronefs', 'construirePhenix'], a321mpa: ['aeronefs', 'construireA321Mpa'],
   caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['tigre', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   groupeAeronaval: ['marine', 'construireGroupeAeronaval'],
