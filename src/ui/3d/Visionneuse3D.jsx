@@ -418,7 +418,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       const v = new THREE.Vector3();
       let boucle = 0;
       let visible = true;
-      let tPrecedent = 0, cumul = 0, images = 0;
+      let tPrecedent = 0, cumul = 0, images = 0, echauffement = 0, surveiller = true;
       const io = new IntersectionObserver(([x]) => { visible = x.isIntersecting; }, { threshold: 0.05 });
       io.observe(el);
       const animer = (t) => {
@@ -459,12 +459,17 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         controles.update();
         if (compo?.actif) {
           compo.rendre();
-          // Appareil trop lent pour l'occlusion ambiante (plus de 50 ms par image en moyenne) : rendu rapide
-          if (tPrecedent && t - tPrecedent < 400) { cumul += t - tPrecedent; images += 1; }
-          tPrecedent = t;
-          if (images >= 45) {
-            if (cumul / images > 50) { compo.actif = false; setRealiste(false); }
-            cumul = 0; images = 0;
+          // Appareil trop lent pour l'occlusion ambiante (plus de 50 ms par image en moyenne, mesurée sur
+          // 45 images ou 3 s, après les premières images qui compilent les shaders) : rendu rapide.
+          // Si la personne le réactive elle-même, on respecte son choix.
+          if (surveiller) {
+            const dt = tPrecedent ? t - tPrecedent : 0;
+            tPrecedent = t;
+            if (dt > 0 && dt < 1500 && ++echauffement > 10) { cumul += dt; images += 1; }
+            if (images >= 8 && (images >= 45 || cumul >= 3000)) {
+              if (cumul / images > 50) { compo.actif = false; setRealiste(false); }
+              cumul = 0; images = 0;
+            }
           }
         } else renderer.render(scene, camera);
         const conteneurLegendes = legendesRef.current;
@@ -492,7 +497,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         realiste: (on) => {
           if (on && !compo) creerCompo();
           if (compo) compo.actif = on;
-          tPrecedent = 0; cumul = 0; images = 0;
+          surveiller = false; // choix explicite : plus de bascule automatique pour cette vue
         },
       };
       for (const c of objet.userData.commandes ?? []) api.current[c.id] = false;

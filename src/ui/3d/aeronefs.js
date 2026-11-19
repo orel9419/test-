@@ -229,8 +229,9 @@ function installer(THREE, objet, k, xMilieu, y0 = 0) {
  * Entrée d'un turboréacteur à double flux, l'axe selon x (le nez vers −x) :
  * conduit d'entrée, pales de soufflante vrillées (une seule géométrie
  * instanciée), cône d'entrée et fond sombre. x : plan de l'entrée.
+ * composite : pales en carbone tissé (LEAP), sombres ; sinon en titane (Trent 700).
  */
-export function soufflante(THREE, { x, y, z, rayon, pales, profondeur = 0.8, cone }) {
+export function soufflante(THREE, { x, y, z, rayon, pales, profondeur = 0.8, cone, composite = false }) {
   const g = new THREE.Group();
   const conduit = new THREE.Mesh(new THREE.CylinderGeometry(rayon, rayon, profondeur, 40, 1, true), new THREE.MeshStandardMaterial({ color: 0x3a3e43, roughness: 0.55, metalness: 0.4, side: THREE.BackSide }));
   conduit.material.userData.sansDetails = true;
@@ -239,11 +240,13 @@ export function soufflante(THREE, { x, y, z, rayon, pales, profondeur = 0.8, con
   const fond = new THREE.Mesh(new THREE.CircleGeometry(rayon, 40), new THREE.MeshStandardMaterial({ color: 0x0c0d0f, roughness: 0.9 }));
   fond.rotation.y = -Math.PI / 2;
   fond.position.set(x + profondeur + 0.06, y, z);
-  // Pales en titane, calées à 50° : de face, elles forment presque un disque
+  // Pales calées à 50° : de face, elles forment presque un disque
   const L = rayon * 0.74, corde = rayon * 0.34;
-  const titane = new THREE.MeshStandardMaterial({ color: 0xa9adb3, metalness: 0.8, roughness: 0.32 });
-  titane.userData.sansDetails = true;
-  const roue = new THREE.InstancedMesh(new THREE.BoxGeometry(0.035, L, corde), titane, pales);
+  const matPales = composite
+    ? new THREE.MeshStandardMaterial({ color: 0x34373c, metalness: 0.3, roughness: 0.42 })
+    : new THREE.MeshStandardMaterial({ color: 0xa9adb3, metalness: 0.8, roughness: 0.32 });
+  matPales.userData.sansDetails = true;
+  const roue = new THREE.InstancedMesh(new THREE.BoxGeometry(0.035, L, corde), matPales, pales);
   const xf = x + profondeur * 0.62;
   const m = new THREE.Matrix4(), tourne = new THREE.Matrix4(), rayonPale = new THREE.Matrix4().makeTranslation(0, rayon * 0.24 + L / 2, 0), calage = new THREE.Matrix4().makeRotationY(0.88);
   for (let i = 0; i < pales; i++) {
@@ -394,7 +397,7 @@ export function construirePhenix(THREE) {
       { x: 23.8, w: 2.2, h: 2.2, y: -2.15, z: 9.6 },
       { x: 25.0, w: 1.4, h: 1.4, y: -2.1, z: 9.6 },
     ], { segments: 36, parSegment: 6, fermer: false }), gris);
-    const entree = soufflante(THREE, { x: 17.45, y: -2.3, z: 9.6, rayon: 1.4, pales: 26, profondeur: 1.0, cone: metal });
+    const entree = soufflante(THREE, { x: 17.45, y: -2.3, z: 9.6, rayon: 1.4, pales: 26, profondeur: 1.0, cone: metal }); // Trent 772 : 26 pales larges en titane
     const tuyere = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.4, 20), metal);
     tuyere.rotation.z = -Math.PI / 2;
     tuyere.position.set(25.6, -2.1, 9.6);
@@ -659,7 +662,7 @@ export function construireA321Mpa(THREE) {
     const levre = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.09, 10, 36), metal);
     levre.rotation.y = Math.PI / 2;
     levre.position.set(14.62, -1.15, z);
-    const entree = soufflante(THREE, { x: 14.66, y: -1.15, z, rayon: 1.04, pales: 18, profondeur: 0.85, cone: metal });
+    const entree = soufflante(THREE, { x: 14.66, y: -1.15, z, rayon: 1.04, pales: 18, profondeur: 0.85, cone: metal, composite: true }); // 18 pales en carbone, comme le LEAP-1A
     const tuyere = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.3, 20), metal);
     tuyere.rotation.z = -Math.PI / 2;
     tuyere.position.set(20.2, -1.02, z);

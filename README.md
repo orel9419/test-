@@ -89,9 +89,9 @@ Rotation au doigt ou à la souris, vues de profil, de dessus et de face, légend
 - **mer animée** : houle en deux couches qui dérivent, avec l'indice de réfraction de l'eau (1,33), donc des reflets du ciel plus forts en incidence rasante. Au loin, la mer paraît plus lisse ;
 - **joints de panneaux et usure légère**, calculés dans le shader à partir des coordonnées du modèle. Ils sont plus fins sur les avions, plus larges sur les navires ; les blindés n'ont que l'usure ;
 - **sol texturé** : terre sèche sous les blindés, terrain des scènes d'unités en mission ;
-- **soufflantes des réacteurs** de l'A330 Phénix (Trent 772, 26 pales) et de l'A321 MPA (18 pales), visibles dans les entrées d'air.
+- **soufflantes des réacteurs**, visibles dans les entrées d'air : A330 Phénix (Trent 772, 26 pales larges en titane) et A321 MPA (18 pales en carbone tissé comme le LEAP-1A ; le PW1100G en a 20).
 
-Tout est procédural : aucune image n'est téléchargée. Le bouton **« ✨ Rendu réaliste / ⚡ Rendu rapide »** permet de revenir au rendu simple ; ce choix est mémorisé sur l'appareil. Si l'appareil peine (plus de 50 ms par image en moyenne), la visionneuse repasse d'elle-même en rendu rapide.
+Tout est procédural : aucune image n'est téléchargée. Le bouton **« ✨ Rendu réaliste / ⚡ Rendu rapide »** permet de revenir au rendu simple ; ce choix est mémorisé sur l'appareil. Si l'appareil peine (plus de 50 ms par image en moyenne, mesurée sur 45 images ou 3 secondes après les premières images), la visionneuse repasse d'elle-même en rendu rapide ; si vous réactivez ensuite le rendu réaliste, ce choix est respecté.
 
 La 3D n'est chargée qu'à l'ouverture de ces écrans ; dans l'écran Armées, chaque visionneuse n'est créée que lorsque sa carte arrive à l'écran (les navigateurs limitent le nombre de contextes WebGL actifs, environ 16).
 
