@@ -133,7 +133,7 @@ const FICHES = {
   },
   groupeAeronaval: {
     titre: 'Groupe aéronaval',
-    lignes: ['Un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères), escorté d\'une frégate de défense aérienne, de frégates anti-sous-marines, d\'un sous-marin nucléaire d\'attaque et d\'un ravitailleur', 'Le président de la République, chef des armées, décide de son déploiement ; il peut tenir un théâtre pendant quatre à cinq mois', 'Composition tirée de votre partie : porte-avions en service et bâtiments d\'escorte disponibles · avec deux porte-avions, deux groupes', 'Tous les navires à la même échelle ; distances resserrées (en réalité plusieurs kilomètres entre les bâtiments) et avions agrandis pour rester visibles'],
+    lignes: ['Un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères), escorté d\'une frégate de défense aérienne, de frégates anti-sous-marines, d\'un sous-marin nucléaire d\'attaque et d\'un ravitailleur', 'Le président de la République, chef des armées, décide de son déploiement ; il peut tenir un théâtre pendant quatre à cinq mois', 'Composition tirée de votre partie : porte-avions en service et bâtiments d\'escorte disponibles · avec deux porte-avions, deux groupes', 'Un A321 MPA, futur avion de patrouille maritime de la Marine, surveille les abords du groupe en orbite large (sous-marins, navires suspects)', 'Tous les navires à la même échelle ; distances resserrées (en réalité plusieurs kilomètres entre les bâtiments) et avions agrandis pour rester visibles'],
   },
   gtia: {
     titre: 'Groupement tactique interarmes (GTIA)',

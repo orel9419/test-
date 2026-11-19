@@ -10,7 +10,7 @@
  * l'échelle pour mesurer environ 13 unités. Formes simplifiées.
  */
 import { loft, surface, pieces, tronc, texturePeinte, texturePanneaux, construireCharlesDeGaulle, construirePorteAvions, construireRafale, construireSnle, construireSnle3G } from './modeles.js';
-import { construireCaiman } from './aeronefs.js';
+import { construireCaiman, construireA321Mpa } from './aeronefs.js';
 
 const GRIS = [0.24, 0.26, 0.28];
 const LISERE = [0.07, 0.07, 0.08];
@@ -1219,6 +1219,17 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
     if (enMer && !legendes.some((l) => l.texte.startsWith('Rafale'))) legendes.push({ texte: 'Rafale Marine en patrouille (agrandis)', point: p(-300, 300, z0) });
   });
 
+  // A321 MPA : l'avion de patrouille maritime surveille les abords du groupe (sous-marins, navires
+  // suspects) en orbite large et plus haute que les Rafale ; agrandi comme eux pour rester visible.
+  // Son modèle est à 0,32 unité par mètre.
+  const mpa = construireA321Mpa(THREE);
+  mpa.scale.setScalar((k / 0.32) * 1.6);
+  mpa.rotation.order = 'YXZ';
+  racine.add(mpa);
+  const legendeMpa = { texte: 'A321 MPA : avion de patrouille maritime (futur, agrandi)', point: new THREE.Vector3() };
+  legendes.push(legendeMpa);
+  const orbiteMpa = { rayon: deux ? 900 : 560, altitude: 320 };
+
   // Mer commune, un peu transparente : on devine le sous-marin sous la surface
   const mer = new THREE.Mesh(new THREE.PlaneGeometry(9000, 9000), new THREE.MeshStandardMaterial({ color: 0x0e3a5f, roughness: 0.45, metalness: 0, envMapIntensity: 0.3, transparent: true, opacity: 0.74 }));
   mer.rotation.x = -Math.PI / 2;
@@ -1248,6 +1259,11 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
       rv.objet.userData.animer?.(t, { ravitailler: f > 0.9 });
     }
     for (const o of animations) if (!ravitailleurs.some((rv) => rv.objet === o)) o.userData.animer(t, {});
+    // Patrouille maritime : orbite lente, en sens inverse des Rafale, légère inclinaison
+    const angM = -t / 9000 + 4.07; // départ dans le champ de la vue « 3/4 »
+    mpa.position.set(Math.cos(angM) * orbiteMpa.rayon * k, orbiteMpa.altitude * k, Math.sin(angM) * orbiteMpa.rayon * k);
+    mpa.rotation.set(0.22, -Math.PI / 2 - angM, 0);
+    legendeMpa.point.set(mpa.position.x, mpa.position.y + 60 * k, mpa.position.z);
     for (const a of avions) {
       const ang = t / 4200 + a.phase;
       a.r.position.set(Math.cos(ang) * a.rayon * k, a.altitude * k, (a.z0 + Math.sin(ang) * a.rayon) * k);
