@@ -1353,7 +1353,7 @@ export function construireDissuasion(THREE, { donnees = null } = {}) {
   const trappes = snle.userData.trappes ?? [];
   if (snle.userData.missile) snle.userData.missile.visible = false;
   const nom = donnees?.nom ?? (nouveau ? 'L\'Invincible (SNLE 3G)' : 'Le Téméraire');
-  legendes.push({ texte: `SNLE ${nom} en patrouille, à une trentaine de mètres de profondeur`, point: P(0, 4, 0) });
+  legendes.push({ texte: `${nouveau ? 'SNLE de 3e génération' : 'SNLE'} ${nom.replace(' (SNLE 3G)', '')} en patrouille, à une trentaine de mètres de profondeur`, point: P(0, 4, 0) });
   legendes.push({ texte: '16 tubes de missiles M51, derrière le kiosque', point: P(nouveau ? 0 : -3, -12, 14) });
 
   // SNA d'escorte : il « nettoie » la zone et protège la patrouille

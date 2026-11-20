@@ -45,7 +45,7 @@ Légende : ✅ conforme (écart ≤ 2 %) · 🟡 écart connu, sans effet visibl
 
 ## Dissuasion
 
-À partir de 2035, ou dès sa mise en service si elle est avancée, les tirs d'essai du M51 partent du SNLE de 3e génération L'Invincible. C'est vrai dans les deux vues 3D de l'écran Dissuasion, dans l'historique des tirs et dans le journal.
+À partir de 2035, ou dès sa mise en service si elle est avancée, les tirs d'essai du M51 partent du SNLE de 3e génération L'Invincible. C'est vrai partout : les deux vues 3D de l'écran Dissuasion, le dessin en coupe (variante SNLE 3G : gouvernes en X et aileron du sonar remorqué, trappes au ras du pont, kiosque avancé, antenne de flanc), l'historique des tirs, le journal et la scène « tir d'essai » du Hangar 3D, qui suit la partie sauvegardée. Vérifié dans une partie jouée jusqu'en 2035 (test automatique et capture d'écran).
 
 ## Limites qui restent
 

@@ -46,7 +46,7 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
         </div>
         <Visionneuse3D modele={snle3g ? 'snle3g' : 'snle'} hauteur={340} />
         {snle3g && <p className="tres-petit muet" style={{ margin: 0 }}>Depuis 2035, les tirs d'essai du M51 partent du SNLE de 3e génération L'Invincible : c'est lui que montre la vue 3D (trappes, tir d'essai). Les Triomphant restants poursuivent leurs patrouilles jusqu'à leur retrait.</p>}
-        {coupe && <Snle coupe nom="SNLE de la classe Le Triomphant" />}
+        {coupe && <Snle coupe nom={snle3g ? 'SNLE de 3e génération L\'Invincible' : 'SNLE de la classe Le Triomphant'} variante={snle3g ? '3g' : 'triomphant'} />}
         <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>
           <li><strong>4 SNLE</strong> (Le Triomphant, Le Téméraire, Le Vigilant, Le Terrible), mis en service de 1997 à 2010. Basés à l'Île Longue, près de Brest.</li>
           <li><strong>Permanence à la mer</strong> : au moins un SNLE en patrouille, indétectable, depuis 1972. C'est la garantie de pouvoir riposter en toutes circonstances (« frappe en second »).</li>

@@ -73,8 +73,9 @@ export function Rafale({ legende = true }) {
 }
 
 /** SNLE vu de profil, avec une vue en coupe optionnelle (tubes des missiles, chaufferie). */
-export function Snle({ coupe = true, nom = 'SNLE', legende = true }) {
-  const tubes = Array.from({ length: 8 }, (_, i) => 268 + i * 21);
+export function Snle({ coupe = true, nom = 'SNLE', legende = true, variante = 'triomphant' }) {
+  const g3 = variante === '3g';
+  const tubes = Array.from({ length: 8 }, (_, i) => (g3 ? 262 : 268) + i * 21);
   const id = useId().replace(/:/g, '');
   const mer = `snle-mer-${id}`, coque = `snle-coque-${id}`;
   return (
@@ -91,28 +92,50 @@ export function Snle({ coupe = true, nom = 'SNLE', legende = true }) {
       </defs>
       <rect width="600" height="240" rx="12" fill={`url(#${mer})`} />
       <path d="M0,26 Q25,20 50,26 T100,26 T150,26 T200,26 T250,26 T300,26 T350,26 T400,26 T450,26 T500,26 T550,26 T600,26" className="illu-vague" />
-      {/* Gouvernails cruciformes et hydrojet */}
-      <path d="M78,140 L52,100 L66,100 L96,134 Z" fill={`url(#${coque})`} />
-      <path d="M78,140 L52,180 L66,180 L96,146 Z" fill={`url(#${coque})`} />
-      <rect x="30" y="128" width="16" height="24" rx="5" className="illu-sombre" />
-      {/* Coque */}
-      <path d="M44,140 C62,124 96,112 150,112 L476,112 C526,112 562,124 570,140 C562,156 526,168 476,168 L150,168 C96,168 62,156 44,140 Z" fill={`url(#${coque})`} />
-      {/* « Dos » du compartiment missiles */}
-      <path d="M252,113 C262,104 270,102 282,102 L430,102 C442,102 450,106 454,113 Z" fill={`url(#${coque})`} />
-      {tubes.map((x) => <rect key={`t${x}`} x={x} y="103.5" width="12" height="3" rx="1" className="illu-trappe" />)}
-      {/* Kiosque et barres de plongée */}
-      <path d="M458,113 L465,72 C466,68 469,66 474,66 L498,66 C503,66 505,69 505,73 L508,113 Z" fill={`url(#${coque})`} />
-      <rect x="444" y="83" width="76" height="5" rx="2.5" className="illu-sombre" />
-      <rect x="480" y="58" width="3" height="10" className="illu-sombre" />
-      <rect x="488" y="54" width="2" height="14" className="illu-sombre" />
+      {g3 ? (
+        <g>
+          {/* SNLE 3G : gouvernes en X, aileron vertical du sonar remorqué, hydrojet */}
+          <path d="M70,140 L42,104 L56,104 L90,134 Z" fill={`url(#${coque})`} />
+          <path d="M70,140 L42,176 L56,176 L90,146 Z" fill={`url(#${coque})`} />
+          <path d="M84,113 L80,92 L92,92 L104,113 Z" fill={`url(#${coque})`} />
+          <rect x="20" y="128" width="16" height="24" rx="5" className="illu-sombre" />
+          {/* Coque plus longue (environ 150 m), étrave arrondie, sans « dos » : trappes au ras du pont */}
+          <path d="M34,140 C52,124 88,112 144,112 L486,112 C540,112 572,124 578,140 C572,156 540,168 486,168 L144,168 C88,168 52,156 34,140 Z" fill={`url(#${coque})`} />
+          {tubes.map((x) => <rect key={`t${x}`} x={x} y="110" width="12" height="3" rx="1" className="illu-trappe" />)}
+          {/* Antenne sonar de flanc */}
+          <rect x="150" y="146" width="300" height="3" rx="1.5" className="illu-sombre" />
+          {/* Kiosque avancé, grand congé de raccordement à l'avant, barres de plongée à mi-hauteur */}
+          <path d="M470,113 L474,74 C475,70 478,68 483,68 L506,68 C511,68 514,72 515,77 C518,96 528,108 548,113 Z" fill={`url(#${coque})`} />
+          <rect x="462" y="90" width="66" height="5" rx="2.5" className="illu-sombre" />
+          <rect x="488" y="58" width="3" height="11" className="illu-sombre" />
+          <rect x="496" y="54" width="2" height="15" className="illu-sombre" />
+        </g>
+      ) : (
+        <g>
+          {/* Gouvernails cruciformes et hydrojet */}
+          <path d="M78,140 L52,100 L66,100 L96,134 Z" fill={`url(#${coque})`} />
+          <path d="M78,140 L52,180 L66,180 L96,146 Z" fill={`url(#${coque})`} />
+          <rect x="30" y="128" width="16" height="24" rx="5" className="illu-sombre" />
+          {/* Coque */}
+          <path d="M44,140 C62,124 96,112 150,112 L476,112 C526,112 562,124 570,140 C562,156 526,168 476,168 L150,168 C96,168 62,156 44,140 Z" fill={`url(#${coque})`} />
+          {/* « Dos » du compartiment missiles */}
+          <path d="M252,113 C262,104 270,102 282,102 L430,102 C442,102 450,106 454,113 Z" fill={`url(#${coque})`} />
+          {tubes.map((x) => <rect key={`t${x}`} x={x} y="103.5" width="12" height="3" rx="1" className="illu-trappe" />)}
+          {/* Kiosque et barres de plongée */}
+          <path d="M458,113 L465,72 C466,68 469,66 474,66 L498,66 C503,66 505,69 505,73 L508,113 Z" fill={`url(#${coque})`} />
+          <rect x="444" y="83" width="76" height="5" rx="2.5" className="illu-sombre" />
+          <rect x="480" y="58" width="3" height="10" className="illu-sombre" />
+          <rect x="488" y="54" width="2" height="14" className="illu-sombre" />
+        </g>
+      )}
       {coupe && (
         <g>
           <path d="M150,118 L470,118 C500,118 520,124 528,140 C520,156 500,162 470,162 L150,162 Z" className="illu-coupe" />
           {/* 16 tubes de missiles M51 (8 visibles, deux rangées) */}
           {tubes.map((x) => (
             <g key={x}>
-              <rect x={x} y="108" width="12" height="52" rx="3" className="illu-tube" />
-              <path d={`M${x + 6},112 L${x + 10},120 L${x + 10},156 L${x + 2},156 L${x + 2},120 Z`} className="illu-missile" />
+              <rect x={x} y={g3 ? 114 : 108} width="12" height={g3 ? 46 : 52} rx="3" className="illu-tube" />
+              <path d={`M${x + 6},${g3 ? 117 : 112} L${x + 10},${g3 ? 124 : 120} L${x + 10},156 L${x + 2},156 L${x + 2},${g3 ? 124 : 120} Z`} className="illu-missile" />
             </g>
           ))}
           {/* Chaufferie nucléaire */}
@@ -125,14 +148,14 @@ export function Snle({ coupe = true, nom = 'SNLE', legende = true }) {
           {/* Turbines et propulsion */}
           <rect x="112" y="128" width="62" height="24" rx="4" className="illu-machines" />
           {/* Poste central et vie à bord */}
-          <rect x="452" y="122" width="56" height="36" rx="5" className="illu-poste" />
+          <rect x={g3 ? 466 : 452} y="122" width="56" height="36" rx="5" className="illu-poste" />
           {/* Légendes */}
           <g className="illu-legende">
             <path d="M330,160 L330,196" /><text x="330" y="208" textAnchor="middle">16 missiles M51</text>
             <path d="M217,158 L217,196" /><text x="217" y="208" textAnchor="middle">Chaufferie nucléaire</text>
             <path d="M143,152 L120,196" /><text x="96" y="208" textAnchor="middle">Propulsion</text>
-            <path d="M480,158 L480,196" /><text x="480" y="208" textAnchor="middle">Poste central</text>
-            <path d="M486,62 L540,40" /><text x="545" y="44">Kiosque</text>
+            <path d={g3 ? 'M494,158 L494,196' : 'M480,158 L480,196'} /><text x={g3 ? 494 : 480} y="208" textAnchor="middle">Poste central</text>
+            <path d={g3 ? 'M494,64 L548,40' : 'M486,62 L540,40'} /><text x={g3 ? 553 : 545} y="44">Kiosque</text>
           </g>
         </g>
       )}

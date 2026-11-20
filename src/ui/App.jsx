@@ -309,13 +309,13 @@ export default function App() {
           onColler={() => setSauvegarde('import')}
           onOptions={() => setFenetre('options')}
           onExpress={(q) => setExpress({ quotidien: q })}
-          onHangar={() => setHangar(true)}
+          onHangar={() => setHangar({ partie: partie ?? chargerLocal()?.partie ?? null })}
           onAPropos={() => setFenetre('apropos')}
           message={message}
         />
         {fenetre === 'options' && <Options options={options} onChange={setOptions} onFermer={() => setFenetre(null)} />}
         {fenetre === 'apropos' && <APropos onFermer={() => setFenetre(null)} />}
-        {hangar && <Hangar onFermer={() => setHangar(false)} />}
+        {hangar && <Hangar onFermer={() => setHangar(false)} partie={hangar.partie} />}
         <Notifications liste={notifications} onFermer={fermerNotification} masquees={!!(fenetre || hangar || sauvegarde)} />
         {sauvegarde && <ModaleSauvegarde mode="import" onCharger={(x) => { reprendre(x); setSauvegarde(null); setMessage(null); }} onImporterFichier={importer} onFermer={() => setSauvegarde(null)} />}
       </>

@@ -221,7 +221,9 @@ export function essaiM51(e) {
   const n = x.essaisM51?.length ?? 0;
   const snle3g = essaiParSnle3G(e);
   const lanceur = snle3g ? SNLE_3G : LANCEURS_M51[n % LANCEURS_M51.length];
-  const sousMarin = snle3g ? `SNLE de 3e génération ${lanceur}` : `SNLE ${lanceur}`;
+  // Avant son admission au service actif, le SNLE 3G tire pour sa qualification (comme Le Terrible en 2010)
+  const qualification = snle3g && (x.capacites?.snle3g ?? 0) < 1 ? ', pour son tir de qualification avant l\'admission au service actif,' : '';
+  const sousMarin = snle3g ? `SNLE de 3e génération ${lanceur}${qualification}` : `SNLE ${lanceur}`;
   const succes = creerAleatoire(((e.graine ^ Math.imul(e.tour + 41, 2654435761)) + 7) >>> 0).tirage(CHANCE_ESSAI_M51);
   e.depensesTemporaires.push({ poste: 'defense', valeur: COUT_ESSAI_M51 * 4, fin: e.tour + 1, source: 'essai_m51' });
   appliquer(e, { influence: succes ? 1 : -1 }, 'Essai M51');

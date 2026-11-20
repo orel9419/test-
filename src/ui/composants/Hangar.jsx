@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Modale from './Modale.jsx';
 import Visionneuse3D from '../3d/Visionneuse3D.jsx';
+import { essaiParSnle3G, SNLE_3G } from '../../engine/defense.js';
 
 /** Matériels et lieux de pouvoir proposés dans le Hangar 3D, par famille. */
 const FAMILLES = [
@@ -14,8 +15,11 @@ const FAMILLES = [
 ];
 
 /** Hangar 3D : les matériels des armées et les palais de la République. */
-export default function Hangar({ onFermer }) {
+export default function Hangar({ onFermer, partie = null }) {
   const [modele, setModele] = useState('rafale');
+  // Scène de dissuasion : pendant une partie française, le SNLE 3G tire les missiles d'essai à partir de 2035
+  const snle3g = partie?.pays === 'france' && !partie.termine ? essaiParSnle3G(partie) : false;
+  const donnees = modele === 'dissuasion' && snle3g ? { snle3g: true, nom: SNLE_3G } : undefined;
   return (
     <Modale titre="Hangar 3D" onFermer={onFermer} largeur={900}>
       {FAMILLES.map((f) => (
@@ -28,7 +32,7 @@ export default function Hangar({ onFermer }) {
           </div>
         </div>
       ))}
-      <Visionneuse3D key={modele} modele={modele} hauteur={420} />
+      <Visionneuse3D key={modele} modele={modele} hauteur={420} donnees={donnees} />
       <p className="tres-petit muet" style={{ margin: 0 }}>Modèles construits aux proportions réelles quand elles sont publiques, formes simplifiées. Les hémicycles aux couleurs de votre partie sont dans l'écran Institutions. Bouton « Photo » : enregistrez ou partagez votre plus belle vue.</p>
     </Modale>
   );
