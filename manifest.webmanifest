@@ -1,0 +1,18 @@
+{
+  "name": "Chef de gouvernement",
+  "short_name": "Chef de gouv.",
+  "description": "Gouvernez la France, l'Allemagne ou les États-Unis à partir de leur situation réelle : budget, réformes, Parlement, opinion, diplomatie.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f9f9f7",
+  "theme_color": "#1f5aa6",
+  "categories": ["games", "education"],
+  "icons": [
+    { "src": "icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icones/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
