@@ -604,15 +604,32 @@ export function construireRavitaillement(THREE, { donnees = null } = {}) {
     racine.userData.brume = [0xbcd3ea, 40, 140];
     racine.userData.commandes = [{ id: 'attente', libelle: 'Rompre le contact', actif: 'Ravitailler' }];
     let f = 1;
+    const cible = new THREE.Vector3(), pointe = new THREE.Vector3(), ecart = new THREE.Vector3();
+    for (const r of rafales) r.conteneur.position.set(24 * K, -3 * K, r.cote * 22.5 * K);
     racine.userData.animer = (t, api = {}) => {
       ciel.animer(t, 0.004);
       f += ((api.attente ? 0 : 1) - f) * 0.015;
       phenix.objet.userData.animer?.(t, { paniers: f > 0.35 });
       phenix.conteneur.position.y = Math.sin(t / 2100) * 0.2 * K;
-      // Contact : perche du Rafale (1,1 m du nez, 1,15 m au-dessus de l'axe, à droite) dans le panier (18,5 m derrière le centre du Phénix, 2,35 m sous l'axe)
-      for (const { conteneur, cote } of rafales) {
-        const x = 24.6 + (1 - f) * 16, y = -3.5 - (1 - f) * 5 + Math.sin(t / 1500 + cote) * 0.12;
-        conteneur.position.set(x * K, y * K + phenix.conteneur.position.y, (cote * 22.5 + 0.42 + cote * (1 - f) * 5) * K);
+      // Contact : l'embout de la perche du Rafale vient dans le panier du Phénix (positions réelles des deux
+      // pièces : elles suivent la forme des ailes et la longueur des tuyaux), puis il s'écarte en attente
+      racine.updateMatrixWorld(true);
+      for (const r of rafales) {
+        const { conteneur, objet, cote } = r;
+        const panier = phenix.objet.userData.paniers?.[cote > 0 ? 0 : 1], embout = objet.userData.emboutPerche;
+        if (!panier || !embout) continue;
+        // Point de contact mesuré tant que les tuyaux sont déroulés (il tient compte du décalage de l'image
+        // précédente), puis figé : quand les tuyaux se rembobinent, le chasseur ne suit pas le panier
+        if (f > 0.9 || !r.contact) {
+          racine.worldToLocal(panier.getWorldPosition(cible));
+          racine.worldToLocal(embout.getWorldPosition(pointe));
+          r.contact = conteneur.position.clone().add(ecart.copy(cible).sub(pointe));
+        }
+        // Puis le décalage d'attente (recul, plus bas, plus au large) et un léger roulis de vol
+        conteneur.position.copy(r.contact);
+        conteneur.position.x += (1 - f) * 16 * K;
+        conteneur.position.y += (-(1 - f) * 5 + Math.sin(t / 1500 + cote) * 0.12) * K;
+        conteneur.position.z += cote * (1 - f) * 5 * K;
       }
     };
     racine.userData.animer(0, {});

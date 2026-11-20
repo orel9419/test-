@@ -29,8 +29,8 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
   const choix = d.dissuasion ?? r.dissuasion;
   const snle = r.programmes.find((p) => p.id === 'snle3g');
   const jalon = snle?.jalonsEffectifs[0];
-  // Scène de patrouille : le SNLE 3G dès qu'il est en service dans la partie
-  const snle3g = (r.capacites?.snle3g ?? 0) >= 1;
+  // À partir de 2035 (ou dès sa mise en service), le SNLE 3G L'Invincible assure les tirs d'essai : vues 3D et textes
+  const snle3g = r.essaiSnle3G;
   const dernierEssai = r.essaisM51.at(-1);
   const attente = Math.max(0, r.prochainEssaiM51 - partie.tour);
   const sourcesM51 = ['m51Vigilant', 'm51Biscarrosse', 'm51Terrible', 'm51Echec'];
@@ -44,7 +44,8 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
           <h3 style={{ margin: 0 }}>La composante océanique : les SNLE</h3>
           <button type="button" className="bouton" onClick={() => setCoupe((c) => !c)} aria-pressed={coupe}>{coupe ? 'Masquer la vue en coupe' : 'Afficher la vue en coupe'}</button>
         </div>
-        <Visionneuse3D modele="snle" hauteur={340} />
+        <Visionneuse3D modele={snle3g ? 'snle3g' : 'snle'} hauteur={340} />
+        {snle3g && <p className="tres-petit muet" style={{ margin: 0 }}>Depuis 2035, les tirs d'essai du M51 partent du SNLE de 3e génération L'Invincible : c'est lui que montre la vue 3D (trappes, tir d'essai). Les Triomphant restants poursuivent leurs patrouilles jusqu'à leur retrait.</p>}
         {coupe && <Snle coupe nom="SNLE de la classe Le Triomphant" />}
         <ul className="petit" style={{ margin: 0, paddingLeft: '1.1rem' }}>
           <li><strong>4 SNLE</strong> (Le Triomphant, Le Téméraire, Le Vigilant, Le Terrible), mis en service de 1997 à 2010. Basés à l'Île Longue, près de Brest.</li>
@@ -57,7 +58,7 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
 
       <div className="carte pile">
         <h3 style={{ margin: 0 }}>🌊 En patrouille : le SNLE, son escorte et le tir d'essai du M51</h3>
-        <p className="tres-petit muet" style={{ margin: 0 }}>Scène tirée de votre partie ({snle3g ? 'le SNLE de 3e génération L\'Invincible est en service' : 'SNLE de la classe Le Triomphant'}) : un sous-marin nucléaire d'attaque protège la patrouille, une FREMM anti-sous-marine et son Caïman Marine traquent les sous-marins adverses, le bâtiment d'essais et de mesures Monge suit les tirs. Ouvrez les trappes, puis lancez le tir d'essai ; vue « Tir (vue large) » pour suivre la montée.</p>
+        <p className="tres-petit muet" style={{ margin: 0 }}>Scène tirée de votre partie ({snle3g ? 'à partir de 2035, le SNLE de 3e génération L\'Invincible patrouille et tire les missiles d\'essai' : 'SNLE de la classe Le Triomphant'}) : un sous-marin nucléaire d'attaque protège la patrouille, une FREMM anti-sous-marine et son Caïman Marine traquent les sous-marins adverses, le bâtiment d'essais et de mesures Monge suit les tirs. Ouvrez les trappes, puis lancez le tir d'essai ; vue « Tir (vue large) » pour suivre la montée.</p>
         <Visionneuse3D modele="dissuasion" hauteur={420} donnees={{ snle3g, nom: snle3g ? 'L\'Invincible' : (dernierEssai?.lanceur ?? 'Le Téméraire') }} />
       </div>
 
@@ -72,7 +73,7 @@ export default function Dissuasion({ partie, decisions, majDecisions, allerA }) 
         <span className="tres-petit muet">Coût : environ {md(COUT_ESSAI_M51, 1)} (missile, campagne de mesure) · chances de succès : {Math.round(CHANCE_ESSAI_M51 * 100)} % · réussi, il renforce l'influence de la France ; raté, il impose une enquête et lui en coûte un peu.</span>
         {r.essaisM51.length > 0 && (
           <ul className="tres-petit" style={{ margin: 0, paddingLeft: '1rem' }}>
-            {r.essaisM51.slice().reverse().map((x) => <li key={x.tour}>{x.trimestre} · SNLE {x.lanceur} : <span className={x.succes ? 'positif' : 'negatif'}>{x.succes ? 'succès' : 'échec (autodestruction)'}</span></li>)}
+            {r.essaisM51.slice().reverse().map((x) => <li key={x.tour}>{x.trimestre} · {x.snle3g ? 'SNLE 3G' : 'SNLE'} {x.lanceur} : <span className={x.succes ? 'positif' : 'negatif'}>{x.succes ? 'succès' : 'échec (autodestruction)'}</span></li>)}
           </ul>
         )}
         <p className="tres-petit muet" style={{ margin: 0 }}>Sources : {sourcesM51.map((cle, i) => <span key={cle}>{i > 0 && ' · '}<a href={SOURCES_DEFENSE[cle].url} target="_blank" rel="noreferrer">{SOURCES_DEFENSE[cle].titre}</a></span>)}</p>

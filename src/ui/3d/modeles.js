@@ -37,6 +37,56 @@ function densifier(cles, parSegment = 6) {
 }
 
 /**
+ * Pan qui épouse une surface « loftée » (mêmes sections, même interpolation), sur une plage de x et
+ * d'angles, légèrement décollé : vitrages, carénages, radômes peints. Angles comme dans loft() :
+ * 0 flanc +z, π/2 dessus, π flanc −z, 3π/2 dessous. t0, t1 peuvent être des fonctions de x (bords
+ * obliques, comme le bas d'un pare-brise qui descend vers l'avant).
+ */
+export function pan(THREE, cles, { x0, x1, t0, t1, decalage = 0.02, segments = 20, parSegment = 6, materiau }) {
+  const toutes = densifier(cles.map((s) => ({ hHaut: s.h / 2, hBas: s.h / 2, y: 0, z: 0, n: 2, ...s })), parSegment);
+  // Sections de la plage, avec des sections interpolées exactement aux bords
+  const entre = (x) => {
+    const i = toutes.findIndex((s) => s.x >= x);
+    if (i <= 0) return { ...toutes[Math.max(0, i)] };
+    const a = toutes[i - 1], b = toutes[i], f = (x - a.x) / Math.max(1e-9, b.x - a.x);
+    const s = {};
+    for (const c of ['x', 'w', 'hHaut', 'hBas', 'y', 'n', 'z']) s[c] = a[c] + (b[c] - a[c]) * f;
+    return s;
+  };
+  const sections = [entre(x0), ...toutes.filter((s) => s.x > x0 + 1e-4 && s.x < x1 - 1e-4), entre(x1)];
+  const angle = (t, x) => (typeof t === 'function' ? t(x) : t);
+  const pos = [], idx = [];
+  for (const s of sections) {
+    const e = 2 / s.n, a0 = angle(t0, s.x), a1 = angle(t1, s.x);
+    for (let j = 0; j <= segments; j++) {
+      const t = a0 + ((a1 - a0) * j) / segments;
+      const c = Math.cos(t), si = Math.sin(t);
+      const demiL = s.w / 2 + decalage, demiH = (si >= 0 ? s.hHaut : s.hBas) + decalage;
+      pos.push(s.x, s.y + demiH * Math.sign(si) * Math.pow(Math.abs(si), e), s.z + demiL * Math.sign(c) * Math.pow(Math.abs(c), e));
+    }
+  }
+  const S = segments + 1;
+  for (let i = 0; i < sections.length - 1; i++) {
+    for (let j = 0; j < segments; j++) {
+      const a = i * S + j, b = a + 1, c = (i + 1) * S + j, d = c + 1;
+      idx.push(a, c, b, b, c, d);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, materiau);
+}
+
+/** Verre de verrière ou de pare-brise : sombre, très brillant, il reflète le ciel. */
+export function materiauVitrage(THREE, { teinte = 0x18222c } = {}) {
+  const m = new THREE.MeshPhysicalMaterial({ color: teinte, roughness: 0.06, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.3, side: THREE.DoubleSide });
+  m.userData.sansDetails = true;
+  return m;
+}
+
+/**
  * Surface « loftée » : une suite de sections (super-ellipses) le long de x.
  * Section : { x, w (largeur), hHaut, hBas (demi-hauteurs), y (centre), z, n (exposant : 2 = ellipse, plus = plus carré) }.
  */
@@ -206,12 +256,14 @@ export function construireRafale(THREE, { armement = true } = {}) {
   const materiaux = { missile: new THREE.MeshStandardMaterial({ color: 0xd9dcde, metalness: 0.2, roughness: 0.5 }), missileOgive: new THREE.MeshStandardMaterial({ color: 0x8f969c, metalness: 0.3, roughness: 0.4 }) };
 
   // Fuselage : nez conique, poste de pilotage, section des réacteurs (large à l'arrière)
+  // Nez d'après les photos : radôme long et fin qui se termine en pointe (pas de perche de Pitot au nez
+  // sur les Rafale de série : les sondes sont sur les flancs), ligne du dessus presque droite jusqu'au pare-brise
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: 0.0, w: 0.0, h: 0.0, y: 0.0 },
-    { x: 0.5, w: 0.26, hHaut: 0.13, hBas: 0.13, y: 0.02 },
-    { x: 1.2, w: 0.58, hHaut: 0.29, hBas: 0.28, y: 0.06 },
-    { x: 2.0, w: 0.92, hHaut: 0.45, hBas: 0.43, y: 0.12 },
-    { x: 2.9, w: 1.16, hHaut: 0.5, hBas: 0.54, y: 0.1, n: 2.4 },
+    { x: -0.5, w: 0.0, h: 0.0, y: -0.04 },
+    { x: 0.1, w: 0.17, hHaut: 0.085, hBas: 0.085, y: -0.02 },
+    { x: 0.9, w: 0.46, hHaut: 0.23, hBas: 0.225, y: 0.03 },
+    { x: 1.8, w: 0.78, hHaut: 0.38, hBas: 0.37, y: 0.08 },
+    { x: 2.9, w: 1.1, hHaut: 0.48, hBas: 0.5, y: 0.1, n: 2.3 },
     { x: 3.9, w: 1.3, hHaut: 0.5, hBas: 0.6, y: 0.1, n: 2.6 },
     { x: 5.0, w: 1.42, hHaut: 0.5, hBas: 0.76, y: 0.12, n: 3.0 },
     { x: 6.2, w: 1.66, hHaut: 0.56, hBas: 0.8, y: 0.1, n: 3.4 },
@@ -223,10 +275,10 @@ export function construireRafale(THREE, { armement = true } = {}) {
   ], { segments: 64, parSegment: 8 }), gris));
   // Radôme du radar RBE2, d'une teinte légèrement différente
   avion.add(new THREE.Mesh(loft(THREE, [
-    { x: -0.005, w: 0, h: 0, y: 0 },
-    { x: 0.5, w: 0.265, hHaut: 0.135, hBas: 0.135, y: 0.02 },
-    { x: 1.2, w: 0.585, hHaut: 0.295, hBas: 0.285, y: 0.06 },
-    { x: 1.75, w: 0.83, hHaut: 0.41, hBas: 0.39, y: 0.1 },
+    { x: -0.505, w: 0, h: 0, y: -0.04 },
+    { x: 0.1, w: 0.175, hHaut: 0.09, hBas: 0.09, y: -0.02 },
+    { x: 0.9, w: 0.465, hHaut: 0.235, hBas: 0.23, y: 0.03 },
+    { x: 1.65, w: 0.74, hHaut: 0.36, hBas: 0.35, y: 0.075 },
   ], { segments: 48, parSegment: 6, fermer: false }), radome));
   // Dorsale : de l'arrière de la verrière jusqu'à la dérive
   avion.add(new THREE.Mesh(loft(THREE, [
@@ -422,22 +474,28 @@ export function construireRafale(THREE, { armement = true } = {}) {
   train.visible = false;
   avion.add(train);
 
-  // Perche de ravitaillement amovible (côté droit, devant la verrière) et tube de Pitot
+  // Perche de ravitaillement amovible (côté droit, devant la verrière) : elle monte presque à la
+  // verticale puis se coude vers l'avant (photos) ; sondes de Pitot sur les flancs du nez
   const perche = new THREE.Group();
-  const tige = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 1.5, 12), grisFonce);
-  tige.rotation.z = Math.PI / 2 - 0.35;
-  tige.position.set(1.8, 0.85, -0.42);
-  const embout = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.045, 0.18, 12), metal);
-  embout.rotation.z = Math.PI / 2 - 0.35;
-  embout.position.set(1.08, 1.11, -0.42);
-  const base = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.14, 0.12), grisFonce);
-  base.position.set(2.45, 0.62, -0.42);
-  perche.add(tige, embout, base);
+  const segment = (a, b, r0, r1, mat) => {
+    const va = new THREE.Vector3(...a), vb = new THREE.Vector3(...b);
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, va.distanceTo(vb), 12), mat);
+    m.position.copy(va).add(vb).multiplyScalar(0.5);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vb.clone().sub(va).normalize());
+    return m;
+  };
+  const coude = [2.28, 1.0, -0.43];
+  perche.add(segment([2.5, 0.5, -0.4], coude, 0.06, 0.045, grisFonce), segment(coude, [1.62, 1.12, -0.43], 0.045, 0.038, grisFonce));
+  const genou = new THREE.Mesh(new THREE.SphereGeometry(0.047, 10, 8), grisFonce);
+  genou.position.set(...coude);
+  const embout = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.042, 0.16, 12), metal);
+  embout.rotation.z = Math.PI / 2 - 0.18;
+  embout.position.set(1.55, 1.135, -0.43);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.12, 0.12), grisFonce);
+  base.position.set(2.55, 0.48, -0.41);
+  perche.add(genou, embout, base);
   avion.add(perche);
-  const pitot = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.51, 8), metal);
-  pitot.rotation.z = Math.PI / 2;
-  pitot.position.set(-0.25, 0, 0);
-  avion.add(pitot);
+  for (const sz of [-1, 1]) avion.add(segment([1.05, -0.02, sz * 0.24], [0.72, -0.03, sz * 0.27], 0.012, 0.008, metal));
 
   avion.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   // Centrage : le milieu de l'avion à l'origine
@@ -446,10 +504,11 @@ export function construireRafale(THREE, { armement = true } = {}) {
   const groupe = new THREE.Group();
   groupe.add(avion);
   const p = (x, y, z) => new THREE.Vector3(x + ox, y, z);
+  groupe.userData.emboutPerche = embout; // pour le contact au ravitaillement en vol
   groupe.userData.legendes = [
     { texte: 'Plans canard', point: p(6.2, 0.5, 2.2) },
     { texte: 'Entrée d\'air', point: p(4.95, -0.3, 1.0) },
-    { texte: 'Perche de ravitaillement', point: p(1.1, 1.15, -0.42) },
+    { texte: 'Perche de ravitaillement', point: p(1.6, 1.13, -0.43) },
     { texte: 'Verrière', point: p(3.9, 1.45, 0) },
     { texte: 'Optronique secteur frontal', point: p(1.85, 0.66, 0) },
     { texte: 'Missile Meteor', point: p(10.7, -0.75, 3.5) },
@@ -1708,7 +1767,9 @@ export function construireLeclerc(THREE) {
   char.add(tourelle);
 
   char.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  const k = 1.35;
+  // Échelle d'affichage 1,35, recalée de 0,94 sur les dimensions officielles (9,87 m canon compris, 3,71 m
+  // de large avec les jupes) : le relevé donnait 10,28 m × 4,05 m
+  const k = 1.35 * 0.94;
   char.scale.setScalar(k);
   char.position.set(1.2, -2.2, 0);
   const groupe = new THREE.Group();

@@ -132,10 +132,10 @@ export function construireMirage2000(THREE) {
   // Fuselage relevé sur le profil du plan : nez plus bas que l'arrière, hauteur maximale au droit des entrées d'air
   avion.add(new THREE.Mesh(loft(THREE, [
     { x: 0.0, w: 0, h: 0, y: -0.41 },
-    { x: 0.25, w: 0.2, hHaut: 0.1, hBas: 0.1, y: -0.405 },
-    { x: 0.6, w: 0.38, hHaut: 0.19, hBas: 0.19, y: -0.4 },
-    { x: 1.0, w: 0.56, hHaut: 0.28, hBas: 0.28, y: -0.37 },
-    { x: 1.5, w: 0.74, hHaut: 0.37, hBas: 0.37, y: -0.34 },
+    { x: 0.25, w: 0.16, hHaut: 0.08, hBas: 0.08, y: -0.405 },
+    { x: 0.6, w: 0.31, hHaut: 0.155, hBas: 0.155, y: -0.4 },
+    { x: 1.0, w: 0.47, hHaut: 0.235, hBas: 0.235, y: -0.375 },
+    { x: 1.5, w: 0.65, hHaut: 0.325, hBas: 0.33, y: -0.345 },
     { x: 2.4, w: 0.98, hHaut: 0.52, hBas: 0.56, y: -0.27, n: 2.1 },
     { x: 3.6, w: 1.05, hHaut: 0.6, hBas: 0.6, y: -0.27, n: 2.3 },
     { x: 4.8, w: 1.1, hHaut: 0.75, hBas: 0.7, y: -0.12, n: 2.5 },
@@ -148,10 +148,10 @@ export function construireMirage2000(THREE) {
   // Radôme du radar RDY, d'un gris légèrement différent
   avion.add(new THREE.Mesh(loft(THREE, [
     { x: -0.005, w: 0, h: 0, y: -0.41 },
-    { x: 0.25, w: 0.205, hHaut: 0.103, hBas: 0.103, y: -0.405 },
-    { x: 0.6, w: 0.395, hHaut: 0.198, hBas: 0.198, y: -0.4 },
-    { x: 1.0, w: 0.578, hHaut: 0.29, hBas: 0.29, y: -0.37 },
-    { x: 1.5, w: 0.76, hHaut: 0.382, hBas: 0.382, y: -0.34 },
+    { x: 0.25, w: 0.165, hHaut: 0.083, hBas: 0.083, y: -0.405 },
+    { x: 0.6, w: 0.325, hHaut: 0.163, hBas: 0.163, y: -0.4 },
+    { x: 1.0, w: 0.488, hHaut: 0.245, hBas: 0.245, y: -0.375 },
+    { x: 1.5, w: 0.668, hHaut: 0.336, hBas: 0.341, y: -0.345 },
     { x: 2.2, w: 0.955, hHaut: 0.505, hBas: 0.54, y: -0.285 },
   ], { segments: 40, parSegment: 6, fermer: false }), radome));
   // Entrées d'air latérales en « D » : construites pour le côté gauche (z > 0), puis symétrisées.
@@ -348,13 +348,16 @@ export function construireMirage2000(THREE) {
   siege.add(casque, visiere);
   avion.add(siege);
   // Perche de ravitaillement fixe, à droite devant le pare-brise (de 2,37 m à 1,53 m sur le plan)
-  avion.add(tube(THREE, [2.55, 0.02, -0.4], [2.0, 0.42, -0.42], 0.065, gris), tube(THREE, [2.0, 0.42, -0.42], [1.45, 0.7, -0.42], 0.05, gris));
-  const buse = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.06, 0.28, 14), grisFonce);
-  buse.rotation.z = Math.PI / 2 - 0.47;
-  buse.position.set(1.36, 0.745, -0.42);
+  avion.add(tube(THREE, [2.62, 0.0, -0.4], [2.44, 0.6, -0.42], 0.065, gris), tube(THREE, [2.44, 0.6, -0.42], [1.72, 0.76, -0.42], 0.05, gris));
+  const coude = new THREE.Mesh(new THREE.SphereGeometry(0.062, 10, 8), gris);
+  coude.position.set(2.44, 0.6, -0.42);
+  avion.add(coude);
+  const buse = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.06, 0.26, 14), grisFonce);
+  buse.rotation.z = Math.PI / 2 - 0.22;
+  buse.position.set(1.62, 0.78, -0.42);
   avion.add(buse);
   const embout = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), metal);
-  embout.position.set(1.22, 0.81, -0.42);
+  embout.position.set(1.48, 0.81, -0.42);
   avion.add(embout);
   const pitot = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.4, 8), metal);
   pitot.rotation.z = Math.PI / 2;
@@ -412,13 +415,16 @@ export function construireMirage2000(THREE) {
   avion.add(train);
 
   avion.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  avion.position.set(-7.2, 0, 0);
+  // Longueur ramenée aux 14,36 m officiels (le relevé donnait 14,89 m) : compression de 3,6 % selon l'axe
+  const kx = 14.36 / 14.89;
+  avion.scale.x = kx;
+  avion.position.set(-7.2 * kx, 0, 0);
   const groupe = new THREE.Group();
   groupe.add(avion);
-  const p = (x, y, z) => new THREE.Vector3(x - 7.2, y, z);
+  const p = (x, y, z) => new THREE.Vector3((x - 7.2) * kx, y, z);
   groupe.userData.legendes = [
     { texte: 'Entrée d\'air à demi-cône (« souris »)', point: p(5.0, 0.15, 0.95) },
-    { texte: 'Perche de ravitaillement fixe', point: p(1.5, 0.8, -0.34) },
+    { texte: 'Perche de ravitaillement fixe', point: p(1.6, 0.8, -0.42) },
     { texte: 'Aile delta pure (flèche de 58°)', point: p(10.5, -0.45, 3.6) },
     { texte: 'Réservoirs de 1 700 L (les deux « bidons »)', point: p(8.5, -1.65, 2.35) },
     { texte: 'Missile MICA', point: p(11.2, -1.05, -3.45) },

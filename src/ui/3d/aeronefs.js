@@ -12,7 +12,7 @@
  * v autour de la section, la couture étant placée sous l'appareil (0 et 1 :
  * dessous, 0,25 : flanc gauche à mi-hauteur, 0,5 : dessus, 0,75 : flanc droit).
  */
-import { loft, surface, cocarde, pieces } from './modeles.js';
+import { loft, surface, cocarde, pieces, pan, materiauVitrage } from './modeles.js';
 
 const TOUR = Math.PI * 2;
 
@@ -391,16 +391,16 @@ export function construirePhenix(THREE) {
     const mat = new THREE.Mesh(new THREE.BoxGeometry(5.6, 1.0, 0.55), gris);
     mat.position.set(23.6, -0.6, 9.6);
     const nacelle = new THREE.Mesh(loft(THREE, [
-      { x: 17.4, w: 2.95, h: 2.95, y: -2.3, z: 9.6 },
-      { x: 18.4, w: 3.2, h: 3.2, y: -2.3, z: 9.6 },
-      { x: 21.5, w: 3.05, h: 3.0, y: -2.3, z: 9.6 },
-      { x: 23.8, w: 2.2, h: 2.2, y: -2.15, z: 9.6 },
-      { x: 25.0, w: 1.4, h: 1.4, y: -2.1, z: 9.6 },
+      { x: 17.4, w: 2.75, h: 2.75, y: -1.31, z: 9.6 },
+      { x: 18.4, w: 2.98, h: 2.98, y: -1.31, z: 9.6 },
+      { x: 21.5, w: 2.85, h: 2.8, y: -1.31, z: 9.6 },
+      { x: 23.8, w: 2.05, h: 2.05, y: -1.16, z: 9.6 },
+      { x: 25.0, w: 1.3, h: 1.3, y: -1.11, z: 9.6 },
     ], { segments: 36, parSegment: 6, fermer: false }), gris);
-    const entree = soufflante(THREE, { x: 17.45, y: -2.3, z: 9.6, rayon: 1.4, pales: 26, profondeur: 1.0, cone: metal }); // Trent 772 : 26 pales larges en titane
+    const entree = soufflante(THREE, { x: 17.45, y: -1.31, z: 9.6, rayon: 1.3, pales: 26, profondeur: 1.0, cone: metal }); // Trent 772 : 26 pales larges en titane
     const tuyere = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.4, 20), metal);
     tuyere.rotation.z = -Math.PI / 2;
-    tuyere.position.set(25.6, -2.1, 9.6);
+    tuyere.position.set(25.6, -1.11, 9.6);
     g.add(mat, nacelle, entree, tuyere);
     // Nacelle de ravitaillement (tuyau et panier) sous l'aile extérieure
     const pod = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 3.4, 6, 14), gris);
@@ -427,7 +427,7 @@ export function construirePhenix(THREE) {
     g.add(tuyau);
     paniers.push({ tuyau, flexible, panier });
     g.scale.z = cote;
-    g.rotation.x = cote * 0.06;
+    g.rotation.x = -cote * 0.089; // dièdre de 5,1° : les ailes remontent vers les saumons
     g.position.y = -2.05;
     a.add(g);
     nacelles.push(g);
@@ -503,11 +503,11 @@ export function construirePhenix(THREE) {
   const train = new THREE.Group();
   const pneu = new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.9 });
   const jambe = new THREE.MeshStandardMaterial({ color: 0xd6d8db, metalness: 0.6, roughness: 0.35 });
-  train.add(tube(THREE, [5.2, -2.6, 0], [5.4, -4.6, 0], 0.13, jambe));
-  for (const z of [-0.3, 0.3]) { const r = roue(THREE, 0.55, 0.32, pneu, jambe); r.position.set(5.4, -4.9, z); train.add(r); }
+  train.add(tube(THREE, [5.2, -2.6, 0], [5.4, -3.9, 0], 0.13, jambe));
+  for (const z of [-0.3, 0.3]) { const r = roue(THREE, 0.55, 0.32, pneu, jambe); r.position.set(5.4, -4.17, z); train.add(r); }
   for (const s of [-1, 1]) {
-    train.add(tube(THREE, [29.0, -2.4, s * 5.3], [29.0, -4.7, s * 5.4], 0.2, jambe));
-    for (const dx of [-0.75, 0.75]) for (const dz of [-0.45, 0.45]) { const r = roue(THREE, 0.62, 0.4, pneu, jambe); r.position.set(29.0 + dx, -5.0, s * 5.4 + dz); train.add(r); }
+    train.add(tube(THREE, [29.0, -2.4, s * 5.3], [29.0, -3.85, s * 5.4], 0.2, jambe));
+    for (const dx of [-0.75, 0.75]) for (const dz of [-0.45, 0.45]) { const r = roue(THREE, 0.62, 0.4, pneu, jambe); r.position.set(29.0 + dx, -4.1, s * 5.4 + dz); train.add(r); }
   }
   train.visible = false;
   a.add(train);
@@ -515,7 +515,7 @@ export function construirePhenix(THREE) {
   const k = 0.26;
   const { groupe, p } = installer(THREE, a, k, 29.4, 0.6);
   groupe.userData.legendes = [
-    { texte: 'Réacteurs Rolls-Royce Trent 772', point: p(17.6, -4.3, 9.6) },
+    { texte: 'Réacteurs Rolls-Royce Trent 772', point: p(17.4, -2.5, 9.6) },
     { texte: 'Nacelle de ravitaillement (tuyau et panier)', point: p(29.5, -3.2, -22.5) },
     { texte: 'Perche rigide (A3R)', point: p(56, -2.5, 0) },
     { texte: 'Winglet', point: p(37.5, 0.8, 30) },
@@ -543,6 +543,7 @@ export function construirePhenix(THREE) {
     }
     train.visible = !!api.train;
   };
+  groupe.userData.paniers = paniers.map((x) => x.panier); // paniers de ravitaillement (aile gauche, aile droite)
   groupe.userData.taille = 16;
   return groupe;
 }
@@ -668,7 +669,7 @@ export function construireA321Mpa(THREE) {
     tuyere.position.set(20.2, -1.02, z);
     g.add(mat, nacelle, levre, entree, tuyere);
     g.scale.z = cote;
-    g.rotation.x = cote * 0.09;
+    g.rotation.x = -cote * 0.089; // dièdre de 5,1° : les ailes remontent vers les saumons
     g.position.y = -1.3;
     a.add(g);
   }
@@ -787,7 +788,7 @@ export function construireA321Mpa(THREE) {
     { texte: 'Radôme de télécommunications par satellite', point: p(31, 2.6, 0) },
     { texte: 'Cocarde à ancre de l\'aéronautique navale', point: p(31.2, 0.8, 2.1) },
     { texte: 'Carénage de capteurs (maquette)', point: p(12, -0.2, 2.3) },
-    { texte: 'Réacteur à grande soufflante (LEAP ou PW1100G)', point: p(14.6, -2.6, 5.75) },
+    { texte: 'Réacteur à grande soufflante (LEAP ou PW1100G)', point: p(14.6, -1.95, 5.75) },
     { texte: 'Sharklet', point: p(27.4, 1.6, 17.8) },
     { texte: 'Soute à armement (torpilles), emplacement indicatif', point: p(30, -2.6, 0) },
     { texte: 'Tourelle optronique et radar de surveillance (indicatifs)', point: p(7.5, -2.7, 0) },
@@ -903,10 +904,7 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     if (livree === 'fs') { T.ctx.fillStyle = '#3d4441'; T.ctx.fillRect(0, 0, T.largeur, T.hauteur); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.04); }
     else if (livree === 'marine') { camoufler(T.ctx, T.largeur, T.hauteur, '#c8cacb', ['#868b8d'], { graine: 13, taille: 120, nombre: 12 }); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.03); }
     else { camoufler(T.ctx, T.largeur, T.hauteur, '#5d6b45', ['#6e4c33', '#262826'], { graine: 21, taille: 70, nombre: 22 }); patiner(T.ctx, T.largeur, T.hauteur, 9, 0.03); }
-    // Pare-brise, fenêtres du poste et de plancher (sous le pare-brise), fenêtres de la cabine, portes coulissantes
-    T.dessus(0.85, 2.1, 0.15, '#1c242c');
-    T.rect(1.0, 2.6, -0.1, 0.62, '#1c242c', 'deux', 8);
-    T.rect(0.75, 1.35, -0.72, -0.22, '#1c242c', 'deux', 14);
+    // Fenêtres de la cabine, portes coulissantes (pare-brise et vitres du poste : vitrages en relief)
     T.rect(3.95, 4.55, 0.0, 0.5, '#1c242c', 'deux', 6);
     for (const x of [6.6]) T.rect(x, x + 0.5, 0.0, 0.5, '#1c242c', 'deux', 8);
     T.contour(4.7, 6.4, -0.92, 0.75, 'rgba(15,15,15,0.55)', 3);
@@ -924,17 +922,57 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
   const textures = marine ? { marine: peindre('marine') } : { terre: peindre('terre'), fs: peindre('fs') };
   const peau = new THREE.MeshStandardMaterial({ map: marine ? textures.marine : fs ? textures.fs : textures.terre, roughness: marine ? 0.6 : 0.75, metalness: 0.15, envMapIntensity: 0.6 });
   const uni = new THREE.MeshStandardMaterial({ color: marine ? 0xa9adae : fs ? 0x3d4441 : 0x5d6b45, roughness: 0.75, metalness: 0.15 });
-  h.add(new THREE.Mesh(loft(THREE, [
-    { x: 0, w: 0.3, hHaut: 0.25, hBas: 0.25, y: 1.25 },
-    { x: 0.5, w: 1.45, hHaut: 0.65, hBas: 0.6, y: 1.3 },
-    { x: 1.5, w: 2.3, hHaut: 1.05, hBas: 0.9, y: 1.6 },
+  // Fuselage. Nez du NH90 relevé sur le plan trois vues : court et bombé (2,4 m de la pointe au toit
+  // du poste), large de 1,6 m à 30 cm de la pointe, pointe à 0,5 m au-dessus du plancher.
+  const coque = [
+    { x: 0, w: 0.16, hHaut: 0.07, hBas: 0.07, y: 1.32 },
+    { x: 0.05, w: 0.7, hHaut: 0.22, hBas: 0.22, y: 1.32 },
+    { x: 0.16, w: 1.36, hHaut: 0.36, hBas: 0.33, y: 1.29, n: 2.2 },
+    { x: 0.4, w: 1.86, hHaut: 0.5, hBas: 0.46, y: 1.3, n: 2.3 },
+    { x: 0.8, w: 2.2, hHaut: 0.63, hBas: 0.62, y: 1.42, n: 2.45 },
+    { x: 1.3, w: 2.45, hHaut: 0.82, hBas: 0.8, y: 1.6, n: 2.6 },
+    { x: 1.95, w: 2.6, hHaut: 1.13, hBas: 1.0, y: 1.8, n: 2.75 },
+    { x: 2.5, w: 2.65, hHaut: 1.27, hBas: 1.01, y: 1.79, n: 2.8 },
     { x: 3.0, w: 2.65, hHaut: 1.28, hBas: 1.0, y: 1.78, n: 2.8 },
     { x: 7.6, w: 2.7, hHaut: 1.3, hBas: 1.0, y: 1.8, n: 3.2 },
     { x: 9.1, w: 2.35, hHaut: 1.2, hBas: 0.65, y: 2.0, n: 3 },
     { x: 10.6, w: 1.25, hHaut: 0.72, hBas: 0.42, y: 2.45 },
     { x: 14.4, w: 0.66, hHaut: 0.42, hBas: 0.42, y: 2.62 },
     { x: 16.1, w: 0.42, hHaut: 0.36, hBas: 0.4, y: 2.7 },
-  ], { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  ];
+  h.add(new THREE.Mesh(loft(THREE, coque, { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  // Capot avant noir (radôme), pare-brise en deux grandes vitres, vitres de porte du poste et de plancher
+  const capot = new THREE.MeshStandardMaterial({ color: marine ? 0x2f3336 : 0x1c1e1f, roughness: 0.42, metalness: 0.1 });
+  const verre = materiauVitrage(THREE);
+  const P = Math.PI;
+  const bordBas = (x) => P * (0.15 + 0.1 * Math.min(1, Math.max(0, (x - 0.5) / 1.65))); // bas du pare-brise, qui descend vers l'avant
+  h.add(
+    pan(THREE, coque, { x0: 0, x1: 0.62, t0: 0, t1: 2 * P, decalage: 0.006, segments: 48, parSegment: 8, materiau: capot }),
+    pan(THREE, coque, { x0: 0.55, x1: 2.15, t0: bordBas, t1: P * 0.484, decalage: 0.014, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 0.55, x1: 2.15, t0: P * 0.516, t1: (x) => P - bordBas(x), decalage: 0.014, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 1.25, x1: 2.4, t0: P * 0.02, t1: P * 0.19, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 1.25, x1: 2.4, t0: P * 0.81, t1: P * 0.98, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 0.7, x1: 1.3, t0: -P * 0.2, t1: -P * 0.05, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 0.7, x1: 1.3, t0: P * 1.05, t1: P * 1.2, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+  );
+  // Bosse verticale au milieu du capot (photo de face)
+  const bosse = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.42, 6, 14), capot);
+  bosse.scale.set(0.55, 1, 0.75);
+  bosse.position.set(0.1, 1.38, 0);
+  bosse.rotation.z = 0.35;
+  h.add(bosse);
+  // Phares d'atterrissage dans leurs logements, de part et d'autre du nez ; essuie-glaces ; sondes
+  for (const sz of [-1, 1]) {
+    const logement = new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), capot);
+    logement.scale.set(0.5, 1, 1);
+    logement.position.set(0.36, 1.24, sz * 0.8);
+    const lampe = new THREE.Mesh(new THREE.CircleGeometry(0.075, 14), new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: 0.15, metalness: 0.6, emissive: 0x2a2a24 }));
+    lampe.position.set(0.3, 1.24, sz * 0.82);
+    lampe.rotation.y = -Math.PI / 2 + sz * 0.5;
+    h.add(logement, lampe);
+    h.add(tube(THREE, [0.86, 2.02, sz * 0.5], [1.32, 2.4, sz * 0.24], 0.015, mats.sombre));
+    h.add(tube(THREE, [0.62, 1.86, sz * 0.82], [0.08, 1.9, sz * 0.86], 0.018, mats.metal));
+  }
   // Capot moteurs et transmission, prises d'air, échappements
   h.add(new THREE.Mesh(loft(THREE, [
     { x: 2.6, w: 1.2, hHaut: 0.05, hBas: 0.05, y: 3.0 },
@@ -952,8 +990,7 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
     sponson.scale.set(1, 1, 0.8);
     h.add(sponson);
   }
-  h.add(pieces(THREE, mats.sombre, [[1.45, 2.55, 0, 0.6, 0.05, 0.08], [0.9, 0.82, 0, 0.6, 0.05, 0.08]]));
-  h.add(tube(THREE, [0.35, 1.55, 0.45], [-0.25, 1.75, 0.5], 0.025, mats.metal), tube(THREE, [-0.25, 1.75, 0.5], [-0.42, 1.62, 0.5], 0.02, mats.metal));
+  h.add(tube(THREE, [2.25, 3.06, 0], [1.75, 3.42, 0], 0.03, mats.sombre), tube(THREE, [0.55, 0.86, 0], [0.18, 0.55, 0], 0.03, mats.sombre));
   // Dérive, plan horizontal (tribord), rotor de queue (bâbord)
   const derive = new THREE.Mesh(surface(THREE, [[14.0, 0], [15.2, 2.1], [16.0, 2.1], [16.2, 0]], 0.2, { plan: 'xy' }), peau);
   derive.position.y = 2.7;
@@ -1131,8 +1168,6 @@ export function construirePuma(THREE) {
   const T = toileFuselage(L, { largeur: 2048, hauteur: 512, perimetre: 7.6 });
   camoufler(T.ctx, T.largeur, T.hauteur, '#5f7038', ['#7a4a26', '#2b2a27'], { graine: 45, taille: 85, nombre: 16 });
   patiner(T.ctx, T.largeur, T.hauteur, 6, 0.035);
-  T.dessus(0.5, 1.75, 0.2, '#1b232b');
-  T.rect(0.7, 1.9, -0.7, 0.6, '#1b232b', 'deux', 10);
   T.rect(2.05, 2.55, -0.1, 0.55, '#1b232b', 'deux', 6);
   for (const x of [3.6, 4.45, 5.25, 6.6]) T.rect(x, x + 0.48, 0.05, 0.45, '#1b232b', 'deux', 9);
   T.contour(3.35, 6.1, -0.95, 0.72, 'rgba(10,10,10,0.6)', 3);
@@ -1141,17 +1176,38 @@ export function construirePuma(THREE) {
   const peau = new THREE.MeshStandardMaterial({ map: textureDe(THREE, T.c), roughness: 0.75, metalness: 0.15, envMapIntensity: 0.6 });
   const brun = new THREE.MeshStandardMaterial({ color: 0x7a4a26, roughness: 0.75, metalness: 0.15 });
   const vert = new THREE.MeshStandardMaterial({ color: 0x5f7038, roughness: 0.75, metalness: 0.15 });
-  h.add(new THREE.Mesh(loft(THREE, [
-    { x: 0, w: 0.5, hHaut: 0.4, hBas: 0.4, y: 1.4 },
-    { x: 0.5, w: 1.6, hHaut: 0.78, hBas: 0.85, y: 1.5 },
-    { x: 1.5, w: 2.3, hHaut: 1.1, hBas: 1.05, y: 1.75, n: 2.4 },
+  // Avant presque vertical du SA 330 (photos de profil) : grande verrière bombée qui enveloppe le poste,
+  // petit radôme noir en pointe, menton qui rejoint le plancher en 0,6 m
+  const coque = [
+    { x: 0, w: 0.2, hHaut: 0.1, hBas: 0.1, y: 1.72 },
+    { x: 0.06, w: 0.95, hHaut: 0.38, hBas: 0.5, y: 1.64 },
+    { x: 0.2, w: 1.58, hHaut: 0.72, hBas: 0.72, y: 1.72, n: 2.2 },
+    { x: 0.45, w: 2.02, hHaut: 0.94, hBas: 0.86, y: 1.82, n: 2.4 },
+    { x: 0.8, w: 2.3, hHaut: 1.12, hBas: 1.02, y: 1.85, n: 2.6 },
+    { x: 1.3, w: 2.42, hHaut: 1.2, hBas: 1.09, y: 1.86, n: 2.75 },
     { x: 3.0, w: 2.45, hHaut: 1.22, hBas: 1.1, y: 1.85, n: 2.8 },
     { x: 6.8, w: 2.45, hHaut: 1.22, hBas: 1.05, y: 1.9, n: 2.9 },
     { x: 8.0, w: 2.0, hHaut: 1.1, hBas: 0.7, y: 2.2 },
     { x: 9.2, w: 1.1, hHaut: 0.7, hBas: 0.4, y: 2.55 },
     { x: 12.5, w: 0.6, hHaut: 0.42, hBas: 0.28, y: 2.85 },
     { x: 14.1, w: 0.35, hHaut: 0.3, hBas: 0.2, y: 3.0 },
-  ], { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  ];
+  h.add(new THREE.Mesh(loft(THREE, coque, { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  // Verrière : deux grandes vitres avant bombées, vitres des portes du poste ; radôme noir, coupe-câbles
+  const verre = materiauVitrage(THREE);
+  const P = Math.PI;
+  const bas = (x) => P * (-0.1 + 0.2 * Math.min(1, Math.max(0, (x - 0.1) / 0.85)));
+  h.add(
+    pan(THREE, coque, { x0: 0.1, x1: 0.98, t0: bas, t1: P * 0.485, decalage: 0.014, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 0.1, x1: 0.98, t0: P * 0.515, t1: (x) => P - bas(x), decalage: 0.014, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 1.05, x1: 1.8, t0: P * 0.06, t1: P * 0.3, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 1.05, x1: 1.8, t0: P * 0.7, t1: P * 0.94, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+  );
+  const radome = new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 12), mats.sombre);
+  radome.scale.set(0.75, 1, 1);
+  radome.position.set(0.04, 1.7, 0);
+  h.add(radome, tube(THREE, [0.62, 0.86, 0], [0.3, 0.42, 0], 0.03, brun), tube(THREE, [1.0, 3.07, 0], [0.62, 3.36, 0], 0.03, mats.sombre));
+  for (const sz of [-1, 1]) h.add(tube(THREE, [0.45, 2.5, sz * 0.7], [0.82, 2.84, sz * 0.4], 0.014, mats.sombre));
   // Carénage de transmission bombé (vert) et deux entrées d'air rondes à l'avant du toit (brun)
   h.add(new THREE.Mesh(loft(THREE, [
     { x: 1.7, w: 1.0, hHaut: 0.05, hBas: 0.05, y: 3.05 },
@@ -1238,8 +1294,6 @@ export function construireCaracal(THREE) {
   T.ctx.fillStyle = '#a9b1bc';
   T.ctx.fillRect(0, 0, T.largeur, T.hauteur);
   patiner(T.ctx, T.largeur, T.hauteur, 8, 0.03);
-  T.dessus(0.45, 1.85, 0.2, '#1b232b');
-  T.rect(0.6, 1.95, -0.65, 0.6, '#1b232b', 'deux', 10);
   T.rect(2.1, 2.6, -0.05, 0.55, '#1b232b', 'deux', 6);
   for (const x of [3.3, 6.6, 7.6, 9.0]) T.rect(x, x + 0.48, 0.0, 0.45, '#1b232b', 'deux', 10);
   T.contour(4.2, 6.2, -0.95, 0.72, 'rgba(30,30,35,0.55)', 3);
@@ -1247,17 +1301,35 @@ export function construireCaracal(THREE) {
   const peau = new THREE.MeshStandardMaterial({ map: textureDe(THREE, T.c), roughness: 0.6, metalness: 0.2, envMapIntensity: 0.7 });
   const grisClair = new THREE.MeshStandardMaterial({ color: 0xa9b1bc, roughness: 0.6, metalness: 0.2 });
   const grisFonce = new THREE.MeshStandardMaterial({ color: 0x5b6472, roughness: 0.6, metalness: 0.2 });
-  h.add(new THREE.Mesh(loft(THREE, [
-    { x: 0, w: 0.45, hHaut: 0.35, hBas: 0.35, y: 1.35 },
-    { x: 0.6, w: 1.55, hHaut: 0.72, hBas: 0.78, y: 1.45 },
-    { x: 1.6, w: 2.2, hHaut: 1.0, hBas: 1.0, y: 1.7, n: 2.4 },
+  // Nez du H225M (photos) : radôme gris arrondi qui avance d'environ 1,2 m sous un pare-brise incliné
+  const coque = [
+    { x: 0, w: 0.2, hHaut: 0.1, hBas: 0.1, y: 1.42 },
+    { x: 0.08, w: 0.62, hHaut: 0.28, hBas: 0.3, y: 1.42 },
+    { x: 0.35, w: 0.98, hHaut: 0.42, hBas: 0.5, y: 1.4, n: 2.1 },
+    { x: 0.85, w: 1.42, hHaut: 0.5, hBas: 0.58, y: 1.4, n: 2.2 },
+    { x: 1.25, w: 1.95, hHaut: 0.62, hBas: 0.62, y: 1.44, n: 2.4 },
+    { x: 1.7, w: 2.25, hHaut: 0.94, hBas: 0.92, y: 1.72, n: 2.6 },
+    { x: 2.2, w: 2.38, hHaut: 1.17, hBas: 1.05, y: 1.85, n: 2.7 },
     { x: 3.0, w: 2.4, hHaut: 1.2, hBas: 1.05, y: 1.85, n: 2.7 },
     { x: 8.3, w: 2.45, hHaut: 1.2, hBas: 1.05, y: 1.9, n: 2.9 },
     { x: 9.6, w: 2.0, hHaut: 1.05, hBas: 0.65, y: 2.2 },
     { x: 10.8, w: 1.1, hHaut: 0.7, hBas: 0.4, y: 2.5 },
     { x: 14.8, w: 0.6, hHaut: 0.42, hBas: 0.3, y: 2.8 },
     { x: 16.4, w: 0.35, hHaut: 0.3, hBas: 0.2, y: 2.95 },
-  ], { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  ];
+  h.add(new THREE.Mesh(loft(THREE, coque, { segments: 48, parSegment: 8, debut: -Math.PI / 2 }), peau));
+  // Radôme (gris plus clair), pare-brise en deux vitres, vitres des portes du poste, essuie-glaces
+  const verre = materiauVitrage(THREE);
+  const P = Math.PI;
+  const bas = (x) => P * (0.06 + 0.16 * Math.min(1, Math.max(0, (x - 1.15) / 1.0)));
+  h.add(
+    pan(THREE, coque, { x0: 0, x1: 1.12, t0: 0, t1: 2 * P, decalage: 0.005, segments: 48, parSegment: 8, materiau: new THREE.MeshStandardMaterial({ color: 0xa3abb4, roughness: 0.45, metalness: 0.15 }) }),
+    pan(THREE, coque, { x0: 1.15, x1: 2.2, t0: bas, t1: P * 0.485, decalage: 0.014, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 1.15, x1: 2.2, t0: P * 0.515, t1: (x) => P - bas(x), decalage: 0.014, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 2.05, x1: 2.85, t0: P * 0.03, t1: P * 0.22, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+    pan(THREE, coque, { x0: 2.05, x1: 2.85, t0: P * 0.78, t1: P * 0.97, decalage: 0.012, segments: 8, parSegment: 8, materiau: verre }),
+  );
+  for (const sz of [-1, 1]) h.add(tube(THREE, [1.35, 2.15, sz * 0.62], [1.75, 2.6, sz * 0.35], 0.014, mats.sombre));
   // Carénage moteurs et transmission, gris foncé, avec ses deux entrées d'air et la bouche du refroidisseur
   h.add(new THREE.Mesh(loft(THREE, [
     { x: 1.8, w: 1.0, hHaut: 0.05, hBas: 0.05, y: 3.0 },
@@ -1294,7 +1366,7 @@ export function construireCaracal(THREE) {
   h.add(tube(THREE, [3.2, 0.95, 1.05], [-2.4, 0.95, 1.05], 0.07, grisClair));
   h.add(pieces(THREE, mats.sombre, [[-2.45, 0.95, 1.05, 0.25, 0.12, 0.12]]));
   const boule = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 12), mats.sombre);
-  boule.position.set(0.85, 0.72, -0.35);
+  boule.position.set(0.72, 0.74, -0.25);
   h.add(boule);
   // Dérive, plan horizontal (tribord) à dérive d'extrémité, rotor de queue (bâbord)
   const derive = new THREE.Mesh(surface(THREE, [[14.4, 0], [15.6, 1.95], [16.3, 1.95], [16.45, 0]], 0.16, { plan: 'xy' }), grisClair);

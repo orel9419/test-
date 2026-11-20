@@ -127,4 +127,16 @@ describe('Tir d\'essai du missile M51', () => {
     const e = jouer(nouvelle(), 1, { defense: { essaiM51: true } });
     expect(resumeDefense(e).essaisM51).toHaveLength(0);
   });
+
+  it('à partir de 2035, le tir part du SNLE de 3e génération L\'Invincible (vues 3D comprises)', () => {
+    let e = nouvelle('france', { role: 'president' });
+    expect(resumeDefense(e).essaiSnle3G).toBe(false);
+    e.trimestre = { ...e.trimestre, annee: 2035 };
+    expect(resumeDefense(e).essaiSnle3G).toBe(true);
+    e = jouer(e, 1, { defense: { essaiM51: true } });
+    const essai = resumeDefense(e).essaisM51.at(-1);
+    expect(essai.lanceur).toBe('L\'Invincible');
+    expect(essai.snle3g).toBe(true);
+    expect(e.journal.some((j) => /SNLE de 3e génération L'Invincible/.test(j.texte))).toBe(true);
+  });
 });

@@ -457,7 +457,8 @@ export function construireGriffon(THREE) {
   filet.rotation.y = 0.02;
   c.add(filet, pieces(THREE, new THREE.MeshStandardMaterial({ color: 0x6d5a40, roughness: 1 }), [[2.6, 3.36, 0, 1.52, 0.04, 1.92], [2.6, 3.36, 0, 0.04, 0.77, 1.92], [2.2, 3.36, 0, 0.04, 0.77, 1.92], [3.0, 3.36, 0, 0.04, 0.77, 1.92]]));
 
-  const { groupe, p } = poser(THREE, c, 1.45, -4.05, 3.95);
+  // Échelle d'affichage 1,45 recalée sur la longueur officielle (7,6 m ; le relevé donnait 8,21 m)
+  const { groupe, p } = poser(THREE, c, 1.45 * (7.6 / 8.21), -4.05, 3.95);
   groupe.userData.legendes = [
     { texte: 'Tourelleau téléopéré', point: p(-1.45, 4.0, -0.25) },
     { texte: 'Pare-brise blindé', point: p(-2.2, 2.6, 0) },

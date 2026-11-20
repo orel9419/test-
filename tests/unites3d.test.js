@@ -75,11 +75,21 @@ describe('Scènes 3D des unités projetables', () => {
     const g = construireRavitaillement(THREE, {});
     animer(g, {}, 400);
     expect(g.userData.legendes.some((l) => /panier/.test(l.texte))).toBe(true);
-    // Au contact : chaque Rafale est derrière une nacelle d'aile (22,5 m de l'axe), un peu sous le Phénix
+    // Au contact : l'embout de la perche de chaque Rafale est dans le panier de son aile (moins de 15 cm),
+    // chaque chasseur derrière une nacelle d'aile (environ 22,5 m de l'axe), un peu sous le Phénix
     const K = g.userData.echelle;
     const [gauche, droite] = g.userData.pieces.rafales;
-    expect(gauche.position.z / K).toBeCloseTo(22.9, 0);
-    expect(droite.position.z / K).toBeCloseTo(-22.1, 0);
+    const paniers = g.userData.pieces.phenix.children[0].userData.paniers;
+    g.updateMatrixWorld(true);
+    const v = new THREE.Vector3(), w = new THREE.Vector3();
+    [gauche, droite].forEach((r, i) => {
+      r.children[0].userData.emboutPerche.getWorldPosition(v);
+      paniers[i].getWorldPosition(w);
+      expect(v.distanceTo(w) / K).toBeLessThan(0.15);
+    });
+    expect(Math.abs(gauche.position.z / K)).toBeGreaterThan(20);
+    expect(Math.abs(droite.position.z / K)).toBeGreaterThan(20);
+    expect(Math.sign(gauche.position.z)).toBe(-Math.sign(droite.position.z));
     expect(gauche.position.y).toBeLessThan(g.userData.pieces.phenix.position.y);
     // Rompre le contact éloigne les chasseurs vers l'arrière
     const avant = gauche.position.x;
