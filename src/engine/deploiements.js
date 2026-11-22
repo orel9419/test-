@@ -46,6 +46,11 @@ export function accesBase(e, baseId, type = null) {
   return { ok: true, motif: null };
 }
 
+/** Unité dont la flotte a quitté le service (ex. Mirage 2000-5F au jalon de retrait de leur programme) ? */
+export function uniteRetiree(e, u) {
+  return !!u?.retrait && (e.defense?.jalons ?? []).includes(u.retrait.jalon);
+}
+
 /**
  * Ordonne le déploiement d'une unité vers une base (ou son retour en métropole).
  * @returns {object} { texte } ou { erreur }
@@ -60,6 +65,7 @@ export function deployerUnite(e, uniteId, baseId) {
   if (!b) return { erreur: 'Base inconnue.' };
   if (g.operation) return { erreur: 'L\'unité est engagée en opération : elle rentrera en métropole à la fin de celle-ci.' };
   if (g.position === baseId) return { erreur: 'L\'unité y est déjà.' };
+  if (!b.metropole && uniteRetiree(e, u)) return { erreur: u.retrait.texte };
   if (!b.metropole) {
     if (u.bases && !u.bases.includes(baseId)) return { erreur: u.motifBases ?? 'Cette unité ne peut pas être déployée sur cette base.' };
     const a = accesBase(e, baseId, u.type);
@@ -90,6 +96,13 @@ export function majDeploiements(e) {
       g.position = 'metropole';
       if (g.repos > 0) g.repos -= 1;
       g.potentiel = Math.min(100, g.potentiel + RECUPERATION);
+      continue;
+    }
+    // Flotte retirée du service : l'unité rentre et n'est plus déployable
+    if (uniteRetiree(e, u)) {
+      e.journal.push({ tour: e.tour, trimestre: lib, type: 'politique', texte: `Déploiements — ${u.nom} quitte ${b.court} : ${u.retrait.texte.charAt(0).toLowerCase()}${u.retrait.texte.slice(1)}` });
+      g.position = 'metropole';
+      g.trimestres = 0;
       continue;
     }
     // Le pays hôte ne veut plus de nous, ou la France a quitté l'OTAN : retour forcé
@@ -126,7 +139,7 @@ export function resumeDeploiements(e) {
   const unites = Object.entries(UNITES).map(([id, u]) => {
     const g = f[id];
     const op = g.operation ? OPEX[g.operation.id] : null;
-    return { id, ...u, ...g, lieu: op ? `Opération : ${op.court}` : BASES[g.position]?.court ?? g.position, enOperation: !!op, restants: op ? Math.max(1, g.operation.fin - e.tour) : 0 };
+    return { id, ...u, ...g, lieu: op ? `Opération : ${op.court}` : BASES[g.position]?.court ?? g.position, enOperation: !!op, restants: op ? Math.max(1, g.operation.fin - e.tour) : 0, retiree: uniteRetiree(e, u) };
   });
   const bases = Object.entries(BASES).map(([id, b]) => ({
     id, ...b,

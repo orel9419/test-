@@ -10,7 +10,7 @@ const FAMILLES = [
   { titre: 'Bâtiments de surface', modeles: [['pha', '🚢 PHA Mistral'], ['fda', '🚢 Chevalier Paul (FDA)'], ['fremm', '🚢 FREMM'], ['brf', '🚢 Ravitailleur (BRF)'], ['monge', '📡 Monge']] },
   { titre: 'Hélicoptères et ravitailleur', modeles: [['caiman', '🚁 Caïman (Terre)'], ['caimanFS', '🚁 Caïman (forces spéciales)'], ['caimanMarine', '🚁 Caïman Marine'], ['tigre', '🚁 Tigre'], ['puma', '🚁 Puma'], ['caracal', '🚁 Caracal'], ['phenix', '✈️ A330 Phénix'], ['a321mpa', '✈️ A321 MPA (patrouille maritime)']] },
   { titre: 'Terre, drones et espace', modeles: [['leclerc', '🪖 Char Leclerc'], ['caesar', '💥 Canon Caesar'], ['griffon', '🛡️ Griffon'], ['jaguar', '🛡️ Jaguar'], ['patroller', '🛩️ Drone Patroller'], ['satellite', '🛰️ Satellite']] },
-  { titre: 'Unités en mission', modeles: [['gtia', '🪖 Groupement tactique'], ['forcesSpeciales', '🎯 Forces spéciales'], ['policeDuCiel', '✈️ Police du ciel'], ['ravitaillement', '🛩️ Ravitaillement en vol'], ['escadronLeclerc', '🛡️ Escadron de chars Leclerc'], ['dissuasion', '🌊 Dissuasion : patrouille et tir d\'essai M51']] },
+  { titre: 'Unités en mission', modeles: [['gtia', '🪖 Groupement tactique'], ['forcesSpeciales', '🎯 Forces spéciales'], ['policeDuCiel', '✈️ Police du ciel'], ['policeDuCielMirage', '🇪🇪 Mirage 2000-5 en Estonie (Ämari)'], ['interceptionMirage', '✈️ Interception au-dessus de la Baltique'], ['ravitaillement', '🛩️ Ravitaillement en vol'], ['escadronLeclerc', '🛡️ Escadron de chars Leclerc'], ['dissuasion', '🌊 Dissuasion : patrouille et tir d\'essai M51']] },
   { titre: 'Lieux de pouvoir', modeles: [['elysee', '🏛️ Élysée'], ['matignon', '🏛️ Matignon'], ['assemblee', '🏛️ Assemblée nationale'], ['senat', '🏛️ Sénat']] },
 ];
 

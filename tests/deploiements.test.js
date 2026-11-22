@@ -78,3 +78,26 @@ describe('Principe de précaution et doublons', () => {
     expect(menage.budget.economieFinances.montant).toBeLessThan(simple.budget.economieFinances.montant);
   });
 });
+
+describe('Mirage 2000-5F en police du ciel à Ämari (Estonie)', () => {
+  it('l\'escadron se déploie à Ämari (base aérienne), pas à Tapa (base terrestre)', () => {
+    let e = jouer(nouvelle(), 1, { deploiements: { chasse_mirage: 'estonie' } });
+    expect(unite(e, 'chasse_mirage').position).toBe('metropole');
+    e = jouer(e, 1, { deploiements: { chasse_mirage: 'amari' } });
+    const u = unite(e, 'chasse_mirage');
+    expect(u.position).toBe('amari');
+    expect(u.scene).toBe('policeDuCielMirage');
+    expect(resumeDeploiements(e).bases.find((b) => b.id === 'amari')).toMatchObject({ court: 'Ämari', interception: true });
+  });
+
+  it('au retrait des Mirage 2000-5F, l\'escadron rentre et ne peut plus partir', () => {
+    let e = jouer(nouvelle(), 1, { deploiements: { chasse_mirage: 'amari' } });
+    e.defense.jalons = [...(e.defense.jalons ?? []), 'm2000_5f_retrait'];
+    e = jouer(e, 1);
+    expect(unite(e, 'chasse_mirage').position).toBe('metropole');
+    expect(unite(e, 'chasse_mirage').retiree).toBe(true);
+    expect(e.journal.some((j) => /Mirage 2000-5F ont quitté le service/.test(j.texte))).toBe(true);
+    e = jouer(e, 1, { deploiements: { chasse_mirage: 'amari' } });
+    expect(unite(e, 'chasse_mirage').position).toBe('metropole');
+  });
+});

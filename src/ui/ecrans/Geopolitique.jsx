@@ -221,7 +221,8 @@ function Deploiements({ d, opex, decisions, majDecisions }) {
                 <div className="jauge-potentiel"><div style={{ width: `${u.potentiel}%` }} className={u.potentiel < 40 ? 'bas' : ''} /></div>
               </div>
               {u.enOperation && <span className="tres-petit alerte">🎖️ Engagée en opération : retour en métropole dans {u.restants} trimestre(s), à la fin de l'opération.</span>}
-              {!u.enOperation && <label className="tres-petit">Ordre :
+              {u.retiree && <span className="tres-petit alerte">✈️ {u.retrait.texte}</span>}
+              {!u.enOperation && !u.retiree && <label className="tres-petit">Ordre :
                 <select value={ordre ?? ''} onChange={(ev) => donner(u.id, ev.target.value || null)} style={{ marginLeft: 6, maxWidth: '100%' }}>
                   <option value="">— rester sur place —</option>
                   {choix.map((b) => {

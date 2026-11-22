@@ -9,9 +9,9 @@ import { installerFauxDocument } from './outils/faux-document.js';
 import { UNITES, BASES } from '../src/data/deploiements.js';
 
 installerFauxDocument();
-const { construireGtia, construireForcesSpeciales, construirePoliceDuCiel, construireRavitaillement, construireEscadronLeclerc } = await import('../src/ui/3d/unites.js');
+const { construireGtia, construireForcesSpeciales, construirePoliceDuCiel, construireRavitaillement, construireEscadronLeclerc, construirePoliceDuCielMirage, construireInterceptionMirage } = await import('../src/ui/3d/unites.js');
 const { construireDissuasion } = await import('../src/ui/3d/marine.js');
-const SCENES = { gtia: construireGtia, forcesSpeciales: construireForcesSpeciales, policeDuCiel: construirePoliceDuCiel, ravitaillement: construireRavitaillement, escadronLeclerc: construireEscadronLeclerc };
+const SCENES = { gtia: construireGtia, forcesSpeciales: construireForcesSpeciales, policeDuCiel: construirePoliceDuCiel, ravitaillement: construireRavitaillement, escadronLeclerc: construireEscadronLeclerc, policeDuCielMirage: construirePoliceDuCielMirage };
 
 const boite = (o) => { o.updateMatrixWorld(true); return new THREE.Box3().setFromObject(o); };
 const animer = (g, api = {}, n = 60) => { for (let k = 0; k < n; k++) g.userData.animer(k * 16, api); };
@@ -50,6 +50,34 @@ describe('Scènes 3D des unités projetables', () => {
     expect(mission.userData.commandes.map((c) => c.id)).toEqual(['debarquer', 'batterie', 'tirCanon']);
     expect(mission.userData.legendes[0].texte).toMatch(/en mission/);
     expect(garnison.userData.legendes[0].texte).toMatch(/garnison/);
+  });
+
+  it('Mirage 2000-5 à Ämari : quatre avions en configuration police du ciel, alerte QRA qui décolle et revient', () => {
+    const g = construirePoliceDuCielMirage(THREE, { donnees: { deploye: true, base: 'Ämari', terrain: 'europe', interception: true } });
+    expect(g.userData.sol).toBe(true);
+    expect(g.userData.commandes.map((c) => c.id)).toEqual(['alerte', 'roulage']);
+    expect(g.userData.legendes.some((l) => /Ämari/.test(l.texte))).toBe(true);
+    expect(g.userData.legendes.some((l) => /trois bidons, quatre missiles MICA/.test(l.texte))).toBe(true);
+    const mirages = [];
+    g.traverse((o) => { if (o.userData?.basculer?.police) mirages.push(o); });
+    expect(mirages).toHaveLength(4);
+    // Alerte : le chef quitte son abri, décolle (altitude, train rentré), puis tout revient en place
+    const chef = mirages[0].parent;
+    const depart = chef.position.clone();
+    const api = { alerte: true };
+    g.userData.animer(0, api);
+    g.userData.animer(16000, api);
+    expect(chef.position.y).toBeGreaterThan(0);
+    expect(chef.position.distanceTo(depart)).toBeGreaterThan(5);
+    g.userData.animer(30000, api);
+    expect(chef.position.distanceTo(depart)).toBeLessThan(1e-6);
+    expect(sansNaN(g)).toBe(true);
+    // En métropole : la même alerte, à Luxeuil ; en Lituanie : l'interception en vol par deux Mirage
+    expect(construirePoliceDuCielMirage(THREE, { donnees: { deploye: false } }).userData.legendes.some((l) => /Luxeuil/.test(l.texte))).toBe(true);
+    const vol = construirePoliceDuCielMirage(THREE, { donnees: { deploye: true, base: 'Lituanie', terrain: 'europe', interception: true } });
+    expect(vol.userData.ciel).toBe(true);
+    expect(vol.userData.legendes.some((l) => /Mirage 2000-5 leader/.test(l.texte))).toBe(true);
+    expect(construireInterceptionMirage(THREE).userData.legendes.some((l) => /Il-20/.test(l.texte))).toBe(true);
   });
 
   it('police du ciel : interception (trois appareils) ou patrouille ; en métropole, alerte au sol', () => {

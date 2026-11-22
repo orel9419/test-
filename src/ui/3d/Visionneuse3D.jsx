@@ -143,6 +143,14 @@ const FICHES = {
     titre: 'Détachement des forces spéciales',
     lignes: ['Commandement des opérations spéciales (COS) : commandos des trois armées et leurs hélicoptères (4e régiment d\'hélicoptères des forces spéciales, escadron « Pyrénées »)', 'Scène type : un Caïman dépose des commandos en corde lisse sur le toit de l\'objectif, un Caracal posé débarque le groupe d\'assaut, un Tigre assure l\'appui feu', 'Véhicules légers armés pour l\'approche et le recueil', 'Scénario et décor imaginaires ; engins à la même échelle, distances resserrées'],
   },
+  policeDuCielMirage: {
+    titre: 'Police du ciel en Estonie : Mirage 2000-5F à Ämari',
+    lignes: ['Les pays baltes n\'ont pas d\'aviation de chasse : les alliés de l\'OTAN y assurent la police du ciel depuis Šiauliai (Lituanie) et Ämari (Estonie)', 'La France a déployé quatre Mirage 2000-5F et une centaine d\'aviateurs à Ämari en 2018, en 2020 et du 15 mars au 1er août 2022 ; en février 2024, des Mirage partis de Šiauliai ont intercepté au large de l\'Estonie un Il-78 puis un Il-20 russes', 'Alerte QRA : deux avions armés attendent dans leurs abris bétonnés, prêts à décoller en quelques minutes ; configuration de police du ciel : trois bidons (2 × 1 700 L, 1 × 1 300 L) et quatre missiles MICA', 'D\'après des photos du détachement : roulage en file sur la voie de circulation, balises bleues, forêt de pins et de bouleaux · distances resserrées · sources : OTAN (Allied Air Command), ministère des Armées'],
+  },
+  interceptionMirage: {
+    titre: 'Interception au-dessus de la Baltique : deux Mirage 2000-5F',
+    lignes: ['Le leader se place à gauche de l\'appareil intercepté, à vue de son pilote ; l\'ailier reste en retrait, en couverture', 'Les appareils russes interceptés au large des pays baltes sont surtout des avions de renseignement (Il-20), des ravitailleurs (Il-78), des transports (An-12, An-72) et des chasseurs d\'escorte (Su-30SM)', 'Battre des ailes signifie « suivez-moi » (signaux internationaux d\'interception de l\'OACI)', 'Mirage 2000-5F en configuration de police du ciel : trois bidons, quatre MICA · appareil intercepté de forme générique, distances resserrées'],
+  },
   policeDuCiel: {
     titre: 'Police du ciel : deux Rafale en interception',
     lignes: ['Posture permanente de sûreté aérienne : des chasseurs armés décollent en quelques minutes pour identifier tout aéronef suspect', 'Le leader se place à gauche de l\'appareil intercepté, à vue de son pilote ; l\'ailier reste en retrait, en couverture', 'Battre des ailes signifie « suivez-moi » (signaux internationaux d\'interception de l\'OACI)', 'Dans les pays baltes, qui n\'ont pas d\'aviation de chasse, les alliés de l\'OTAN se relaient à Šiauliai · aéronef intercepté générique, distances resserrées'],
@@ -183,6 +191,8 @@ const VUES = {
   gtia: { '3/4': [-14, 7, 15], 'De l\'avant': [-22, 4, 4], Dessus: [0, 26, 0.01], Profil: [0, 3, 22], Arrière: [16, 6, -13] },
   forcesSpeciales: { '3/4': [-12, 8, 15], 'Toit': [-7, 5, 8], Dessus: [0, 25, 0.01], 'Côté Caracal': [15, 4, 15], Profil: [0, 3, 22] },
   policeDuCiel: { '3/4': [-12, 5, 15], 'Leader': [-9, 2.5, 13], Dessus: [0, 24, 0.01], 'Sous l\'appareil': [-8, -5, 12], Arrière: [15, 5, 10] },
+  interceptionMirage: { '3/4': [-12, 5, 15], 'Leader': [-9, 2.5, 13], Dessus: [0, 24, 0.01], 'Sous l\'appareil': [-8, -5, 12], Arrière: [15, 5, 10] },
+  policeDuCielMirage: { '3/4': [-14, 9, -22], 'Roulage (photo)': [-7.5, 1.0, -1.6], 'Abris d\'alerte': [-4, 4.5, -7], Dessus: [0, 44, 0.01], 'Bout de piste': [-40, 3, -8.4] },
   ravitaillement: { '3/4': [-12, 5, 16], 'Au contact': [12, 1.5, 12], Dessus: [0, 25, 0.01], 'Dessous': [-6, -6, 14], Arrière: [18, 4, 0.01] },
   sna: { '3/4': [-11, 6.5, -13], Profil: [0, 1.2, 18], Dessus: [0, 20, 0.01], Face: [-18, 1.6, 0.01], Arrière: [11, 5.5, 13] },
   pha: { '3/4': [-10, 6.5, 12], 'Côté île': [0, 2.3, -19], Profil: [0, 2.3, 19], Dessus: [0, 21, 0.01], Face: [-18, 3.5, 0.01] },
@@ -238,7 +248,7 @@ const CONSTRUCTEURS = {
   caiman: ['aeronefs', 'construireCaiman'], caimanFS: ['aeronefs', 'construireCaiman'], caimanMarine: ['aeronefs', 'construireCaiman'], tigre: ['tigre', 'construireTigre'], puma: ['aeronefs', 'construirePuma'], caracal: ['aeronefs', 'construireCaracal'], caesar: ['materiels', 'construireCaesar'], griffon: ['materiels', 'construireGriffon'], jaguar: ['materiels', 'construireJaguar'],
   patroller: ['materiels', 'construirePatroller'], satellite: ['materiels', 'construireSatellite'],
   groupeAeronaval: ['marine', 'construireGroupeAeronaval'],
-  gtia: ['unites', 'construireGtia'], forcesSpeciales: ['unites', 'construireForcesSpeciales'], policeDuCiel: ['unites', 'construirePoliceDuCiel'], ravitaillement: ['unites', 'construireRavitaillement'],
+  gtia: ['unites', 'construireGtia'], forcesSpeciales: ['unites', 'construireForcesSpeciales'], policeDuCiel: ['unites', 'construirePoliceDuCiel'], policeDuCielMirage: ['unites', 'construirePoliceDuCielMirage'], interceptionMirage: ['unites', 'construireInterceptionMirage'], ravitaillement: ['unites', 'construireRavitaillement'],
   escadronLeclerc: ['unites', 'construireEscadronLeclerc'], dissuasion: ['marine', 'construireDissuasion'],
   sna: ['marine', 'construireSna'], pha: ['marine', 'construirePha'], fda: ['marine', 'construireFda'], fremm: ['marine', 'construireFremm'], brf: ['marine', 'construireBrf'], monge: ['marine', 'construireMonge'],
   elysee: ['palais', 'construireElysee'], matignon: ['palais', 'construireMatignon'], assemblee: ['palais', 'construireAssemblee'], senat: ['palais', 'construireSenat'],
@@ -251,7 +261,7 @@ const SOUS = new Set(['snle', 'snle3g', 'sna']);
 const NAVIRES = new Set(['porteAvions', 'charlesDeGaulle', 'pha', 'fda', 'fremm', 'brf', 'monge', 'groupeAeronaval', 'dissuasion']);
 const ESPACE = new Set(['satellite']);
 /** Rendu réaliste : catégories pour les joints de panneaux et l'usure des surfaces (pas en mètres). */
-const AIR = new Set(['rafale', 'mirage2000', 'f35a', 'f35b', 'f35c', 'phenix', 'a321mpa', 'caiman', 'caimanFS', 'caimanMarine', 'tigre', 'puma', 'caracal', 'patroller', 'satellite', 'policeDuCiel', 'ravitaillement']);
+const AIR = new Set(['rafale', 'mirage2000', 'f35a', 'f35b', 'f35c', 'phenix', 'a321mpa', 'caiman', 'caimanFS', 'caimanMarine', 'tigre', 'puma', 'caracal', 'patroller', 'satellite', 'policeDuCiel', 'policeDuCielMirage', 'interceptionMirage', 'ravitaillement']);
 const TERRE = new Set(['leclerc', 'griffon', 'jaguar', 'caesar', 'gtia', 'forcesSpeciales', 'escadronLeclerc']);
 const DETAILS = { air: { pas: 1.3, joints: 0.1, usure: 0.05 }, mer: { pas: 2.4, joints: 0.07, usure: 0.07 }, terre: { pas: 0, joints: 0, usure: 0.09 } };
 /** Véhicules terrestres seuls : posés sur un disque de terrain. */
@@ -259,7 +269,7 @@ const VEHICULES = new Set(['leclerc', 'griffon', 'jaguar', 'caesar']);
 /** Lieux clos et espace : éclairage de studio plutôt que de ciel. */
 const INTERIEUR = new Set(['hemicycleAN', 'hemicycleSenat', 'satellite']);
 /** Rayon de l'occlusion ambiante (unités de scène) : plus petit dans les scènes où les engins sont petits. */
-const RAYON_AO = { groupeAeronaval: 0.1, dissuasion: 0.14, gtia: 0.22, forcesSpeciales: 0.22, escadronLeclerc: 0.25, policeDuCiel: 0.3, ravitaillement: 0.3 };
+const RAYON_AO = { groupeAeronaval: 0.1, dissuasion: 0.14, gtia: 0.22, forcesSpeciales: 0.22, escadronLeclerc: 0.25, policeDuCiel: 0.3, policeDuCielMirage: 0.3, interceptionMirage: 0.3, ravitaillement: 0.3 };
 /** Qualité du rendu, mémorisée sur l'appareil : « réaliste » (occlusion ambiante) ou « rapide ». */
 const lireQualite = () => { try { return localStorage.getItem('rendu3d') !== 'rapide'; } catch { return true; } };
 const ecrireQualite = (realiste) => { try { localStorage.setItem('rendu3d', realiste ? 'realiste' : 'rapide'); } catch { /* stockage indisponible */ } };

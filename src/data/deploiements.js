@@ -34,6 +34,11 @@ export const UNITES = {
     nom: 'Détachement de chasse n° 2', court: 'Rafale (2)', icone: '✈️', type: 'air', scene: 'policeDuCiel', cout: 0.15, usure: 18, poids: 0.8,
     description: 'Un second détachement de Rafale, pour tenir deux bases à la fois ou se relayer sur la même.',
   },
+  chasse_mirage: {
+    nom: 'Escadron de chasse 1/2 « Cigognes » (Mirage 2000-5F)', court: 'Mirage 2000-5', icone: '✈️', type: 'air', scene: 'policeDuCielMirage', cout: 0.12, usure: 18, poids: 0.6,
+    retrait: { jalon: 'm2000_5f_retrait', texte: 'Les Mirage 2000-5F ont quitté le service : l\'escadron est passé sur Rafale.' },
+    description: 'Quatre Mirage 2000-5F de défense aérienne de la base de Luxeuil, leurs pilotes et une centaine d\'aviateurs : police du ciel, avec une paire en alerte QRA prête à décoller en quelques minutes. La France en a tenu la mission balte depuis Ämari, en Estonie (2018, 2020, mars à août 2022). Ils quittent le service vers 2030.',
+  },
   soutien_aerien: {
     nom: 'Détachement de soutien aérien', court: 'Phénix et radar', icone: '🛩️', type: 'air', scene: 'ravitaillement', cout: 0.12, usure: 15, poids: 0.6,
     description: 'Un A330 Phénix (ravitaillement en vol, transport) et un avion radar E-3F : il démultiplie les chasseurs alliés et français présents dans la zone.',
@@ -87,6 +92,13 @@ export const BASES = {
     partenaire: 'royaumeUni', seuil: -20, otan: true, theatre: 'baltique', distance: 1,
     presence: { influence: 1, relations: { royaumeUni: 2, norvege: 1, pologne: 1 } },
     description: 'Un sous-groupement français sert dans le bataillon de l\'OTAN mené par le Royaume-Uni, face à la Russie.',
+  },
+  amari: {
+    terrain: 'europe', interception: true,
+    nom: 'Estonie : Ämari (police du ciel balte, OTAN)', court: 'Ämari', lon: 24.21, lat: 59.26, types: ['air'],
+    partenaire: 'ue', seuil: -20, otan: true, theatre: 'baltique', distance: 1,
+    presence: { influence: 1, relations: { ue: 1, pologne: 1, norvege: 1 } },
+    description: 'Seconde base de la police du ciel balte. La France y a déployé quatre Mirage 2000-5F et une centaine d\'aviateurs en 2018, en 2020 et du 15 mars au 1er août 2022 : alerte QRA et interceptions au-dessus de la Baltique.',
   },
   lituanie: {
     terrain: 'europe', interception: true,

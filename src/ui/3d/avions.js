@@ -105,7 +105,7 @@ function toileDerive(l) {
  * 14,36 m de long, 9,13 m d'envergure, 5,20 m de haut. Repère : y = 0 sur
  * l'axe du fuselage arrière, sol à y = -1,9 (train sorti).
  */
-export function construireMirage2000(THREE) {
+export function construireMirage2000(THREE, { police = false } = {}) {
   const avion = new THREE.Group();
   const texture = (canvas, planaire = false) => {
     const t = new THREE.CanvasTexture(canvas);
@@ -386,6 +386,24 @@ export function construireMirage2000(THREE) {
     pyl2.position.set(0, -0.66, cote * 3.45);
     avion.add(res, pyl, mica, pyl2);
   }
+  // Emport de police du ciel (photos d'Ämari et de Luxeuil) : bidon ventral de 1 300 L entre les jambes du
+  // train principal, et deux MICA de plus sous les entrées d'air (quatre au total)
+  const emportPolice = new THREE.Group();
+  const ventral = new THREE.Mesh(reservoir, gris);
+  ventral.scale.setScalar(0.82);
+  ventral.position.set(6.0, -1.18, 0);
+  const pylVentral = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.1, 0.12), gris);
+  pylVentral.position.set(8.3, -0.79, 0);
+  emportPolice.add(ventral, pylVentral);
+  for (const cote of [1, -1]) {
+    const m = missile(THREE, 3.1, 0.16, materiaux);
+    m.position.set(5.5, -0.98, cote * 0.66);
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.07), gris);
+    rail.position.set(6.9, -0.86, cote * 0.66);
+    emportPolice.add(m, rail);
+  }
+  emportPolice.visible = police;
+  avion.add(emportPolice);
 
   // Train d'atterrissage relevé sur le plan : roulette avant à 3,7 m, train principal à 8,4 m (voie de 3,4 m), sol à -1,9 m
   const train = new THREE.Group();
@@ -431,13 +449,18 @@ export function construireMirage2000(THREE) {
     { texte: 'Réacteur M53-P2', point: p(14.3, 0.1, 0) },
     { texte: 'Verrière en bulle', point: p(3.8, 1.05, 0) },
   ];
+  if (police) groupe.userData.legendes.push({ texte: 'Police du ciel : bidon ventral de 1 300 L et deux MICA sous les entrées d\'air', point: p(8.0, -1.45, 0.4) });
+  // Pour les scènes : train et emport réglables sans passer par les commandes de la visionneuse
+  groupe.userData.basculer = { train: (sorti) => { train.visible = sorti; }, police: (oui) => { emportPolice.visible = oui; } };
   groupe.userData.commandes = [
     { id: 'rentrer', libelle: 'Rentrer le train', actif: 'Sortir le train' },
+    { id: 'police', libelle: 'Emport police du ciel (3 bidons, 4 MICA)', actif: 'Emport léger (2 bidons, 2 MICA)' },
     { id: 'grise', libelle: 'Livrée gris foncé (EC 2/2)', actif: 'Livrée gris bleuté (EC 2/5)' },
   ];
   let courante = 'bleu';
   groupe.userData.animer = (t, api) => {
     train.visible = !api.rentrer;
+    emportPolice.visible = police || !!api.police;
     const voulue = api.grise ? 'gris' : 'bleu';
     if (voulue !== courante) {
       courante = voulue;

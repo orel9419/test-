@@ -22,6 +22,7 @@ import { construireGriffon, construireJaguar, construireCaesar } from './materie
 import { construireRafale, construireLeclerc, loft, pieces } from './modeles.js';
 import { construirePhenix, construireCaiman, construireCaracal, soldat } from './aeronefs.js';
 import { construireTigre } from './tigre.js';
+import { construireMirage2000 } from './avions.js';
 import { voilure, tubeEntre } from './formes.js';
 import { textureSol } from './rendu.js';
 
@@ -40,6 +41,7 @@ const MODELES = {
   caimanFS: { construire: (T) => construireCaiman(T, { modele: 'caimanFS' }), s: 0.85, sol: -1.85, axe: -1.85 },
   caracal: { construire: (T) => construireCaracal(T), s: 0.82, sol: -1.8, axe: -1.8 },
   rafale: { construire: (T) => construireRafale(T, { armement: true }), s: 1, sol: -1.75, axe: 0 },
+  mirage2000: { construire: (T) => construireMirage2000(T, { police: true }), s: 1, sol: -1.9, axe: 0 },
   phenix: { construire: (T) => construirePhenix(T), s: 0.26, sol: -1.12, axe: 0.6 },
   leclerc: { construire: (T) => construireLeclerc(T), s: 1.35, sol: -2.2 },
 };
@@ -48,6 +50,7 @@ const MODELES = {
 function placer(THREE, type, K, { vol = false } = {}) {
   const d = MODELES[type];
   const objet = d.construire(THREE);
+  if (vol) objet.userData.basculer?.train?.(false);
   objet.position.y -= vol ? (d.axe ?? 0) : d.sol;
   const conteneur = new THREE.Group();
   conteneur.add(objet);
@@ -481,7 +484,10 @@ export function construirePoliceDuCiel(THREE, { donnees = null } = {}) {
   const racine = new THREE.Group();
   const p = (x, y, z) => new THREE.Vector3(x * K, y * K, z * K);
   const legendes = [];
-  const rafales = [0, 1].map(() => placer(THREE, 'rafale', K, { vol: enMission }));
+  const avion = donnees?.avion === 'mirage2000' ? 'mirage2000' : 'rafale';
+  const nom = avion === 'mirage2000' ? 'Mirage 2000-5' : 'Rafale';
+  const balte = /Lituanie|Estonie|Ämari|Baltique|Šiauliai/.test(donnees?.base ?? '');
+  const rafales = [0, 1].map(() => placer(THREE, avion, K, { vol: enMission }));
   for (const r of rafales) { r.conteneur.rotation.order = 'YXZ'; racine.add(r.conteneur); }
 
   if (!enMission) {
@@ -492,7 +498,7 @@ export function construirePoliceDuCiel(THREE, { donnees = null } = {}) {
     ligne.position.set(-26 * K, 0.006, 0);
     racine.add(sol, ligne, hangarettes(THREE, K, [11, -11]));
     rafales.forEach((r, i) => { r.objet.userData.basculer?.train(true); r.conteneur.position.set(-6 * K, 0, (i ? -11 : 11) * K); });
-    legendes.push({ texte: 'Permanence opérationnelle : deux Rafale armés, en alerte au sol (métropole)', point: p(-6, 9, 0) });
+    legendes.push({ texte: `Permanence opérationnelle : deux ${nom} armés, en alerte au sol (métropole)`, point: p(-6, 9, 0) });
     legendes.push({ texte: 'Hangarettes d\'alerte', point: p(8, 7, 11) });
     racine.userData.sol = true;
     racine.userData.brume = [BRUME, 42, 150];
@@ -522,13 +528,13 @@ export function construirePoliceDuCiel(THREE, { donnees = null } = {}) {
       intrus.groupe.rotation.order = 'YXZ';
       racine.add(intrus.groupe);
       legendes.push({ texte: `Police du ciel · ${lieu(donnees, '')}`, point: p(0, 16, 0) });
-      legendes.push({ texte: 'Aéronef non identifié : sans plan de vol, transpondeur coupé', point: p(0, 5, 0) });
-      legendes.push({ texte: 'Rafale leader : identification visuelle, à gauche de l\'appareil intercepté', point: p(-13, 6, 22) });
-      legendes.push({ texte: 'Rafale ailier : en couverture, en retrait', point: p(36, 12, -14) });
+      legendes.push({ texte: balte ? 'Aéronef non identifié (ici un avion de renseignement russe de type Il-20) : sans plan de vol, transpondeur coupé' : 'Aéronef non identifié : sans plan de vol, transpondeur coupé', point: p(0, 5, 0) });
+      legendes.push({ texte: `${nom} leader : identification visuelle, à gauche de l'appareil intercepté`, point: p(-13, 6, 22) });
+      legendes.push({ texte: `${nom} ailier : en couverture, en retrait`, point: p(36, 12, -14) });
     } else {
-      legendes.push({ texte: `Patrouille de deux Rafale · ${lieu(donnees, '')}`, point: p(0, 9, 0) });
-      legendes.push({ texte: 'Rafale leader', point: p(-2, 4, 6) });
-      legendes.push({ texte: 'Rafale ailier', point: p(14, 6, -10) });
+      legendes.push({ texte: `Patrouille de deux ${nom} · ${lieu(donnees, '')}`, point: p(0, 9, 0) });
+      legendes.push({ texte: `${nom} leader`, point: p(-2, 4, 6) });
+      legendes.push({ texte: `${nom} ailier`, point: p(14, 6, -10) });
     }
     racine.userData.ciel = true;
     racine.userData.brume = [0xbcd3ea, 40, 140];
@@ -560,6 +566,259 @@ export function construirePoliceDuCiel(THREE, { donnees = null } = {}) {
   racine.userData.legendes = legendes;
   racine.userData.taille = 16;
   return racine;
+}
+
+/** Forêt balte : pins sylvestres et bouleaux, en instances (une seule géométrie par pièce). [x, z, espèce (0 pin, 1 bouleau), hauteur] en mètres. */
+function foretBalte(THREE, K, arbres) {
+  const g = new THREE.Group();
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), e = new THREE.Vector3();
+  const instances = (geo, materiau, liste, placer) => {
+    if (!liste.length) return;
+    materiau.userData.sansDetails = true;
+    const im = new THREE.InstancedMesh(geo, materiau, liste.length);
+    liste.forEach((a, i) => { placer(a, v, e); im.setMatrixAt(i, m4.compose(v, q, e)); });
+    im.instanceMatrix.needsUpdate = true;
+    im.castShadow = true;
+    im.receiveShadow = true;
+    g.add(im);
+  };
+  const pins = arbres.filter((a) => a[2] === 0), bouleaux = arbres.filter((a) => a[2] === 1);
+  // Pin sylvestre : long fût roux, houppier sombre en haut
+  instances(new THREE.CylinderGeometry(0.16, 0.26, 1, 6), mat(THREE, 0x8a5a3a, 1), pins, ([x, z, , h], v, e) => { v.set(x * K, h * 0.36 * K, z * K); e.set(K, h * 0.72 * K, K); });
+  instances(new THREE.ConeGeometry(2.4, 1, 7), mat(THREE, 0x2f472b, 1, { flatShading: true }), pins, ([x, z, , h], v, e) => { v.set(x * K, h * 0.76 * K, z * K); e.set(K, h * 0.55 * K, K); });
+  // Bouleau : tronc blanc, houppier vert clair
+  instances(new THREE.CylinderGeometry(0.12, 0.18, 1, 6), mat(THREE, 0xe9e7e0, 0.85), bouleaux, ([x, z, , h], v, e) => { v.set(x * K, h * 0.42 * K, z * K); e.set(K, h * 0.84 * K, K); });
+  instances(new THREE.IcosahedronGeometry(1, 0), mat(THREE, 0x6e8f3c, 1, { flatShading: true }), bouleaux, ([x, z, , h], v, e) => { v.set(x * K, h * 0.76 * K, z * K); e.set(2.6 * K, h * 0.3 * K, 2.6 * K); });
+  return g;
+}
+
+/** Abri bétonné d'alerte (voûte surbaissée, ouverture vers −z), en mètres × K. */
+function abriBeton(THREE, K, { rayon = 12, longueur = 30, aplati = 0.78 } = {}) {
+  const g = new THREE.Group();
+  const beton = mat(THREE, 0x8f8c84, 0.95, { side: THREE.DoubleSide });
+  const voute = new THREE.CylinderGeometry(rayon * K, rayon * K, longueur * K, 32, 1, true, Math.PI / 2, Math.PI);
+  voute.rotateX(Math.PI / 2);
+  const coque = new THREE.Mesh(voute, beton);
+  coque.scale.y = aplati;
+  const fond = new THREE.Mesh(new THREE.CircleGeometry(rayon * K, 32, 0, Math.PI), beton);
+  fond.scale.y = aplati;
+  fond.position.z = (longueur / 2) * K;
+  const cadre = new THREE.Mesh(new THREE.TorusGeometry(rayon * K, 0.8 * K, 8, 32, Math.PI), beton);
+  cadre.scale.y = aplati;
+  cadre.position.z = -(longueur / 2) * K;
+  const dalle = new THREE.Mesh(new THREE.PlaneGeometry(2 * rayon * K, longueur * K), mat(THREE, 0x8c8b86, 0.95));
+  dalle.rotation.x = -Math.PI / 2;
+  dalle.position.y = 0.014;
+  for (const m of [coque, fond, cadre]) { m.castShadow = true; m.receiveShadow = true; }
+  dalle.receiveShadow = true;
+  g.add(coque, fond, cadre, dalle);
+  return g;
+}
+
+/** Drapeau à trois bandes (horizontales ou verticales) sur son mât, en mètres × K. */
+function drapeauTricolore(THREE, K, couleurs, { vertical = false, hauteur = 8 } = {}) {
+  const g = new THREE.Group();
+  const mat0 = mat(THREE, 0xd7d9db, 0.4, { metalness: 0.6 });
+  const mt = new THREE.Mesh(new THREE.CylinderGeometry(0.05 * K, 0.07 * K, hauteur * K, 8), mat0);
+  mt.position.y = (hauteur / 2) * K;
+  g.add(mt);
+  const L = 2.4, H = 1.5;
+  couleurs.forEach((c, i) => {
+    const bande = new THREE.Mesh(new THREE.PlaneGeometry((vertical ? L / 3 : L) * K, (vertical ? H : H / 3) * K), mat(THREE, c, 0.8, { side: THREE.DoubleSide }));
+    bande.material.userData.sansDetails = true;
+    bande.position.set((vertical ? L / 6 + (i * L) / 3 : L / 2) * K + 0.06 * K, (vertical ? hauteur - H / 2 : hauteur - H / 6 - (i * H) / 3) * K, 0);
+    g.add(bande);
+  });
+  return g;
+}
+
+/**
+ * Police du ciel en Estonie (d'après des photos du détachement d'Ämari) : quatre Mirage 2000-5F en
+ * configuration de police du ciel (trois bidons, quatre MICA). Deux sont en alerte QRA dans leurs abris
+ * bétonnés, deux roulent en file sur la voie de circulation (double ligne jaune, balises bleues). Forêt
+ * de pins et de bouleaux, drapeaux estonien et français. En métropole : la même alerte à Luxeuil.
+ * Commandes : décollage sur alerte (sortie des abris, virage sur la piste, décollage, train rentré) et
+ * roulage en file.
+ */
+export function construireAlerteMirage(THREE, { donnees = null } = {}) {
+  const K = 0.21;
+  const metropole = donnees?.deploye === false;
+  const racine = new THREE.Group();
+  const p = (x, y, z) => new THREE.Vector3(x * K, y * K, z * K);
+  const legendes = [];
+  const h = hasard(2022);
+  // Repère centré sur la voie de circulation (la caméra vise ce point) : abris au nord, piste au sud
+  const ABRIS = [-46, -14], Z_ABRI = 66, Z_VOIE = 0, Z_PISTE = -40;
+  // Herbe, forêt lointaine en couronne
+  const sol = decor(THREE, K, metropole ? 'garnison' : 'europe', { piste: false, libre: 175, lointain: 240 });
+  sol.traverse((o) => { if (o.material) o.material.userData.sansDetails = true; });
+  racine.add(sol);
+  // Piste, voie de circulation parallèle et bretelles des abris (béton : joints de dalles visibles)
+  const asphalte = mat(THREE, 0x5a5d60, 0.95), beton = mat(THREE, 0x75787a, 0.95);
+  const bande = (l, w, x, z, materiau, y = 0.01) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(l * K, w * K), materiau); m.rotation.x = -Math.PI / 2; m.position.set(x * K, y, z * K); m.receiveShadow = true; return m; };
+  racine.add(bande(520, 45, 0, Z_PISTE, asphalte), bande(420, 18, 0, Z_VOIE, beton, 0.012));
+  for (const x of ABRIS) {
+    const b = bande(14, 68.5, x, (Z_ABRI - 15 + Z_PISTE + 22.5) / 2, beton, 0.011);
+    racine.add(b);
+  }
+  // Marquages : double ligne jaune de la voie, axes jaunes des bretelles, axe et bords blancs de la piste
+  const jaune = mat(THREE, 0xe2b42b, 0.6), blanc = mat(THREE, 0xeeeeea, 0.6);
+  for (const m of [jaune, blanc]) m.userData.sansDetails = true;
+  racine.add(bande(420, 0.16, 0, Z_VOIE - 0.45, jaune, 0.018), bande(420, 0.16, 0, Z_VOIE + 0.45, jaune, 0.018));
+  for (const x of ABRIS) racine.add(bande(0.16, 68, x, (Z_ABRI - 15 + Z_PISTE + 22.5) / 2, jaune, 0.018));
+  for (let x = -250; x <= 250; x += 40) racine.add(bande(24, 0.9, x, Z_PISTE, blanc, 0.016));
+  racine.add(bande(520, 0.9, 0, Z_PISTE - 21.5, blanc, 0.016), bande(520, 0.9, 0, Z_PISTE + 21.5, blanc, 0.016));
+  // Balises bleues de bord de voie (photo) : poteau blanc, tête bleue lumineuse
+  const balises = [];
+  for (let x = -200; x <= 200; x += 24) for (const dz of [-9.6, 9.6]) if (!ABRIS.some((a) => Math.abs(a - x) < 9) || dz < 0) balises.push([x, Z_VOIE + dz]);
+  const poteaux = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.05 * K, 0.07 * K, 0.5 * K, 6), mat(THREE, 0xf2f2ee, 0.6), balises.length);
+  const feux = new THREE.InstancedMesh(new THREE.SphereGeometry(0.11 * K, 8, 6), new THREE.MeshStandardMaterial({ color: 0x2f62ff, emissive: 0x2f62ff, emissiveIntensity: 1.2, roughness: 0.3 }), balises.length);
+  const m4 = new THREE.Matrix4();
+  balises.forEach(([x, z], i) => {
+    poteaux.setMatrixAt(i, m4.makeTranslation(x * K, 0.25 * K, z * K));
+    feux.setMatrixAt(i, m4.makeTranslation(x * K, 0.56 * K, z * K));
+  });
+  racine.add(poteaux, feux);
+  // Pissenlits dans l'herbe, au bord de la voie (photo)
+  const fleurs = [];
+  for (let k = 0; k < 420; k++) {
+    const x = -200 + h() * 400, z = h() < 0.5 ? Z_VOIE + 10.5 + h() * 14 : Z_VOIE - 10.5 - h() * 6;
+    if (ABRIS.some((a) => Math.abs(a - x) < 8)) continue;
+    fleurs.push([x, z]);
+  }
+  const pissenlits = new THREE.InstancedMesh(new THREE.CircleGeometry(0.14 * K, 7), new THREE.MeshStandardMaterial({ color: 0xf2c51c, roughness: 0.7, emissive: 0x3a2c00 }), fleurs.length);
+  const tourne = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
+  fleurs.forEach(([x, z], i) => pissenlits.setMatrixAt(i, new THREE.Matrix4().makeTranslation(x * K, 0.03 * K, z * K).multiply(tourne)));
+  pissenlits.material.userData.sansDetails = true;
+  racine.add(pissenlits);
+  // Abris bétonnés d'alerte, ouverts vers la piste
+  for (const x of ABRIS) {
+    const a = abriBeton(THREE, K);
+    a.position.set(x * K, 0, Z_ABRI * K);
+    racine.add(a);
+  }
+  // Forêt dense de pins et de bouleaux autour de la base (photos), en laissant libres piste et abris
+  const arbres = [];
+  for (let k = 0; k < 900; k++) {
+    const x = -300 + h() * 600, z = -210 + h() * 440;
+    if (z > Z_PISTE - 34 && z < Z_ABRI + 30 && Math.abs(x) < 215) continue; // aire de la base
+    if (z > Z_PISTE - 30 && z < Z_PISTE + 28) continue; // dégagement de la piste, sur toute sa longueur
+    if (z <= Z_PISTE - 30 && z > -150) continue; // prairie au sud de la piste (la lisière reste au loin)
+    arbres.push([x, z, metropole ? (h() < 0.2 ? 1 : 0) : (h() < 0.4 ? 1 : 0), 16 + h() * 12]);
+  }
+  racine.add(foretBalte(THREE, K, arbres));
+  // Drapeaux devant les abris
+  if (!metropole) {
+    const est = drapeauTricolore(THREE, K, [0x0072ce, 0x111111, 0xffffff]);
+    est.position.set(-72 * K, 0, (Z_ABRI - 22) * K);
+    racine.add(est);
+  }
+  const fr = drapeauTricolore(THREE, K, [0x002395, 0xffffff, 0xed2939], { vertical: true });
+  fr.position.set(-67 * K, 0, (Z_ABRI - 22) * K);
+  racine.add(fr);
+  // Mécaniciens près des avions d'alerte
+  const combinaison = mat(THREE, 0x5d6772, 0.9), casquette = mat(THREE, 0x22262b, 0.8);
+  for (const [x, z, cap] of [[-38, Z_ABRI - 19, 0.4], [-21, Z_ABRI - 18, -0.5], [-49, Z_ABRI - 17, 1.2]]) {
+    const m = soldat(THREE, combinaison, casquette);
+    m.scale.setScalar(K);
+    m.position.set(x * K, 0, z * K);
+    m.rotation.y = cap;
+    racine.add(m);
+  }
+
+  // Les quatre Mirage 2000-5F : deux en alerte dans les abris (nez vers la sortie), deux sur la voie
+  const mirages = [0, 1, 2, 3].map(() => placer(THREE, 'mirage2000', K));
+  for (const m of mirages) { m.conteneur.rotation.order = 'YXZ'; racine.add(m.conteneur); m.objet.userData.basculer?.train(true); }
+  const [chef, equipier, file1, file2] = mirages;
+  const auRepos = () => {
+    chef.conteneur.position.set(ABRIS[0] * K, 0, Z_ABRI * K); chef.conteneur.rotation.set(0, -Math.PI / 2, 0);
+    equipier.conteneur.position.set(ABRIS[1] * K, 0, Z_ABRI * K); equipier.conteneur.rotation.set(0, -Math.PI / 2, 0);
+    chef.objet.userData.basculer?.train(true); equipier.objet.userData.basculer?.train(true);
+  };
+  auRepos();
+  let xFile = 10; // la paire qui roule passe devant la caméra « Roulage (photo) »
+  const placerFile = () => {
+    file1.conteneur.position.set(xFile * K, 0, Z_VOIE * K);
+    file2.conteneur.position.set((xFile + 34) * K, 0, Z_VOIE * K);
+  };
+  placerFile();
+
+  const ici = metropole ? 'Base aérienne 116 de Luxeuil-Saint-Sauveur' : 'Base aérienne d\'Ämari (Estonie)';
+  legendes.push({ texte: `${ici} : ${metropole ? 'permanence opérationnelle de défense aérienne' : 'police du ciel balte de l\'OTAN'}`, point: p(0, 34, 0) });
+  legendes.push({ texte: 'Alerte QRA : deux Mirage 2000-5F armés dans leurs abris, prêts à décoller en quelques minutes', point: p(-30, 15, Z_ABRI) });
+  legendes.push({ texte: 'Abri bétonné d\'alerte', point: p(ABRIS[1], 11, Z_ABRI + 8) });
+  legendes.push({ texte: 'Mirage 2000-5F en configuration police du ciel : trois bidons, quatre missiles MICA', point: p(xFile, 6, Z_VOIE) });
+  legendes.push({ texte: 'Voie de circulation : double ligne jaune, balises bleues', point: p(130, 2, Z_VOIE + 10) });
+  legendes.push({ texte: 'Piste', point: p(-150, 2, Z_PISTE) });
+  legendes.push({ texte: metropole ? 'Forêt des Vosges saônoises' : 'Forêt de pins et de bouleaux', point: p(90, 16, 110) });
+  if (!metropole) legendes.push({ texte: 'Drapeaux estonien et français', point: p(-70, 10, Z_ABRI - 22) });
+
+  racine.userData.sol = true;
+  racine.userData.brume = [BRUME, 60, 190];
+  racine.userData.commandes = [
+    { id: 'alerte', type: 'action', libelle: '🚨 Alerte QRA : décollage' },
+    { id: 'roulage', libelle: 'Roulage en file', actif: 'Arrêter le roulage' },
+  ];
+  // Trajet d'alerte : sortie de l'abri tout droit, virage à gauche sur la piste, roulage de décollage, montée
+  const R = 16, zVirage = Z_PISTE + R;
+  const trajet = (xs, d, m) => {
+    const dA = Z_ABRI - zVirage, dB = (Math.PI * R) / 2;
+    const t1 = 3, a1 = 6, v = 18, dAcc = 0.5 * a1 * t1 * t1;
+    const tA = t1 + (dA - dAcc) / v, tB = dB / v;
+    let x, z, y = 0, cap, tangage = 0, train = true;
+    if (d < tA) {
+      const s = d < t1 ? 0.5 * a1 * d * d : dAcc + v * (d - t1);
+      x = xs; z = Z_ABRI - s; cap = -Math.PI / 2;
+    } else if (d < tA + tB) {
+      const phi = -((d - tA) / tB) * (Math.PI / 2);
+      x = xs - R + R * Math.cos(phi); z = zVirage + R * Math.sin(phi); cap = -phi - Math.PI / 2;
+    } else {
+      const u = d - tA - tB, a = 12, decolle = 4.3;
+      const roule = Math.min(u, decolle);
+      x = xs - R - (v * roule + 0.5 * a * roule * roule);
+      z = Z_PISTE; cap = 0;
+      if (u > decolle) {
+        const w = u - decolle, vd = v + a * decolle;
+        x -= vd * w + 0.5 * 8 * w * w;
+        y = 9 * w * w + 6 * w;
+        tangage = Math.min(0.28, w * 0.22);
+        train = w < 1.1;
+      }
+    }
+    m.conteneur.position.set(x * K, y * K, z * K);
+    m.conteneur.rotation.set(0, cap, -tangage);
+    m.objet.userData.basculer?.train(train);
+  };
+  let depart = null;
+  racine.userData.animer = (t, api = {}) => {
+    if (api.alerte && depart === null) { depart = t; api.alerte = false; }
+    if (depart !== null) {
+      const d = (t - depart) / 1000;
+      trajet(ABRIS[0], d, chef);
+      if (d > 2.5) trajet(ABRIS[1], d - 2.5, equipier);
+      if (d > 24) { depart = null; auRepos(); }
+    }
+    if (api.roulage) {
+      xFile -= 0.12;
+      if (xFile < -190) xFile = 160;
+      placerFile();
+    }
+  };
+  racine.userData.animer(0, {});
+  racine.userData.legendes = legendes;
+  racine.userData.taille = 16;
+  return racine;
+}
+
+/** Unité Mirage 2000-5 : à Ämari (ou en métropole), l'alerte au sol ; ailleurs, l'interception en vol. */
+export function construirePoliceDuCielMirage(THREE, { donnees = null } = {}) {
+  if (!donnees || donnees.deploye === false || /Ämari|Estonie/.test(donnees.base ?? '')) return construireAlerteMirage(THREE, { donnees });
+  return construirePoliceDuCiel(THREE, { donnees: { ...donnees, avion: 'mirage2000' } });
+}
+
+/** Interception au-dessus de la Baltique par deux Mirage 2000-5 (Hangar). */
+export function construireInterceptionMirage(THREE, { donnees = null } = {}) {
+  return construirePoliceDuCiel(THREE, { donnees: { deploye: true, base: 'au large de l\'Estonie', terrain: 'europe', interception: true, ...donnees, avion: 'mirage2000' } });
 }
 
 /**
