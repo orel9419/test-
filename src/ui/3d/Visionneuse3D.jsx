@@ -117,15 +117,15 @@ const FICHES = {
   },
   pha: {
     titre: 'Porte-hélicoptères amphibie (classe Mistral)',
-    lignes: ['199 m · 32 m de large · environ 21 000 t · Mistral (L9013), Tonnerre (L9014), Dixmude (L9015)', 'Pont d\'envol à six spots, hangar pour 16 hélicoptères lourds, radier pour les engins de débarquement, 450 soldats (900 sur une courte durée)', 'Hôpital embarqué de 69 lits, poste de commandement d\'état-major : opérations amphibies, évacuations, aide humanitaire', 'Construits à Saint-Nazaire (Chantiers de l\'Atlantique) avec Naval Group · d\'après des photos'],
+    lignes: ['199 m · 32 m de large · environ 21 000 t · Mistral (L9013), Tonnerre (L9014), Dixmude (L9015)', 'Pont d\'envol à six spots, hangar pour 16 hélicoptères lourds, radier pour les engins de débarquement, 450 soldats (900 sur une courte durée)', 'Hôpital embarqué de 69 lits, poste de commandement d\'état-major : opérations amphibies, évacuations, aide humanitaire', 'Sur le pont : Caïman Marine (pales repliées automatiquement pour le hangar, dépliées au décollage) et Tigre de l\'ALAT, comme en Libye en 2011, où les Tigre et les Gazelle ont mené leurs raids depuis le Tonnerre puis le Mistral', 'Mode amphibie : le navire ballaste pour noyer son radier (57,5 × 15,4 × 8,2 m), abaisse sa porte ; deux engins de débarquement rapides EDA-R (catamarans de 30 m, plateforme de 80 t relevée en transit, abaissée pour s\'échouer) en sortent, l\'un avec un char Leclerc, l\'autre avec deux Griffon. Le radier peut aussi recevoir quatre EDA-S', 'Construits à Saint-Nazaire (Chantiers de l\'Atlantique) avec Naval Group · d\'après des photos · distances resserrées : un débarquement commence bien plus au large · sources : Marine nationale, CNIM, Naval News'],
   },
   fda: {
     titre: 'Frégate de défense aérienne Chevalier Paul (classe Horizon)',
-    lignes: ['153 m · 20 m de large · environ 7 000 t · programme franco-italien · Forbin (D620) et Chevalier Paul (D621)', 'Système PAAMS : radar multifonction sous le grand radôme et 48 missiles Aster 15 et Aster 30 pour protéger le porte-avions', 'Deux canons de 76 mm, huit Exocet MM40, torpilles MU90, un hélicoptère Caïman Marine', 'D\'après des photos · disposition simplifiée des superstructures'],
+    lignes: ['153 m · 20 m de large · environ 7 000 t · programme franco-italien · Forbin (D620) et Chevalier Paul (D621)', 'Système PAAMS : radar multifonction sous le grand radôme et 48 missiles Aster 15 et Aster 30 pour protéger le porte-avions', 'Deux canons de 76 mm, huit Exocet MM40, torpilles MU90, un hélicoptère Caïman Marine', 'Tir d\'Aster 30 : l\'accélérateur l\'éjecte de sa cellule Sylver, le propulse à plusieurs fois la vitesse du son puis se détache ; la flèche vire vers la menace. Pas de missile de croisière à bord : seules les FREMM anti-sous-marines en emportent', 'Caïman Marine : pales repliées automatiquement, dépliées avant le décollage ; à l\'appontage, son harpon s\'accroche à la grille de la plateforme · d\'après des photos · disposition simplifiée des superstructures'],
   },
   fremm: {
     titre: 'Frégate multi-missions (FREMM)',
-    lignes: ['142 m · 20 m de large · environ 6 000 t · huit en service, de l\'Aquitaine (2012) à la Lorraine (2022) · construites à Lorient par Naval Group', 'Mât intégré et radar Herakles (Thales) · Sylver : Aster et missile de croisière naval · Exocet MM40 · canon de 76 mm', 'Six anti-sous-marines (sonar remorqué, Caïman Marine) et deux à défense aérienne renforcée (Alsace, Lorraine)', 'D\'après un plan trois vues (profil, dessus, face) · numéro de coque de l\'Aquitaine (D650)'],
+    lignes: ['142 m · 20 m de large · environ 6 000 t · huit en service, de l\'Aquitaine (2012) à la Lorraine (2022) · construites à Lorient par Naval Group', 'Mât intégré et radar Herakles (Thales) · 32 cellules Sylver : 16 A70 pour le missile de croisière naval, 16 A43 pour l\'Aster 15 · Exocet MM40 · canon de 76 mm', 'Missile de croisière naval (MBDA) : environ 6,3 m et 1,4 t, portée d\'environ 1 000 km ; un accélérateur le sort de sa cellule et le bascule à l\'horizontale, puis il se détache ; ailes et entrée d\'air se déploient, un turboréacteur prend le relais pour un vol à très basse altitude', 'Premier tir au combat le 14 avril 2018 (opération Hamilton, Syrie) : la Languedoc en tire trois ; l\'Aquitaine et l\'Auvergne n\'ont pas pu tirer les leurs', 'Six anti-sous-marines (sonar remorqué, Caïman Marine) et deux à défense aérienne renforcée (Alsace, Lorraine), sans missile de croisière', 'Caïman Marine : pales repliées automatiquement, dépliées avant le décollage ; harpon accroché à la grille de la plateforme · d\'après un plan trois vues · numéro de coque de l\'Aquitaine (D650) · sources : ministère des Armées, Naval Technology, Seaforces'],
   },
   brf: {
     titre: 'Ravitailleur de forces (BRF, classe Jacques Chevallier)',
@@ -195,9 +195,9 @@ const VUES = {
   policeDuCielMirage: { '3/4': [-14, 9, -22], 'Roulage (photo)': [-7.5, 1.0, -1.6], 'Abris d\'alerte': [-4, 4.5, -7], Dessus: [0, 44, 0.01], 'Bout de piste': [-40, 3, -8.4] },
   ravitaillement: { '3/4': [-12, 5, 16], 'Au contact': [12, 1.5, 12], Dessus: [0, 25, 0.01], 'Dessous': [-6, -6, 14], Arrière: [18, 4, 0.01] },
   sna: { '3/4': [-11, 6.5, -13], Profil: [0, 1.2, 18], Dessus: [0, 20, 0.01], Face: [-18, 1.6, 0.01], Arrière: [11, 5.5, 13] },
-  pha: { '3/4': [-10, 6.5, 12], 'Côté île': [0, 2.3, -19], Profil: [0, 2.3, 19], Dessus: [0, 21, 0.01], Face: [-18, 3.5, 0.01] },
-  fda: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12] },
-  fremm: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12] },
+  pha: { '3/4': [-10, 6.5, 12], 'Côté île': [0, 2.3, -19], Profil: [0, 2.3, 19], Dessus: [0, 21, 0.01], Face: [-18, 3.5, 0.01], 'Radier (arrière)': [11.6, 1.3, 3.8, 6.2, 0.5, 0], 'Assaut amphibie': [-2, 8, 17, 16, 0, -1] },
+  fda: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12], 'Plateforme (Caïman)': [10, 3.6, 7], 'Tir de missile': [-11, 4, 11, -4, 3.4, 0] },
+  fremm: { '3/4': [-10, 5.5, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 5.5, 12], 'Plateforme (Caïman)': [10, 3.4, 7], 'Tir de missile': [-10, 4, 11, -3, 3.4, 0] },
   brf: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, 12] },
   monge: { '3/4': [-10, 6, 12], Profil: [0, 2, 19], Dessus: [0, 21, 0.01], Face: [-18, 3, 0.01], Arrière: [11, 6, -12] },
   leclerc: { '3/4': [-11, 5.5, 13], Profil: [0, 1, 18], Dessus: [0, 21, 0.01], Face: [-18, 1.5, 0.01] },
@@ -393,11 +393,15 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       controles.autoRotateSpeed = 0.9;
       if (navire || terrain || solPropre) controles.maxPolarAngle = Math.PI / 2 - 0.06; // ne pas passer sous la mer ni sous le sol
       if (terrain || solPropre) controles.maxDistance = 45;
-      controles.target.set(0, sous ? 0.3 : solPropre ? 1.2 : 0.2, 0);
+      const hauteurCible = sous ? 0.3 : solPropre ? 1.2 : 0.2;
+      controles.target.set(0, hauteurCible, 0);
+      // Une vue est [x, y, z] (caméra, visant le centre du modèle) ou [x, y, z, cx, cy, cz] (caméra et
+      // point visé) ; sur un écran étroit, la caméra recule depuis le point visé
       const placer = (nom) => {
         const k = recul(camera.aspect);
-        const [x, y, z] = VUES[modele][nom];
-        camera.position.set(x * k, y * k, z * k);
+        const [x, y, z, cx = 0, cy = hauteurCible, cz = 0] = VUES[modele][nom];
+        controles.target.set(cx, cy, cz);
+        camera.position.set(cx + (x - cx) * k, cy + (y - cy) * k, cz + (z - cz) * k);
         controles.update();
       };
       // Chaîne de rendu réaliste (occlusion ambiante), créée à la demande

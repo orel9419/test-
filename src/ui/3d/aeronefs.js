@@ -141,23 +141,65 @@ function rotor(THREE, { rayon, pales, corde = 0.55, mat, matMoyeu, epaisseur = 0
   const g = new THREE.Group();
   const m = new THREE.Mesh(new THREE.CylinderGeometry(moyeu * 0.8, moyeu, moyeu * 0.9, 16), matMoyeu);
   g.add(m);
+  // Chaque pale est montée sur une charnière au bord du moyeu (repliage des pales des hélicoptères embarqués)
+  const charnieres = [];
   for (let i = 0; i < pales; i++) {
     const bras = new THREE.Group();
     bras.rotation.y = (i * TOUR) / pales;
+    const charniere = new THREE.Group();
+    charniere.position.x = moyeu;
     const p = new THREE.Mesh(new THREE.BoxGeometry(rayon - moyeu, epaisseur, corde), mat);
-    p.position.x = moyeu + (rayon - moyeu) / 2;
+    p.position.x = (rayon - moyeu) / 2;
     p.rotation.x = 0.08;
     const bout = new THREE.Mesh(new THREE.BoxGeometry(longueurBout, epaisseur * 1.05, corde * 1.02), new THREE.MeshStandardMaterial({ color: couleurBout, roughness: 0.6 }));
-    bout.position.x = rayon - longueurBout / 2;
-    bras.add(p, bout);
+    bout.position.x = rayon - moyeu - longueurBout / 2;
+    charniere.add(p, bout);
+    bras.add(charniere);
     g.add(bras);
+    charnieres.push({ charniere, angle: (i * TOUR) / pales });
   }
+  g.userData.charnieres = charnieres;
   if (flou) {
     const disque = new THREE.Mesh(new THREE.CircleGeometry(rayon, 48), new THREE.MeshBasicMaterial({ color: 0x2a2c2e, transparent: true, opacity: flou, side: THREE.DoubleSide, depthWrite: false }));
     disque.rotation.x = -Math.PI / 2;
     g.add(disque);
+    g.userData.flou = disque;
   }
   return g;
+}
+
+/** Ramène un angle dans ]−π, π]. */
+const angleNormal = (a) => a - TOUR * Math.round(a / TOUR);
+
+/**
+ * Pilotage d'un hélicoptère embarqué : régime du rotor (0 : arrêté, 1 : en vol) et repliage des pales
+ * (0 : dépliées, 1 : repliées vers l'arrière, le long de la poutre de queue). Avant de replier, le rotor
+ * arrêté est calé, une pale dans l'axe de la poutre. cibles : direction finale de chaque pale repliée.
+ */
+function pilotageRotor(rp, rq, { tours = 70, toursQueue = 22, pales = 4, cibles = null } = {}) {
+  const ctrl = { regime: 1, repli: 0 };
+  const flou = rp.userData.flou, flouQ = rq?.userData.flou;
+  const opacite = flou?.material.opacity ?? 0, opaciteQ = flouQ?.material.opacity ?? 0;
+  let phase = 0, phaseQ = 0, avant = null;
+  const tourner = (t) => {
+    const dt = avant === null ? 16 : Math.min(100, Math.max(0, t - avant));
+    avant = t;
+    phase += (dt / tours) * ctrl.regime;
+    phaseQ += (dt / toursQueue) * ctrl.regime;
+    if (ctrl.regime < 0.02 && ctrl.repli > 0.001) {
+      const pas = TOUR / pales;
+      phase += (Math.round(phase / pas) * pas - phase) * 0.15;
+    }
+    rp.rotation.y = phase;
+    if (rq) rq.rotation.y = phaseQ;
+    if (cibles) rp.userData.charnieres.forEach(({ charniere, angle }, i) => {
+      charniere.rotation.y = ctrl.repli * angleNormal(cibles[i % cibles.length] - (phase + angle));
+      charniere.position.y = -ctrl.repli * 0.06 * i; // pales repliées étagées
+    });
+    if (flou) { flou.material.opacity = opacite * ctrl.regime; flou.visible = ctrl.regime > 0.05; }
+    if (flouQ) { flouQ.material.opacity = opaciteQ * ctrl.regime; flouQ.visible = ctrl.regime > 0.05; }
+  };
+  return { ctrl, tourner };
 }
 
 /** Roue simple (axe z). */
@@ -1116,9 +1158,11 @@ export function construireCaiman(THREE, { modele = 'caiman' } = {}) {
   ];
   let fSonar = 0, fTreuil = 0;
   let livreeFS = fs;
+  // Régime du rotor et repliage automatique des pales (Caïman Marine), pilotés par les scènes embarquées
+  const pilote = pilotageRotor(rp, rq.r, { cibles: [0, 0.1, -0.16, -0.08] });
+  groupe.userData.helico = pilote.ctrl;
   groupe.userData.animer = (t, api) => {
-    rp.rotation.y = t / 70;
-    rq.r.rotation.y = t / 22;
+    pilote.tourner(t);
     cordes.visible = !!api.corde;
     if (api.corde) for (const { homme, decalage } of descente) {
       const u = ((t / 3200) + decalage) % 1;

@@ -40,8 +40,9 @@ Légende : ✅ conforme (écart ≤ 2 %) · 🟡 écart connu, sans effet visibl
 | SNLE Le Triomphant | 138 m × 12,5 m | 138,9 × 12,6 m | ✅ |
 | SNLE 3G | environ 150 m (annoncé) | 153 m | 🟡 +2 %. |
 | SNA Suffren | 99,5 m × 8,8 m | 99 m | ✅ |
-| PHA Mistral | 199 m × 32 m | 199,2 × 34 m | 🟡 Largeur +6 % (coursives). |
-| FDA, FREMM, BRF, Monge | 152,87 · 142,2 · 194 · 225 m | 153 · 142 · 194 · 226 m | ✅ |
+| PHA Mistral | 199 m × 32 m ; radier de 57,5 × 15,4 × 8,2 m | 199,2 × 34 m ; radier de 57,5 × 15,4 × 8,2 m (caisson prolongé de 3 m vers l'avant : rampe du garage) | 🟡 Largeur +6 % (coursives). 🔧 Radier ouvrable, porte, ballastage ; Caïman Marine et Tigre détaillés à l'échelle 1 (au lieu d'hélicoptères sommaires). |
+| EDA-R | environ 30 m, plateforme de 126 m² (80 t) | 29,4 m, plateforme de 20 × 6,4 m | 🟡 Largeur et timonerie d'après des photos, sans plan publié. Deux EDA-R tiennent dans le radier avec 0,8 m d'écart. |
+| FDA, FREMM, BRF, Monge | 152,87 · 142,2 · 194 · 225 m | 153 · 142 · 194 · 226 m | ✅ 🔧 FREMM : 32 cellules Sylver (16 A70, 16 A43) au lieu de 64. Plateformes : la peinture épouse le bombé du pont (elle s'y enfonçait au centre), grille du harpon. |
 
 ## Dissuasion
 

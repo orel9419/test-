@@ -356,9 +356,20 @@ export function construireTigre(THREE) {
   ];
   groupe.userData.dimensions = { longueur: L, rotor: 13, hauteur: 3.83 };
   let angle = 0, olive = false;
+  // Régime du rotor (0 : arrêté sur le pont, 1 : en vol), piloté par les scènes embarquées
+  const helico = { regime: 1 };
+  groupe.userData.helico = helico;
+  let phase = 0, phaseQ = 0, avant = null;
   groupe.userData.animer = (t, api = {}) => {
-    rotor.rotation.y = t / 60;
-    rotorQueue.rotation.y = t / 18;
+    const dt = avant === null ? 16 : Math.min(100, Math.max(0, t - avant));
+    avant = t;
+    phase += (dt / 60) * helico.regime;
+    phaseQ += (dt / 18) * helico.regime;
+    rotor.rotation.y = phase;
+    rotorQueue.rotation.y = phaseQ;
+    flou.material.opacity = 0.05 * helico.regime;
+    flouQueue.material.opacity = 0.08 * helico.regime;
+    flou.visible = flouQueue.visible = helico.regime > 0.05;
     angle += ((api.tourelle ? 0.7 * Math.sin(t / 1100) : 0) - angle) * 0.06;
     tourelle.rotation.y = angle;
     tourelle.rotation.z = api.tourelle ? 0.12 + 0.08 * Math.sin(t / 900) : 0;
