@@ -43,7 +43,7 @@ export const ENTENTE_PROFIL = { camp: 70, droite: 55, gauche: 50, technocrate: 6
 /** Familles d'électeurs dont chaque groupe du Sénat suit l'implantation locale. */
 const FAMILLE_SENAT = { CRCE: 'gauche', GEST: 'ecolos', SER: 'gauche', RDSE: 'autres', RDPI: 'centre', UC: 'centre', LIRT: 'centre', LR: 'LR', UNT: 'RN' };
 /** Décisions qui appartiennent au Gouvernement : ignorées pour un président de cohabitation. */
-export const DECISIONS_GOUVERNEMENT = ['budget', 'impots', 'reformes', 'referendum', 'nominationPM', 'entreprises', 'programmes', 'relocalisations', 'chantiers', 'trajectoire', 'partCourtTerme', 'allocationCapitalisation', 'questionConfiance'];
+export const DECISIONS_GOUVERNEMENT = ['budget', 'impots', 'reformes', 'referendum', 'nominationPM', 'entreprises', 'programmes', 'relocalisations', 'chantiers', 'trajectoire', 'partCourtTerme', 'allocationCapitalisation', 'questionConfiance', 'securite', 'guerreEconomique'];
 
 export function initialiserInstitutions(e) {
   if (e.pays !== 'france') { e.institutions = null; return; }

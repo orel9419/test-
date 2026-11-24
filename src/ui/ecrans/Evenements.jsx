@@ -31,9 +31,12 @@ export default function Evenements({ partie, decisions, majDecisions }) {
       {ev.map((e) => {
         const choix = decisions.evenements[e.id] ?? e.choix[0].id;
         return (
-          <div key={e.id} className="carte pile">
-            <h3>{e.opex ? '🎖️ ' : ''}{e.titre}</h3>
+          <div key={e.id} className={`carte pile ${e.menace || e.guerreEconomique ? `evenement-flash ${e.id === 'attentat' ? 'grave' : ''}` : ''}`}>
+            {(e.menace || e.guerreEconomique) && <span className="bandeau-flash">{e.id === 'attentat' ? '🔴 FLASH INFO · Attentat' : e.menace ? '🟠 FLASH INFO · Sécurité intérieure' : '🟠 FLASH INFO · Guerre commerciale'}</span>}
+            <h3>{e.opex ? '🎖️ ' : e.menace ? '🚨 ' : e.guerreEconomique ? '💶 ' : ''}{e.titre}</h3>
             <p>{e.description}</p>
+            {e.menace && <p className="tres-petit muet" style={{ margin: 0 }}>Sécurité intérieure : niveau de menace, Vigipirate et Sentinelle dans l'onglet Sécurité ; frapper une filière à l'étranger lance une opération antiterroriste (forces projetables, chances et coûts dans l'onglet Géopolitique). Probabilités et effets : hypothèses de jeu.</p>}
+            {e.guerreEconomique && <p className="tres-petit muet" style={{ margin: 0 }}>Guerre économique : la politique commerciale relève de l'Union européenne ; une riposte demande l'accord des partenaires. Suivi des mesures et des représailles dans l'onglet Géopolitique. Effets : hypothèses de jeu.</p>}
             {e.opex && <p className="tres-petit muet" style={{ margin: 0 }}>Opération extérieure : décision du président, chef des armées. Les forces engagées partent pour plusieurs trimestres, coûtent et s'usent ; l'issue (succès ou échec) est connue à la fin. Chances, coûts et effets : hypothèses de jeu.</p>}
             <div role="radiogroup" aria-label={e.titre}>
               {e.choix.map((c) => (

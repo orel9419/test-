@@ -133,7 +133,7 @@ const FICHES = {
   },
   groupeAeronaval: {
     titre: 'Groupe aéronaval',
-    lignes: ['Un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères), escorté d\'une frégate de défense aérienne, de frégates anti-sous-marines, d\'un sous-marin nucléaire d\'attaque et d\'un ravitailleur', 'Le président de la République, chef des armées, décide de son déploiement ; il peut tenir un théâtre pendant quatre à cinq mois', 'Composition tirée de votre partie : porte-avions en service et bâtiments d\'escorte disponibles · avec deux porte-avions, deux groupes', 'Un A321 MPA, futur avion de patrouille maritime de la Marine, surveille les abords du groupe en orbite large (sous-marins, navires suspects)', 'Tous les navires à la même échelle ; distances resserrées (en réalité plusieurs kilomètres entre les bâtiments) et avions agrandis pour rester visibles'],
+    lignes: ['Un porte-avions et son groupe aérien (Rafale Marine, avions de guet, hélicoptères), escorté d\'une frégate de défense aérienne, de frégates anti-sous-marines, d\'un sous-marin nucléaire d\'attaque et d\'un ravitailleur', 'Le président de la République, chef des armées, décide de son déploiement ; il peut tenir un théâtre pendant quatre à cinq mois', 'Composition tirée de votre partie : porte-avions en service et bâtiments d\'escorte disponibles · avec deux porte-avions, deux groupes', 'Un A321 MPA, futur avion de patrouille maritime de la Marine, surveille les abords du groupe en orbite large (sous-marins, navires suspects)', 'Défense aérienne : en cas de raid (bouton « Raid aérien ennemi »), la frégate de défense aérienne tire ses Aster 30 et un Rafale de la patrouille un Meteor ; un missile peut manquer sa cible et appeler un second tir. Vue « Combat aérien » pour suivre l\'interception', 'Frappe dans la profondeur : les FREMM tirent leurs missiles de croisière naval (environ 1 000 km) ; le porte-hélicoptères fait décoller Tigre et Caïman Marine et met à l\'eau ses engins de débarquement', 'Tous les navires à la même échelle ; distances resserrées (en réalité plusieurs kilomètres entre les bâtiments), avions, missiles et fumées agrandis pour rester visibles ; chasseurs adverses génériques, scénario de jeu'],
   },
   gtia: {
     titre: 'Groupement tactique interarmes (GTIA)',
@@ -187,7 +187,7 @@ const VUES = {
   snle3g: { '3/4': [-12, 8, -14], Profil: [0, 1.5, 20], Dessus: [0, 22, 0.01], Face: [-19, 2, 0.01], Arrière: [12, 6.5, 14] },
   porteAvions: { '3/4': [-11, 7.5, -13], Profil: [0, 2.5, -21], Dessus: [0, 24, -0.01], Face: [-20, 4, -0.01] },
   charlesDeGaulle: { '3/4': [-10, 7, -12], Profil: [0, 2.3, -19], Dessus: [0, 21, -0.01], Face: [-18, 3.5, -0.01] },
-  groupeAeronaval: { '3/4': [-12, 8, 13], Dessus: [0, 24, 0.01], Profil: [0, 2.5, 21], 'Côté tribord': [0, 2.5, -21], Face: [-21, 3.5, 0.01] },
+  groupeAeronaval: { '3/4': [-12, 8, 13], Dessus: [0, 24, 0.01], Profil: [0, 2.5, 21], 'Côté tribord': [0, 2.5, -21], Face: [-21, 3.5, 0.01], 'Combat aérien': [-3, 4.5, 8, -13, 3.2, -13] },
   gtia: { '3/4': [-14, 7, 15], 'De l\'avant': [-22, 4, 4], Dessus: [0, 26, 0.01], Profil: [0, 3, 22], Arrière: [16, 6, -13] },
   forcesSpeciales: { '3/4': [-12, 8, 15], 'Toit': [-7, 5, 8], Dessus: [0, 25, 0.01], 'Côté Caracal': [15, 4, 15], Profil: [0, 3, 22] },
   policeDuCiel: { '3/4': [-12, 5, 15], 'Leader': [-9, 2.5, 13], Dessus: [0, 24, 0.01], 'Sous l\'appareil': [-8, -5, 12], Arrière: [15, 5, 10] },
@@ -283,6 +283,7 @@ const ecrireQualite = (realiste) => { try { localStorage.setItem('rendu3d', real
 export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnees = null }) {
   const conteneur = useRef(null);
   const legendesRef = useRef(null);
+  const hudRef = useRef(null); // messages de la scène (affichage tête haute)
   const api = useRef({});
   const [etat, setEtat] = useState('chargement'); // 'chargement' | 'pret' | 'indisponible'
   const [noms, setNoms] = useState([]);
@@ -394,6 +395,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       if (navire || terrain || solPropre) controles.maxPolarAngle = Math.PI / 2 - 0.06; // ne pas passer sous la mer ni sous le sol
       if (terrain || solPropre) controles.maxDistance = 45;
       const hauteurCible = sous ? 0.3 : solPropre ? 1.2 : 0.2;
+      const mouvementReduit = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
       controles.target.set(0, hauteurCible, 0);
       // Une vue est [x, y, z] (caméra, visant le centre du modèle) ou [x, y, z, cx, cy, cz] (caméra et
       // point visé) ; sur un écran étroit, la caméra recule depuis le point visé
@@ -471,6 +473,15 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
         objet.userData.animer?.(t, api.current);
         mer?.animer(t);
         controles.update();
+        // Secousse de la caméra (explosions) : décalage aléatoire qui s'amortit, retiré après le rendu
+        const secousse = objet.userData.secousse ?? 0;
+        let decalage = null;
+        if (secousse > 0.01 && !mouvementReduit) {
+          decalage = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(0.16 * secousse);
+          camera.position.add(decalage);
+          if (secousse > 0.95 && typeof navigator !== 'undefined') navigator.vibrate?.(40);
+          objet.userData.secousse = secousse * 0.9;
+        }
         if (compo?.actif) {
           compo.rendre();
           // Appareil trop lent pour l'occlusion ambiante (plus de 50 ms par image en moyenne, mesurée sur
@@ -486,6 +497,19 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
             }
           }
         } else renderer.render(scene, camera);
+        if (decalage) camera.position.sub(decalage);
+        // Affichage tête haute : seulement quand le message change
+        const hud = objet.userData.hud;
+        const texteHud = hud?.texte ?? '';
+        const noeudHud = hudRef.current;
+        if (noeudHud && noeudHud.dataset.texte !== texteHud) {
+          noeudHud.dataset.texte = texteHud;
+          noeudHud.textContent = texteHud;
+          noeudHud.className = `visionneuse-hud ${hud?.ton ?? ''}`;
+          noeudHud.style.display = texteHud ? 'block' : 'none';
+          void noeudHud.offsetWidth; // relance l'animation d'apparition
+          noeudHud.classList.add('flash');
+        }
         const conteneurLegendes = legendesRef.current;
         if (conteneurLegendes) {
           const l = el.clientWidth;
@@ -553,6 +577,7 @@ export default function Visionneuse3D({ modele = 'rafale', hauteur = 360, donnee
       <div className="visionneuse-scene" ref={conteneur} style={{ height: hauteur }}>
         {etat === 'chargement' && <div className="visionneuse-attente">Chargement du modèle 3D…</div>}
         {etat === 'indisponible' && <div className="visionneuse-attente">La 3D n'est pas disponible sur cet appareil (WebGL désactivé).</div>}
+        <div className="visionneuse-hud" ref={hudRef} role="status" aria-live="polite" style={{ display: 'none' }} />
         <div className="visionneuse-legendes" ref={legendesRef} aria-hidden="true">
           {noms.map((t) => <span key={t} className="legende-3d">{t}</span>)}
         </div>

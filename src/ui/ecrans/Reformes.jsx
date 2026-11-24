@@ -14,7 +14,7 @@ const SOURCES = { ...THINK_TANKS, ...SOURCE_LFI };
 
 /** Thèmes, dans l'ordre d'affichage. */
 const THEMES = {
-  retraites: 'Retraites', capitalisation: 'Retraites : capitalisation', travail: 'Travail et emploi', depenses: 'Baisse des dépenses',
+  retraites: 'Retraites', capitalisation: 'Retraites : capitalisation', travail: 'Travail et emploi', croissance: 'Croissance et investissement', depenses: 'Baisse des dépenses',
   fiscalite: 'Fiscalité et entreprises', sante: 'Santé', protection_sociale: 'Protection sociale', fonction_publique: 'Fonction publique',
   energie: 'Énergie et climat', education: 'Éducation', securite: 'Sécurité et justice', immigration: 'Immigration', logement: 'Logement',
   agriculture: 'Agriculture', outre_mer: 'Outre-mer', institutions: 'Institutions', dette: 'Dette et patrimoine public', regles: 'Règles budgétaires', defense: 'Défense', infrastructures: 'Infrastructures et transports',

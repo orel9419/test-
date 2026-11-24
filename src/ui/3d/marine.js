@@ -584,8 +584,11 @@ function missileAster(THREE, version = 30) {
  *  - Aster : montée presque verticale très rapide, largage de l'accélérateur, virage vers la menace.
  * Une cellule différente à chaque tir. Altitudes de croisière et distances resserrées.
  */
-function tirVertical(THREE, parent, { type, cellules, fumee, cap = 0 }) {
+function tirVertical(THREE, parent, { type, cellules, fumee, cap = 0, echelle = 1, lumiere = true }) {
   const m = type === 'mdcn' ? missileMdcn(THREE) : missileAster(THREE, type === 'aster15' ? 15 : 30);
+  // Scènes de groupe : missile et fumée agrandis pour rester visibles (comme les avions)
+  m.groupe.scale.setScalar(echelle);
+  const E = echelle;
   m.groupe.visible = false;
   m.groupe.userData.missile = type;
   m.accelerateur.userData.accelerateur = type;
@@ -631,7 +634,7 @@ function tirVertical(THREE, parent, { type, cellules, fumee, cap = 0 }) {
         if (chute.p.y < 0) {
           chute.actif = false;
           m.accelerateur.visible = false;
-          for (let i = 0; i < 6; i++) fumee.emettre(chute.p.x, 0.5, chute.p.z, { r0: 1, r1: 5, vie: 2.5, opacite: 0.7, vent: [0, 3, 0], teinte: 0xffffff });
+          for (let i = 0; i < 6; i++) fumee.emettre(chute.p.x, 0.5, chute.p.z, { r0: E, r1: 5 * E, vie: 2.5, opacite: 0.7, vent: [0, 3, 0], teinte: 0xffffff });
         }
       }
       if (debut === null || !cellule) return;
@@ -657,7 +660,7 @@ function tirVertical(THREE, parent, { type, cellules, fumee, cap = 0 }) {
       // Flamme, lueur et fumée pendant la combustion de l'accélérateur
       const brule = tau < finAcc && !largue;
       m.flamme.visible = brule;
-      m.flamme.userData.lueur.intensity = brule ? (tau < 0.6 ? 0.35 : 0.18) * (0.85 + 0.3 * Math.sin(t / 23)) : 0;
+      m.flamme.userData.lueur.intensity = brule && lumiere ? (tau < 0.6 ? 0.35 : 0.18) * (0.85 + 0.3 * Math.sin(t / 23)) : 0;
       m.flamme.scale.setScalar(0.9 + 0.2 * Math.sin(t / 17));
       if (brule) {
         // Bouffées réparties le long du trajet parcouru pendant l'image (au moins une tous les 1,5 m
@@ -667,9 +670,9 @@ function tirVertical(THREE, parent, { type, cellules, fumee, cap = 0 }) {
         if (n > 0) emission = 0;
         for (let k = 1; k <= n; k++) {
           H.copy(Q).lerp(P, k / n).addScaledVector(D, -0.5);
-          fumee.emettre(H.x, H.y, H.z, { r0: mdcn ? 1 : 0.6, r1: mdcn ? 6.5 : 4.5, vie: mdcn ? 6 : 6.5, opacite: 0.45 });
+          fumee.emettre(H.x, H.y, H.z, { r0: (mdcn ? 1 : 0.6) * E, r1: (mdcn ? 6.5 : 4.5) * E, vie: mdcn ? 6 : 6.5, opacite: 0.45 });
           // Gaz rejetés par le conduit du lanceur : gros nuage au ras du pont au départ
-          if (tau < 1 && k % 2 === 1) fumee.emettre(cellule.x + 1.2, cellule.y + 1, cellule.z, { r0: 1.5, r1: 10, vie: 5, opacite: 0.55, vent: [7, 1.8, 0] });
+          if (tau < 1 && k % 2 === 1) fumee.emettre(cellule.x + 1.2, cellule.y + 1, cellule.z, { r0: 1.5 * E, r1: 10 * E, vie: 5, opacite: 0.55, vent: [7, 1.8, 0] });
         }
       }
       if (!largue && tau >= finAcc) {
@@ -1096,7 +1099,7 @@ function texturePontPha(THREE, contour, L, B) {
  * Commandes : décollage des Caïman, des Tigre, mode amphibie.
  * leger : version simplifiée pour les scènes de groupe (hélicoptères sommaires, sans radier ni plage).
  */
-export function construirePha(THREE, { leger = false } = {}) {
+export function construirePha(THREE, { leger = false, plage = true, allege = false } = {}) {
   const L = 199, B = 32, D = 20;
   const s = 13 / L;
   const navire = new THREE.Group();
@@ -1224,16 +1227,20 @@ export function construirePha(THREE, { leger = false } = {}) {
   // ---- Hélicoptères : deux Tigre de l'ALAT (spots 1 et 2), trois Caïman Marine (spots 3, 4 et 6)
   const yPont = D + 0.1;
   const tigres = [helicoEmbarque(THREE, 'tigre'), helicoEmbarque(THREE, 'tigre')];
-  const caimans = [helicoEmbarque(THREE, 'caiman'), helicoEmbarque(THREE, 'caiman'), helicoEmbarque(THREE, 'caiman')];
+  // Allégé (scène du groupe aéronaval) : pas de troisième Caïman replié
+  const caimans = [helicoEmbarque(THREE, 'caiman'), helicoEmbarque(THREE, 'caiman'), ...(allege ? [] : [helicoEmbarque(THREE, 'caiman')])];
   corps.add(...tigres, ...caimans);
-  caimans[2].position.set(172, yPont, 3);
-  caimans[2].rotation.y = 0.05;
-  Object.assign(caimans[2].userData.helico, { regime: 0, repli: 1 });
+  if (caimans[2]) {
+    caimans[2].position.set(172, yPont, 3);
+    caimans[2].rotation.y = 0.05;
+    Object.assign(caimans[2].userData.helico, { regime: 0, repli: 1 });
+  }
   // Postes en vol : Caïman en stationnaire sur le côté bâbord, Tigre en orbite d'escorte autour du
   // navire ; en mode amphibie, les uns au-dessus de la plage, les autres en appui en orbite sur la côte.
   const XC = L + 450; // trait de côte (resserré : un débarquement commence en réalité bien plus au large)
-  const plage = plageDebarquement(THREE, XC);
-  navire.add(plage);
+  // Sans plage (scène du groupe aéronaval, en haute mer) : les engins vont à un point de rassemblement
+  if (plage) navire.add(plageDebarquement(THREE, XC));
+  const XF = plage ? XC - 15 : L + 260;
   const postesCaiman = [[70, 42, 92], [118, 48, 108]];
   const plageCaiman = [[XC + 40, 12, -45], [XC + 55, 13, 30]];
   const suivis = {
@@ -1257,9 +1264,9 @@ export function construirePha(THREE, { leger = false } = {}) {
   legendes.push(
     { texte: 'Tigre de l\'ALAT : appui-feu et escorte', point: new THREE.Vector3() },
     { texte: 'Caïman Marine : transport d\'assaut, sauvetage', point: new THREE.Vector3() },
-    { texte: 'Caïman Marine, pales repliées pour le hangar', point: p(172, D + 5, 6) },
+    ...(caimans[2] ? [{ texte: 'Caïman Marine, pales repliées pour le hangar', point: p(172, D + 5, 6) }] : []),
   );
-  const [legTigre, legCaiman] = legendes.slice(-3);
+  const [legTigre, legCaiman] = legendes.slice(caimans[2] ? -3 : -2);
 
   // ---- Engins de débarquement : EDA-R 1 (un Leclerc) à l'arrière du radier, EDA-R 2 (deux Griffon) devant
   const leclerc = vehicule(THREE, 'leclerc');
@@ -1275,9 +1282,9 @@ export function construirePha(THREE, { leger = false } = {}) {
   legendes.push(
     { texte: 'EDA-R : un char Leclerc (80 t au plus)', point: new THREE.Vector3() },
     { texte: 'EDA-R : deux Griffon', point: new THREE.Vector3() },
-    { texte: 'Plage de débarquement (distance resserrée)', point: p(XC + 30, 12, 0) },
+    ...(plage ? [{ texte: 'Plage de débarquement (distance resserrée)', point: p(XC + 30, 12, 0) }] : []),
   );
-  const legEda = legendes.slice(-3, -1);
+  const legEda = plage ? legendes.slice(-3, -1) : legendes.slice(-2);
 
   groupe.userData.commandes = [
     { id: 'decoller', libelle: 'Faire décoller les Caïman Marine', actif: 'Apponter les Caïman Marine' },
@@ -1310,7 +1317,7 @@ export function construirePha(THREE, { leger = false } = {}) {
       const u1 = lisse((tau - d0) / tSortie), u2 = lisse((tau - d0 - tSortie) / tTour), w3 = (tau - d0 - tSortie - tTour) / tTransit, u3 = lisse(w3);
       const tEch = d0 + tSortie + tTour + tTransit;
       // Transit : ligne droite vers la plage avec un décalage latéral progressif ; cap dans le sens de la marche
-      const transit = (w) => [xs + (XC - 15 - xs) * lisse(w), e.z * lisse(Math.min(1, Math.max(0, w)) * 1.4)];
+      const transit = (w) => [xs + (XF - xs) * lisse(w), e.z * lisse(Math.min(1, Math.max(0, w)) * 1.4)];
       let x = e.x0 + (xs - e.x0) * u1, z = 0, cap = Math.PI * u2;
       if (u3 > 0) {
         [x, z] = transit(w3);
@@ -1324,13 +1331,13 @@ export function construirePha(THREE, { leger = false } = {}) {
       o.rotation.set(0, cap, pose ? -b * ALPHA : 0);
       const vitesse = (u3 > 0 && u3 < 1) ? Math.sin(Math.PI * u3) : 0;
       o.userData.sillage.material.opacity = 0.1 * vitesse;
-      const ech = lisse((tau - tEch) / 3), rampe = lisse((tau - tEch - 1) / 3);
+      const ech = plage ? lisse((tau - tEch) / 3) : 0, rampe = plage ? lisse((tau - tEch - 1) / 3) : 0;
       o.userData.plateforme(ech);
       o.userData.rampe(rampe);
       // Véhicules : descendent la rampe et montent sur la plage (pente de 5 %)
       const pont = o.userData.pont(ech);
       o.userData.charge.forEach((v, j) => {
-        const u = lisse((tau - tEch - 4 - j * 2) / 7);
+        const u = plage ? lisse((tau - tEch - 4 - j * 2) / 7) : 0;
         const xl = v.x + u * (-34 + j * 9 - v.x);
         const surRampe = xl < -10 && xl > -15;
         const yl = xl >= -10 ? 0 : surRampe ? -pont * ((-10 - xl) / 5) : -pont + (-15 - xl) * 0.05;
@@ -1351,7 +1358,7 @@ export function construirePha(THREE, { leger = false } = {}) {
     });
     vols.caimans.forEach((v) => v.animer(t, !!api.decoller));
     vols.tigres.forEach((v) => v.animer(t, !!api.tigres));
-    caimans[2].userData.animer?.(t, {});
+    caimans[2]?.userData.animer?.(t, {});
     mondeVersGroupe(legTigre.point, tigres[0].position.x, tigres[0].position.y + 5, tigres[0].position.z);
     mondeVersGroupe(legCaiman.point, caimans[0].position.x, caimans[0].position.y + 5.5, caimans[0].position.z);
   };
@@ -1456,7 +1463,7 @@ function exocets(THREE, mat, x, y) {
  * décollage, et les tirs depuis les Sylver. En mode léger (scènes de groupe, navires minuscules) :
  * hélicoptère simplifié, pas de tirs. Renvoie les légendes et l'installation des commandes.
  */
-function equipementFregate(THREE, navire, M, { leger, helico, pose, degagement, poste, tirs: defTirs }) {
+function equipementFregate(THREE, navire, M, { leger, helico, pose, degagement, poste, tirs: defTirs, echelleEffets = 1 }) {
   let vol = null, caiman = null, fumee = null;
   const tirs = [];
   if (helico && leger) {
@@ -1471,7 +1478,7 @@ function equipementFregate(THREE, navire, M, { leger, helico, pose, degagement, 
   if (defTirs.length) {
     fumee = fumees(THREE);
     navire.add(fumee.groupe);
-    for (const d of defTirs) tirs.push({ id: d.id, tir: tirVertical(THREE, navire, { type: d.type, cellules: d.cellules, fumee, cap: d.cap }) });
+    for (const d of defTirs) tirs.push({ id: d.id, tir: tirVertical(THREE, navire, { type: d.type, cellules: d.cellules, fumee, cap: d.cap, echelle: echelleEffets, lumiere: echelleEffets === 1 }) });
   }
   const legendeCaiman = { texte: 'Caïman Marine (NH90 NFH)', point: null };
   const NOMS = { mdcn: '🚀 Tir de missile de croisière naval (MdCN)', aster15: '🚀 Tir d\'Aster 15', aster30: '🚀 Tir d\'Aster 30' };
@@ -1513,7 +1520,7 @@ function equipementFregate(THREE, navire, M, { leger, helico, pose, degagement, 
  * portant le grand radôme du radar multifonction, mât treillis, cheminées,
  * mât arrière et son radar de veille à longue portée, hangar et plateforme.
  */
-export function construireFda(THREE, { leger = false, helico = true } = {}) {
+export function construireFda(THREE, { leger = false, helico = true, echelleEffets = 1 } = {}) {
   const L = 153;
   const s = 13 / L;
   const navire = new THREE.Group();
@@ -1574,7 +1581,7 @@ export function construireFda(THREE, { leger = false, helico = true } = {}) {
   pf.position.set(141.5, 7.1, 0);
   navire.add(pf);
   const embarque = equipementFregate(THREE, navire, M, {
-    leger, helico, pose: [140.45, 7.38, 0], degagement: [-6, 14, 26], poste: [70, 44, 82],
+    leger, helico, echelleEffets, pose: [140.45, 7.38, 0], degagement: [-6, 14, 26], poste: [70, 44, 82],
     tirs: leger ? [] : [{ id: 'aster', type: 'aster30', cellules: cellules.userData.cellules, cap: 0.7 }],
   });
   navire.add(numeroCoque(THREE, 'D621', { x: 54, y: 4.2, z: 9.55, hauteur: 2.8 }));
@@ -1592,6 +1599,7 @@ export function construireFda(THREE, { leger = false, helico = true } = {}) {
     ...embarque.legendes(p),
   ];
   embarque.installer(groupe, p, (t) => { antenne.rotation.y = t / 900; });
+  groupe.userData.cellulesAster = cellules.userData.cellules; // tirs guidés de la scène du groupe aéronaval
   return groupe;
 }
 
@@ -1602,7 +1610,7 @@ export function construireFda(THREE, { leger = false, helico = true } = {}) {
  * mât intégré pyramidal (radar Herakles), mât de communications arrière,
  * cheminée à sommet noir, logement d'embarcation, hangar et plateforme.
  */
-export function construireFremm(THREE, { leger = false, helico = true } = {}) {
+export function construireFremm(THREE, { leger = false, helico = true, echelleEffets = 1 } = {}) {
   const L = 142;
   const s = 13 / L;
   const navire = new THREE.Group();
@@ -1655,7 +1663,7 @@ export function construireFremm(THREE, { leger = false, helico = true } = {}) {
   navire.add(exocets(THREE, M.clair, 99, Dm + 6.2));
   // Caïman Marine sur la plateforme, pales repliées, ancré par son harpon sur la grille ; missiles
   const embarque = equipementFregate(THREE, navire, M, {
-    leger, helico, pose: [128.3, 5.98, 0], degagement: [-6, 14, 26], poste: [62, 40, 78],
+    leger, helico, echelleEffets, pose: [128.3, 5.98, 0], degagement: [-6, 14, 26], poste: [62, 40, 78],
     tirs: leger ? [] : [
       { id: 'mdcn', type: 'mdcn', cellules: a70.userData.cellules, cap: -0.45 },
       { id: 'aster', type: 'aster15', cellules: a43.userData.cellules, cap: 0.7 },
@@ -2007,6 +2015,254 @@ function caimanAsm(THREE, k, racine, x, z) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Combat aérien du groupe aéronaval : raid de chasseurs adverses, interceptions
+// ---------------------------------------------------------------------------
+
+/**
+ * Chasseur adverse générique (aucun appareil réel en particulier), en mètres :
+ * environ 19 m de long et 14 m d'envergure, biréacteur à deux dérives, nez
+ * vers x négatif. Gris-bleu foncé, dessous plus clair.
+ */
+function chasseurAdverse(THREE) {
+  const g = new THREE.Group();
+  const dessus = new THREE.MeshStandardMaterial({ color: 0x4f5964, roughness: 0.6, metalness: 0.2 });
+  const dessous = new THREE.MeshStandardMaterial({ color: 0x8c96a0, roughness: 0.6, metalness: 0.2 });
+  const sombre = new THREE.MeshStandardMaterial({ color: 0x23272b, roughness: 0.5, metalness: 0.4 });
+  const verre = new THREE.MeshStandardMaterial({ color: 0x1d2a33, roughness: 0.1, metalness: 0.6 });
+  g.add(new THREE.Mesh(loft(THREE, [
+    { x: 0, w: 0.1, h: 0.1, y: 0.2 }, { x: 1.2, w: 0.9, h: 0.9, y: 0.25, n: 2.2 }, { x: 4, w: 1.6, h: 1.5, y: 0.35, n: 2.4 },
+    { x: 7, w: 3.2, h: 1.4, y: 0.25, n: 3 }, { x: 15, w: 3.6, h: 1.2, y: 0.15, n: 3.4 }, { x: 19, w: 2.6, h: 0.9, y: 0.1, n: 3.4 },
+  ], { segments: 24, parSegment: 4 }), dessus));
+  const verriere = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), verre);
+  verriere.scale.set(2.1, 0.55, 0.55);
+  verriere.position.set(3.6, 1.0, 0);
+  g.add(verriere);
+  for (const c of [-1, 1]) {
+    const aile = new THREE.Mesh(surface(THREE, [[8.5, c * 1.5], [15.5, c * 7], [17.2, c * 7], [17.5, c * 1.5]], 0.25), dessous);
+    aile.position.y = 0.1;
+    const plan = new THREE.Mesh(surface(THREE, [[17, c * 1.2], [19.4, c * 3.6], [20.2, c * 3.6], [20, c * 1.2]], 0.15), dessous);
+    const derive = new THREE.Mesh(surface(THREE, [[15.5, 0], [18.4, 3.6], [19.6, 3.6], [19.6, 0]], 0.18, { plan: 'xy' }), dessus);
+    derive.position.set(0, 0.6, c * 1.4);
+    derive.rotation.x = -c * 0.25;
+    const tuyere = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 1.2, 12), sombre);
+    tuyere.rotation.z = Math.PI / 2;
+    tuyere.position.set(19.4, 0.1, c * 0.75);
+    g.add(aile, plan, derive, tuyere);
+  }
+  return g;
+}
+
+/** Texture de boule de feu : cœur blanc-jaune, bord orange, transparent au bord. */
+function textureFeu(THREE) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(32, 32, 1, 32, 32, 31);
+  g.addColorStop(0, 'rgba(255,255,230,1)');
+  g.addColorStop(0.25, 'rgba(255,214,110,0.95)');
+  g.addColorStop(0.6, 'rgba(255,120,30,0.55)');
+  g.addColorStop(1, 'rgba(255,60,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * Raid aérien sur le groupe aéronaval et sa défense, en mètres dans le repère
+ * « monde » de la scène : trois chasseurs adverses arrivent sur le porte-avions ;
+ * la frégate de défense aérienne tire des Aster 30 (montée verticale, puis
+ * guidage vers le point d'interception), un Rafale de la patrouille tire un
+ * Meteor ; un Aster peut manquer sa cible et être suivi d'un second tir.
+ * Explosions, débris, chute et gerbe d'eau ; messages pour l'affichage tête
+ * haute et secousse de la caméra. Vitesses et distances resserrées.
+ */
+function combatAerien(THREE, monde, { echelle = 3.6, fumee, cible, depart, lanceurs, rafales, hud: afficher, secouer }) {
+  const feu = textureFeu(THREE);
+  // Messages tête haute : chacun reste affiché au moins 1,6 s, dans l'ordre
+  const file = [];
+  let message = null, depuis = -1e9;
+  const hud = (x) => { if (x === null) { file.length = 0; message = null; afficher(null); } else file.push(x); };
+  const ennemis = [], missiles = [], eclats = [];
+  let debut = null, avant = null, phase = 'calme', abattus = 0, finAnnonce = null, tirsAster = 0;
+  const faits = new Set(); // ordres de tir déjà exécutés pendant ce raid
+  const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+  const Y = V(0, 1, 0);
+
+  const explosion = (pos, grande = true) => {
+    const s = grande ? 1 : 0.4;
+    for (const [taille, teinte] of [[170 * s, 0xffffff], [100 * s, 0xffffff]]) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: feu, color: teinte, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      sp.position.copy(pos);
+      sp.scale.setScalar(1);
+      sp.renderOrder = 4;
+      monde.add(sp);
+      eclats.push({ type: 'feu', objet: sp, age: 0, vie: 0.9, taille });
+    }
+    for (let i = 0; i < (grande ? 8 : 3); i++) fumee.emettre(pos.x, pos.y, pos.z, { r0: 25 * s, r1: 110 * s, vie: 5, opacite: 0.6, vent: [4, 2, 0], teinte: 0x3c3c3a });
+    if (grande) {
+      for (let i = 0; i < 7; i++) {
+        const d = new THREE.Mesh(new THREE.BoxGeometry(3, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0x3a3f45, roughness: 0.8 }));
+        d.position.copy(pos);
+        d.scale.setScalar(echelle);
+        monde.add(d);
+        const a = (i / 7) * TOUR;
+        eclats.push({ type: 'debris', objet: d, age: 0, vie: 6, v: V(Math.cos(a) * 90, 40 + 40 * Math.random(), Math.sin(a) * 90), w: V(Math.random() * 6, Math.random() * 6, Math.random() * 6) });
+      }
+      secouer(1);
+    } else secouer(0.35);
+  };
+
+  const lancer = (type, de, cibleEnnemi, { manque = false, delai = 0 } = {}) => {
+    const m = type === 'meteor' ? { groupe: new THREE.Group(), flamme: null } : missileAster(THREE, 30);
+    if (type === 'meteor') {
+      const corps = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 3.7, 10), new THREE.MeshStandardMaterial({ color: 0xe8e8e4, roughness: 0.4 }));
+      corps.position.y = 1.85;
+      const nez = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.4, 10), new THREE.MeshStandardMaterial({ color: 0x2a2d31 }));
+      nez.position.y = 3.9;
+      m.groupe.add(corps, nez);
+    }
+    m.groupe.scale.setScalar(echelle * (type === 'meteor' ? 2.2 : 2.3));
+    m.groupe.visible = false;
+    monde.add(m.groupe);
+    missiles.push({ type, m, p: de.clone(), v: type === 'meteor' ? V(-1, 0, 0) : V(0, 30, 0), cible: cibleEnnemi, manque, age: -delai, actif: true, prec: de.clone(), depasse: false });
+  };
+
+  const rafaleEnMetres = () => { const r = rafales[0]; return r ? V(r.position.x / monde.scale.x, r.position.y / monde.scale.x, r.position.z / monde.scale.x) : V(0, 300, 0); };
+
+  return {
+    get actif() { return phase !== 'calme'; },
+    declencher(t) {
+      if (phase !== 'calme') return;
+      debut = t; phase = 'raid'; abattus = 0; tirsAster = 0; finAnnonce = null; faits.clear();
+      const c = cible();
+      for (let i = 0; i < 3; i++) {
+        const avion = chasseurAdverse(THREE);
+        avion.scale.setScalar(echelle);
+        avion.rotation.order = 'YXZ';
+        const p = V(depart.x + i * 140, depart.y + i * 30, depart.z - i * 160);
+        const v = c.clone().sub(p).setY(0).normalize().multiplyScalar(165);
+        avion.position.copy(p);
+        monde.add(avion);
+        ennemis.push({ avion, p, v, etat: 'vol', w: V(), nom: String.fromCharCode(65 + i) });
+      }
+      hud({ texte: '⚠️ Raid détecté : 3 chasseurs hostiles en approche, cap sur le porte-avions. Alerte de défense aérienne !', ton: 'alerte' });
+    },
+    animer(t) {
+      const dt = avant === null ? 0 : Math.min(0.05, Math.max(0, (t - avant) / 1000));
+      avant = t;
+      if (file.length && (message === null || t - depuis > 1600)) { message = file.shift(); depuis = t; afficher(message); }
+      // Éclats : boules de feu, débris
+      for (const x of [...eclats]) {
+        x.age += dt;
+        if (x.type === 'feu') {
+          const u = x.age / x.vie;
+          x.objet.scale.setScalar(x.taille * Math.min(1, u * 4));
+          x.objet.material.opacity = Math.max(0, 1 - u);
+        } else {
+          x.v.y -= 9.81 * dt;
+          x.objet.position.addScaledVector(x.v, dt);
+          x.objet.rotation.x += x.w.x * dt; x.objet.rotation.y += x.w.y * dt;
+          if (x.objet.position.y < 0) x.age = x.vie;
+        }
+        if (x.age >= x.vie) { monde.remove(x.objet); x.objet.material.dispose(); if (x.type === 'debris') x.objet.geometry.dispose(); eclats.splice(eclats.indexOf(x), 1); }
+      }
+      if (phase === 'calme') return;
+      const tau = (t - debut) / 1000;
+      // Ordres de tir : trois Aster depuis la frégate de défense aérienne (le deuxième manquera), un Meteor depuis un Rafale
+      const tirs = [[1.0, 'aster', 0, false], [1.4, 'meteor', 2, false], [1.7, 'aster', 1, true], [2.4, 'aster', 2, false]];
+      for (const [quand, type, i, manque] of tirs) {
+        const cle = `${type}${i}${quand}`;
+        if (tau >= quand && !faits.has(cle)) {
+          faits.add(cle);
+          const e = ennemis[i];
+          if (!e || e.etat !== 'vol') continue;
+          if (type === 'aster') { lancer('aster', lanceurs()[tirsAster++ % Math.max(1, lanceurs().length)], e, { manque }); }
+          else lancer('meteor', rafaleEnMetres(), e);
+          hud({ texte: type === 'aster' ? `🚀 Chevalier Paul : Aster 30 tiré sur le chasseur ${e.nom}` : `🚀 Rafale de la patrouille : Meteor tiré sur le chasseur ${e.nom}`, ton: 'info' });
+        }
+      }
+      // Chasseurs adverses : en vol vers le porte-avions, ou abattus (chute en flammes, gerbe d'eau)
+      for (const e of ennemis) {
+        if (e.etat === 'vol') {
+          e.p.addScaledVector(e.v, dt);
+          e.avion.rotation.set(Math.sin(tau * 1.3 + e.p.x) * 0.15, Math.atan2(e.v.z, -e.v.x), 0);
+        } else if (e.etat === 'chute') {
+          e.v.y -= 9.81 * dt * 3;
+          e.p.addScaledVector(e.v, dt);
+          e.avion.rotation.x += 2.2 * dt; e.avion.rotation.z += 0.8 * dt;
+          if (Math.random() < 0.5) fumee.emettre(e.p.x, e.p.y, e.p.z, { r0: 12, r1: 55, vie: 4, opacite: 0.5, vent: [3, 1, 0], teinte: 0x2b2b2a });
+          if (e.p.y <= 0) {
+            e.etat = 'detruit';
+            e.avion.visible = false;
+            for (let k = 0; k < 6; k++) fumee.emettre(e.p.x, 3, e.p.z, { r0: 10, r1: 45, vie: 3, opacite: 0.75, vent: [0, 6, 0], teinte: 0xffffff });
+          }
+        }
+        e.avion.position.copy(e.p);
+      }
+      // Missiles : montée (Aster), puis guidage vers le point d'interception prédit
+      for (const mi of missiles) {
+        if (!mi.actif) continue;
+        mi.age += dt;
+        if (mi.age < 0) continue;
+        mi.m.groupe.visible = true;
+        const cibleP = mi.cible.p;
+        const vitesse = mi.type === 'aster' ? Math.min(820, 40 + mi.age * 520) : Math.min(900, 300 + mi.age * 450);
+        if (mi.type === 'aster' && mi.age < 0.7) mi.v.set(0, vitesse, 0);
+        else {
+          const d = cibleP.distanceTo(mi.p);
+          const vise = cibleP.clone().addScaledVector(mi.cible.v, d / Math.max(200, vitesse));
+          if (mi.manque) vise.add(V(0, 160, 140)); // la cible esquive : le missile passe à côté
+          const voulu = vise.sub(mi.p).normalize();
+          const actuel = mi.v.clone().normalize();
+          const angle = actuel.angleTo(voulu);
+          const tourne = Math.min(1, (2.6 * dt) / Math.max(1e-3, angle));
+          mi.v.copy(actuel.lerp(voulu, tourne).normalize().multiplyScalar(vitesse));
+        }
+        mi.prec.copy(mi.p);
+        mi.p.addScaledVector(mi.v, dt);
+        mi.m.groupe.position.copy(mi.p);
+        mi.m.groupe.quaternion.setFromUnitVectors(Y, mi.v.clone().normalize());
+        if (mi.m.flamme) { mi.m.flamme.visible = true; mi.m.flamme.userData.lueur.intensity = 0; }
+        const n = Math.max(1, Math.ceil(mi.prec.distanceTo(mi.p) / 18));
+        for (let k = 1; k <= n; k++) { const q = mi.prec.clone().lerp(mi.p, k / n); fumee.emettre(q.x, q.y, q.z, { r0: 6, r1: 28, vie: 3.2, opacite: 0.5, vent: [2, 0.5, 0] }); }
+        const dist = cibleP.distanceTo(mi.p);
+        if (!mi.manque && mi.cible.etat === 'vol' && dist < 35) {
+          mi.actif = false; mi.m.groupe.visible = false;
+          explosion(mi.p.clone(), true);
+          mi.cible.etat = 'chute';
+          mi.cible.v.multiplyScalar(0.5);
+          abattus += 1;
+          hud({ texte: `🎯 Chasseur ${mi.cible.nom} abattu (${abattus}/3)`, ton: 'succes' });
+        } else if (mi.cible.etat !== 'vol' && !mi.manque) {
+          mi.actif = false; mi.m.groupe.visible = false; explosion(mi.p.clone(), false); // cible déjà détruite : autodestruction
+        } else if (mi.manque && dist < 260) mi.depasse = true;
+        else if (mi.manque && mi.depasse && dist > 320) {
+          mi.actif = false; mi.m.groupe.visible = false;
+          explosion(mi.p.clone(), false);
+          hud({ texte: `❌ Aster manqué : le chasseur ${mi.cible.nom} a esquivé. Nouveau tir !`, ton: 'alerte' });
+          if (mi.cible.etat === 'vol') lancer('aster', lanceurs()[tirsAster++ % Math.max(1, lanceurs().length)], mi.cible, { delai: 0.6 });
+        }
+        if (mi.age > 14) { mi.actif = false; mi.m.groupe.visible = false; }
+      }
+      // Fin du raid
+      if (finAnnonce === null && ennemis.length && ennemis.every((e) => e.etat !== 'vol')) {
+        finAnnonce = t;
+        hud({ texte: `✅ Raid repoussé : ${abattus} chasseurs abattus, aucun bâtiment touché. Bravo, amiral !`, ton: 'succes' });
+      }
+      if (finAnnonce !== null && t - finAnnonce > 6000 && ennemis.every((e) => e.etat === 'detruit')) {
+        for (const e of ennemis) monde.remove(e.avion);
+        for (const mi of missiles) monde.remove(mi.m.groupe);
+        ennemis.length = 0; missiles.length = 0;
+        phase = 'calme';
+        hud(null);
+      }
+    },
+  };
+}
+
 /**
  * Groupe(s) aéronaval(s) : le porte-avions (Charles-de-Gaulle ou porte-avions
  * de nouvelle génération) et son escorte telle qu'elle existe dans la partie
@@ -2030,6 +2286,7 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
   const ravitailleurs = [];
   const avions = [];
   const helicos = []; // Caïman Marine de lutte anti-sous-marine, sonar trempé
+  const combattants = []; // bâtiments complets du premier groupe : frégates (tirs, Caïman) et porte-hélicoptères
 
   groupes.forEach((g, i) => {
     const z0 = deux ? (i === 0 ? ecart / 2 : -ecart / 2) : 0;
@@ -2068,8 +2325,11 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
         const [x, zr] = postes[j];
         // À quai, l'escorte est amarrée de l'autre côté de la jetée
         const z = enMer ? zr : pa.d.B / 2 + zr;
-        // La FREMM anti-sous-marine a son Caïman en vol (sonar trempé) : sa plateforme est vide
-        const nav = navireDuGroupe(THREE, type, k, { helico: !(type === 'fremm' && j === 0 && enMer) });
+        // La FREMM anti-sous-marine a son Caïman en vol (sonar trempé) : sa plateforme est vide.
+        // Premier groupe : bâtiments complets (tirs, hélicoptères, radier), missiles et fumées agrandis
+        const complet = i === 0 && ['fda', 'fremm', 'pha'].includes(type);
+        const nav = navireDuGroupe(THREE, type, k, { helico: !(type === 'fremm' && j === 0 && enMer), ...(complet ? { leger: false, echelleEffets: 5, plage: false, allege: true } : {}) });
+        if (complet) combattants.push({ type, objet: nav.objet, api: {} });
         const profondeur = type === 'sna' && enMer ? -8 : 0; // sous-marin en plongée (kiosque affleurant), en surface au port
         nav.conteneur.position.set(x * k, nav.conteneur.position.y + profondeur * k, (z0 + z) * k);
         racine.add(nav.conteneur);
@@ -2119,15 +2379,68 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
   mer.renderOrder = 1;
   racine.add(mer);
 
+  // Combat : repère en mètres (même échelle que les navires), fumées, raid aérien et défense
+  const monde = new THREE.Group();
+  monde.scale.setScalar(k);
+  racine.add(monde);
+  const fumeeCombat = fumees(THREE, 520);
+  monde.add(fumeeCombat.groupe);
+  const fda = combattants.find((c) => c.type === 'fda');
+  const fremms = combattants.filter((c) => c.type === 'fremm');
+  const pha = combattants.find((c) => c.type === 'pha');
+  const z0Premier = deux ? ecart / 2 : 0;
+  const enMerPremier = groupes[0].enMer !== false;
+  const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+  const combat = fda && enMerPremier ? combatAerien(THREE, monde, {
+    fumee: fumeeCombat,
+    cible: () => V3(0, 150, z0Premier),
+    depart: V3(-1900, 330, z0Premier - 2500),
+    lanceurs: () => {
+      racine.updateMatrixWorld(true);
+      const cellules = fda.objet.userData.cellulesAster ?? [];
+      return cellules.filter((_, n) => n % 7 === 3).map((c) => monde.worldToLocal(c.trappe.getWorldPosition(new THREE.Vector3())));
+    },
+    rafales: avions.map((a) => a.r),
+    hud: (x) => { racine.userData.hud = x; },
+    secouer: (v) => { racine.userData.secousse = Math.max(racine.userData.secousse ?? 0, v); },
+  }) : null;
+  racine.userData.hud = null;
+  racine.userData.secousse = 0;
+
   racine.userData.legendes = legendes;
   racine.userData.taille = 14;
   racine.userData.mer = true;
   racine.userData.commandes = [
+    ...(combat ? [{ id: 'raid', type: 'action', libelle: '🎯 Raid aérien ennemi : défense du groupe (Aster, Rafale)' }] : []),
+    ...(fremms.length && enMerPremier ? [{ id: 'frappe', type: 'action', libelle: '🚀 Frappe de missiles de croisière (FREMM)' }] : []),
+    ...(combattants.some((c) => c.type !== 'fremm' || c.objet.userData.commandes?.some((x) => x.id === 'decoller')) ? [{ id: 'helicos', libelle: 'Faire décoller les hélicoptères', actif: 'Apponter les hélicoptères' }] : []),
+    ...(pha && enMerPremier ? [{ id: 'amphibie', libelle: '⚓ Porte-hélicoptères : mise à l\'eau des engins de débarquement', actif: 'Rembarquer les engins' }] : []),
     ...(helicos.length ? [{ id: 'sonar', libelle: 'Tremper le sonar (lutte anti-sous-marine)', actif: 'Remonter le sonar' }] : []),
     ...(ravitailleurs.length ? [{ id: 'ravitailler', libelle: 'Ravitaillement à la mer', actif: 'Fin du ravitaillement' }] : []),
   ];
-  let f = 0;
+  let f = 0, frappe = null, avantCombat = null;
   racine.userData.animer = (t, api) => {
+    const dtc = avantCombat === null ? 0 : Math.min(0.05, Math.max(0, (t - avantCombat) / 1000));
+    avantCombat = t;
+    fumeeCombat.animer(dtc);
+    // Raid aérien et frappe de missiles de croisière
+    if (api.raid) { api.raid = false; combat?.declencher(t); }
+    combat?.animer(t);
+    if (api.frappe) {
+      api.frappe = false;
+      frappe = t;
+      if (!combat?.actif) racine.userData.hud = { texte: '🚀 Frappe dans la profondeur : les FREMM tirent leurs missiles de croisière naval. Cible à environ 1 000 km : impact dans un peu plus d\'une heure.', ton: 'info' };
+    }
+    fremms.forEach((c, n) => { c.api.mdcn = frappe !== null && t - frappe >= n * 1500 && !c.tire; if (c.api.mdcn) c.tire = true; });
+    if (frappe !== null && t - frappe > 9000) {
+      frappe = null;
+      for (const c of fremms) c.tire = false;
+      if (!combat?.actif && racine.userData.hud?.texte?.startsWith('🚀 Frappe')) racine.userData.hud = null;
+    }
+    for (const c of combattants) {
+      c.api.decoller = !!api.helicos;
+      if (c.type === 'pha') { c.api.tigres = !!api.helicos; c.api.amphibie = !!api.amphibie; }
+    }
     for (const h of helicos) h.animer(t, !!api.sonar);
     f += ((api.ravitailler ? 1 : 0) - f) * 0.02;
     // Le ravitailleur vient se placer à couple, à tribord du porte-avions, puis déploie ses tuyaux
@@ -2139,7 +2452,7 @@ export function construireGroupeAeronaval(THREE, { donnees = null } = {}) {
       rv.sillage.position.set((x + rv.L / 2) * k, 1.5 * k, z * k);
       rv.objet.userData.animer?.(t, { ravitailler: f > 0.9 });
     }
-    for (const o of animations) if (!ravitailleurs.some((rv) => rv.objet === o)) o.userData.animer(t, {});
+    for (const o of animations) if (!ravitailleurs.some((rv) => rv.objet === o)) o.userData.animer(t, combattants.find((c) => c.objet === o)?.api ?? {});
     // Patrouille maritime : orbite lente, en sens inverse des Rafale, légère inclinaison
     const angM = -t / 9000 + 4.07; // départ dans le champ de la vue « 3/4 »
     mpa.position.set(Math.cos(angM) * orbiteMpa.rayon * k, orbiteMpa.altitude * k, Math.sin(angM) * orbiteMpa.rayon * k);

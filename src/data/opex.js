@@ -14,6 +14,8 @@
  * coûts, chances et effets : hypothèses de jeu.
  */
 
+import { OPERATIONS_ANTITERRORISTES, SOURCES_TERRORISME } from './terrorisme.js';
+
 export const SOURCES_OPEX = {
   finul: { titre: 'Nations unies : le Conseil de sécurité prolonge une dernière fois la FINUL, jusqu\'au 31 décembre 2026 (résolution 2790, 28 août 2025)', url: 'https://press.un.org/en/2025/sc16159.doc.htm' },
   finulRetrait: { titre: 'FINUL : fin des opérations le 31 décembre 2026, retrait en un an', url: 'https://unifil.unmissions.org/en/node/132643' },
@@ -105,6 +107,27 @@ export const OPEX = {
     },
   },
 };
+
+/**
+ * Opérations antiterroristes (data/terrorisme.js) : jamais tirées au hasard
+ * comme crises ; le président les lance lui-même (écran Géopolitique) ou en
+ * réponse à une alerte ou à un attentat. Leur réussite fait reculer la menace
+ * terroriste en France.
+ */
+Object.assign(SOURCES_OPEX, SOURCES_TERRORISME);
+for (const [id, op] of Object.entries(OPERATIONS_ANTITERRORISTES)) {
+  const unites = Object.entries(op.apports).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([u]) => u);
+  OPEX[id] = {
+    ...op, antiterrorisme: true, probabilite: () => 0,
+    crise: {
+      id: `opex_${id}`, titre: op.nom, description: () => op.description,
+      choix: [
+        { id: 'engager', texte: 'Lancer l\'opération', unites },
+        { id: 'renoncer', texte: 'Y renoncer', effets: { texte: 'L\'opération n\'est pas lancée.' } },
+      ],
+    },
+  };
+}
 
 /** Au plus une nouvelle crise d'opération tous les ECART_MIN trimestres ; une même opération pas avant RECURRENCE trimestres. */
 export const ECART_MIN = 3;

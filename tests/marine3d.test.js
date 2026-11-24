@@ -166,3 +166,40 @@ describe('Porte-hélicoptères amphibie : Caïman Marine, Tigre et mode amphibie
     expect(() => jouer(di, {}, 0, 200)).not.toThrow();
   });
 });
+
+describe('Groupe aéronaval : combat et nouveautés', () => {
+  it('raid aérien : la frégate tire des Aster (et un Rafale un Meteor), les trois chasseurs sont abattus', async () => {
+    const { construireGroupeAeronaval } = await import('../src/ui/3d/marine.js');
+    const g = construireGroupeAeronaval(THREE, {});
+    expect(ids(g)).toEqual(expect.arrayContaining(['raid', 'frappe', 'helicos', 'amphibie', 'sonar', 'ravitailler']));
+    const api = { raid: true };
+    const textes = new Set();
+    for (let t = 0; t <= 40000; t += 16) {
+      g.userData.animer(t, api);
+      if (g.userData.hud?.texte) textes.add(g.userData.hud.texte);
+    }
+    const tous = [...textes].join('\n');
+    expect(tous).toMatch(/Raid détecté/);
+    expect(tous).toMatch(/Aster 30 tiré/);
+    expect(tous).toMatch(/Meteor tiré/);
+    expect(tous).toMatch(/Aster manqué/);
+    expect(tous).toMatch(/Raid repoussé : 3 chasseurs abattus/);
+    expect(sansNaN(g)).toBe(true);
+  });
+
+  it('frappe de missiles de croisière, décollage des hélicoptères et mise à l\'eau des engins', async () => {
+    const { construireGroupeAeronaval } = await import('../src/ui/3d/marine.js');
+    const g = construireGroupeAeronaval(THREE, {});
+    const missiles = [];
+    g.traverse((o) => { if (o.userData.missile === 'mdcn') missiles.push(o); });
+    expect(missiles.length).toBe(2);
+    const api = { frappe: true, helicos: true, amphibie: true };
+    jouer(g, api, 0, 5000);
+    expect(missiles.every((m) => m.visible)).toBe(true);
+    jouer(g, api, 5016, 30000);
+    const helicos = [];
+    g.traverse((o) => { if (o.userData.helico) helicos.push(o); });
+    expect(helicos.some((h) => h.userData.helico.regime > 0.9)).toBe(true);
+    expect(sansNaN(g)).toBe(true);
+  });
+});

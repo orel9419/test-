@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { LutteAntiterroriste, GuerreEconomique } from '../composants/Menaces.jsx';
 import Info from '../composants/Info.jsx';
 import { resumeGeopolitique, compositionGroupes, resumeDeploiements, resumeOpex } from '../../engine/index.js';
 import { GROUPE_AERONAVAL } from '../../data/geopolitique.js';
@@ -175,7 +176,7 @@ function FicheGroupe({ g, numero, plusieurs, destination, nomTheatre, onAnnuler 
 function Operations({ opex, allerA }) {
   return (
     <div className="carte pile operations-ext">
-      <h3 style={{ margin: 0 }}>🎖️ Opérations extérieures <Info texte="Au fil des trimestres, des crises éclatent (Liban, otages au Sahel, flanc est de l'OTAN, Émirats) : vous décidez d'y engager ou non vos forces projetables, dans l'onglet Événements. Une opération coûte plus cher et use davantage qu'une simple présence ; son issue est tirée à la fin, avec des chances qui dépendent des unités engagées et de leur potentiel. Hypothèses de jeu." /></h3>
+      <h3 style={{ margin: 0 }}>🎖️ Opérations extérieures <Info texte="Au fil des trimestres, des crises éclatent (Liban, otages au Sahel, flanc est de l'OTAN, Émirats) : vous décidez d'y engager ou non vos forces projetables, dans l'onglet Événements. Vous pouvez aussi lancer vous-même une opération antiterroriste (Levant, Sahel, golfe de Guinée, Somalie, Mozambique, Libye), ci-dessous. Une opération coûte plus cher et use davantage qu'une simple présence ; son issue est tirée à la fin, avec des chances qui dépendent des unités engagées et de leur potentiel. Hypothèses de jeu." /></h3>
       {opex.encours.length === 0 && <p className="petit muet" style={{ margin: 0 }}>Aucune opération en cours. Quand une crise éclate, elle arrive dans l'onglet <button type="button" className="lien" onClick={() => allerA?.('evenements')}>Événements</button>, avec les forces disponibles et vos chances de succès.</p>}
       {opex.encours.map((o) => (
         <div key={o.id} className="operation-encours">
@@ -307,6 +308,10 @@ export default function Geopolitique({ partie, decisions, majDecisions, allerA }
       </div>
 
       {opex && <Operations opex={opex} allerA={allerA} />}
+
+      <LutteAntiterroriste partie={partie} decisions={decisions} majDecisions={majDecisions} />
+
+      <GuerreEconomique partie={partie} decisions={decisions} majDecisions={majDecisions} />
 
       {dep && <Deploiements d={dep} opex={opex} decisions={decisions} majDecisions={majDecisions} />}
 

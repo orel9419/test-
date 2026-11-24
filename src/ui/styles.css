@@ -806,3 +806,41 @@ button.lien { background: none; border: none; padding: 0; color: var(--accent); 
 .unite-deployable.en-operation { border-color: var(--critique); }
 .forces-prevues { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.35rem; }
 .forces-prevues .etiquette { font-size: 0.72rem; }
+
+/* Menace terroriste, opérations antiterroristes, guerre économique */
+.jauge-menace { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.jauge-menace .remplissage { height: 100%; border-radius: 999px; background: var(--bon); transition: width 0.6s ease; }
+.jauge-menace .remplissage.attention { background: var(--attention); }
+.jauge-menace .remplissage.critique { background: var(--critique); }
+.menace-terroriste.en-alerte { box-shadow: 0 0 0 2px color-mix(in srgb, var(--critique) 55%, transparent); animation: alerte-menace 2.4s ease-in-out infinite; }
+@keyframes alerte-menace { 0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--critique) 35%, transparent); } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--critique) 65%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .menace-terroriste.en-alerte { animation: none; } }
+.grille-operations { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.5rem; }
+.operation-possible { border: 1px solid var(--bordure); border-radius: 10px; padding: 0.5rem 0.6rem; display: flex; flex-direction: column; gap: 0.35rem; background: var(--surface); }
+.operation-possible.en-cours { border-color: color-mix(in srgb, var(--attention) 60%, var(--bordure)); }
+.operation-possible.choisie { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.operation-possible .entete-operation { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 0.1rem; }
+.operation-possible .entete-operation:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.cible-guerre { border: 1px solid var(--bordure); border-radius: 10px; padding: 0.5rem 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.cible-guerre.en-guerre { border-color: color-mix(in srgb, var(--critique) 55%, var(--bordure)); background: color-mix(in srgb, var(--critique) 5%, transparent); }
+.crans { display: inline-flex; gap: 3px; }
+.crans span { width: 18px; height: 8px; border-radius: 3px; background: var(--surface-3); }
+.crans span.plein.nous { background: var(--accent); }
+.crans span.plein.eux { background: var(--critique); }
+
+/* Visionneuse 3D : affichage tête haute des scènes de combat */
+.visionneuse-hud { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 3; pointer-events: none; padding: 0.45rem 0.7rem; border-radius: 8px; background: rgba(10, 16, 26, 0.78); color: #f4f7fb; font-size: 0.86rem; font-weight: 600; border-left: 4px solid #5aa9ff; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+.visionneuse-hud.alerte { border-left-color: #ff5c5c; }
+.visionneuse-hud.succes { border-left-color: #4fd18b; }
+.visionneuse-hud.flash { animation: hud-entree 0.35s ease-out; }
+@keyframes hud-entree { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .visionneuse-hud.flash { animation: none; } }
+
+/* Événements « flash info » : menace terroriste, guerre commerciale */
+.evenement-flash { border-left: 4px solid var(--attention); animation: flash-entree 0.5s ease-out; }
+.evenement-flash.grave { border-left-color: var(--critique); }
+.bandeau-flash { align-self: flex-start; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.15rem 0.55rem; border-radius: 4px; background: var(--attention); color: #1b1b1b; }
+.evenement-flash.grave .bandeau-flash { background: var(--critique); color: #fff; animation: clignote 1.4s ease-in-out 3; }
+@keyframes flash-entree { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes clignote { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .evenement-flash, .evenement-flash.grave .bandeau-flash { animation: none; } }

@@ -8,9 +8,11 @@ import { GRANDS_EVENEMENTS } from '../data/grandsEvenements.js';
 import { CRISES } from '../data/geopolitique.js';
 import { PENURIES } from '../data/relocalisations.js';
 import { CRISES_OPEX } from '../data/opex.js';
+import { EVENEMENTS_MENACE, appliquerEffetsSecurite, enregistrerAttentat } from './terrorisme.js';
+import { EVENEMENTS_GUERRE_ECO, appliquerEffetsGuerre } from './guerreEconomique.js';
 
 /** Catalogue complet : événements aléatoires, dossiers d'entreprises et grands rendez-vous à date fixe. */
-export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES, ...EVENEMENTS_INSTITUTIONS, ...CRISES_OPEX];
+export const EVENEMENTS = [...BASE, ...GRANDS_EVENEMENTS, ...CRISES, ...PENURIES, ...EVENEMENTS_INSTITUTIONS, ...CRISES_OPEX, ...EVENEMENTS_MENACE, ...EVENEMENTS_GUERRE_ECO];
 import { appliquerChocs } from './social.js';
 import { trouverReforme } from './reformes.js';
 import { borner } from '../model/outils.js';
@@ -84,6 +86,11 @@ function appliquerEffets(e, eff, alea) {
   // Opérations extérieures (France) : forces engagées, tension des théâtres
   if (eff.envoiForces) engagerForces(e, eff.envoiForces.operation, eff.envoiForces.unites);
   if (eff.tensions) appliquerTensions(e, eff.tensions);
+  // Sécurité intérieure (France) : niveau de menace, renseignement, Sentinelle, état d'urgence, attentats
+  if (eff.menace || eff.renseignement || eff.securite) appliquerEffetsSecurite(e, eff);
+  if (eff.attentat) enregistrerAttentat(e, eff.attentat);
+  // Guerre économique (France) : tension commerciale, mesures, trêve
+  if (eff.tensionCommerciale || eff.mesureGuerre || eff.treve) appliquerEffetsGuerre(e, eff);
   if (eff.reduireGrief) {
     for (const ref of e.reformes.actives) if (ref.grief?.[eff.reduireGrief.groupe]) ref.grief[eff.reduireGrief.groupe] *= 1 - eff.reduireGrief.part;
   }

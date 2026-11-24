@@ -55,6 +55,8 @@ import { attribuerLot, majChantiers } from './chantiers.js';
 import { initialiserGeopolitique, majGeopolitique, deplacerGroupe, injecterCrises } from './geopolitique.js';
 import { deployerUnite, majDeploiements } from './deploiements.js';
 import { majOpex, injecterOpex } from './opex.js';
+import { majTerrorisme, injecterMenaces, deciderSecurite, lancerOperationAntiterroriste } from './terrorisme.js';
+import { majGuerreEconomique, injecterCrisesCommerciales, deciderGuerreEconomique } from './guerreEconomique.js';
 import { initialiserRelocalisation, demanderProduction, majRelocalisation, injecterPenuries } from './relocalisation.js';
 import { initialiserInstitutions, majInstitutions, gouvernementCohabitation, neutraliserDecisions, reactionAuxReformes, propositionGouvernement, accordPresident, injecterEvenementsInstitutions } from './institutions.js';
 import { etatCommunicationInitial, communiquer, majCommunication } from './communication.js';
@@ -77,6 +79,8 @@ export { bilanReformes, effetOpinionReforme } from './reformes.js';
 export { suggestionsReformes } from './suggestions.js';
 export { resumeDeploiements, accesBase } from './deploiements.js';
 export { resumeOpex, previsionOpex, declencherOpex } from './opex.js';
+export { resumeTerrorisme, niveauMenace } from './terrorisme.js';
+export { resumeGuerreEconomique, chanceAccordUE } from './guerreEconomique.js';
 export { soliditePouvoir } from './pouvoir.js';
 export { resumeNotation, libelleNote, revuesDuTrimestre } from './notation.js';
 export { risqueConstitutionnel } from './constitution.js';
@@ -391,7 +395,12 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   for (const [unite, base] of Object.entries(decisions.deploiements ?? {})) {
     if (base) (e.resultatsTour.deploiements ??= []).push({ unite, ...deployerUnite(e, unite, base) });
   }
-  if (!options.sansPolitique) { majGeopolitique(e); majDeploiements(e); majOpex(e); }
+  // Sécurité intérieure (France) : Vigipirate, Sentinelle ; opérations antiterroristes lancées par le président
+  if (decisions.securite) e.resultatsTour.securite = deciderSecurite(e, decisions.securite);
+  if (decisions.antiterrorisme) e.resultatsTour.antiterrorisme = lancerOperationAntiterroriste(e, decisions.antiterrorisme);
+  // Guerre économique (France) : mesures contre une grande puissance (une par cible et par trimestre)
+  for (const m of [].concat(decisions.guerreEconomique ?? [])) (e.resultatsTour.guerreEconomique ??= []).push({ ...m, ...deciderGuerreEconomique(e, m) });
+  if (!options.sansPolitique) { majGeopolitique(e); majDeploiements(e); majOpex(e); majTerrorisme(e); majGuerreEconomique(e); }
   // Produire en France : demandes aux grands groupes (aléa séparé)
   for (const r of decisions.relocalisations ?? []) (e.resultatsTour.relocalisations ??= []).push({ id: r.id, ...demanderProduction(e, r.id, r.levier) });
   // Chantiers des grands événements : attribution des lots
@@ -579,7 +588,7 @@ export function jouerTour(etat, decisions = {}, options = {}) {
   } else if (options.evenementsActifs !== false) {
     genererEvenements(e, alea, mode.frequenceEvenements, { max: mode.maxEvenements ?? 3 });
     // Crises géopolitiques et pénuries (France), tirées avec leur propre aléa
-    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); injecterEvenementsInstitutions(e, mode.maxEvenements ?? 3); injecterOpex(e, mode.maxEvenements ?? 3); }
+    if (!options.sansPolitique) { injecterCrises(e, mode.maxEvenements ?? 3); injecterPenuries(e, mode.maxEvenements ?? 3); injecterEvenementsInstitutions(e, mode.maxEvenements ?? 3); injecterOpex(e, mode.maxEvenements ?? 3); injecterMenaces(e, mode.maxEvenements ?? 3); injecterCrisesCommerciales(e, mode.maxEvenements ?? 3); }
   }
   if (e.statique.devise === '$') {
     e.journal = e.journal.map((j, i) => (i >= etat.journal.length ? adapterDevise(j) : j));

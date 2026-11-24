@@ -85,7 +85,7 @@ const RUBRIQUES = [
 ];
 const rubriqueDe = (onglet) => RUBRIQUES.find((r) => r.onglets.includes(onglet)) ?? RUBRIQUES[0];
 
-const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [], gan: null, gan2: null, deploiements: {}, fondsAllocation: null, relocalisations: [], congres: false, cohabitation: null };
+const DECISIONS_VIDES = { budget: {}, impots: {}, reformes: [], diplomatie: [], evenements: {}, entreprises: [], programmes: [], procedureBudget: 'auto', procedureReformes: 'vote', referendum: null, dissolution: false, questionConfiance: false, nominationPM: null, g7: null, g7Preparation: false, communication: null, defense: null, chantiers: [], gan: null, gan2: null, deploiements: {}, fondsAllocation: null, relocalisations: [], congres: false, cohabitation: null, securite: null, antiterrorisme: null, guerreEconomique: [] };
 
 /** Décisions par défaut d'un tour : on conserve les curseurs et les taux en vigueur. */
 function decisionsInitiales(partie) {
@@ -344,7 +344,8 @@ export default function App() {
     diplomatie: decisions.diplomatie.length + (decisions.g7?.priorites?.length ? 1 : 0),
     entreprises: nbActionsEntreprises,
     communication: decisions.communication ? 1 : 0,
-    geopolitique: (decisions.gan ? 1 : 0) + (decisions.gan2 ? 1 : 0) + Object.values(decisions.deploiements ?? {}).filter(Boolean).length,
+    geopolitique: (decisions.gan ? 1 : 0) + (decisions.gan2 ? 1 : 0) + Object.values(decisions.deploiements ?? {}).filter(Boolean).length + (decisions.antiterrorisme ? 1 : 0) + (decisions.guerreEconomique?.length ?? 0),
+    securite: decisions.securite ? 1 : 0,
     gan: (decisions.gan ? 1 : 0) + (decisions.gan2 ? 1 : 0),
     institutions: (decisions.questionConfiance && partie.pays === 'france' ? 1 : 0) + (decisions.congres ? 1 : 0) + (decisions.cohabitation && decisions.cohabitation !== 'promulguer' ? 1 : 0),
     relocalisation: decisions.relocalisations?.length ?? 0,

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { reformesDisponibles, risqueConstitutionnel, effetOpinionReforme } from '../../engine/index.js';
 import { md, pct } from '../format.js';
+import { MenaceTerroriste } from '../composants/Menaces.jsx';
 
 const CATEGORIES = { securite: 'Sécurité et justice', immigration: 'Immigration', defense: 'Défense' };
 
@@ -23,6 +24,7 @@ export default function Securite({ partie, decisions, majDecisions, allerA }) {
         <button type="button" className="bouton" onClick={() => allerA?.('budget')}>Ajuster les moyens (budget)</button>
         <button type="button" className="bouton" onClick={() => allerA?.('reformes')}>Toutes les réformes</button>
       </div>
+      <MenaceTerroriste partie={partie} decisions={decisions} majDecisions={majDecisions} allerA={allerA} />
       {groupes.length === 0 && <p className="petit muet">Aucune réforme régalienne disponible pour ce pays.</p>}
       {groupes.map(([c, l]) => (
         <div key={c} className="carte pile">

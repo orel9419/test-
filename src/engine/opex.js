@@ -36,6 +36,8 @@ function appliquer(e, eff = {}) {
   for (const [p, v] of Object.entries(eff.relations ?? {})) if (i?.relations[p] !== undefined) i.relations[p] = borner(i.relations[p] + v, -100, 100);
   if (eff.fierte && e.social?.groupes) appliquerChocs(e, Object.fromEntries(Object.keys(e.social.groupes).map((g) => [g, eff.fierte])));
   appliquerTensions(e, eff.tensions);
+  // Opérations antiterroristes : la menace en France recule (ou monte après un échec)
+  if (eff.menace && e.securiteInterieure) e.securiteInterieure.menace = borner(e.securiteInterieure.menace + eff.menace, 5, 95);
 }
 
 /** Variation de la tension de théâtres géopolitiques (bornée entre 0 et 100). */
